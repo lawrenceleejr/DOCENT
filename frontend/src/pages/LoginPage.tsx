@@ -52,7 +52,7 @@ export function LoginPage() {
             <div>
               <Title order={2}>DOCENT</Title>
               <Text c="dimmed" size="sm">
-                Outreach & community engagement tracker
+                Reach out.
               </Text>
             </div>
             <TextInput label="Email" placeholder="you@university.edu" {...form.getInputProps('email')} />

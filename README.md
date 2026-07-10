@@ -8,6 +8,34 @@ Researchers register accounts and log each visit — venue, date, contact person
 
 ---
 
+## Screenshots
+
+**Visits** — the shared log of every outreach event, with search, filters (date, type, audience, status), and CSV export.
+
+![Visits list](docs/screenshots/01-visits.png)
+
+**Log / schedule a visit** — one form for both. Toggle *Completed* vs *Planned*, pick or create a venue (searchable, catalog-backed), add host details, attendance, rating, and notes.
+
+![Log a visit](docs/screenshots/05-visit-form.png)
+
+**Analysis dashboard** — totals, visits & people reached per half-year, breakdowns by venue type and audience, top venues, and a researcher leaderboard.
+
+![Analysis dashboard](docs/screenshots/02-dashboard.png)
+
+**Map & coverage** — every institution plotted as a **gap** (orange) or **reached** (green) so you can see who you're missing. Clustered, filterable by type and coverage. *(The OpenStreetMap base tiles render in your browser; they're blank in this static capture.)*
+
+![Coverage map](docs/screenshots/03-map.png)
+
+**Schedule** — your upcoming planned events, with one-click **Add to calendar (.ics)** for Google/Apple/Outlook.
+
+![Schedule](docs/screenshots/04-schedule.png)
+
+**Admin** — manage users, reset passwords, and **import institutions near a location** (address + radius in km/mi) straight from OpenStreetMap.
+
+![Admin](docs/screenshots/06-admin.png)
+
+---
+
 ## Getting started
 
 For a machine that already runs Docker and where you want a subdomain
