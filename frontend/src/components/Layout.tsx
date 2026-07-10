@@ -16,7 +16,7 @@ import { useAuth } from '../auth/AuthContext';
 
 function ColorSchemeToggle() {
   const { setColorScheme } = useMantineColorScheme();
-  const computed = useComputedColorScheme('light', { getInitialValueInEffect: true });
+  const computed = useComputedColorScheme('dark', { getInitialValueInEffect: true });
   const isDark = computed === 'dark';
   return (
     <ActionIcon

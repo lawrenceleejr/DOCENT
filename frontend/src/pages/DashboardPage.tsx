@@ -169,7 +169,7 @@ function BreakdownPanel({
 }
 
 export function DashboardPage() {
-  const scheme = useComputedColorScheme('light');
+  const scheme = useComputedColorScheme('dark');
   const viz = scheme === 'dark' ? VIZ_DARK : VIZ_LIGHT;
   const [range, setRange] = useState<RangeKey>('3y');
   const dates = useMemo(() => rangeToDates(range), [range]);

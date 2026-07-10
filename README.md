@@ -8,20 +8,74 @@ Researchers register accounts and log each visit — venue, date, contact person
 
 ---
 
-## Quickstart (production)
+## Getting started
 
-Requirements: Docker with the Compose plugin.
+For a machine that already runs Docker and where you want a subdomain
+(e.g. `docent.example.org`) to serve DOCENT over HTTPS.
+
+**1. Get the code and start it**
 
 ```bash
 git clone <this-repo> && cd DOCENT
-cp .env.example .env
-# Edit .env: set POSTGRES_PASSWORD and SECRET_KEY (openssl rand -hex 32)
-docker compose up -d --build
+./scripts/start.sh
 ```
 
-Open `http://your-server/` (port set by `HTTP_PORT`, default 80). **The first account registered automatically becomes the admin** — register yourself immediately after deploying.
+On first run `start.sh` creates `.env` with a random `SECRET_KEY` and
+`POSTGRES_PASSWORD`, builds the images, and starts everything. DOCENT now
+listens on `http://127.0.0.1:8080` (change with `HTTP_PORT` in `.env`).
 
-DOCENT serves plain HTTP; for anything internet-facing put your usual TLS reverse proxy (Caddy, Traefik, nginx) in front and keep `COOKIE_SECURE=true`.
+**2. Point your subdomain at it**
+
+- Add a DNS **A record** for `docent.example.org` → your server's public IP.
+- Put a TLS reverse proxy in front so the subdomain serves HTTPS and forwards
+  to DOCENT's port. [Caddy](https://caddyserver.com) is the least effort — it
+  gets certificates automatically. A complete `Caddyfile`:
+
+  ```caddy
+  docent.example.org {
+      reverse_proxy 127.0.0.1:8080
+  }
+  ```
+
+  <details><summary>nginx equivalent (you provide the TLS certs)</summary>
+
+  ```nginx
+  server {
+      listen 443 ssl;
+      server_name docent.example.org;
+      ssl_certificate     /etc/letsencrypt/live/docent.example.org/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/docent.example.org/privkey.pem;
+      location / {
+          proxy_pass http://127.0.0.1:8080;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  }
+  ```
+  </details>
+
+Keep `COOKIE_SECURE=true` (the default) since the subdomain serves HTTPS. Only
+set it `false` if you're testing over plain `http://`.
+
+**3. Create the admin account**
+
+Open `https://docent.example.org` and register. **The first account registered
+automatically becomes the admin.** To keep the public out, set `INVITE_CODE` in
+`.env` and re-run `./scripts/start.sh`.
+
+### Helper scripts
+
+Run from the repo root:
+
+| Script | What it does |
+|---|---|
+| `./scripts/start.sh` | Build + start everything (creates `.env` with random secrets on first run). Also the way to **deploy updates** after `git pull`. |
+| `./scripts/stop.sh` | Stop the stack (data volumes preserved). |
+| `./scripts/restart.sh` | Restart the running containers (no rebuild). |
+| `./scripts/backup.sh` | Take a database backup right now. |
+| `./scripts/list-backups.sh` | List backups held in the volume. |
+| `./scripts/download-backups.sh [dir]` | Copy all backups onto the host (for off-site storage). |
+| `./scripts/restore.sh <file>` | Restore the DB from a backup (stops/starts the backend around it). |
 
 ## Configuration (`.env`)
 
@@ -33,10 +87,10 @@ DOCENT serves plain HTTP; for anything internet-facing put your usual TLS revers
 | `INVITE_CODE` | empty | If set, registration requires this code; empty = open signup |
 | `ACCESS_TOKEN_DAYS` | `7` | Login session lifetime |
 | `COOKIE_SECURE` | `true` | Set `false` only when serving over plain http |
-| `HTTP_PORT` | `80` | Host port for the web UI |
+| `HTTP_PORT` | `8080` | Host port for the web UI (reverse-proxy forwards here) |
 | `BACKUP_HOUR` | `02` | Hour (UTC, 00–23) of the nightly backup |
 
-Changes to `.env` take effect with `docker compose up -d`.
+Changes to `.env` take effect after `./scripts/start.sh` (or `docker compose up -d`).
 
 ## Backups
 
@@ -48,26 +102,24 @@ The `backup` service dumps the database every night at `BACKUP_HOUR:00` UTC into
 | `weekly/` | 4 | hardlinked each Sunday |
 | `monthly/` | 12 | hardlinked on the 1st |
 
+Use the helper scripts (they wrap the `backup` container):
+
 ```bash
-# Take a manual backup right now
-docker compose exec backup /backup.sh
-
-# List backups
-docker compose exec backup find /backups -name '*.dump' | sort
-
-# Copy a backup off the server (do this regularly — the volume lives on the same host!)
-docker compose cp backup:/backups/daily/docent-2026-07-10.dump .
+./scripts/backup.sh                 # take a backup right now
+./scripts/list-backups.sh           # see what's stored
+./scripts/download-backups.sh ~/docent-backups   # copy off-site (do this regularly!)
 ```
 
 ### Restore
 
 ```bash
-docker compose stop backend                                   # stop writes
-docker compose exec backup /restore.sh daily/docent-2026-07-10.dump
-docker compose start backend
+./scripts/list-backups.sh           # find the dump you want
+./scripts/restore.sh daily/docent-2026-07-10.dump
 ```
 
-Test your restore path periodically: create a throwaway visit, back up, delete it, restore, confirm it's back.
+`restore.sh` asks for confirmation, stops the backend during the restore, and
+restarts it afterward. Test your restore path periodically: create a throwaway
+visit, back up, delete it, restore, confirm it's back.
 
 > **Postgres upgrades:** the `db` and `backup` images are both pinned to `postgres:16` so `pg_dump` always matches the server. Bump them together, and take a final backup on the old version first.
 
@@ -115,7 +167,7 @@ The suite runs against real Postgres (the stats SQL uses `date_trunc` and native
 
 ```
                         ┌─────────────┐
-   browser ── :80 ────► │  frontend    │  nginx: serves the React build,
+   browser ─ :8080 ───► │  frontend    │  nginx: serves the React build,
                         │  (nginx)     │  proxies /api/* to the backend
                         └──────┬──────┘
                                │ /api

@@ -17,7 +17,7 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MantineProvider defaultColorScheme="auto">
+    <MantineProvider defaultColorScheme="dark">
       <Notifications position="top-right" />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
