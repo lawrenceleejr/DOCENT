@@ -72,11 +72,11 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
           }
         }}
       />
-      <VenueCreateModal
+      <VenueFormModal
         opened={creating}
         onClose={() => setCreating(false)}
         initialName={search}
-        onCreated={(venue) => {
+        onSaved={(venue) => {
           queryClient.invalidateQueries({ queryKey: ['venues'] });
           onChange(venue.id);
           setCreating(false);
@@ -86,28 +86,34 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
   );
 }
 
-export function VenueCreateModal({
-  opened,
-  onClose,
-  onCreated,
-  initialName = '',
-}: {
+interface VenueFormModalProps {
   opened: boolean;
   onClose: () => void;
-  onCreated: (venue: Venue) => void;
+  onSaved: (venue: Venue) => void;
+  /** When provided, the modal edits this venue instead of creating a new one. */
+  venue?: Venue;
   initialName?: string;
-}) {
+}
+
+export function VenueFormModal({
+  opened,
+  onClose,
+  onSaved,
+  venue,
+  initialName = '',
+}: VenueFormModalProps) {
+  const editing = venue !== undefined;
   const form = useForm({
     initialValues: {
-      name: initialName,
-      venue_type: 'elementary_school',
-      address: '',
-      city: '',
-      state: '',
-      country: 'USA',
-      latitude: '' as number | '',
-      longitude: '' as number | '',
-      notes: '',
+      name: venue?.name ?? initialName,
+      venue_type: venue?.venue_type ?? 'elementary_school',
+      address: venue?.address ?? '',
+      city: venue?.city ?? '',
+      state: venue?.state ?? '',
+      country: venue?.country ?? 'USA',
+      latitude: (venue?.latitude ?? '') as number | '',
+      longitude: (venue?.longitude ?? '') as number | '',
+      notes: venue?.notes ?? '',
     },
     validate: {
       name: (v) => (v.trim().length > 0 ? null : 'Name is required'),
@@ -115,9 +121,9 @@ export function VenueCreateModal({
     },
   });
 
-  const create = useMutation({
-    mutationFn: (values: typeof form.values) =>
-      api.post<Venue>('/api/venues', {
+  const save = useMutation({
+    mutationFn: (values: typeof form.values) => {
+      const payload = {
         name: values.name.trim(),
         venue_type: values.venue_type,
         address: values.address.trim() || null,
@@ -127,23 +133,27 @@ export function VenueCreateModal({
         latitude: values.latitude === '' ? null : values.latitude,
         longitude: values.longitude === '' ? null : values.longitude,
         notes: values.notes.trim() || null,
-      }),
-    onSuccess: (venue) => {
-      form.reset();
-      onCreated(venue);
+      };
+      return editing
+        ? api.patch<Venue>(`/api/venues/${venue.id}`, payload)
+        : api.post<Venue>('/api/venues', payload);
+    },
+    onSuccess: (saved) => {
+      if (!editing) form.reset();
+      onSaved(saved);
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not create venue',
+        title: editing ? 'Could not save venue' : 'Could not create venue',
         message: e instanceof ApiError ? e.message : 'Unexpected error',
       });
     },
   });
 
   return (
-    <Modal opened={opened} onClose={onClose} title="New venue" size="lg">
-      <form onSubmit={form.onSubmit((values) => create.mutate(values))}>
+    <Modal opened={opened} onClose={onClose} title={editing ? 'Edit venue' : 'New venue'} size="lg">
+      <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
         <Stack>
           <Group grow>
             <TextInput label="Name" placeholder="Lincoln Elementary" {...form.getInputProps('name')} />
@@ -180,8 +190,8 @@ export function VenueCreateModal({
             <Button variant="default" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" loading={create.isPending}>
-              Create venue
+            <Button type="submit" loading={save.isPending}>
+              {editing ? 'Save changes' : 'Create venue'}
             </Button>
           </Group>
         </Stack>

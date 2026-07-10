@@ -127,6 +127,111 @@ def test_venue_detail_counts(client):
     assert detail["last_visit_date"] == "2026-04-05"
 
 
+def test_visit_keyword_search(client):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], title="Liquid nitrogen demos")
+    create_visit(
+        client, venue["id"], title="Coding workshop",
+        description="Taught Python basics",
+    )
+    create_visit(
+        client, venue["id"], title="Career day",
+        reflection="Great turnout, want to bring a telescope next time",
+    )
+
+    assert client.get("/api/visits", params={"q": "nitrogen"}).json()["total"] == 1
+    assert client.get("/api/visits", params={"q": "python"}).json()["total"] == 1
+    assert client.get("/api/visits", params={"q": "telescope"}).json()["total"] == 1
+    assert client.get("/api/visits", params={"q": "nonexistent"}).json()["total"] == 0
+
+
+def test_people_reached_cap(client):
+    register(client)
+    venue = create_venue(client)
+    ok = client.post(
+        "/api/visits",
+        json={
+            "venue_id": venue["id"], "visit_date": "2026-03-14",
+            "event_type": "classroom_visit", "title": "Big event",
+            "people_reached": 100000, "audience_level": "elementary",
+        },
+    )
+    assert ok.status_code == 201
+    too_many = client.post(
+        "/api/visits",
+        json={
+            "venue_id": venue["id"], "visit_date": "2026-03-14",
+            "event_type": "classroom_visit", "title": "Typo event",
+            "people_reached": 100001, "audience_level": "elementary",
+        },
+    )
+    assert too_many.status_code == 422
+
+
+def test_venue_delete(client, make_client):
+    register(client, email="admin@example.com")  # admin
+    creator = make_client()
+    register(creator, email="creator@example.com")
+    stranger = make_client()
+    register(stranger, email="stranger@example.com")
+
+    venue = create_venue(creator, name="Deletable Hall", city="Nowhere")
+
+    # A stranger cannot delete someone else's venue.
+    assert stranger.delete(f"/api/venues/{venue['id']}").status_code == 403
+
+    # A venue with visits cannot be deleted (409).
+    create_visit(creator, venue["id"])
+    blocked = creator.delete(f"/api/venues/{venue['id']}")
+    assert blocked.status_code == 409
+
+    # An empty venue can be deleted by its creator.
+    empty = create_venue(creator, name="Empty Hall", city="Nowhere")
+    assert creator.delete(f"/api/venues/{empty['id']}").status_code == 204
+    assert creator.get(f"/api/venues/{empty['id']}").status_code == 404
+
+
+def test_venue_list_includes_visit_count(client):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"])
+    create_visit(client, venue["id"])
+    empty = create_venue(client, name="Quiet Library", venue_type="library", city="Elsewhere")
+
+    by_id = {v["id"]: v for v in client.get("/api/venues").json()["items"]}
+    assert by_id[venue["id"]]["visit_count"] == 2
+    assert by_id[empty["id"]]["visit_count"] == 0
+
+
+def test_admin_reset_password(client, make_client):
+    register(client, email="admin@example.com")  # admin
+    target = make_client()
+    user_id = register(target, email="forgetful@example.com", password="password123").json()["id"]
+
+    result = client.post(f"/api/admin/users/{user_id}/reset-password")
+    assert result.status_code == 200
+    temp = result.json()["temporary_password"]
+    assert temp
+
+    # Old password no longer works; the temporary one does.
+    assert target.post(
+        "/api/auth/login",
+        json={"email": "forgetful@example.com", "password": "password123"},
+    ).status_code == 401
+    assert target.post(
+        "/api/auth/login",
+        json={"email": "forgetful@example.com", "password": temp},
+    ).status_code == 200
+
+
+def test_non_admin_cannot_reset_password(client, make_client):
+    register(client, email="admin@example.com")
+    other = make_client()
+    uid = register(other, email="other@example.com").json()["id"]
+    assert other.post(f"/api/admin/users/{uid}/reset-password").status_code == 403
+
+
 def test_venue_search(client):
     register(client)
     create_venue(client)

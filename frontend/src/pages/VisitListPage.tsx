@@ -10,7 +10,9 @@ import {
   Switch,
   Table,
   Text,
+  TextInput,
   Title,
+  UnstyledButton,
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useQuery } from '@tanstack/react-query';
@@ -35,12 +37,16 @@ export function VisitListPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [filters, setFilters] = useState<VisitFilters>({});
+  const [q, setQ] = useState('');
   const [mineOnly, setMineOnly] = useState(false);
+  const [sort, setSort] = useState('-visit_date');
   const [page, setPage] = useState(1);
 
   const params = {
     ...filterParams(filters),
+    q: q || undefined,
     author_id: mineOnly ? user?.id : undefined,
+    sort,
     page,
     page_size: PAGE_SIZE,
   };
@@ -55,8 +61,17 @@ export function VisitListPage() {
     setPage(1);
   };
 
+  // Clicking a header toggles between descending and ascending on that column.
+  const toggleSort = (field: string) => {
+    setSort((current) => (current === `-${field}` ? field : `-${field}`));
+    setPage(1);
+  };
+  const sortIndicator = (field: string) =>
+    sort === `-${field}` ? ' ▾' : sort === field ? ' ▴' : '';
+
   const exportHref = `/api/visits/export.csv${buildQuery({
     ...filterParams(filters),
+    q: q || undefined,
     author_id: mineOnly ? user?.id : undefined,
   })}`;
 
@@ -74,6 +89,16 @@ export function VisitListPage() {
 
       <Card withBorder p="md">
         <Group align="flex-end">
+          <TextInput
+            label="Search"
+            placeholder="Title or notes"
+            value={q}
+            onChange={(e) => {
+              setQ(e.currentTarget.value);
+              setPage(1);
+            }}
+            w={200}
+          />
           <DatePickerInput
             label="From"
             placeholder="Any"
@@ -132,13 +157,25 @@ export function VisitListPage() {
         <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Date</Table.Th>
+              <Table.Th>
+                <UnstyledButton fw={700} fz="sm" onClick={() => toggleSort('visit_date')}>
+                  Date{sortIndicator('visit_date')}
+                </UnstyledButton>
+              </Table.Th>
               <Table.Th>Title</Table.Th>
               <Table.Th>Venue</Table.Th>
               <Table.Th>Researcher</Table.Th>
               <Table.Th>Audience</Table.Th>
-              <Table.Th ta="right">People reached</Table.Th>
-              <Table.Th>Rating</Table.Th>
+              <Table.Th ta="right">
+                <UnstyledButton fw={700} fz="sm" onClick={() => toggleSort('people_reached')}>
+                  People reached{sortIndicator('people_reached')}
+                </UnstyledButton>
+              </Table.Th>
+              <Table.Th>
+                <UnstyledButton fw={700} fz="sm" onClick={() => toggleSort('rating')}>
+                  Rating{sortIndicator('rating')}
+                </UnstyledButton>
+              </Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>

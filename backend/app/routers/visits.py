@@ -4,7 +4,7 @@ from datetime import date
 
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentUser, DbSession
@@ -29,6 +29,7 @@ def _filtered_query(
     event_type: EventType | None,
     audience_level: AudienceLevel | None,
     author_id: int | None,
+    q: str | None = None,
 ):
     query = select(Visit).join(Visit.venue)
     if date_from:
@@ -45,6 +46,15 @@ def _filtered_query(
         query = query.where(Visit.audience_level == audience_level)
     if author_id:
         query = query.where(Visit.author_id == author_id)
+    if q:
+        pattern = f"%{q}%"
+        query = query.where(
+            or_(
+                Visit.title.ilike(pattern),
+                Visit.description.ilike(pattern),
+                Visit.reflection.ilike(pattern),
+            )
+        )
     return query
 
 
@@ -81,12 +91,14 @@ def list_visits(
     event_type: EventType | None = None,
     audience_level: AudienceLevel | None = None,
     author_id: int | None = None,
+    q: str | None = None,
     sort: str = "-visit_date",
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=25, ge=1, le=100),
 ):
     query = _filtered_query(
-        date_from, date_to, venue_id, venue_type, event_type, audience_level, author_id
+        date_from, date_to, venue_id, venue_type, event_type, audience_level,
+        author_id, q,
     )
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
     query = _apply_sort(query, sort).options(
@@ -107,10 +119,12 @@ def export_csv(
     event_type: EventType | None = None,
     audience_level: AudienceLevel | None = None,
     author_id: int | None = None,
+    q: str | None = None,
 ):
     query = _apply_sort(
         _filtered_query(
-            date_from, date_to, venue_id, venue_type, event_type, audience_level, author_id
+            date_from, date_to, venue_id, venue_type, event_type, audience_level,
+            author_id, q,
         ),
         "-visit_date",
     ).options(joinedload(Visit.author), joinedload(Visit.venue))

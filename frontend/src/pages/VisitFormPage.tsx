@@ -26,6 +26,8 @@ import {
   AUDIENCE_LEVELS,
   EVENT_TYPES,
   labelize,
+  MAX_PEOPLE_REACHED,
+  PEOPLE_REACHED_CONFIRM_THRESHOLD,
   type Visit,
 } from '../api/types';
 import { VenuePicker } from '../components/VenuePicker';
@@ -86,7 +88,12 @@ export function VisitFormPage() {
       title: (v) => (v.trim().length > 0 ? null : 'Title is required'),
       event_type: (v) => (v ? null : 'Event type is required'),
       audience_level: (v) => (v ? null : 'Audience is required'),
-      people_reached: (v) => (v === '' || v < 0 ? 'How many people did you reach?' : null),
+      people_reached: (v) => {
+        if (v === '' || v < 0) return 'How many people did you reach?';
+        if (v > MAX_PEOPLE_REACHED)
+          return `That seems too large (max ${MAX_PEOPLE_REACHED.toLocaleString()}). Check for a typo.`;
+        return null;
+      },
     },
   });
 
@@ -157,7 +164,20 @@ export function VisitFormPage() {
     <Stack maw={720} mx="auto">
       <Title order={2}>{editing ? 'Edit visit' : 'Log a visit'}</Title>
       <Card withBorder p="lg">
-        <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
+        <form
+          onSubmit={form.onSubmit((values) => {
+            const count = values.people_reached === '' ? 0 : values.people_reached;
+            if (
+              count > PEOPLE_REACHED_CONFIRM_THRESHOLD &&
+              !window.confirm(
+                `You entered ${count.toLocaleString()} people reached. Is that correct?`,
+              )
+            ) {
+              return;
+            }
+            save.mutate(values);
+          })}
+        >
           <Stack>
             <VenuePicker
               value={form.values.venue_id}
@@ -234,6 +254,7 @@ export function VisitFormPage() {
             <TextInput
               label="Additional presenters"
               placeholder="Co-presenter names, comma separated"
+              description="If a colleague already logged this same event, don't re-enter the headcount here — it would double-count people reached in the community totals."
               {...form.getInputProps('additional_presenters')}
             />
             <Checkbox

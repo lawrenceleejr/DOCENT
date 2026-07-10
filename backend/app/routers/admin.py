@@ -1,9 +1,12 @@
+import secrets
+
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
 from app.deps import CurrentAdmin, DbSession
 from app.models import User
-from app.schemas import AdminUserUpdate, UserOut
+from app.schemas import AdminUserUpdate, PasswordResetResult, UserOut
+from app.security import hash_password
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -35,3 +38,19 @@ def update_user(user_id: int, body: AdminUserUpdate, admin: CurrentAdmin, db: Db
     db.commit()
     db.refresh(user)
     return user
+
+
+@router.post("/users/{user_id}/reset-password", response_model=PasswordResetResult)
+def reset_password(user_id: int, _admin: CurrentAdmin, db: DbSession):
+    """Set a random temporary password and return it once for the admin to relay.
+
+    No email server is required; the admin shares the password out of band and
+    the user changes it from their profile after logging in.
+    """
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    temporary_password = secrets.token_urlsafe(9)
+    user.password_hash = hash_password(temporary_password)
+    db.commit()
+    return PasswordResetResult(user_id=user.id, temporary_password=temporary_password)

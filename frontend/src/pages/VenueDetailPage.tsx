@@ -1,6 +1,7 @@
 import {
   Anchor,
   Badge,
+  Button,
   Card,
   Group,
   Stack,
@@ -8,23 +9,46 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { useQuery } from '@tanstack/react-query';
+import { useDisclosure } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { api } from '../api/client';
+import { api, ApiError } from '../api/client';
 import {
   labelize,
   type Paginated,
   type VenueDetail,
   type Visit,
 } from '../api/types';
+import { useAuth } from '../auth/AuthContext';
+import { VenueFormModal } from '../components/VenuePicker';
 
 export function VenueDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [editing, edit] = useDisclosure(false);
 
   const { data: venue } = useQuery({
     queryKey: ['venues', id],
     queryFn: () => api.get<VenueDetail>(`/api/venues/${id}`),
+  });
+
+  const remove = useMutation({
+    mutationFn: () => api.delete(`/api/venues/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['venues'] });
+      notifications.show({ message: 'Venue deleted' });
+      navigate('/venues');
+    },
+    onError: (e) => {
+      notifications.show({
+        color: 'red',
+        title: 'Could not delete venue',
+        message: e instanceof ApiError ? e.message : 'Unexpected error',
+      });
+    },
   });
   const { data: visits } = useQuery({
     queryKey: ['visits', { venue_id: id }],
@@ -37,18 +61,48 @@ export function VenueDetailPage() {
   const address = [venue.address, venue.city, venue.state, venue.country]
     .filter(Boolean)
     .join(', ');
+  const canManage = user && (user.id === venue.created_by_id || user.is_admin);
 
   return (
     <Stack>
-      <div>
-        <Group gap="sm">
-          <Title order={2}>{venue.name}</Title>
-          <Badge variant="light" size="lg">
-            {labelize(venue.venue_type)}
-          </Badge>
-        </Group>
-        <Text c="dimmed">{address || 'No address recorded'}</Text>
-      </div>
+      <Group justify="space-between" align="flex-start">
+        <div>
+          <Group gap="sm">
+            <Title order={2}>{venue.name}</Title>
+            <Badge variant="light" size="lg">
+              {labelize(venue.venue_type)}
+            </Badge>
+          </Group>
+          <Text c="dimmed">{address || 'No address recorded'}</Text>
+        </div>
+        {canManage && (
+          <Group>
+            <Button variant="default" onClick={edit.open}>
+              Edit
+            </Button>
+            <Button
+              color="red"
+              variant="light"
+              loading={remove.isPending}
+              onClick={() => {
+                if (venue.visit_count > 0) {
+                  notifications.show({
+                    color: 'red',
+                    title: 'Cannot delete venue',
+                    message: `This venue has ${venue.visit_count} visit(s). Delete or reassign them first.`,
+                  });
+                  return;
+                }
+                if (window.confirm('Delete this venue? This cannot be undone.')) {
+                  remove.mutate();
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </Group>
+        )}
+      </Group>
 
       <Group>
         <Card withBorder p="md">
@@ -120,6 +174,16 @@ export function VenueDetailPage() {
           </Table.Tbody>
         </Table>
       </Card>
+
+      <VenueFormModal
+        opened={editing}
+        onClose={edit.close}
+        venue={venue}
+        onSaved={() => {
+          queryClient.invalidateQueries({ queryKey: ['venues'] });
+          edit.close();
+        }}
+      />
     </Stack>
   );
 }

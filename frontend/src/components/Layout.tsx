@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   AppShell,
   Container,
   Group,
@@ -6,10 +7,29 @@ import {
   Tabs,
   Text,
   UnstyledButton,
+  useComputedColorScheme,
+  useMantineColorScheme,
 } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+
+function ColorSchemeToggle() {
+  const { setColorScheme } = useMantineColorScheme();
+  const computed = useComputedColorScheme('light', { getInitialValueInEffect: true });
+  const isDark = computed === 'dark';
+  return (
+    <ActionIcon
+      variant="default"
+      size="lg"
+      aria-label="Toggle color scheme"
+      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      onClick={() => setColorScheme(isDark ? 'light' : 'dark')}
+    >
+      {isDark ? '☀' : '☾'}
+    </ActionIcon>
+  );
+}
 
 const TABS = [
   { value: '/', label: 'Visits' },
@@ -48,7 +68,9 @@ export function Layout({ children }: { children: ReactNode }) {
               </Tabs.List>
             </Tabs>
           </Group>
-          <Menu shadow="md" width={200}>
+          <Group gap="sm" wrap="nowrap">
+            <ColorSchemeToggle />
+            <Menu shadow="md" width={200}>
             <Menu.Target>
               <UnstyledButton>
                 <Text size="sm" fw={500}>
@@ -70,6 +92,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
+          </Group>
         </Group>
       </AppShell.Header>
       <AppShell.Main>

@@ -80,6 +80,10 @@ export interface VenueBrief {
   city: string | null;
 }
 
+export interface VenueListItem extends Venue {
+  visit_count: number;
+}
+
 export interface VenueDetail extends Venue {
   visit_count: number;
   last_visit_date: string | null;
@@ -145,3 +149,13 @@ export interface LeaderboardRow {
   visits: number;
   people_reached: number;
 }
+
+export interface PasswordResetResult {
+  user_id: number;
+  temporary_password: string;
+}
+
+// Mirror of the backend's MAX_PEOPLE_REACHED sanity ceiling.
+export const MAX_PEOPLE_REACHED = 100_000;
+// Above this we ask the user to confirm, to catch a stray extra zero.
+export const PEOPLE_REACHED_CONFIRM_THRESHOLD = 2_000;

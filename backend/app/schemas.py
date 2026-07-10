@@ -51,6 +51,11 @@ class AdminUserUpdate(BaseModel):
     is_admin: bool | None = None
 
 
+class PasswordResetResult(BaseModel):
+    user_id: int
+    temporary_password: str
+
+
 # --- Venues ---
 
 class VenueCreate(BaseModel):
@@ -103,16 +108,25 @@ class VenueBrief(BaseModel):
     city: str | None
 
 
+class VenueListItem(VenueOut):
+    visit_count: int
+
+
 class VenueDetail(VenueOut):
     visit_count: int
     last_visit_date: date | None
 
 
 class VenueList(BaseModel):
-    items: list[VenueOut]
+    items: list[VenueListItem]
     total: int
     page: int
     page_size: int
+
+
+# Sanity ceiling for a single outreach event's headcount — catches fat-finger
+# entries (e.g. an extra zero) that would otherwise skew community totals.
+MAX_PEOPLE_REACHED = 100_000
 
 
 # --- Visits ---
@@ -126,7 +140,7 @@ class VisitCreate(BaseModel):
     contact_name: str | None = Field(default=None, max_length=255)
     contact_email: str | None = Field(default=None, max_length=255)
     contact_phone: str | None = Field(default=None, max_length=50)
-    people_reached: int = Field(ge=0)
+    people_reached: int = Field(ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)
@@ -144,7 +158,7 @@ class VisitUpdate(BaseModel):
     contact_name: str | None = Field(default=None, max_length=255)
     contact_email: str | None = Field(default=None, max_length=255)
     contact_phone: str | None = Field(default=None, max_length=50)
-    people_reached: int | None = Field(default=None, ge=0)
+    people_reached: int | None = Field(default=None, ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel | None = None
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)

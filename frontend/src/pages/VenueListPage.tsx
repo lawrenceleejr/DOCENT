@@ -17,8 +17,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
-import { labelize, VENUE_TYPES, type Paginated, type Venue } from '../api/types';
-import { VenueCreateModal } from '../components/VenuePicker';
+import { labelize, VENUE_TYPES, type Paginated, type VenueListItem } from '../api/types';
+import { VenueFormModal } from '../components/VenuePicker';
 
 const PAGE_SIZE = 25;
 
@@ -38,7 +38,7 @@ export function VenueListPage() {
   };
   const { data } = useQuery({
     queryKey: ['venues', 'list', params],
-    queryFn: () => api.get<Paginated<Venue>>('/api/venues', params),
+    queryFn: () => api.get<Paginated<VenueListItem>>('/api/venues', params),
   });
 
   return (
@@ -82,7 +82,7 @@ export function VenueListPage() {
               <Table.Th>Type</Table.Th>
               <Table.Th>City</Table.Th>
               <Table.Th>State</Table.Th>
-              <Table.Th>Country</Table.Th>
+              <Table.Th ta="right">Visits</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -102,7 +102,9 @@ export function VenueListPage() {
                 </Table.Td>
                 <Table.Td>{venue.city ?? '—'}</Table.Td>
                 <Table.Td>{venue.state ?? '—'}</Table.Td>
-                <Table.Td>{venue.country}</Table.Td>
+                <Table.Td ta="right" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {venue.visit_count}
+                </Table.Td>
               </Table.Tr>
             ))}
             {(data?.items.length ?? 0) === 0 && (
@@ -129,10 +131,10 @@ export function VenueListPage() {
         />
       </Group>
 
-      <VenueCreateModal
+      <VenueFormModal
         opened={creating}
         onClose={create.close}
-        onCreated={(venue) => {
+        onSaved={(venue) => {
           queryClient.invalidateQueries({ queryKey: ['venues'] });
           create.close();
           navigate(`/venues/${venue.id}`);
