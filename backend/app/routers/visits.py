@@ -137,7 +137,8 @@ def export_csv(
             [
                 "date", "title", "event_type", "audience_level", "people_reached",
                 "duration_minutes", "rating", "venue", "venue_type", "city", "state",
-                "author", "contact_name", "contact_email", "contact_phone",
+                "author", "host_name", "host_role", "host_relationship",
+                "host_relationship_detail", "host_email", "host_phone", "host_notes",
                 "follow_up_planned", "additional_presenters", "description", "reflection",
             ]
         )
@@ -147,8 +148,10 @@ def export_csv(
                     v.visit_date.isoformat(), v.title, v.event_type.value,
                     v.audience_level.value, v.people_reached, v.duration_minutes,
                     v.rating, v.venue.name, v.venue.venue_type.value, v.venue.city,
-                    v.venue.state, v.author.name, v.contact_name, v.contact_email,
-                    v.contact_phone, v.follow_up_planned, v.additional_presenters,
+                    v.venue.state, v.author.name, v.contact_name, v.host_role,
+                    v.host_relationship.value if v.host_relationship else None,
+                    v.host_relationship_detail, v.contact_email, v.contact_phone,
+                    v.host_notes, v.follow_up_planned, v.additional_presenters,
                     v.description, v.reflection,
                 ]
             )

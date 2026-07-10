@@ -23,6 +23,20 @@ export const EVENT_TYPES = [
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
+export const HOST_RELATIONSHIPS = [
+  'teacher_faculty',
+  'administrator',
+  'counselor',
+  'alumnus',
+  'former_student',
+  'collaborator',
+  'community_partner',
+  'family_friend',
+  'cold_outreach',
+  'other',
+] as const;
+export type HostRelationship = (typeof HOST_RELATIONSHIPS)[number];
+
 export const AUDIENCE_LEVELS = [
   'elementary',
   'middle_school',
@@ -100,6 +114,10 @@ export interface Visit {
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  host_role: string | null;
+  host_relationship: HostRelationship | null;
+  host_relationship_detail: string | null;
+  host_notes: string | null;
   people_reached: number;
   audience_level: AudienceLevel;
   duration_minutes: number | null;

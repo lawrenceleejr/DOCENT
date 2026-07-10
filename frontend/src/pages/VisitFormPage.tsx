@@ -25,6 +25,7 @@ import { api, ApiError } from '../api/client';
 import {
   AUDIENCE_LEVELS,
   EVENT_TYPES,
+  HOST_RELATIONSHIPS,
   labelize,
   MAX_PEOPLE_REACHED,
   PEOPLE_REACHED_CONFIRM_THRESHOLD,
@@ -43,8 +44,12 @@ interface FormValues {
   people_reached: number | '';
   duration_minutes: number | '';
   contact_name: string;
+  host_role: string;
+  host_relationship: string;
+  host_relationship_detail: string;
   contact_email: string;
   contact_phone: string;
+  host_notes: string;
   rating: number;
   reflection: string;
   follow_up_planned: boolean;
@@ -56,7 +61,7 @@ export function VisitFormPage() {
   const editing = id !== undefined;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [contactOpen, contact] = useDisclosure(false);
+  const [hostOpen, host] = useDisclosure(false);
 
   const { data: existing } = useQuery({
     queryKey: ['visits', id],
@@ -75,8 +80,12 @@ export function VisitFormPage() {
       people_reached: '',
       duration_minutes: '',
       contact_name: '',
+      host_role: '',
+      host_relationship: '',
+      host_relationship_detail: '',
       contact_email: '',
       contact_phone: '',
+      host_notes: '',
       rating: 0,
       reflection: '',
       follow_up_planned: false,
@@ -109,15 +118,26 @@ export function VisitFormPage() {
         people_reached: existing.people_reached,
         duration_minutes: existing.duration_minutes ?? '',
         contact_name: existing.contact_name ?? '',
+        host_role: existing.host_role ?? '',
+        host_relationship: existing.host_relationship ?? '',
+        host_relationship_detail: existing.host_relationship_detail ?? '',
         contact_email: existing.contact_email ?? '',
         contact_phone: existing.contact_phone ?? '',
+        host_notes: existing.host_notes ?? '',
         rating: existing.rating ?? 0,
         reflection: existing.reflection ?? '',
         follow_up_planned: existing.follow_up_planned,
         additional_presenters: existing.additional_presenters ?? '',
       });
-      if (existing.contact_name || existing.contact_email || existing.contact_phone) {
-        contact.open();
+      if (
+        existing.contact_name ||
+        existing.contact_email ||
+        existing.contact_phone ||
+        existing.host_role ||
+        existing.host_relationship ||
+        existing.host_notes
+      ) {
+        host.open();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,8 +155,12 @@ export function VisitFormPage() {
         people_reached: values.people_reached === '' ? 0 : values.people_reached,
         duration_minutes: values.duration_minutes === '' ? null : values.duration_minutes,
         contact_name: values.contact_name.trim() || null,
+        host_role: values.host_role.trim() || null,
+        host_relationship: values.host_relationship || null,
+        host_relationship_detail: values.host_relationship_detail.trim() || null,
         contact_email: values.contact_email.trim() || null,
         contact_phone: values.contact_phone.trim() || null,
+        host_notes: values.host_notes.trim() || null,
         rating: values.rating || null,
         reflection: values.reflection.trim() || null,
         follow_up_planned: values.follow_up_planned,
@@ -230,15 +254,49 @@ export function VisitFormPage() {
               />
             </Group>
 
-            <UnstyledButton onClick={contact.toggle} c="blue" fz="sm">
-              {contactOpen ? '▾' : '▸'} Venue contact (optional)
+            <UnstyledButton onClick={host.toggle} c="blue" fz="sm">
+              {hostOpen ? '▾' : '▸'} Host (optional)
             </UnstyledButton>
-            <Collapse in={contactOpen}>
-              <Group grow>
-                <TextInput label="Contact name" placeholder="Ms. Rivera" {...form.getInputProps('contact_name')} />
-                <TextInput label="Contact email" {...form.getInputProps('contact_email')} />
-                <TextInput label="Contact phone" {...form.getInputProps('contact_phone')} />
-              </Group>
+            <Collapse in={hostOpen}>
+              <Stack gap="sm">
+                <Group grow>
+                  <TextInput
+                    label="Host name"
+                    placeholder="Ms. Rivera"
+                    {...form.getInputProps('contact_name')}
+                  />
+                  <TextInput
+                    label="Role / title"
+                    placeholder="8th-grade science teacher"
+                    {...form.getInputProps('host_role')}
+                  />
+                </Group>
+                <Group grow align="flex-start">
+                  <Select
+                    label="Relationship"
+                    placeholder="How do you know them?"
+                    clearable
+                    data={HOST_RELATIONSHIPS.map((r) => ({ value: r, label: labelize(r) }))}
+                    {...form.getInputProps('host_relationship')}
+                  />
+                  <TextInput
+                    label="Relationship detail"
+                    placeholder="e.g. former grad student, met at AAAS"
+                    {...form.getInputProps('host_relationship_detail')}
+                  />
+                </Group>
+                <Group grow>
+                  <TextInput label="Email" {...form.getInputProps('contact_email')} />
+                  <TextInput label="Phone" {...form.getInputProps('contact_phone')} />
+                </Group>
+                <Textarea
+                  label="Host notes"
+                  placeholder="Context on the host or the relationship — how the connection started, follow-up ideas…"
+                  autosize
+                  minRows={2}
+                  {...form.getInputProps('host_notes')}
+                />
+              </Stack>
             </Collapse>
 
             <Input.Wrapper label="How did it go?">

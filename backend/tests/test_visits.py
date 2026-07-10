@@ -127,6 +127,58 @@ def test_venue_detail_counts(client):
     assert detail["last_visit_date"] == "2026-04-05"
 
 
+def test_host_fields_roundtrip(client):
+    register(client)
+    venue = create_venue(client)
+    visit = create_visit(
+        client,
+        venue["id"],
+        contact_name="Dr. Patel",
+        host_role="STEM coordinator",
+        host_relationship="former_student",
+        host_relationship_detail="did her PhD in our group",
+        contact_email="patel@school.example",
+        host_notes="Met at the 2024 outreach fair; keen on annual visits.",
+    )
+    assert visit["host_role"] == "STEM coordinator"
+    assert visit["host_relationship"] == "former_student"
+    assert visit["host_relationship_detail"] == "did her PhD in our group"
+    assert visit["host_notes"].startswith("Met at the 2024")
+
+    fetched = client.get(f"/api/visits/{visit['id']}").json()
+    assert fetched["contact_name"] == "Dr. Patel"
+    assert fetched["host_relationship"] == "former_student"
+
+    # Invalid relationship value is rejected.
+    bad = client.post(
+        "/api/visits",
+        json={
+            "venue_id": venue["id"], "visit_date": "2026-03-14",
+            "event_type": "classroom_visit", "title": "Bad host",
+            "people_reached": 10, "audience_level": "elementary",
+            "host_relationship": "buddy",
+        },
+    )
+    assert bad.status_code == 422
+
+
+def test_host_relationship_breakdown(client):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], host_relationship="teacher_faculty")
+    create_visit(client, venue["id"], host_relationship="teacher_faculty")
+    create_visit(client, venue["id"], host_relationship="alumnus")
+    create_visit(client, venue["id"])  # no relationship -> excluded
+
+    rows = {
+        r["key"]: r["visits"]
+        for r in client.get(
+            "/api/stats/breakdown", params={"by": "host_relationship"}
+        ).json()
+    }
+    assert rows == {"teacher_faculty": 2, "alumnus": 1}
+
+
 def test_visit_keyword_search(client):
     register(client)
     venue = create_venue(client)

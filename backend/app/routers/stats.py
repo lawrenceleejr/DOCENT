@@ -23,6 +23,7 @@ class BreakdownBy(str, Enum):
     venue_type = "venue_type"
     event_type = "event_type"
     audience_level = "audience_level"
+    host_relationship = "host_relationship"
 
 
 def _date_filtered(query: Select, date_from: date | None, date_to: date | None) -> Select:
@@ -98,16 +99,20 @@ def breakdown(
     date_from: date | None = None,
     date_to: date | None = None,
 ):
+    columns = {
+        BreakdownBy.venue_type: Venue.venue_type,
+        BreakdownBy.event_type: Visit.event_type,
+        BreakdownBy.audience_level: Visit.audience_level,
+        BreakdownBy.host_relationship: Visit.host_relationship,
+    }
+    key = columns[by]
+    query = select(
+        key, func.count(Visit.id), func.coalesce(func.sum(Visit.people_reached), 0)
+    )
     if by is BreakdownBy.venue_type:
-        key = Venue.venue_type
-        query = select(
-            key, func.count(Visit.id), func.coalesce(func.sum(Visit.people_reached), 0)
-        ).join(Visit.venue)
-    else:
-        key = Visit.event_type if by is BreakdownBy.event_type else Visit.audience_level
-        query = select(
-            key, func.count(Visit.id), func.coalesce(func.sum(Visit.people_reached), 0)
-        )
+        query = query.join(Visit.venue)
+    # host_relationship is optional on a visit — omit the "unspecified" bucket.
+    query = query.where(key.isnot(None))
     rows = db.execute(
         _date_filtered(query, date_from, date_to)
         .group_by(key)

@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.models import AudienceLevel, EventType, VenueType
+from app.models import AudienceLevel, EventType, HostRelationship, VenueType
 
 
 # --- Auth / users ---
@@ -140,6 +140,10 @@ class VisitCreate(BaseModel):
     contact_name: str | None = Field(default=None, max_length=255)
     contact_email: str | None = Field(default=None, max_length=255)
     contact_phone: str | None = Field(default=None, max_length=50)
+    host_role: str | None = Field(default=None, max_length=255)
+    host_relationship: HostRelationship | None = None
+    host_relationship_detail: str | None = Field(default=None, max_length=500)
+    host_notes: str | None = None
     people_reached: int = Field(ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel
     duration_minutes: int | None = Field(default=None, ge=0)
@@ -158,6 +162,10 @@ class VisitUpdate(BaseModel):
     contact_name: str | None = Field(default=None, max_length=255)
     contact_email: str | None = Field(default=None, max_length=255)
     contact_phone: str | None = Field(default=None, max_length=50)
+    host_role: str | None = Field(default=None, max_length=255)
+    host_relationship: HostRelationship | None = None
+    host_relationship_detail: str | None = Field(default=None, max_length=500)
+    host_notes: str | None = None
     people_reached: int | None = Field(default=None, ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel | None = None
     duration_minutes: int | None = Field(default=None, ge=0)
@@ -180,6 +188,10 @@ class VisitOut(BaseModel):
     contact_name: str | None
     contact_email: str | None
     contact_phone: str | None
+    host_role: str | None
+    host_relationship: HostRelationship | None
+    host_relationship_detail: str | None
+    host_notes: str | None
     people_reached: int
     audience_level: AudienceLevel
     duration_minutes: int | None

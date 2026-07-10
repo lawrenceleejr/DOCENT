@@ -122,18 +122,40 @@ export function VisitDetailPage() {
           {visit.additional_presenters && (
             <Field label="Additional presenters">{visit.additional_presenters}</Field>
           )}
-          {(visit.contact_name || visit.contact_email || visit.contact_phone) && (
+          {(visit.contact_name ||
+            visit.contact_email ||
+            visit.contact_phone ||
+            visit.host_role ||
+            visit.host_relationship ||
+            visit.host_relationship_detail ||
+            visit.host_notes) && (
             <>
-              <Divider label="Venue contact" labelPosition="left" />
+              <Divider label="Host" labelPosition="left" />
               <Group grow>
                 {visit.contact_name && <Field label="Name">{visit.contact_name}</Field>}
-                {visit.contact_email && (
-                  <Field label="Email">
-                    <Anchor href={`mailto:${visit.contact_email}`}>{visit.contact_email}</Anchor>
+                {visit.host_role && <Field label="Role / title">{visit.host_role}</Field>}
+                {(visit.host_relationship || visit.host_relationship_detail) && (
+                  <Field label="Relationship">
+                    {[
+                      visit.host_relationship ? labelize(visit.host_relationship) : null,
+                      visit.host_relationship_detail,
+                    ]
+                      .filter(Boolean)
+                      .join(' — ')}
                   </Field>
                 )}
-                {visit.contact_phone && <Field label="Phone">{visit.contact_phone}</Field>}
               </Group>
+              {(visit.contact_email || visit.contact_phone) && (
+                <Group grow>
+                  {visit.contact_email && (
+                    <Field label="Email">
+                      <Anchor href={`mailto:${visit.contact_email}`}>{visit.contact_email}</Anchor>
+                    </Field>
+                  )}
+                  {visit.contact_phone && <Field label="Phone">{visit.contact_phone}</Field>}
+                </Group>
+              )}
+              {visit.host_notes && <Field label="Host notes">{visit.host_notes}</Field>}
             </>
           )}
         </Stack>

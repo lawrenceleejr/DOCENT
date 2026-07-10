@@ -55,6 +55,19 @@ class AudienceLevel(str, enum.Enum):
     mixed = "mixed"
 
 
+class HostRelationship(str, enum.Enum):
+    teacher_faculty = "teacher_faculty"
+    administrator = "administrator"
+    counselor = "counselor"
+    alumnus = "alumnus"
+    former_student = "former_student"
+    collaborator = "collaborator"
+    community_partner = "community_partner"
+    family_friend = "family_friend"
+    cold_outreach = "cold_outreach"
+    other = "other"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -110,9 +123,18 @@ class Visit(Base):
     event_type: Mapped[EventType] = mapped_column(Enum(EventType, name="event_type"))
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text)
+    # Host: the person who hosted/invited the visit at the venue. The
+    # contact_* columns hold the host's contact details (kept from the original
+    # "venue contact" fields so existing data is preserved).
     contact_name: Mapped[str | None] = mapped_column(String(255))
     contact_email: Mapped[str | None] = mapped_column(String(255))
     contact_phone: Mapped[str | None] = mapped_column(String(50))
+    host_role: Mapped[str | None] = mapped_column(String(255))
+    host_relationship: Mapped[HostRelationship | None] = mapped_column(
+        Enum(HostRelationship, name="host_relationship")
+    )
+    host_relationship_detail: Mapped[str | None] = mapped_column(String(500))
+    host_notes: Mapped[str | None] = mapped_column(Text)
     people_reached: Mapped[int] = mapped_column(Integer)
     audience_level: Mapped[AudienceLevel] = mapped_column(
         Enum(AudienceLevel, name="audience_level")
