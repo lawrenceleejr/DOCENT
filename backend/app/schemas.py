@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, time
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -8,6 +8,7 @@ from app.models import (
     HostRelationship,
     InstitutionType,
     VenueType,
+    VisitStatus,
 )
 
 
@@ -141,7 +142,9 @@ MAX_PEOPLE_REACHED = 100_000
 
 class VisitCreate(BaseModel):
     venue_id: int
+    status: VisitStatus = VisitStatus.completed
     visit_date: date
+    start_time: time | None = None
     event_type: EventType
     title: str = Field(min_length=1, max_length=255)
     description: str | None = None
@@ -152,7 +155,8 @@ class VisitCreate(BaseModel):
     host_relationship: HostRelationship | None = None
     host_relationship_detail: str | None = Field(default=None, max_length=500)
     host_notes: str | None = None
-    people_reached: int = Field(ge=0, le=MAX_PEOPLE_REACHED)
+    # Optional so a *planned* event can be scheduled before attendance is known.
+    people_reached: int = Field(default=0, ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)
@@ -163,7 +167,9 @@ class VisitCreate(BaseModel):
 
 class VisitUpdate(BaseModel):
     venue_id: int | None = None
+    status: VisitStatus | None = None
     visit_date: date | None = None
+    start_time: time | None = None
     event_type: EventType | None = None
     title: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = None
@@ -189,7 +195,9 @@ class VisitOut(BaseModel):
     id: int
     author: UserBrief
     venue: VenueBrief
+    status: VisitStatus
     visit_date: date
+    start_time: time | None
     event_type: EventType
     title: str
     description: str | None

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Query
 from sqlalchemy import Integer, Select, cast, func, select
 
 from app.deps import CurrentUser, DbSession
-from app.models import User, Venue, Visit
+from app.models import User, Venue, Visit, VisitStatus
 from app.schemas import (
     BreakdownRow,
     LeaderboardRow,
@@ -27,6 +27,9 @@ class BreakdownBy(str, Enum):
 
 
 def _date_filtered(query: Select, date_from: date | None, date_to: date | None) -> Select:
+    # The dashboard reflects outreach that actually happened — planned/future
+    # events are excluded until they're marked completed.
+    query = query.where(Visit.status == VisitStatus.completed)
     if date_from:
         query = query.where(Visit.visit_date >= date_from)
     if date_to:

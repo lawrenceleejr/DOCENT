@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import func, select
 
 from app.deps import CurrentUser, DbSession
-from app.models import Institution, InstitutionType, Venue, Visit
+from app.models import Institution, InstitutionType, Venue, Visit, VisitStatus
 from app.schemas import InstitutionDetail, InstitutionPoint, VenuePoint
 
 router = APIRouter(prefix="/api", tags=["map"])
@@ -37,11 +37,16 @@ def map_institutions(
     types: str | None = Query(default=None, description="comma-separated institution types"),
     status: CoverageStatus = CoverageStatus.all,
 ):
+    # Only COMPLETED visits count as coverage; the status lives in the join
+    # ON-clause so unmatched institutions stay gaps (a WHERE would drop them).
     visit_count = func.count(Visit.id).label("visit_count")
     query = (
         select(Institution, visit_count)
         .outerjoin(Venue, Venue.institution_id == Institution.id)
-        .outerjoin(Visit, Visit.venue_id == Venue.id)
+        .outerjoin(
+            Visit,
+            (Visit.venue_id == Venue.id) & (Visit.status == VisitStatus.completed),
+        )
         .group_by(Institution.id)
         .limit(MAX_POINTS)
     )
@@ -86,7 +91,10 @@ def map_venues(
     visit_count = func.count(Visit.id).label("visit_count")
     query = (
         select(Venue, visit_count)
-        .outerjoin(Visit, Visit.venue_id == Venue.id)
+        .outerjoin(
+            Visit,
+            (Visit.venue_id == Venue.id) & (Visit.status == VisitStatus.completed),
+        )
         .where(Venue.latitude.isnot(None), Venue.longitude.isnot(None))
         .group_by(Venue.id)
         .limit(MAX_POINTS)

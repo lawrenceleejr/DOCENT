@@ -1,5 +1,5 @@
 import enum
-from datetime import date, datetime
+from datetime import date, datetime, time
 
 from sqlalchemy import (
     Boolean,
@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    Time,
     UniqueConstraint,
     func,
 )
@@ -62,6 +63,11 @@ class InstitutionType(str, enum.Enum):
     museum = "museum"
     library = "library"
     other = "other"
+
+
+class VisitStatus(str, enum.Enum):
+    planned = "planned"
+    completed = "completed"
 
 
 class HostRelationship(str, enum.Enum):
@@ -169,7 +175,15 @@ class Visit(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     venue_id: Mapped[int] = mapped_column(ForeignKey("venues.id"), index=True)
+    # planned = a scheduled future event; completed = an outreach that happened.
+    # Only completed visits count toward stats and map coverage.
+    status: Mapped[VisitStatus] = mapped_column(
+        Enum(VisitStatus, name="visit_status"),
+        server_default=VisitStatus.completed.value,
+        index=True,
+    )
     visit_date: Mapped[date] = mapped_column(Date, index=True)
+    start_time: Mapped[time | None] = mapped_column(Time)
     event_type: Mapped[EventType] = mapped_column(Enum(EventType, name="event_type"))
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text)
