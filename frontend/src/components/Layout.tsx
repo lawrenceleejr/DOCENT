@@ -1,0 +1,80 @@
+import {
+  AppShell,
+  Container,
+  Group,
+  Menu,
+  Tabs,
+  Text,
+  UnstyledButton,
+} from '@mantine/core';
+import type { ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+
+const TABS = [
+  { value: '/', label: 'Visits' },
+  { value: '/venues', label: 'Venues' },
+  { value: '/analysis', label: 'Analysis' },
+];
+
+export function Layout({ children }: { children: ReactNode }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const tabs = [...TABS, ...(user?.is_admin ? [{ value: '/admin', label: 'Admin' }] : [])];
+  const active =
+    tabs
+      .filter((t) => t.value !== '/')
+      .find((t) => location.pathname.startsWith(t.value))?.value ?? '/';
+
+  return (
+    <AppShell header={{ height: 56 }} padding="md">
+      <AppShell.Header>
+        <Group h="100%" px="md" justify="space-between" wrap="nowrap">
+          <Group gap="xl" wrap="nowrap">
+            <UnstyledButton onClick={() => navigate('/')}>
+              <Text fw={800} size="lg">
+                DOCENT
+              </Text>
+            </UnstyledButton>
+            <Tabs value={active} onChange={(value) => value && navigate(value)}>
+              <Tabs.List>
+                {tabs.map((tab) => (
+                  <Tabs.Tab key={tab.value} value={tab.value}>
+                    {tab.label}
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs>
+          </Group>
+          <Menu shadow="md" width={200}>
+            <Menu.Target>
+              <UnstyledButton>
+                <Text size="sm" fw={500}>
+                  {user?.name} ▾
+                </Text>
+              </UnstyledButton>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item onClick={() => navigate('/profile')}>Profile</Menu.Item>
+              <Menu.Divider />
+              <Menu.Item
+                color="red"
+                onClick={async () => {
+                  await logout();
+                  navigate('/login');
+                }}
+              >
+                Log out
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </Group>
+      </AppShell.Header>
+      <AppShell.Main>
+        <Container size="xl">{children}</Container>
+      </AppShell.Main>
+    </AppShell>
+  );
+}
