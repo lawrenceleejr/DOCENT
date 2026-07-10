@@ -2,7 +2,13 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.models import AudienceLevel, EventType, HostRelationship, VenueType
+from app.models import (
+    AudienceLevel,
+    EventType,
+    HostRelationship,
+    InstitutionType,
+    VenueType,
+)
 
 
 # --- Auth / users ---
@@ -68,6 +74,7 @@ class VenueCreate(BaseModel):
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
     notes: str | None = None
+    institution_id: int | None = None
 
 
 class VenueUpdate(BaseModel):
@@ -96,6 +103,7 @@ class VenueOut(BaseModel):
     longitude: float | None
     notes: str | None
     created_by_id: int | None
+    institution_id: int | None
     created_at: datetime
 
 
@@ -242,3 +250,44 @@ class LeaderboardRow(BaseModel):
     user: UserBrief
     visits: int
     people_reached: int
+
+
+# --- Map / institutions ---
+
+class InstitutionPoint(BaseModel):
+    id: int
+    name: str
+    institution_type: InstitutionType
+    latitude: float
+    longitude: float
+    city: str | None
+    covered: bool
+    visit_count: int
+
+
+class InstitutionDetail(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    institution_type: InstitutionType
+    latitude: float
+    longitude: float
+    address: str | None
+    city: str | None
+    state: str | None
+    country: str | None
+    website: str | None
+    phone: str | None
+    region: str | None
+
+
+class VenuePoint(BaseModel):
+    id: int
+    name: str
+    venue_type: VenueType
+    latitude: float
+    longitude: float
+    city: str | None
+    visit_count: int
+    institution_id: int | None

@@ -89,6 +89,7 @@ Run from the repo root:
 | `COOKIE_SECURE` | `true` | Set `false` only when serving over plain http |
 | `HTTP_PORT` | `8080` | Host port for the web UI (reverse-proxy forwards here) |
 | `BACKUP_HOUR` | `02` | Hour (UTC, 00–23) of the nightly backup |
+| `OVERPASS_URL` | overpass-api.de | OpenStreetMap Overpass endpoint used by the institution importer |
 
 Changes to `.env` take effect after `./scripts/start.sh` (or `docker compose up -d`).
 
@@ -122,6 +123,37 @@ restarts it afterward. Test your restore path periodically: create a throwaway
 visit, back up, delete it, restore, confirm it's back.
 
 > **Postgres upgrades:** the `db` and `backup` images are both pinned to `postgres:16` so `pg_dump` always matches the server. Bump them together, and take a final backup on the old version first.
+
+## Map & coverage (finding gaps)
+
+The **Map** tab plots your outreach on an OpenStreetMap base layer so you can see
+which schools/colleges/museums/libraries in a region you have — and haven't —
+reached. Institutions come from a catalog you import from OpenStreetMap; each is
+shown as a **gap** (orange) until a visit is logged against it, then **reached**
+(green). Your own visited venues show in blue.
+
+**Populate the catalog** (admin, one-time per region; safe to re-run to refresh):
+
+```bash
+./scripts/import-institutions.sh "Tennessee"
+# choose types + link any venues you already logged, by name+city:
+./scripts/import-institutions.sh "Tennessee" school,college,museum,library --link-existing
+```
+
+`<region>` is any OpenStreetMap admin area name (a US state, or another
+`admin_level=4` area). Types: `school, college, university, museum, library`
+(default omits `university`). The importer upserts by OSM id, so re-running
+updates in place; add `--replace-region` to prune places that have closed.
+
+From the map, clicking a gap's **"Log a visit here"** creates a venue linked to
+that institution and opens a pre-filled visit form — so logging the visit flips
+the marker to reached. The venue picker on the visit form also searches the
+catalog ("… · from catalog") and fills in coordinates automatically.
+
+> Map tiles load from `tile.openstreetmap.org` in the browser (fine for a small
+> community — mind the [OSM tile usage policy](https://operations.osmfoundation.org/policies/tiles/);
+> point at your own tile server for heavy use). Behind a TLS-inspecting proxy,
+> set `REQUESTS_CA_BUNDLE` for the backend so the importer trusts your CA.
 
 ## Development
 

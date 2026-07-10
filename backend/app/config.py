@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     invite_code: str = ""
     access_token_days: int = 7
     cookie_secure: bool = True
+    overpass_url: str = "https://overpass-api.de/api/interpreter"
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

@@ -173,6 +173,81 @@ export interface PasswordResetResult {
   temporary_password: string;
 }
 
+export const INSTITUTION_TYPES = [
+  'school',
+  'college',
+  'university',
+  'museum',
+  'library',
+  'other',
+] as const;
+export type InstitutionType = (typeof INSTITUTION_TYPES)[number];
+
+export interface InstitutionPoint {
+  id: number;
+  name: string;
+  institution_type: InstitutionType;
+  latitude: number;
+  longitude: number;
+  city: string | null;
+  covered: boolean;
+  visit_count: number;
+}
+
+export interface InstitutionDetail {
+  id: number;
+  name: string;
+  institution_type: InstitutionType;
+  latitude: number;
+  longitude: number;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  website: string | null;
+  phone: string | null;
+  region: string | null;
+}
+
+export interface VenuePoint {
+  id: number;
+  name: string;
+  venue_type: VenueType;
+  latitude: number;
+  longitude: number;
+  city: string | null;
+  visit_count: number;
+  institution_id: number | null;
+}
+
+// Best-effort mapping from a catalog institution to venue-create defaults.
+// OSM can't tell elementary/middle/high apart, so we guess K-12 grade from the
+// name and leave the rest for the user to confirm in the form.
+export function institutionVenueType(inst: {
+  institution_type: InstitutionType;
+  name: string;
+}): VenueType {
+  switch (inst.institution_type) {
+    case 'college':
+      return 'community_college';
+    case 'university':
+      return 'university';
+    case 'museum':
+      return 'museum';
+    case 'library':
+      return 'library';
+    case 'school': {
+      const n = inst.name.toLowerCase();
+      if (/\b(elementary|primary)\b/.test(n)) return 'elementary_school';
+      if (/\b(middle|junior|intermediate|jr)\b/.test(n)) return 'middle_school';
+      if (/\b(high|senior|secondary)\b/.test(n)) return 'high_school';
+      return 'other';
+    }
+    default:
+      return 'other';
+  }
+}
+
 // Mirror of the backend's MAX_PEOPLE_REACHED sanity ceiling.
 export const MAX_PEOPLE_REACHED = 100_000;
 // Above this we ask the user to confirm, to catch a stray extra zero.

@@ -5,7 +5,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 
 from app.deps import CurrentUser, DbSession
-from app.models import Venue, VenueType, Visit
+from app.models import Institution, Venue, VenueType, Visit
 from app.schemas import (
     VenueCreate,
     VenueDetail,
@@ -56,6 +56,10 @@ def list_venues(
 
 @router.post("", response_model=VenueOut, status_code=status.HTTP_201_CREATED)
 def create_venue(body: VenueCreate, user: CurrentUser, db: DbSession):
+    if body.institution_id is not None and not db.get(Institution, body.institution_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found"
+        )
     venue = Venue(**body.model_dump(), created_by_id=user.id)
     db.add(venue)
     try:

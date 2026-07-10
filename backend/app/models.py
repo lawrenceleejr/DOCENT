@@ -55,6 +55,15 @@ class AudienceLevel(str, enum.Enum):
     mixed = "mixed"
 
 
+class InstitutionType(str, enum.Enum):
+    school = "school"
+    college = "college"
+    university = "university"
+    museum = "museum"
+    library = "library"
+    other = "other"
+
+
 class HostRelationship(str, enum.Enum):
     teacher_faculty = "teacher_faculty"
     administrator = "administrator"
@@ -102,11 +111,52 @@ class Venue(Base):
     created_by_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL")
     )
+    # Optional link to a catalog institution (set when created from the map/catalog).
+    institution_id: Mapped[int | None] = mapped_column(
+        ForeignKey("institutions.id", ondelete="SET NULL"), index=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
 
     visits: Mapped[list["Visit"]] = relationship(back_populates="venue")
+    institution: Mapped["Institution | None"] = relationship(back_populates="venues")
+
+
+class Institution(Base):
+    """Reference catalog of educational institutions (imported from OpenStreetMap).
+
+    These are potential outreach targets. A venue that has been visited can link
+    to one via Venue.institution_id; institutions with no visited venue are the
+    coverage "gaps" shown on the map.
+    """
+
+    __tablename__ = "institutions"
+    __table_args__ = (
+        UniqueConstraint("source", "external_id", name="uq_institution_source_extid"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    source: Mapped[str] = mapped_column(String(50), default="osm")
+    external_id: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(255), index=True)
+    institution_type: Mapped[InstitutionType] = mapped_column(
+        Enum(InstitutionType, name="institution_type")
+    )
+    latitude: Mapped[float] = mapped_column(Float, index=True)
+    longitude: Mapped[float] = mapped_column(Float, index=True)
+    address: Mapped[str | None] = mapped_column(String(255))
+    city: Mapped[str | None] = mapped_column(String(120), index=True)
+    state: Mapped[str | None] = mapped_column(String(120))
+    country: Mapped[str | None] = mapped_column(String(120))
+    website: Mapped[str | None] = mapped_column(String(500))
+    phone: Mapped[str | None] = mapped_column(String(50))
+    region: Mapped[str | None] = mapped_column(String(120), index=True)
+    imported_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    venues: Mapped[list["Venue"]] = relationship(back_populates="institution")
 
 
 class Visit(Base):

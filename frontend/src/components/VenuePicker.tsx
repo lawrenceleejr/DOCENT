@@ -13,9 +13,17 @@ import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { api, ApiError } from '../api/client';
-import { labelize, VENUE_TYPES, type Paginated, type Venue } from '../api/types';
+import {
+  institutionVenueType,
+  labelize,
+  VENUE_TYPES,
+  type InstitutionDetail,
+  type Paginated,
+  type Venue,
+} from '../api/types';
 
 const CREATE_OPTION = '__create__';
+const CATALOG_PREFIX = 'inst:';
 
 interface VenuePickerProps {
   value: number | null;
@@ -26,11 +34,19 @@ interface VenuePickerProps {
 export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
   const [search, setSearch] = useState('');
   const [creating, setCreating] = useState(false);
+  const [prefill, setPrefill] = useState<VenuePrefill | undefined>();
   const queryClient = useQueryClient();
 
   const { data } = useQuery({
     queryKey: ['venues', 'picker', search],
     queryFn: () => api.get<Paginated<Venue>>('/api/venues', { q: search, page_size: 20 }),
+  });
+
+  // Also search the catalog so a visit can start from a not-yet-visited institution.
+  const { data: institutions } = useQuery({
+    queryKey: ['institutions', 'picker', search],
+    queryFn: () => api.get<InstitutionDetail[]>('/api/institutions', { q: search, limit: 8 }),
+    enabled: search.trim().length >= 2,
   });
 
   // Keep the currently selected venue resolvable even when it doesn't match the search.
@@ -44,12 +60,39 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
     const venues = data?.items ?? [];
     const byId = new Map(venues.map((v) => [v.id, v]));
     if (selected && !byId.has(selected.id)) byId.set(selected.id, selected);
-    const opts = [...byId.values()].map((v) => ({
+    const venueOpts = [...byId.values()].map((v) => ({
       value: String(v.id),
       label: `${v.name}${v.city ? ` — ${v.city}` : ''} (${labelize(v.venue_type)})`,
     }));
-    return [...opts, { value: CREATE_OPTION, label: '+ Create new venue…' }];
-  }, [data, selected]);
+
+    // Catalog entries whose name doesn't already match an existing venue option.
+    const existingNames = new Set([...byId.values()].map((v) => v.name.toLowerCase()));
+    const catalogOpts = (institutions ?? [])
+      .filter((i) => !existingNames.has(i.name.toLowerCase()))
+      .map((i) => ({
+        value: `${CATALOG_PREFIX}${i.id}`,
+        label: `＋ ${i.name}${i.city ? ` — ${i.city}` : ''} (${labelize(i.institution_type)}) · from catalog`,
+      }));
+
+    return [...venueOpts, ...catalogOpts, { value: CREATE_OPTION, label: '+ Create new venue…' }];
+  }, [data, selected, institutions]);
+
+  const openFromCatalog = (institutionId: number) => {
+    const inst = (institutions ?? []).find((i) => i.id === institutionId);
+    if (!inst) return;
+    setPrefill({
+      name: inst.name,
+      venue_type: institutionVenueType(inst),
+      address: inst.address,
+      city: inst.city,
+      state: inst.state,
+      country: inst.country ?? 'USA',
+      latitude: inst.latitude,
+      longitude: inst.longitude,
+      institution_id: inst.id,
+    });
+    setCreating(true);
+  };
 
   return (
     <>
@@ -63,19 +106,24 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
         searchValue={search}
         onSearchChange={setSearch}
         error={error}
-        nothingFoundMessage="No venues match — create one"
+        nothingFoundMessage="No matches — create a venue"
         onChange={(picked) => {
           if (picked === CREATE_OPTION) {
+            setPrefill(undefined);
             setCreating(true);
+          } else if (picked?.startsWith(CATALOG_PREFIX)) {
+            openFromCatalog(Number(picked.slice(CATALOG_PREFIX.length)));
           } else {
             onChange(picked ? Number(picked) : null);
           }
         }}
       />
       <VenueFormModal
+        key={`${creating}-${prefill?.institution_id ?? 'new'}`}
         opened={creating}
         onClose={() => setCreating(false)}
         initialName={search}
+        prefill={prefill}
         onSaved={(venue) => {
           queryClient.invalidateQueries({ queryKey: ['venues'] });
           onChange(venue.id);
@@ -86,6 +134,18 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
   );
 }
 
+export interface VenuePrefill {
+  name?: string;
+  venue_type?: string;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  institution_id?: number;
+}
+
 interface VenueFormModalProps {
   opened: boolean;
   onClose: () => void;
@@ -93,6 +153,8 @@ interface VenueFormModalProps {
   /** When provided, the modal edits this venue instead of creating a new one. */
   venue?: Venue;
   initialName?: string;
+  /** Prefill a NEW venue's fields (e.g. from a catalog institution). */
+  prefill?: VenuePrefill;
 }
 
 export function VenueFormModal({
@@ -101,18 +163,19 @@ export function VenueFormModal({
   onSaved,
   venue,
   initialName = '',
+  prefill,
 }: VenueFormModalProps) {
   const editing = venue !== undefined;
   const form = useForm({
     initialValues: {
-      name: venue?.name ?? initialName,
-      venue_type: venue?.venue_type ?? 'elementary_school',
-      address: venue?.address ?? '',
-      city: venue?.city ?? '',
-      state: venue?.state ?? '',
-      country: venue?.country ?? 'USA',
-      latitude: (venue?.latitude ?? '') as number | '',
-      longitude: (venue?.longitude ?? '') as number | '',
+      name: venue?.name ?? prefill?.name ?? initialName,
+      venue_type: venue?.venue_type ?? prefill?.venue_type ?? 'elementary_school',
+      address: venue?.address ?? prefill?.address ?? '',
+      city: venue?.city ?? prefill?.city ?? '',
+      state: venue?.state ?? prefill?.state ?? '',
+      country: venue?.country ?? prefill?.country ?? 'USA',
+      latitude: (venue?.latitude ?? prefill?.latitude ?? '') as number | '',
+      longitude: (venue?.longitude ?? prefill?.longitude ?? '') as number | '',
       notes: venue?.notes ?? '',
     },
     validate: {
@@ -133,6 +196,7 @@ export function VenueFormModal({
         latitude: values.latitude === '' ? null : values.latitude,
         longitude: values.longitude === '' ? null : values.longitude,
         notes: values.notes.trim() || null,
+        ...(editing ? {} : { institution_id: prefill?.institution_id ?? null }),
       };
       return editing
         ? api.patch<Venue>(`/api/venues/${venue.id}`, payload)

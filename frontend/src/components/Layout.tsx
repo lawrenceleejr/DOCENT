@@ -34,6 +34,7 @@ function ColorSchemeToggle() {
 const TABS = [
   { value: '/', label: 'Visits' },
   { value: '/venues', label: 'Venues' },
+  { value: '/map', label: 'Map' },
   { value: '/analysis', label: 'Analysis' },
 ];
 

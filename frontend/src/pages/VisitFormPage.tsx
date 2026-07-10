@@ -20,7 +20,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import {
   AUDIENCE_LEVELS,
@@ -61,6 +61,7 @@ export function VisitFormPage() {
   const editing = id !== undefined;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [hostOpen, host] = useDisclosure(false);
 
   const { data: existing } = useQuery({
@@ -142,6 +143,15 @@ export function VisitFormPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existing]);
+
+  // Preselect a venue when arriving from the map's "Log a visit here".
+  useEffect(() => {
+    const venueParam = searchParams.get('venue');
+    if (!editing && venueParam) {
+      form.setFieldValue('venue_id', Number(venueParam));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, editing]);
 
   const save = useMutation({
     mutationFn: (values: FormValues) => {
