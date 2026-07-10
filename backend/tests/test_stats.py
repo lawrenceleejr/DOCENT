@@ -36,11 +36,20 @@ def test_summary(seeded, client):
     assert january["total_people_reached"] == 55
 
 
-def test_timeseries_month_buckets(seeded, client):
+def test_timeseries_half_year_buckets(seeded, client):
+    # Seeded visits (Jan/Feb/Mar 2026) all fall in the first half of 2026.
     points = client.get("/api/stats/timeseries").json()
-    assert [p["period"] for p in points] == ["2026-01", "2026-02", "2026-03"]
-    assert points[0] == {"period": "2026-01", "visits": 2, "people_reached": 55}
-    assert points[1]["people_reached"] == 100
+    assert points == [{"period": "2026 H1", "visits": 4, "people_reached": 200}]
+
+    # A July visit lands in the second half and forms its own bucket.
+    venue = create_venue(client, name="Oak Ridge HS", venue_type="high_school", city="Oak Ridge")
+    create_visit(
+        client, venue["id"], visit_date="2026-09-15", people_reached=60,
+        audience_level="high_school",
+    )
+    points = client.get("/api/stats/timeseries").json()
+    assert [p["period"] for p in points] == ["2026 H1", "2026 H2"]
+    assert points[1] == {"period": "2026 H2", "visits": 1, "people_reached": 60}
 
 
 def test_breakdowns(seeded, client):

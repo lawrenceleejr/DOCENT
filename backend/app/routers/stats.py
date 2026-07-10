@@ -2,7 +2,7 @@ from datetime import date
 from enum import Enum
 
 from fastapi import APIRouter, Query
-from sqlalchemy import Select, func, select
+from sqlalchemy import Integer, Select, cast, func, select
 
 from app.deps import CurrentUser, DbSession
 from app.models import User, Venue, Visit
@@ -69,7 +69,9 @@ def timeseries(
     date_from: date | None = None,
     date_to: date | None = None,
 ):
-    period = func.to_char(func.date_trunc("month", Visit.visit_date), "YYYY-MM")
+    # Bucket by half-year (H1 = Jan–Jun, H2 = Jul–Dec) → labels like "2026 H1".
+    half = cast(func.floor((func.extract("month", Visit.visit_date) - 1) / 6) + 1, Integer)
+    period = func.concat(func.to_char(Visit.visit_date, "YYYY"), " H", half)
     rows = db.execute(
         _date_filtered(
             select(

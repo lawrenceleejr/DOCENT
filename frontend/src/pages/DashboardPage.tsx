@@ -39,20 +39,18 @@ import { VIZ_DARK, VIZ_LIGHT } from '../components/vizTheme';
 import { toDateString } from './VisitListPage';
 
 const RANGES = [
-  { label: 'Last 12 months', value: '12m' },
-  { label: 'This year', value: 'ytd' },
+  { label: 'Last 3 years', value: '3y' },
+  { label: 'Last 5 years', value: '5y' },
   { label: 'All time', value: 'all' },
 ] as const;
 type RangeKey = (typeof RANGES)[number]['value'];
 
 function rangeToDates(range: RangeKey): { date_from?: string; date_to?: string } {
   const now = new Date();
-  if (range === 'ytd') {
-    return { date_from: `${now.getFullYear()}-01-01`, date_to: toDateString(now) };
-  }
-  if (range === '12m') {
+  const yearsBack = range === '3y' ? 3 : range === '5y' ? 5 : null;
+  if (yearsBack !== null) {
     const from = new Date(now);
-    from.setMonth(from.getMonth() - 12);
+    from.setFullYear(now.getFullYear() - yearsBack);
     return { date_from: toDateString(from), date_to: toDateString(now) };
   }
   return {};
@@ -173,7 +171,7 @@ function BreakdownPanel({
 export function DashboardPage() {
   const scheme = useComputedColorScheme('light');
   const viz = scheme === 'dark' ? VIZ_DARK : VIZ_LIGHT;
-  const [range, setRange] = useState<RangeKey>('12m');
+  const [range, setRange] = useState<RangeKey>('3y');
   const dates = useMemo(() => rangeToDates(range), [range]);
 
   const { data: summary } = useQuery({
@@ -231,14 +229,14 @@ export function DashboardPage() {
       {/* Two measures, two panels — never a dual-axis chart. */}
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <TimePanel
-          title="Visits per month"
+          title="Visits per 6 months"
           data={timeseries ?? []}
           dataKey="visits"
           color={viz.series1}
           viz={viz}
         />
         <TimePanel
-          title="People reached per month"
+          title="People reached per 6 months"
           data={timeseries ?? []}
           dataKey="people_reached"
           color={viz.series2}
