@@ -8,18 +8,11 @@ Institutions are upserted by (source, external_id). --link-existing best-effort
 links already-created venues to a catalog entry by matching name + city.
 """
 import argparse
-import re
 import sys
 
-from sqlalchemy import func, select
-
 from app.database import SessionLocal
-from app.models import Institution, Venue
+from app.services.institution_import import upsert_institutions
 from app.services.overpass import DEFAULT_TYPES, TYPE_TO_OSM, fetch_institutions
-
-
-def _norm(value: str | None) -> str:
-    return re.sub(r"\s+", " ", (value or "").strip().lower())
 
 
 def run(region: str, types: list[str], link_existing: bool, replace_region: bool) -> int:
@@ -27,85 +20,13 @@ def run(region: str, types: list[str], link_existing: bool, replace_region: bool
     parsed = fetch_institutions(region, types)
     print(f"Overpass returned {len(parsed)} named institutions.", flush=True)
 
-    inserted = updated = 0
-    seen_ids: list[str] = []
     with SessionLocal() as db:
-        for p in parsed:
-            seen_ids.append(p.external_id)
-            existing = db.scalar(
-                select(Institution).where(
-                    Institution.source == p.source,
-                    Institution.external_id == p.external_id,
-                )
-            )
-            if existing:
-                existing.name = p.name
-                existing.institution_type = p.institution_type
-                existing.latitude = p.latitude
-                existing.longitude = p.longitude
-                existing.address = p.address
-                existing.city = p.city
-                existing.state = p.state
-                existing.country = p.country
-                existing.website = p.website
-                existing.phone = p.phone
-                existing.region = region
-                updated += 1
-            else:
-                db.add(
-                    Institution(
-                        source=p.source,
-                        external_id=p.external_id,
-                        name=p.name,
-                        institution_type=p.institution_type,
-                        latitude=p.latitude,
-                        longitude=p.longitude,
-                        address=p.address,
-                        city=p.city,
-                        state=p.state,
-                        country=p.country,
-                        website=p.website,
-                        phone=p.phone,
-                        region=region,
-                    )
-                )
-                inserted += 1
-
-        pruned = 0
-        if replace_region and seen_ids:
-            stale = db.scalars(
-                select(Institution).where(
-                    Institution.region == region,
-                    Institution.external_id.notin_(seen_ids),
-                )
-            ).all()
-            for inst in stale:
-                db.delete(inst)
-            pruned = len(stale)
-
-        db.commit()
-
-        linked = 0
-        if link_existing:
-            institutions = db.scalars(
-                select(Institution).where(Institution.region == region)
-            ).all()
-            by_key = {(_norm(i.name), _norm(i.city)): i for i in institutions}
-            venues = db.scalars(select(Venue).where(Venue.institution_id.is_(None))).all()
-            for venue in venues:
-                match = by_key.get((_norm(venue.name), _norm(venue.city)))
-                if match:
-                    venue.institution_id = match.id
-                    linked += 1
-            db.commit()
-
-        total = db.scalar(
-            select(func.count()).select_from(Institution).where(Institution.region == region)
-        )
+        counts = upsert_institutions(db, parsed, region, link_existing, replace_region)
 
     print(
-        f"Done. inserted={inserted} updated={updated} pruned={pruned} "
-        f"linked_venues={linked} total_in_region={total}",
+        f"Done. inserted={counts['inserted']} updated={counts['updated']} "
+        f"pruned={counts['pruned']} linked_venues={counts['linked_venues']} "
+        f"total_in_region={counts['total_in_region']}",
         flush=True,
     )
     return 0

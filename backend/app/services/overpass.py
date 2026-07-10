@@ -66,6 +66,26 @@ def build_query(region: str, types: list[str], timeout: int = 180) -> str:
     )
 
 
+def build_around_query(
+    latitude: float, longitude: float, radius_m: float, types: list[str], timeout: int = 180
+) -> str:
+    """Build Overpass QL for institutions within radius_m metres of a point."""
+    selectors = []
+    for t in types:
+        for key, value in TYPE_TO_OSM[t]:
+            for element in ("node", "way", "relation"):
+                selectors.append(
+                    f'  {element}["{key}"="{value}"]'
+                    f"(around:{radius_m:.0f},{latitude},{longitude});"
+                )
+    body = "\n".join(selectors)
+    return (
+        f"[out:json][timeout:{timeout}];\n"
+        f"(\n{body}\n);\n"
+        "out center tags;"
+    )
+
+
 def _addr(tags: dict) -> str | None:
     parts = [tags.get("addr:housenumber"), tags.get("addr:street")]
     line = " ".join(p for p in parts if p)
@@ -121,18 +141,28 @@ def parse_elements(elements: list[dict]) -> list[ParsedInstitution]:
     return out
 
 
-def fetch_institutions(region: str, types: list[str], timeout: int = 300) -> list[ParsedInstitution]:
-    """Query Overpass for a region and return parsed institutions."""
-    query = build_query(region, types)
+USER_AGENT = "DOCENT-outreach-tracker/0.1 (+https://github.com/lawrenceleejr/docent)"
+
+
+def _run_query(query: str, timeout: int) -> list[ParsedInstitution]:
     url = get_settings().overpass_url
     # Honor a custom CA bundle (corporate/TLS-inspecting proxies); default to
     # normal verification. trust_env picks up HTTP(S)_PROXY from the environment.
     verify = os.environ.get("REQUESTS_CA_BUNDLE") or os.environ.get("SSL_CERT_FILE") or True
-    headers = {
-        "User-Agent": "DOCENT-outreach-tracker/0.1 (+https://github.com/lawrenceleejr/docent)",
-        "Accept": "application/json",
-    }
+    headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
     with httpx.Client(verify=verify, trust_env=True, timeout=timeout, headers=headers) as client:
         response = client.post(url, data={"data": query})
     response.raise_for_status()
     return parse_elements(response.json().get("elements", []))
+
+
+def fetch_institutions(region: str, types: list[str], timeout: int = 300) -> list[ParsedInstitution]:
+    """Query Overpass for a named admin region and return parsed institutions."""
+    return _run_query(build_query(region, types), timeout)
+
+
+def fetch_institutions_around(
+    latitude: float, longitude: float, radius_m: float, types: list[str], timeout: int = 300
+) -> list[ParsedInstitution]:
+    """Query Overpass for institutions within radius_m metres of a point."""
+    return _run_query(build_around_query(latitude, longitude, radius_m, types), timeout)

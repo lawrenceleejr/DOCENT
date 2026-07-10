@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     # / scheme) so login works on plain http AND https. "true"/"false" force it.
     cookie_secure: str = "auto"
     overpass_url: str = "https://overpass-api.de/api/interpreter"
+    nominatim_url: str = "https://nominatim.openstreetmap.org/search"
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 
