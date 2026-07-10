@@ -20,3 +20,6 @@ frontend/dist/
 
 # Backups (never commit dumps)
 backups/
+
+# Optional proxy CA bundles for docker builds (see Dockerfiles)
+extra-ca.crt
