@@ -1,4 +1,5 @@
 from datetime import date, datetime, time
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -61,6 +62,27 @@ class AdminUserUpdate(BaseModel):
 class PasswordResetResult(BaseModel):
     user_id: int
     temporary_password: str
+
+
+class InstitutionImportRequest(BaseModel):
+    location: str = Field(min_length=1, max_length=300)
+    radius: float = Field(gt=0, le=200)
+    unit: Literal["km", "mi"] = "km"
+    types: list[str] = Field(min_length=1)
+    link_existing: bool = False
+
+
+class InstitutionImportResult(BaseModel):
+    location: str
+    latitude: float
+    longitude: float
+    radius_km: float
+    region: str
+    inserted: int
+    updated: int
+    pruned: int
+    linked_venues: int
+    total_in_region: int
 
 
 # --- Venues ---

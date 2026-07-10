@@ -24,3 +24,4 @@ backups/
 
 # Optional proxy CA bundles for docker builds (see Dockerfiles)
 extra-ca.crt
+docker-compose.override.yml

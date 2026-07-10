@@ -22,6 +22,10 @@ services:
       INVITE_CODE: ${INVITE_CODE:-}
       ACCESS_TOKEN_DAYS: ${ACCESS_TOKEN_DAYS:-7}
       COOKIE_SECURE: ${COOKIE_SECURE:-auto}
+      # Optional: path (inside the container) to a CA bundle so the institution
+      # importer trusts a corporate/TLS-inspecting proxy when calling Overpass /
+      # Nominatim. Leave empty for normal internet.
+      REQUESTS_CA_BUNDLE: ${REQUESTS_CA_BUNDLE:-}
     depends_on:
       db:
         condition: service_healthy

@@ -161,6 +161,13 @@ shown as a **gap** (orange) until a visit is logged against it, then **reached**
 (default omits `university`). The importer upserts by OSM id, so re-running
 updates in place; add `--replace-region` to prune places that have closed.
 
+**Or import by radius from the Admin tab** (no command line): admins get an
+"Import institutions near a location" card — type an address / place name (or a
+raw `lat, lon`), pick a radius in km or mi, choose types, and click Import. It
+geocodes the location (OpenStreetMap Nominatim) and pulls everything within the
+radius (max 100 km). Behind a TLS-inspecting corporate proxy, point
+`REQUESTS_CA_BUNDLE` at your CA (a container path) so those live calls succeed.
+
 From the map, clicking a gap's **"Log a visit here"** creates a venue linked to
 that institution and opens a pre-filled visit form — so logging the visit flips
 the marker to reached. The venue picker on the visit form also searches the

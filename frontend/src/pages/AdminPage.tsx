@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { api, ApiError } from '../api/client';
 import type { PasswordResetResult, User } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { InstitutionImportCard } from '../components/InstitutionImportCard';
 
 export function AdminPage() {
   const { user: me } = useAuth();
@@ -64,7 +65,11 @@ export function AdminPage() {
 
   return (
     <Stack>
-      <Title order={2}>User management</Title>
+      <Title order={2}>Admin</Title>
+      <InstitutionImportCard />
+      <Title order={3} mt="md">
+        User management
+      </Title>
       <Card withBorder p={0}>
         <Table>
           <Table.Thead>
