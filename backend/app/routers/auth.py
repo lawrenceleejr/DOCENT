@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Request, Response, status
 from sqlalchemy import func, select
 
 from app.config import get_settings
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def register(body: RegisterRequest, response: Response, db: DbSession):
+def register(body: RegisterRequest, request: Request, response: Response, db: DbSession):
     settings = get_settings()
     if settings.invite_code and body.invite_code != settings.invite_code:
         raise HTTPException(
@@ -44,12 +44,12 @@ def register(body: RegisterRequest, response: Response, db: DbSession):
     db.commit()
     db.refresh(user)
 
-    set_auth_cookie(response, create_access_token(user.id))
+    set_auth_cookie(response, create_access_token(user.id), request)
     return user
 
 
 @router.post("/login", response_model=UserOut)
-def login(body: LoginRequest, response: Response, db: DbSession):
+def login(body: LoginRequest, request: Request, response: Response, db: DbSession):
     user = db.scalar(select(User).where(User.email == body.email.lower()))
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(
@@ -60,7 +60,7 @@ def login(body: LoginRequest, response: Response, db: DbSession):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Account is deactivated"
         )
-    set_auth_cookie(response, create_access_token(user.id))
+    set_auth_cookie(response, create_access_token(user.id), request)
     return user
 
 

@@ -8,7 +8,9 @@ class Settings(BaseSettings):
     secret_key: str = "dev-secret-do-not-use-in-production"
     invite_code: str = ""
     access_token_days: int = 7
-    cookie_secure: bool = True
+    # "auto" (default): Secure flag follows the real connection (X-Forwarded-Proto
+    # / scheme) so login works on plain http AND https. "true"/"false" force it.
+    cookie_secure: str = "auto"
     overpass_url: str = "https://overpass-api.de/api/interpreter"
 
     model_config = {"env_file": ".env", "extra": "ignore"}
