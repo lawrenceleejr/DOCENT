@@ -110,7 +110,7 @@ def test_csv_export(client):
     assert "attachment" in response.headers["content-disposition"]
     lines = response.text.strip().splitlines()
     assert len(lines) == 3  # header + 2 rows
-    assert lines[0].startswith("date,title,event_type")
+    assert lines[0].startswith("date,start_time,status,title,event_type")
 
     filtered = client.get("/api/visits/export.csv", params={"date_from": "2026-02-01"})
     assert len(filtered.text.strip().splitlines()) == 2
