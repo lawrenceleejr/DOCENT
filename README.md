@@ -124,6 +124,22 @@ visit, back up, delete it, restore, confirm it's back.
 
 > **Postgres upgrades:** the `db` and `backup` images are both pinned to `postgres:16` so `pg_dump` always matches the server. Bump them together, and take a final backup on the old version first.
 
+## Scheduling & calendar
+
+Every visit has a **status**: *planned* (a scheduled future event) or *completed*
+(outreach that happened). Only completed visits count toward the dashboard and
+map coverage, so planning ahead never inflates your impact numbers.
+
+- **Schedule** tab: your upcoming planned events, soonest first. "Schedule an
+  event" opens the visit form in planned mode (attendance is optional); each row
+  has "Mark done" to record what happened.
+- The visit form has a **Planned / Completed** toggle and an optional **start
+  time** (+ duration). A gap's "Log a visit here" on the map still works the same.
+- **Add to calendar (.ics)**: downloads your planned events as an iCalendar file
+  to import into Google/Apple/Outlook Calendar (`GET /api/visits/calendar.ics`).
+  Times are "floating" — shown in each viewer's local timezone. Events without a
+  start time export as all-day.
+
 ## Map & coverage (finding gaps)
 
 The **Map** tab plots your outreach on an OpenStreetMap base layer so you can see

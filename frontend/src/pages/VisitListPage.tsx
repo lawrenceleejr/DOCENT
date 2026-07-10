@@ -25,6 +25,7 @@ import {
   EVENT_TYPES,
   labelize,
   VENUE_TYPES,
+  VISIT_STATUSES,
   type Paginated,
   type Visit,
 } from '../api/types';
@@ -38,6 +39,7 @@ export function VisitListPage() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<VisitFilters>({});
   const [q, setQ] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [mineOnly, setMineOnly] = useState(false);
   const [sort, setSort] = useState('-visit_date');
   const [page, setPage] = useState(1);
@@ -45,6 +47,7 @@ export function VisitListPage() {
   const params = {
     ...filterParams(filters),
     q: q || undefined,
+    status: statusFilter ?? undefined,
     author_id: mineOnly ? user?.id : undefined,
     sort,
     page,
@@ -98,6 +101,17 @@ export function VisitListPage() {
               setPage(1);
             }}
             w={200}
+          />
+          <Select
+            label="Status"
+            placeholder="All"
+            clearable
+            data={VISIT_STATUSES.map((s) => ({ value: s, label: labelize(s) }))}
+            value={statusFilter}
+            onChange={(v) => {
+              setStatusFilter(v);
+              setPage(1);
+            }}
           />
           <DatePickerInput
             label="From"
@@ -162,6 +176,7 @@ export function VisitListPage() {
                   Date{sortIndicator('visit_date')}
                 </UnstyledButton>
               </Table.Th>
+              <Table.Th>Status</Table.Th>
               <Table.Th>Title</Table.Th>
               <Table.Th>Venue</Table.Th>
               <Table.Th>Researcher</Table.Th>
@@ -185,7 +200,18 @@ export function VisitListPage() {
                 style={{ cursor: 'pointer' }}
                 onClick={() => navigate(`/visits/${visit.id}`)}
               >
-                <Table.Td>{visit.visit_date}</Table.Td>
+                <Table.Td>
+                  {visit.visit_date}
+                  {visit.start_time ? ` ${visit.start_time.slice(0, 5)}` : ''}
+                </Table.Td>
+                <Table.Td>
+                  <Badge
+                    variant="light"
+                    color={visit.status === 'planned' ? 'blue' : 'green'}
+                  >
+                    {labelize(visit.status)}
+                  </Badge>
+                </Table.Td>
                 <Table.Td>
                   <Anchor component={Link} to={`/visits/${visit.id}`} onClick={(e) => e.stopPropagation()}>
                     {visit.title}
@@ -205,7 +231,7 @@ export function VisitListPage() {
             ))}
             {!isLoading && (data?.items.length ?? 0) === 0 && (
               <Table.Tr>
-                <Table.Td colSpan={7}>
+                <Table.Td colSpan={8}>
                   <Text c="dimmed" ta="center" py="lg">
                     No visits yet — log your first outreach visit!
                   </Text>

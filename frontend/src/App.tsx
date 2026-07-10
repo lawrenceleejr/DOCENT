@@ -6,6 +6,7 @@ import { AdminPage } from './pages/AdminPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { MapPage } from './pages/MapPage';
+import { SchedulePage } from './pages/SchedulePage';
 import { ProfilePage } from './pages/ProfilePage';
 import { RegisterPage } from './pages/RegisterPage';
 import { VenueDetailPage } from './pages/VenueDetailPage';
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/visits/:id/edit" element={<VisitFormPage />} />
         <Route path="/venues" element={<VenueListPage />} />
         <Route path="/venues/:id" element={<VenueDetailPage />} />
+        <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/analysis" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />

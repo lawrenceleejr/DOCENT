@@ -37,6 +37,9 @@ export const HOST_RELATIONSHIPS = [
 ] as const;
 export type HostRelationship = (typeof HOST_RELATIONSHIPS)[number];
 
+export const VISIT_STATUSES = ['planned', 'completed'] as const;
+export type VisitStatus = (typeof VISIT_STATUSES)[number];
+
 export const AUDIENCE_LEVELS = [
   'elementary',
   'middle_school',
@@ -107,7 +110,9 @@ export interface Visit {
   id: number;
   author: UserBrief;
   venue: VenueBrief;
+  status: VisitStatus;
   visit_date: string;
+  start_time: string | null;
   event_type: EventType;
   title: string;
   description: string | null;

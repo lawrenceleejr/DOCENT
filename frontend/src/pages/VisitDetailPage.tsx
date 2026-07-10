@@ -64,9 +64,19 @@ export function VisitDetailPage() {
     <Stack maw={720} mx="auto">
       <Group justify="space-between" align="flex-start">
         <div>
-          <Title order={2}>{visit.title}</Title>
+          <Group gap="sm">
+            <Title order={2}>{visit.title}</Title>
+            <Badge
+              variant="light"
+              color={visit.status === 'planned' ? 'blue' : 'green'}
+              size="lg"
+            >
+              {labelize(visit.status)}
+            </Badge>
+          </Group>
           <Text c="dimmed">
-            {visit.visit_date} ·{' '}
+            {visit.visit_date}
+            {visit.start_time ? ` at ${visit.start_time.slice(0, 5)}` : ''} ·{' '}
             <Anchor component={Link} to={`/venues/${visit.venue.id}`}>
               {visit.venue.name}
             </Anchor>
@@ -75,6 +85,11 @@ export function VisitDetailPage() {
         </div>
         {canEdit && (
           <Group>
+            {visit.status === 'planned' && (
+              <Button onClick={() => navigate(`/visits/${visit.id}/edit`)}>
+                Mark as completed
+              </Button>
+            )}
             <Button variant="default" onClick={() => navigate(`/visits/${visit.id}/edit`)}>
               Edit
             </Button>

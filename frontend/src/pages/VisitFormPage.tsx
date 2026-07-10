@@ -7,6 +7,7 @@ import {
   Input,
   NumberInput,
   Rating,
+  SegmentedControl,
   Select,
   Stack,
   Textarea,
@@ -14,7 +15,7 @@ import {
   Title,
   UnstyledButton,
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import { DatePickerInput, TimeInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -30,13 +31,16 @@ import {
   MAX_PEOPLE_REACHED,
   PEOPLE_REACHED_CONFIRM_THRESHOLD,
   type Visit,
+  type VisitStatus,
 } from '../api/types';
 import { VenuePicker } from '../components/VenuePicker';
 import { toDateString } from './VisitListPage';
 
 interface FormValues {
   venue_id: number | null;
+  status: VisitStatus;
   visit_date: Date | null;
+  start_time: string;
   event_type: string;
   title: string;
   description: string;
@@ -63,6 +67,8 @@ export function VisitFormPage() {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [hostOpen, host] = useDisclosure(false);
+  const initialStatus: VisitStatus =
+    searchParams.get('status') === 'planned' ? 'planned' : 'completed';
 
   const { data: existing } = useQuery({
     queryKey: ['visits', id],
@@ -73,7 +79,9 @@ export function VisitFormPage() {
   const form = useForm<FormValues>({
     initialValues: {
       venue_id: null,
+      status: initialStatus,
       visit_date: new Date(),
+      start_time: '',
       event_type: 'classroom_visit',
       title: '',
       description: '',
@@ -98,7 +106,14 @@ export function VisitFormPage() {
       title: (v) => (v.trim().length > 0 ? null : 'Title is required'),
       event_type: (v) => (v ? null : 'Event type is required'),
       audience_level: (v) => (v ? null : 'Audience is required'),
-      people_reached: (v) => {
+      // Attendance is only required for a completed visit; a planned event may
+      // leave it blank until it happens.
+      people_reached: (v, values) => {
+        if (values.status === 'planned') {
+          return v !== '' && v > MAX_PEOPLE_REACHED
+            ? `That seems too large (max ${MAX_PEOPLE_REACHED.toLocaleString()}).`
+            : null;
+        }
         if (v === '' || v < 0) return 'How many people did you reach?';
         if (v > MAX_PEOPLE_REACHED)
           return `That seems too large (max ${MAX_PEOPLE_REACHED.toLocaleString()}). Check for a typo.`;
@@ -111,7 +126,9 @@ export function VisitFormPage() {
     if (existing) {
       form.setValues({
         venue_id: existing.venue.id,
+        status: existing.status,
         visit_date: new Date(`${existing.visit_date}T00:00:00`),
+        start_time: existing.start_time ? existing.start_time.slice(0, 5) : '',
         event_type: existing.event_type,
         title: existing.title,
         description: existing.description ?? '',
@@ -157,7 +174,9 @@ export function VisitFormPage() {
     mutationFn: (values: FormValues) => {
       const payload = {
         venue_id: values.venue_id,
+        status: values.status,
         visit_date: toDateString(values.visit_date!),
+        start_time: values.start_time || null,
         event_type: values.event_type,
         title: values.title.trim(),
         description: values.description.trim() || null,
@@ -194,9 +213,16 @@ export function VisitFormPage() {
     },
   });
 
+  const isPlanned = form.values.status === 'planned';
+  const heading = editing
+    ? 'Edit visit'
+    : isPlanned
+      ? 'Schedule an event'
+      : 'Log a visit';
+
   return (
     <Stack maw={720} mx="auto">
-      <Title order={2}>{editing ? 'Edit visit' : 'Log a visit'}</Title>
+      <Title order={2}>{heading}</Title>
       <Card withBorder p="lg">
         <form
           onSubmit={form.onSubmit((values) => {
@@ -213,6 +239,17 @@ export function VisitFormPage() {
           })}
         >
           <Stack>
+            <Input.Wrapper label="Status">
+              <div>
+                <SegmentedControl
+                  data={[
+                    { label: 'Planned', value: 'planned' },
+                    { label: 'Completed', value: 'completed' },
+                  ]}
+                  {...form.getInputProps('status')}
+                />
+              </div>
+            </Input.Wrapper>
             <VenuePicker
               value={form.values.venue_id}
               onChange={(venueId) => form.setFieldValue('venue_id', venueId)}
@@ -223,6 +260,10 @@ export function VisitFormPage() {
                 label="Date"
                 valueFormat="YYYY-MM-DD"
                 {...form.getInputProps('visit_date')}
+              />
+              <TimeInput
+                label="Start time (optional)"
+                {...form.getInputProps('start_time')}
               />
               <Select
                 label="Event type"
@@ -250,9 +291,9 @@ export function VisitFormPage() {
                 {...form.getInputProps('audience_level')}
               />
               <NumberInput
-                label="People reached"
+                label={isPlanned ? 'People reached (when done)' : 'People reached'}
                 min={0}
-                placeholder="30"
+                placeholder={isPlanned ? 'optional' : '30'}
                 {...form.getInputProps('people_reached')}
               />
               <NumberInput
@@ -334,7 +375,7 @@ export function VisitFormPage() {
                 Cancel
               </Button>
               <Button type="submit" loading={save.isPending}>
-                {editing ? 'Save changes' : 'Log visit'}
+                {editing ? 'Save changes' : isPlanned ? 'Schedule event' : 'Log visit'}
               </Button>
             </Group>
           </Stack>
