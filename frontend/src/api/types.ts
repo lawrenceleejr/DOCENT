@@ -40,6 +40,19 @@ export type HostRelationship = (typeof HOST_RELATIONSHIPS)[number];
 export const VISIT_STATUSES = ['planned', 'completed'] as const;
 export type VisitStatus = (typeof VISIT_STATUSES)[number];
 
+/** Today's date as YYYY-MM-DD in the viewer's local zone. */
+export function todayISO(): string {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/** A planned event whose date has already passed. */
+export function isOverdue(v: { status: VisitStatus; visit_date: string }): boolean {
+  return v.status === 'planned' && v.visit_date < todayISO();
+}
+
 export const AUDIENCE_LEVELS = [
   'elementary',
   'middle_school',

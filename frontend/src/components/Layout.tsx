@@ -4,6 +4,7 @@ import {
   Container,
   Group,
   Menu,
+  ScrollArea,
   Tabs,
   Text,
   UnstyledButton,
@@ -54,21 +55,28 @@ export function Layout({ children }: { children: ReactNode }) {
     <AppShell header={{ height: 56 }} padding="md">
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between" wrap="nowrap">
-          <Group gap="xl" wrap="nowrap">
-            <UnstyledButton onClick={() => navigate('/')}>
+          <Group gap="md" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
+            <UnstyledButton onClick={() => navigate('/')} style={{ flexShrink: 0 }}>
               <Text fw={800} size="lg">
                 DOCENT
               </Text>
             </UnstyledButton>
-            <Tabs value={active} onChange={(value) => value && navigate(value)}>
-              <Tabs.List>
-                {tabs.map((tab) => (
-                  <Tabs.Tab key={tab.value} value={tab.value}>
-                    {tab.label}
-                  </Tabs.Tab>
-                ))}
-              </Tabs.List>
-            </Tabs>
+            {/* Horizontal-scroll the tabs so all nav stays reachable on phones. */}
+            <ScrollArea type="never" style={{ minWidth: 0 }}>
+              <Tabs
+                value={active}
+                onChange={(value) => value && navigate(value)}
+                variant="outline"
+              >
+                <Tabs.List style={{ flexWrap: 'nowrap' }}>
+                  {tabs.map((tab) => (
+                    <Tabs.Tab key={tab.value} value={tab.value}>
+                      {tab.label}
+                    </Tabs.Tab>
+                  ))}
+                </Tabs.List>
+              </Tabs>
+            </ScrollArea>
           </Group>
           <Group gap="sm" wrap="nowrap">
             <ColorSchemeToggle />

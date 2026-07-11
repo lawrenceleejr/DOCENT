@@ -192,6 +192,11 @@ export function DashboardPage() {
     queryFn: () =>
       api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'audience_level', ...dates }),
   });
+  const { data: byRelationship } = useQuery({
+    queryKey: ['stats', 'breakdown', 'host_relationship', dates],
+    queryFn: () =>
+      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'host_relationship', ...dates }),
+  });
   const { data: topVenues } = useQuery({
     queryKey: ['stats', 'top-venues', dates],
     queryFn: () => api.get<TopVenueRow[]>('/api/stats/top-venues', { limit: 10, ...dates }),
@@ -255,6 +260,12 @@ export function DashboardPage() {
           title="Visits by audience level"
           data={byAudience ?? []}
           color={viz.series1}
+          viz={viz}
+        />
+        <BreakdownPanel
+          title="Visits by host relationship"
+          data={byRelationship ?? []}
+          color={viz.series2}
           viz={viz}
         />
       </SimpleGrid>

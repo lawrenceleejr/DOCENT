@@ -75,6 +75,7 @@ export function VenueListPage() {
       </Card>
 
       <Card withBorder p={0}>
+        <Table.ScrollContainer minWidth={620}>
         <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
@@ -118,6 +119,7 @@ export function VenueListPage() {
             )}
           </Table.Tbody>
         </Table>
+        </Table.ScrollContainer>
       </Card>
 
       <Group justify="space-between">

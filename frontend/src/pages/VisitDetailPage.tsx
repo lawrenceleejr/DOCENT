@@ -14,7 +14,7 @@ import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
-import { labelize, type Visit } from '../api/types';
+import { isOverdue, labelize, type Visit } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -68,10 +68,10 @@ export function VisitDetailPage() {
             <Title order={2}>{visit.title}</Title>
             <Badge
               variant="light"
-              color={visit.status === 'planned' ? 'blue' : 'green'}
               size="lg"
+              color={isOverdue(visit) ? 'red' : visit.status === 'planned' ? 'blue' : 'green'}
             >
-              {labelize(visit.status)}
+              {isOverdue(visit) ? 'Overdue' : labelize(visit.status)}
             </Badge>
           </Group>
           <Text c="dimmed">

@@ -9,6 +9,7 @@ import {
   Rating,
   SegmentedControl,
   Select,
+  SimpleGrid,
   Stack,
   Textarea,
   TextInput,
@@ -255,7 +256,7 @@ export function VisitFormPage() {
               onChange={(venueId) => form.setFieldValue('venue_id', venueId)}
               error={form.errors.venue_id as string | undefined}
             />
-            <Group grow>
+            <SimpleGrid cols={{ base: 1, sm: 3 }}>
               <DatePickerInput
                 label="Date"
                 valueFormat="YYYY-MM-DD"
@@ -270,7 +271,7 @@ export function VisitFormPage() {
                 data={EVENT_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
                 {...form.getInputProps('event_type')}
               />
-            </Group>
+            </SimpleGrid>
             <TextInput
               label="Title / topic"
               placeholder="e.g. Particle physics show-and-tell"
@@ -283,7 +284,7 @@ export function VisitFormPage() {
               minRows={2}
               {...form.getInputProps('description')}
             />
-            <Group grow>
+            <SimpleGrid cols={{ base: 1, sm: 3 }}>
               <Select
                 label="Audience level"
                 placeholder="Pick one"
@@ -303,14 +304,14 @@ export function VisitFormPage() {
                 placeholder="60"
                 {...form.getInputProps('duration_minutes')}
               />
-            </Group>
+            </SimpleGrid>
 
             <UnstyledButton onClick={host.toggle} c="blue" fz="sm">
               {hostOpen ? '▾' : '▸'} Host (optional)
             </UnstyledButton>
             <Collapse in={hostOpen}>
               <Stack gap="sm">
-                <Group grow>
+                <SimpleGrid cols={{ base: 1, sm: 2 }}>
                   <TextInput
                     label="Host name"
                     placeholder="Ms. Rivera"
@@ -321,8 +322,8 @@ export function VisitFormPage() {
                     placeholder="8th-grade science teacher"
                     {...form.getInputProps('host_role')}
                   />
-                </Group>
-                <Group grow align="flex-start">
+                </SimpleGrid>
+                <SimpleGrid cols={{ base: 1, sm: 2 }}>
                   <Select
                     label="Relationship"
                     placeholder="How do you know them?"
@@ -335,11 +336,11 @@ export function VisitFormPage() {
                     placeholder="e.g. former grad student, met at AAAS"
                     {...form.getInputProps('host_relationship_detail')}
                   />
-                </Group>
-                <Group grow>
+                </SimpleGrid>
+                <SimpleGrid cols={{ base: 1, sm: 2 }}>
                   <TextInput label="Email" {...form.getInputProps('contact_email')} />
                   <TextInput label="Phone" {...form.getInputProps('contact_phone')} />
-                </Group>
+                </SimpleGrid>
                 <Textarea
                   label="Host notes"
                   placeholder="Context on the host or the relationship — how the connection started, follow-up ideas…"

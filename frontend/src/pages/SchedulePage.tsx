@@ -12,7 +12,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, buildQuery } from '../api/client';
-import { labelize, type Paginated, type Visit } from '../api/types';
+import { isOverdue, labelize, type Paginated, type Visit } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 
 export function SchedulePage() {
@@ -56,6 +56,7 @@ export function SchedulePage() {
       </Group>
 
       <Card withBorder p={0}>
+        <Table.ScrollContainer minWidth={640}>
         <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
@@ -70,7 +71,16 @@ export function SchedulePage() {
           <Table.Tbody>
             {(data?.items ?? []).map((visit) => (
               <Table.Tr key={visit.id}>
-                <Table.Td>{visit.visit_date}</Table.Td>
+                <Table.Td>
+                  <Group gap="xs" wrap="nowrap">
+                    {visit.visit_date}
+                    {isOverdue(visit) && (
+                      <Badge variant="light" color="red" size="sm">
+                        Overdue
+                      </Badge>
+                    )}
+                  </Group>
+                </Table.Td>
                 <Table.Td>{visit.start_time ? visit.start_time.slice(0, 5) : '—'}</Table.Td>
                 <Table.Td>
                   <Anchor component={Link} to={`/visits/${visit.id}`}>
@@ -106,6 +116,7 @@ export function SchedulePage() {
             )}
           </Table.Tbody>
         </Table>
+        </Table.ScrollContainer>
       </Card>
     </Stack>
   );

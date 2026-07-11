@@ -71,6 +71,7 @@ export function AdminPage() {
         User management
       </Title>
       <Card withBorder p={0}>
+        <Table.ScrollContainer minWidth={720}>
         <Table>
           <Table.Thead>
             <Table.Tr>
@@ -129,6 +130,7 @@ export function AdminPage() {
             ))}
           </Table.Tbody>
         </Table>
+        </Table.ScrollContainer>
       </Card>
       <Text size="sm" c="dimmed">
         Deactivated users can no longer log in, but their visits stay in the community record.

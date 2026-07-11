@@ -23,6 +23,7 @@ import { api } from '../api/client';
 import {
   AUDIENCE_LEVELS,
   EVENT_TYPES,
+  isOverdue,
   labelize,
   VENUE_TYPES,
   VISIT_STATUSES,
@@ -168,6 +169,7 @@ export function VisitListPage() {
       </Card>
 
       <Card withBorder p={0}>
+        <Table.ScrollContainer minWidth={780}>
         <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
@@ -205,12 +207,15 @@ export function VisitListPage() {
                   {visit.start_time ? ` ${visit.start_time.slice(0, 5)}` : ''}
                 </Table.Td>
                 <Table.Td>
-                  <Badge
-                    variant="light"
-                    color={visit.status === 'planned' ? 'blue' : 'green'}
-                  >
-                    {labelize(visit.status)}
-                  </Badge>
+                  {isOverdue(visit) ? (
+                    <Badge variant="light" color="red">
+                      Overdue
+                    </Badge>
+                  ) : (
+                    <Badge variant="light" color={visit.status === 'planned' ? 'blue' : 'green'}>
+                      {labelize(visit.status)}
+                    </Badge>
+                  )}
                 </Table.Td>
                 <Table.Td>
                   <Anchor component={Link} to={`/visits/${visit.id}`} onClick={(e) => e.stopPropagation()}>
@@ -240,6 +245,7 @@ export function VisitListPage() {
             )}
           </Table.Tbody>
         </Table>
+        </Table.ScrollContainer>
       </Card>
 
       <Group justify="space-between">
