@@ -15,7 +15,7 @@ institution deploys and configures it.)*
 
 **Stack:** FastAPI + PostgreSQL backend, React (TypeScript, Mantine, Recharts) frontend, nginx, and a backup sidecar with nightly rotated `pg_dump`s — deployed with a single `docker compose up`.
 
-**Docs:** [Quickstart](#getting-started) · [Run the published images](#run-the-published-images-no-build) · [Free hosting](#free-hosting-run-it-at-no-cost) · [Security & safe deployment](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) · GPLv3
+**Docs:** [Quick start](#quick-start-try-it-on-your-own-machine) · [Go live on a subdomain](#go-live-put-it-on-your-subdomain) · [Run the published images](#run-the-published-images-no-build) · [Free cloud hosting](#no-machine-of-your-own-run-it-free-in-the-cloud) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) · GPLv3
 
 ---
 
@@ -51,93 +51,92 @@ institution deploys and configures it.)*
 
 ---
 
-## Getting started
+## Quick start (try it on your own machine)
 
-For a machine that already runs Docker and where you want a subdomain
-(e.g. `docent.example.org`) to serve DOCENT over HTTPS.
-
-**1. Get the code and start it**
+DOCENT is built to be trivial to stand up. If a machine has **Docker**, you are
+**one command** away from a running app you can log into and explore:
 
 ```bash
 git clone <this-repo> && cd DOCENT
 ./scripts/start.sh
 ```
 
-On first run `start.sh` creates `.env` with a random `SECRET_KEY` and
-`POSTGRES_PASSWORD`, builds the images, and starts everything. DOCENT now
-listens on `http://127.0.0.1:8080` (change with `HTTP_PORT` in `.env`).
+That's the whole install. On first run `start.sh` creates a `.env` with random
+secrets, builds the images, starts the full stack (web app, database, and nightly
+backups), and **prints an access code**. Then:
 
-**2. Point your subdomain at it**
+1. Open **http://localhost:8080** in your browser.
+2. Register with the access code it printed — **the first account becomes the admin**.
+3. Play around: log a visit, import some institutions, explore the Map, Analysis
+   dashboard, and Reports.
 
-- Add a DNS **A record** for `docent.example.org` → your server's public IP.
-- Put a TLS reverse proxy in front so the subdomain serves HTTPS and forwards
-  to DOCENT's port. [Caddy](https://caddyserver.com) is the least effort — it
-  gets certificates automatically. A complete `Caddyfile`:
+> Prefer not to build anything? `docker compose -f docker-compose.release.yml up -d`
+> pulls prebuilt images instead — see [Run the published images](#run-the-published-images-no-build).
 
-  ```caddy
-  docent.example.org {
-      reverse_proxy 127.0.0.1:8080
-  }
-  ```
+At this point everything runs **locally and privately** (the app binds only to
+`127.0.0.1`), so it's a safe sandbox to evaluate. When you're ready to open it up to
+your community, give it a real web address ⬇.
 
-  <details><summary>nginx equivalent (you provide the TLS certs)</summary>
+## Go live: put it on your subdomain
 
-  ```nginx
-  server {
-      listen 443 ssl;
-      server_name docent.example.org;
-      ssl_certificate     /etc/letsencrypt/live/docent.example.org/fullchain.pem;
-      ssl_certificate_key /etc/letsencrypt/live/docent.example.org/privkey.pem;
-      location / {
-          proxy_pass http://127.0.0.1:8080;
-          proxy_set_header Host $host;
-          proxy_set_header X-Forwarded-Proto $scheme;
-      }
-  }
-  ```
-  </details>
+This is the recommended setup for real use: run DOCENT on a machine your group
+controls — a lab workstation, a department server, a spare box in the corner — and
+ask your **university IT to point a subdomain at it**. Your data stays on your own
+hardware, and everyone reaches the app at a friendly HTTPS address like
+`https://docent.university.edu`.
 
-Leave `COOKIE_SECURE=auto` (the default): the login cookie is marked `Secure`
-whenever the connection is HTTPS, so it works behind the TLS proxy and never
-sends the session cookie in cleartext. By default the app binds only to
-`127.0.0.1`, so it is reachable **only** through your TLS proxy — never directly
-over plain HTTP from the network. (For a trusted private LAN with no proxy, set
+There are only two moving parts, and DOCENT drafts both for you in **Admin → Site
+address & domain setup** (enter the address you want and the machine's IP):
+
+**1. Ask IT to point a subdomain at your machine.** They add a single **DNS "A
+record"** mapping the name to the machine's IP address — a small, routine request.
+The admin panel generates a ready-to-send email; it boils down to:
+
+> **Type:** A · **Name:** `docent.university.edu` · **Value:** `<your machine's IP>` · **TTL:** 3600
+
+> If the machine is on the campus network behind NAT/a firewall, mention that in the
+> same request — IT will tell you the right address to use and open ports **80** and
+> **443** for you.
+
+**2. Run Caddy for automatic HTTPS.** The admin panel also generates a ready-to-use
+`Caddyfile`. Install [Caddy](https://caddyserver.com) on the machine, drop the file
+in place, and it obtains and renews a TLS certificate on its own — no cert wrangling:
+
+```bash
+sudo apt-get install -y caddy
+# use the Caddyfile from the admin panel, or write it yourself:
+echo 'docent.university.edu {
+    reverse_proxy 127.0.0.1:8080
+}' | sudo tee /etc/caddy/Caddyfile
+sudo systemctl restart caddy
+```
+
+<details><summary>Prefer nginx? (you supply the TLS certs)</summary>
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name docent.university.edu;
+    ssl_certificate     /etc/letsencrypt/live/docent.university.edu/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/docent.university.edu/privkey.pem;
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+</details>
+
+Once DNS propagates (usually minutes, up to an hour), open
+`https://docent.university.edu` and share the access code with your community. Set
+`CONTACT_EMAIL` in `.env` (or in the admin panel) so people know who to ask for it.
+Leave `COOKIE_SECURE=auto` (the default) so the login cookie is marked `Secure` over
+HTTPS. DOCENT stays bound to `127.0.0.1`, so it's reachable **only** through Caddy —
+never directly over plain HTTP. (For a trusted private LAN with no proxy, set
 `BIND_HOST=0.0.0.0` in `.env`.)
 
 See **[SECURITY.md](SECURITY.md)** for the full secure-deployment checklist.
-
-#### Getting a subdomain from your IT department
-
-If DOCENT runs on a server your institution owns, you usually **don't** need to buy
-a domain — your IT/networking team can point a subdomain of your existing domain
-(e.g. `docent.university.edu`) at the server. It's a small, routine request for
-them: a single **DNS "A record"** mapping the name to your server's public IP.
-
-DOCENT writes the request for you. Sign in as an admin, open **Admin → Site address
-& domain setup**, enter the address you want (`https://docent.university.edu`) and
-your server's public IP, and it generates:
-
-1. A ready-to-send **email to your IT department** with the exact A-record details.
-2. A **Caddyfile** for the server that terminates HTTPS automatically.
-
-The request you'll send looks like this:
-
-> **Type:** A **Name:** `docent.university.edu` **Value:** `<your server's public IP>` **TTL:** 3600
-
-Once IT confirms the record is live (DNS can take up to an hour to propagate), put
-the generated `Caddyfile` at `/etc/caddy/Caddyfile`, run
-`sudo systemctl restart caddy`, and the site is reachable over HTTPS at your
-subdomain. That's the whole handoff — the app never touches DNS or certificates
-itself; those live at the network/proxy layer by design.
-
-**3. Create the admin account**
-
-Registration **requires an access code**. `start.sh` generates one and prints it
-(also stored as `INVITE_CODE` in `.env`); set `CONTACT_EMAIL` in `.env` so people
-know who to ask for it, then re-run `./scripts/start.sh`. Open
-`https://docent.example.org`, register with the access code — **the first account
-registered automatically becomes the admin** — then share the code only with the
-community members you want to let in.
 
 ### Helper scripts
 
@@ -179,17 +178,19 @@ curl -o .env https://raw.githubusercontent.com/lawrenceleejr/DOCENT/main/.env.ex
 DOCENT_TAG=v0.1.0 docker compose -f docker-compose.release.yml up -d
 ```
 
-This is the fastest path for a fresh server: no Node/Python toolchain, no build
-step — just Docker pulling the release images. Front it with the same TLS proxy
-as above. To update, `docker compose -f docker-compose.release.yml pull && … up -d`.
-The images are built for **amd64 and arm64**, so they run on both x86 servers and
-Arm hosts (see the free Oracle option below).
+This is the fastest path for a fresh machine: no Node/Python toolchain, no build
+step — just Docker pulling the release images. To update,
+`docker compose -f docker-compose.release.yml pull && … up -d`. The images are
+built for **amd64 and arm64**, so they run on both x86 and Arm hosts. Expose it to
+your community with the same subdomain + Caddy steps as
+[Go live](#go-live-put-it-on-your-subdomain).
 
-## Free hosting (run it at no cost)
+## No machine of your own? Run it free in the cloud
 
-DOCENT's whole stack fits comfortably inside a free "always-free" cloud VM. These
-tiers are genuinely $0 (a card may be required for identity verification but you
-are not charged while you stay on always-free resources):
+The setup above assumes a machine you control. If you don't have one, DOCENT's whole
+stack fits comfortably inside a free "always-free" cloud VM instead. These tiers are
+genuinely $0 (a card may be required for identity verification, but you are not
+charged while you stay on always-free resources):
 
 | Provider | Always-free VM | Notes for DOCENT |
 |---|---|---|
@@ -256,25 +257,25 @@ git clone https://github.com/lawrenceleejr/DOCENT.git && cd DOCENT
 instead: `docker compose -f docker-compose.release.yml up -d` (set the secrets in
 `.env` first — see [Run the published images](#run-the-published-images-no-build)).
 
-**6. Get a free domain + automatic HTTPS**
-- Free subdomain: create one at [duckdns.org](https://www.duckdns.org) (e.g.
-  `yourname.duckdns.org`) and point it at your instance's public IP. (Any domain
-  you own works too — add an **A record** to the public IP.)
-- Put **[Caddy](https://caddyserver.com)** in front for automatic Let's Encrypt
-  certificates:
-  ```bash
-  sudo apt-get install -y caddy
-  echo 'yourname.duckdns.org {
-      reverse_proxy 127.0.0.1:8080
-  }' | sudo tee /etc/caddy/Caddyfile
-  sudo systemctl restart caddy
-  ```
-  Caddy fetches a TLS cert on first request. DOCENT stays bound to `127.0.0.1`, so
-  it's reachable **only** through Caddy over HTTPS.
+**6. Point a domain at it + automatic HTTPS** — you need a domain or subdomain you
+control pointing at the instance's public IP. Either a subdomain your institution
+points at the VM (same A-record request as [Go
+live](#go-live-put-it-on-your-subdomain)), or a domain you own. Add an **A record**
+→ the instance's public IP, then run **[Caddy](https://caddyserver.com)** for
+automatic Let's Encrypt certificates:
+```bash
+sudo apt-get install -y caddy
+echo 'docent.example.org {
+    reverse_proxy 127.0.0.1:8080
+}' | sudo tee /etc/caddy/Caddyfile
+sudo systemctl restart caddy
+```
+Caddy fetches a TLS cert on first request. DOCENT stays bound to `127.0.0.1`, so it's
+reachable **only** through Caddy over HTTPS.
 
-**7. Create your admin account** — open `https://yourname.duckdns.org`, register
-with the access code `start.sh` printed (**the first account becomes admin**),
-then share the code only with the people you want to let in.
+**7. Create your admin account** — open `https://docent.example.org`, register with
+the access code `start.sh` printed (**the first account becomes admin**), then share
+the code only with the people you want to let in.
 
 That's it — a free, self-hosted, HTTPS DOCENT. Take backups off-box periodically
 (`./scripts/download-backups.sh`) since a free VM is still a single machine.
