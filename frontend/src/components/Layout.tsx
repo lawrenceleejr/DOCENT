@@ -42,6 +42,7 @@ const TABS = [
   { value: '/venues', label: 'Venues' },
   { value: '/map', label: 'Map' },
   { value: '/analysis', label: 'Analysis' },
+  { value: '/reports', label: 'Reports' },
 ];
 
 function initials(name?: string) {

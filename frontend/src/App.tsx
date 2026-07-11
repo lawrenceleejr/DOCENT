@@ -9,6 +9,7 @@ import { MapPage } from './pages/MapPage';
 import { SchedulePage } from './pages/SchedulePage';
 import { ProfilePage } from './pages/ProfilePage';
 import { RegisterPage } from './pages/RegisterPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { VenueDetailPage } from './pages/VenueDetailPage';
 import { VenueListPage } from './pages/VenueListPage';
 import { VisitDetailPage } from './pages/VisitDetailPage';
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/schedule" element={<SchedulePage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/analysis" element={<DashboardPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Route>

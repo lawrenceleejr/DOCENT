@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from app.config import get_settings
-from app.routers import admin, auth, map, stats, users, venues, visits
+from app.routers import admin, auth, map, reports, stats, users, venues, visits
 
 INSECURE_SECRET = "dev-secret-do-not-use-in-production"
 
@@ -29,6 +29,7 @@ app.include_router(visits.router)
 app.include_router(stats.router)
 app.include_router(admin.router)
 app.include_router(map.router)
+app.include_router(reports.router)
 
 
 @app.get("/api/health")

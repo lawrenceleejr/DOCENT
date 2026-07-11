@@ -30,6 +30,10 @@ Researchers register accounts and log each visit — venue, date, contact person
 
 ![Schedule](docs/screenshots/04-schedule.png)
 
+**Reports** — export a grant-ready summary of activity (yours or the whole community) over a custom date range as PDF, CSV, Markdown, or JSON. Factual data only — no private notes or ratings.
+
+![Reports](docs/screenshots/07-reports.png)
+
 **Admin** — manage users, reset passwords, and **import institutions near a location** (address + radius in km/mi) straight from OpenStreetMap.
 
 ![Admin](docs/screenshots/06-admin.png)
@@ -167,6 +171,25 @@ map coverage, so planning ahead never inflates your impact numbers.
   to import into Google/Apple/Outlook Calendar (`GET /api/visits/calendar.ics`).
   Times are "floating" — shown in each viewer's local timezone. Events without a
   start time export as all-day.
+
+## Reports (grant-ready exports)
+
+The **Reports** tab exports a shareable summary of outreach activity — the kind
+of thing you paste into a grant report, annual review, or "look what we did"
+one-pager. It is deliberately a **bragging document**: only factual activity
+data, never private notes, reflections, ratings, or host contact details.
+
+- **Scope:** *My activities* or *Everyone* (the whole community).
+- **Filters:** custom date range, status (completed / planned / all), venue
+  type, event type, and audience level. A live preview table and summary
+  (activities, people reached, distinct venues) update as you change filters.
+- **Formats:** download the same filtered report as **PDF** (a formatted table
+  for handing off), **CSV** (spreadsheets), **Markdown** (drop into a doc), or
+  **JSON** (machine-readable). One endpoint serves all four:
+  `GET /api/reports/activities?format=pdf|csv|md|json&scope=…&date_from=…`.
+
+Columns are factual: date, activity, event type, venue, city/state, audience,
+people reached, duration, presenter, co-presenters, host name/role, and status.
 
 ## Map & coverage (finding gaps)
 

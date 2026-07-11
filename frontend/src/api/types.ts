@@ -270,3 +270,46 @@ export function institutionVenueType(inst: {
 export const MAX_PEOPLE_REACHED = 100_000;
 // Above this we ask the user to confirm, to catch a stray extra zero.
 export const PEOPLE_REACHED_CONFIRM_THRESHOLD = 2_000;
+
+// ---- Reports (grant-ready activity exports) ----
+export const REPORT_SCOPES = ['mine', 'all'] as const;
+export type ReportScope = (typeof REPORT_SCOPES)[number];
+
+export const REPORT_STATUS = ['completed', 'planned', 'all'] as const;
+export type ReportStatusFilter = (typeof REPORT_STATUS)[number];
+
+export interface ReportSummary {
+  total_activities: number;
+  total_people_reached: number;
+  distinct_venues: number;
+  first_activity: string | null;
+  last_activity: string | null;
+}
+
+export interface ReportRow {
+  date: string;
+  title: string;
+  event_type: string;
+  venue: string;
+  city: string;
+  state: string;
+  location: string;
+  audience: string;
+  people_reached: number;
+  duration_minutes: number | null;
+  presenter: string;
+  additional_presenters: string;
+  host: string;
+  host_role: string;
+  status: string;
+}
+
+export interface ActivityReport {
+  title: string;
+  scope: ReportScope;
+  generated_at: string;
+  date_from: string | null;
+  date_to: string | null;
+  summary: ReportSummary;
+  rows: ReportRow[];
+}
