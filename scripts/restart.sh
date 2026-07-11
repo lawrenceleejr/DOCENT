@@ -10,5 +10,5 @@ if [ -f .env ] && grep -qE '^SITE_DOMAIN=[^[:space:]]+' .env; then
     profile_args=(--profile tls)
 fi
 
-docker compose "${profile_args[@]}" restart
-docker compose "${profile_args[@]}" ps
+docker compose ${profile_args[@]+"${profile_args[@]}"} restart
+docker compose ${profile_args[@]+"${profile_args[@]}"} ps

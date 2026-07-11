@@ -36,10 +36,10 @@ if [ -n "${domain}" ]; then
 fi
 
 echo "Building and starting containers..."
-docker compose "${profile_args[@]}" up -d --build
+docker compose ${profile_args[@]+"${profile_args[@]}"} up -d --build
 
 echo
-docker compose "${profile_args[@]}" ps
+docker compose ${profile_args[@]+"${profile_args[@]}"} ps
 port=$(grep -E '^HTTP_PORT=' .env | cut -d= -f2)
 echo
 if [ -n "${domain}" ]; then
