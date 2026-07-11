@@ -20,10 +20,10 @@ export function LogoMark({ size = 28 }: { size?: number }) {
       </defs>
       <rect width="32" height="32" rx="8" fill={`url(#${id})`} />
       <g fill="none" stroke="#fff" strokeLinecap="round">
-        <circle cx="10" cy="22" r="2.4" fill="#fff" stroke="none" />
-        <path d="M14 18 A 6 6 0 0 1 14 26" strokeWidth="2.1" opacity="0.95" />
-        <path d="M17.5 14.5 A 11 11 0 0 1 17.5 29.5" strokeWidth="2.1" opacity="0.7" />
-        <path d="M21 11 A 16 16 0 0 1 21 33" strokeWidth="2.1" opacity="0.45" />
+        <circle cx="10.5" cy="16" r="2.4" fill="#fff" stroke="none" />
+        <path d="M13.5 12 A 6 6 0 0 1 13.5 20" strokeWidth="2.2" opacity="0.95" />
+        <path d="M16.5 9 A 10 10 0 0 1 16.5 23" strokeWidth="2.2" opacity="0.7" />
+        <path d="M19.5 6 A 14 14 0 0 1 19.5 26" strokeWidth="2.2" opacity="0.48" />
       </g>
     </svg>
   );
