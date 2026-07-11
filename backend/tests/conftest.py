@@ -16,6 +16,10 @@ TEST_DATABASE_URL = os.environ.get(
 
 # TestClient talks plain http, so secure-only cookies would never be sent back.
 get_settings().cookie_secure = False
+# A non-default secret so the startup guard passes; rate limiting off so the
+# many logins across the suite don't trip it.
+get_settings().secret_key = "test-secret-not-the-insecure-default"
+get_settings().rate_limit_enabled = False
 
 
 def _ensure_test_database() -> None:

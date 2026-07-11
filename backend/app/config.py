@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     # "auto" (default): Secure flag follows the real connection (X-Forwarded-Proto
     # / scheme) so login works on plain http AND https. "true"/"false" force it.
     cookie_secure: str = "auto"
+    rate_limit_enabled: bool = True
     overpass_url: str = "https://overpass-api.de/api/interpreter"
     nominatim_url: str = "https://nominatim.openstreetmap.org/search"
 

@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import func, select
 
 from app.config import get_settings
 from app.deps import CurrentUser, DbSession
 from app.models import User
+from app.ratelimit import login_rate_limit, register_rate_limit
 from app.schemas import LoginRequest, RegisterRequest, UserOut
 from app.security import (
     clear_auth_cookie,
@@ -16,7 +17,12 @@ from app.security import (
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=UserOut,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(register_rate_limit)],
+)
 def register(body: RegisterRequest, request: Request, response: Response, db: DbSession):
     settings = get_settings()
     if settings.invite_code and body.invite_code != settings.invite_code:
@@ -48,7 +54,7 @@ def register(body: RegisterRequest, request: Request, response: Response, db: Db
     return user
 
 
-@router.post("/login", response_model=UserOut)
+@router.post("/login", response_model=UserOut, dependencies=[Depends(login_rate_limit)])
 def login(body: LoginRequest, request: Request, response: Response, db: DbSession):
     user = db.scalar(select(User).where(User.email == body.email.lower()))
     if not user or not verify_password(body.password, user.password_hash):
