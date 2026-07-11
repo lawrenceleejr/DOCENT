@@ -80,7 +80,7 @@ export function VenueListPage() {
 
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={620}>
-        <Table highlightOnHover stickyHeader stickyHeaderOffset={60}>
+        <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Name</Table.Th>

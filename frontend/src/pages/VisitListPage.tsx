@@ -175,7 +175,7 @@ export function VisitListPage() {
 
       <Card withBorder p={0} visibleFrom="sm">
         <Table.ScrollContainer minWidth={780}>
-        <Table highlightOnHover stickyHeader stickyHeaderOffset={60}>
+        <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>

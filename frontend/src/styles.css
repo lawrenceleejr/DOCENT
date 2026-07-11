@@ -12,6 +12,13 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Badges carry short status/category labels — never truncate them. Letting the
+   label render at full width also lets auto-layout table cells grow to fit,
+   which fixes "COMPLET…" / "GENERAL PUB…" clipping in the visits table. */
+.mantine-Badge-label {
+  overflow: visible;
+}
+
 /* Two-panel auth layout: single column on phones, split on >=sm. */
 .auth-grid {
   min-height: 100vh;

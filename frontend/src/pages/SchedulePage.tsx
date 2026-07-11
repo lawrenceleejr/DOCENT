@@ -59,7 +59,7 @@ export function SchedulePage() {
 
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={640}>
-        <Table highlightOnHover stickyHeader stickyHeaderOffset={60}>
+        <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Date</Table.Th>
