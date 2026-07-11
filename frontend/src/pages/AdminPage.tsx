@@ -36,6 +36,7 @@ import { useAuth } from '../auth/AuthContext';
 import { BackupsCard } from '../components/BackupsCard';
 import { InstitutionImportCard } from '../components/InstitutionImportCard';
 import { InstitutionManagerCard } from '../components/InstitutionManagerCard';
+import { SiteSetupCard } from '../components/SiteSetupCard';
 
 const PAGE_SIZE = 25;
 
@@ -327,6 +328,7 @@ export function AdminPage() {
     <Stack>
       <Title order={2}>Admin</Title>
       <RegistrationCard />
+      <SiteSetupCard />
       <BackupsCard />
       <InstitutionImportCard />
       <InstitutionManagerCard />

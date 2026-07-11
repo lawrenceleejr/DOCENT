@@ -23,6 +23,8 @@ services:
       INVITE_CODE: ${INVITE_CODE:-}
       # Shown on the login/register pages for access-code / reset requests.
       CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+      # Optional canonical public address; admins can also set it in the app.
+      SITE_URL: ${SITE_URL:-}
       ACCESS_TOKEN_DAYS: ${ACCESS_TOKEN_DAYS:-7}
       COOKIE_SECURE: ${COOKIE_SECURE:-auto}
       # Optional: path (inside the container) to a CA bundle so the institution

@@ -35,8 +35,10 @@ from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
 from app.services.settings import (
     CONTACT_EMAIL_KEY,
     INVITE_CODE_KEY,
+    SITE_URL_KEY,
     effective_contact_email,
     effective_invite_code,
+    effective_site_url,
     set_setting,
 )
 
@@ -105,6 +107,7 @@ def get_registration_settings(db: DbSession, _admin: CurrentAdmin):
     return RegistrationSettings(
         invite_code=effective_invite_code(db),
         contact_email=effective_contact_email(db),
+        site_url=effective_site_url(db),
     )
 
 
@@ -116,10 +119,13 @@ def update_registration_settings(
         set_setting(db, INVITE_CODE_KEY, body.invite_code.strip())
     if body.contact_email is not None:
         set_setting(db, CONTACT_EMAIL_KEY, body.contact_email.strip())
+    if body.site_url is not None:
+        set_setting(db, SITE_URL_KEY, body.site_url.strip())
     db.commit()
     return RegistrationSettings(
         invite_code=effective_invite_code(db),
         contact_email=effective_contact_email(db),
+        site_url=effective_site_url(db),
     )
 
 

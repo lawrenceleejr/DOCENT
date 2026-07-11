@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     # Shown on the login/register pages so people know where to request an access
     # code or a password reset. Empty falls back to a generic message.
     contact_email: str = ""
+    # Canonical public address of this instance, e.g. https://docent.your-org.edu.
+    # Informational: used to generate the DNS / reverse-proxy setup guide in the
+    # admin panel. Admins can set it from the UI (DB value overrides this).
+    site_url: str = ""
     access_token_days: int = 7
     # "auto" (default): Secure flag follows the real connection (X-Forwarded-Proto
     # / scheme) so login works on plain http AND https. "true"/"false" force it.

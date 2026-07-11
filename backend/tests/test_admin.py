@@ -30,6 +30,15 @@ def test_admin_sets_contact_email(client):
     assert client.get("/api/auth/config").json()["contact_email"] == "help@lab.org"
 
 
+def test_admin_sets_site_url(client):
+    register(client, email="admin@example.com")
+    assert client.get("/api/admin/settings").json()["site_url"] == ""
+    r = client.patch("/api/admin/settings", json={"site_url": " https://docent.lab.edu "})
+    assert r.status_code == 200
+    assert r.json()["site_url"] == "https://docent.lab.edu"  # trimmed
+    assert client.get("/api/admin/settings").json()["site_url"] == "https://docent.lab.edu"
+
+
 def test_admin_changes_user_email(client, make_client):
     register(client, email="admin@example.com")
     other = make_client()

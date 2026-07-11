@@ -11,6 +11,7 @@ from app.models import Setting
 
 INVITE_CODE_KEY = "invite_code"
 CONTACT_EMAIL_KEY = "contact_email"
+SITE_URL_KEY = "site_url"
 
 
 def get_setting(db: Session, key: str) -> str | None:
@@ -34,3 +35,8 @@ def effective_invite_code(db: Session) -> str:
 def effective_contact_email(db: Session) -> str:
     override = get_setting(db, CONTACT_EMAIL_KEY)
     return override if override is not None else get_settings().contact_email
+
+
+def effective_site_url(db: Session) -> str:
+    override = get_setting(db, SITE_URL_KEY)
+    return override if override is not None else get_settings().site_url

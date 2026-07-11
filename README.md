@@ -106,6 +106,30 @@ over plain HTTP from the network. (For a trusted private LAN with no proxy, set
 
 See **[SECURITY.md](SECURITY.md)** for the full secure-deployment checklist.
 
+#### Getting a subdomain from your IT department
+
+If DOCENT runs on a server your institution owns, you usually **don't** need to buy
+a domain — your IT/networking team can point a subdomain of your existing domain
+(e.g. `docent.university.edu`) at the server. It's a small, routine request for
+them: a single **DNS "A record"** mapping the name to your server's public IP.
+
+DOCENT writes the request for you. Sign in as an admin, open **Admin → Site address
+& domain setup**, enter the address you want (`https://docent.university.edu`) and
+your server's public IP, and it generates:
+
+1. A ready-to-send **email to your IT department** with the exact A-record details.
+2. A **Caddyfile** for the server that terminates HTTPS automatically.
+
+The request you'll send looks like this:
+
+> **Type:** A **Name:** `docent.university.edu` **Value:** `<your server's public IP>` **TTL:** 3600
+
+Once IT confirms the record is live (DNS can take up to an hour to propagate), put
+the generated `Caddyfile` at `/etc/caddy/Caddyfile`, run
+`sudo systemctl restart caddy`, and the site is reachable over HTTPS at your
+subdomain. That's the whole handoff — the app never touches DNS or certificates
+itself; those live at the network/proxy layer by design.
+
 **3. Create the admin account**
 
 Registration **requires an access code**. `start.sh` generates one and prints it

@@ -324,6 +324,7 @@ export interface AuthConfig {
 export interface RegistrationSettings {
   invite_code: string;
   contact_email: string;
+  site_url: string;
 }
 
 export interface AdminInstitution {

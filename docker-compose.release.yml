@@ -30,6 +30,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
       INVITE_CODE: ${INVITE_CODE:-}
       CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+      SITE_URL: ${SITE_URL:-}
       ACCESS_TOKEN_DAYS: ${ACCESS_TOKEN_DAYS:-7}
       COOKIE_SECURE: ${COOKIE_SECURE:-auto}
     volumes:

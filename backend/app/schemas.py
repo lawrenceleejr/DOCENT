@@ -145,11 +145,13 @@ class BackupList(BaseModel):
 class RegistrationSettings(BaseModel):
     invite_code: str
     contact_email: str
+    site_url: str
 
 
 class RegistrationSettingsUpdate(BaseModel):
     invite_code: str | None = None
     contact_email: str | None = None
+    site_url: str | None = None
 
 
 class PasswordResetResult(BaseModel):
