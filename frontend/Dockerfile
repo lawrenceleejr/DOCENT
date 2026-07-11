@@ -6,6 +6,7 @@ COPY package.json package-lock.json extra-ca.crt* ./
 RUN if [ -f extra-ca.crt ]; then npm config set cafile /app/extra-ca.crt; fi \
     && npm ci --no-audit --no-fund
 COPY tsconfig.json vite.config.ts postcss.config.cjs index.html ./
+COPY public ./public
 COPY src ./src
 RUN npm run build
 
