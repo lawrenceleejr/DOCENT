@@ -78,7 +78,7 @@ export function Layout({ children }: { children: ReactNode }) {
               style={{ flexShrink: 0 }}
               aria-label="DOCENT home"
             >
-              <Logo size={30} />
+              <Logo size={30} ping />
             </UnstyledButton>
             {/* Horizontal-scroll the tabs so all nav stays reachable on phones. */}
             <ScrollArea type="never" style={{ minWidth: 0 }}>

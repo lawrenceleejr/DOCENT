@@ -179,3 +179,23 @@
   }
   .dc-wave { display: none; }
 }
+
+/* ── Ping-only mark (chrome/header): the looping radar ping with NO entrance
+   reveal. Reuses the reveal's loop keyframes but starts immediately. ──────── */
+.dc-mark [class^='dcm-'] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.dcm-wave  { animation: dcWave 5s cubic-bezier(0.2, 0.5, 0.3, 1) 0s infinite both; }
+.dcm-core  { animation: dcCore 5s ease-in-out 0s infinite both; }
+.dcm-ring1 { animation: dcLit1 5s ease-out 0s infinite; }
+.dcm-ring2 { animation: dcLit2 5s ease-out 0s infinite; }
+.dcm-ring3 { animation: dcLit3 5s ease-out 0s infinite; }
+.dcm-flash1 { animation: dcFlash1 5s ease-out 0s infinite both; }
+.dcm-flash2 { animation: dcFlash2 5s ease-out 0s infinite both; }
+.dcm-flash3 { animation: dcFlash3 5s ease-out 0s infinite both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-mark [class^='dcm-'] { animation: none !important; }
+  .dcm-wave { display: none; }
+}

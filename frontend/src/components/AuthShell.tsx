@@ -1,4 +1,4 @@
-import { Box, Center, List, Stack, Text, ThemeIcon } from '@mantine/core';
+import { Anchor, Box, Center, List, Stack, Text, ThemeIcon } from '@mantine/core';
 import {
   IconCalendarEvent,
   IconChartHistogram,
@@ -78,11 +78,25 @@ export function AuthShell({ children }: { children: ReactNode }) {
       </Box>
 
       {/* Form panel */}
-      <Center p="lg">
-        <Box w="100%" maw={400}>
-          {children}
-        </Box>
-      </Center>
+      <Box style={{ display: 'flex', flexDirection: 'column', padding: '1.5rem' }}>
+        <Center style={{ flex: 1 }}>
+          <Box w="100%" maw={400}>
+            {children}
+          </Box>
+        </Center>
+        <Text size="xs" c="dimmed" ta="center" mt="lg">
+          DOCENT · © 2026 Lawrence Lee · Free software under the{' '}
+          <Anchor
+            href="https://www.gnu.org/licenses/gpl-3.0.html"
+            target="_blank"
+            rel="noreferrer"
+            c="dimmed"
+            underline="always"
+          >
+            GNU GPL v3
+          </Anchor>
+        </Text>
+      </Box>
     </Box>
   );
 }

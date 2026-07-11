@@ -1,16 +1,20 @@
 import { Group, Text } from '@mantine/core';
+import './LogoReveal.css';
 
 /**
  * The DOCENT brand mark — a central hub node radiating three orbital rings, with
  * community nodes sitting exactly on those orbits. Reads as a signal/outreach
  * ripple and as an atom / solar system: a decentralized network reaching outward.
  *
- * Static (chrome) mark. For the animated splash/auth reveal see LogoReveal.tsx.
+ * Static by default. Pass `ping` to run the looping radar "ping" (used in the
+ * app header) — the same steady-state loop as LogoReveal, but with no one-time
+ * entrance animation. For the full splash/auth reveal see LogoReveal.tsx.
  */
-export function LogoMark({ size = 28 }: { size?: number }) {
-  const gid = `docent-grad-${size}`;
+export function LogoMark({ size = 28, ping = false }: { size?: number; ping?: boolean }) {
+  const gid = `docent-grad-${size}${ping ? '-ping' : ''}`;
   return (
     <svg
+      className={ping ? 'dc-mark' : undefined}
       width={size}
       height={size}
       viewBox="0 0 64 64"
@@ -28,18 +32,23 @@ export function LogoMark({ size = 28 }: { size?: number }) {
       <rect x="1.5" y="1.5" width="61" height="61" rx="15" fill={`url(#${gid})`} />
 
       {/* orbital rings, centred on the hub */}
-      <circle cx="32" cy="32" r="21.5" fill="none" stroke="rgba(255,255,255,0.32)" strokeWidth="1.7" />
-      <circle cx="32" cy="32" r="15" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.9" />
-      <circle cx="32" cy="32" r="8.5" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2.1" />
+      <circle className={ping ? 'dcm-ring3' : undefined} cx="32" cy="32" r="21.5" fill="none" stroke="rgba(255,255,255,0.32)" strokeWidth="1.7" />
+      <circle className={ping ? 'dcm-ring2' : undefined} cx="32" cy="32" r="15" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.9" />
+      <circle className={ping ? 'dcm-ring1' : undefined} cx="32" cy="32" r="8.5" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2.1" />
+
+      {/* radar sweep (only when pinging) */}
+      {ping && (
+        <circle className="dcm-wave" cx="32" cy="32" r="24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" />
+      )}
 
       {/* community nodes on their orbits */}
-      <circle cx="37.5" cy="25.5" r="2.5" fill="#fff" />
-      <circle cx="17.9" cy="26.9" r="2.5" fill="#fff" />
-      <circle cx="35.9" cy="46.5" r="2.5" fill="#fff" />
-      <circle cx="51.5" cy="41.1" r="2.5" fill="#fff" />
+      <circle className={ping ? 'dcm-flash1' : undefined} cx="37.5" cy="25.5" r="2.5" fill="#fff" />
+      <circle className={ping ? 'dcm-flash2' : undefined} cx="17.9" cy="26.9" r="2.5" fill="#fff" />
+      <circle className={ping ? 'dcm-flash2' : undefined} cx="35.9" cy="46.5" r="2.5" fill="#fff" />
+      <circle className={ping ? 'dcm-flash3' : undefined} cx="51.5" cy="41.1" r="2.5" fill="#fff" />
 
       {/* central hub node */}
-      <circle cx="32" cy="32" r="4" fill="#fff" />
+      <circle className={ping ? 'dcm-core' : undefined} cx="32" cy="32" r="4" fill="#fff" />
     </svg>
   );
 }
@@ -48,13 +57,15 @@ export function LogoMark({ size = 28 }: { size?: number }) {
 export function Logo({
   size = 28,
   showWordmark = true,
+  ping = false,
 }: {
   size?: number;
   showWordmark?: boolean;
+  ping?: boolean;
 }) {
   return (
     <Group gap="xs" wrap="nowrap">
-      <LogoMark size={size} />
+      <LogoMark size={size} ping={ping} />
       {showWordmark && (
         <Text
           span
