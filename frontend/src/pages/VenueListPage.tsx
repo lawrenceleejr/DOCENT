@@ -13,11 +13,13 @@ import {
   Title,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { IconBuildingCommunity } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { labelize, VENUE_TYPES, type Paginated, type VenueListItem } from '../api/types';
+import { EmptyState } from '../components/EmptyState';
 import { VenueFormModal } from '../components/VenuePicker';
 
 const PAGE_SIZE = 25;
@@ -45,7 +47,9 @@ export function VenueListPage() {
     <Stack>
       <Group justify="space-between">
         <Title order={2}>Venues</Title>
-        <Button onClick={create.open}>Add venue</Button>
+        <Button variant="gradient" onClick={create.open}>
+          Add venue
+        </Button>
       </Group>
 
       <Card withBorder p="md">
@@ -76,7 +80,7 @@ export function VenueListPage() {
 
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={620}>
-        <Table highlightOnHover>
+        <Table highlightOnHover stickyHeader stickyHeaderOffset={60}>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Name</Table.Th>
@@ -103,17 +107,21 @@ export function VenueListPage() {
                 </Table.Td>
                 <Table.Td>{venue.city ?? '—'}</Table.Td>
                 <Table.Td>{venue.state ?? '—'}</Table.Td>
-                <Table.Td ta="right" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                <Table.Td ta="right" className="tabular-nums">
                   {venue.visit_count}
                 </Table.Td>
               </Table.Tr>
             ))}
             {(data?.items.length ?? 0) === 0 && (
               <Table.Tr>
-                <Table.Td colSpan={5}>
-                  <Text c="dimmed" ta="center" py="lg">
-                    No venues found
-                  </Text>
+                <Table.Td colSpan={5} p={0}>
+                  <EmptyState
+                    icon={IconBuildingCommunity}
+                    title="No venues found"
+                    description="Add a school, college, museum, or library to start tracking outreach there."
+                    actionLabel="Add venue"
+                    onAction={create.open}
+                  />
                 </Table.Td>
               </Table.Tr>
             )}

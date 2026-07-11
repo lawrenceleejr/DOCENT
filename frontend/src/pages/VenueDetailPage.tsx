@@ -135,7 +135,7 @@ export function VenueDetailPage() {
       <Title order={3}>Visit history</Title>
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={640}>
-        <Table highlightOnHover>
+        <Table highlightOnHover stickyHeader stickyHeaderOffset={60}>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Date</Table.Th>

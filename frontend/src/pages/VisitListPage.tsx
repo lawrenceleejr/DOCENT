@@ -1,6 +1,7 @@
 import {
   Anchor,
   Badge,
+  Box,
   Button,
   Card,
   Group,
@@ -15,9 +16,11 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
+import { IconClipboardList } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { EmptyState } from '../components/EmptyState';
 import { buildQuery } from '../api/client';
 import { api } from '../api/client';
 import {
@@ -87,7 +90,9 @@ export function VisitListPage() {
           <Button component="a" href={exportHref} variant="default">
             Export CSV
           </Button>
-          <Button onClick={() => navigate('/visits/new')}>Log a visit</Button>
+          <Button variant="gradient" onClick={() => navigate('/visits/new')}>
+            Log a visit
+          </Button>
         </Group>
       </Group>
 
@@ -168,9 +173,9 @@ export function VisitListPage() {
         </Group>
       </Card>
 
-      <Card withBorder p={0}>
+      <Card withBorder p={0} visibleFrom="sm">
         <Table.ScrollContainer minWidth={780}>
-        <Table highlightOnHover>
+        <Table highlightOnHover stickyHeader stickyHeaderOffset={60}>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>
@@ -230,16 +235,30 @@ export function VisitListPage() {
                 <Table.Td>
                   <Badge variant="light">{labelize(visit.audience_level)}</Badge>
                 </Table.Td>
-                <Table.Td ta="right">{visit.people_reached.toLocaleString()}</Table.Td>
-                <Table.Td>{visit.rating ? '★'.repeat(visit.rating) : '—'}</Table.Td>
+                <Table.Td ta="right" className="tabular-nums">
+                  {visit.people_reached.toLocaleString()}
+                </Table.Td>
+                <Table.Td>
+                  {visit.rating ? (
+                    <Text span c="yellow.5">
+                      {'★'.repeat(visit.rating)}
+                    </Text>
+                  ) : (
+                    '—'
+                  )}
+                </Table.Td>
               </Table.Tr>
             ))}
             {!isLoading && (data?.items.length ?? 0) === 0 && (
               <Table.Tr>
-                <Table.Td colSpan={8}>
-                  <Text c="dimmed" ta="center" py="lg">
-                    No visits yet — log your first outreach visit!
-                  </Text>
+                <Table.Td colSpan={8} p={0}>
+                  <EmptyState
+                    icon={IconClipboardList}
+                    title="No visits found"
+                    description="No visits match these filters yet. Log your first outreach visit to get started."
+                    actionLabel="Log a visit"
+                    onAction={() => navigate('/visits/new')}
+                  />
                 </Table.Td>
               </Table.Tr>
             )}
@@ -247,6 +266,24 @@ export function VisitListPage() {
         </Table>
         </Table.ScrollContainer>
       </Card>
+
+      {/* Mobile: stacked cards instead of a horizontally-scrolled table. */}
+      <Stack hiddenFrom="sm" gap="sm">
+        {(data?.items ?? []).map((visit) => (
+          <VisitCard key={visit.id} visit={visit} onClick={() => navigate(`/visits/${visit.id}`)} />
+        ))}
+        {!isLoading && (data?.items.length ?? 0) === 0 && (
+          <Card withBorder p={0}>
+            <EmptyState
+              icon={IconClipboardList}
+              title="No visits found"
+              description="No visits match these filters yet."
+              actionLabel="Log a visit"
+              onAction={() => navigate('/visits/new')}
+            />
+          </Card>
+        )}
+      </Stack>
 
       <Group justify="space-between">
         <Text size="sm" c="dimmed">
@@ -259,6 +296,59 @@ export function VisitListPage() {
         />
       </Group>
     </Stack>
+  );
+}
+
+export function VisitStatusBadge({ visit }: { visit: Visit }) {
+  if (isOverdue(visit)) {
+    return (
+      <Badge variant="light" color="red">
+        Overdue
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="light" color={visit.status === 'planned' ? 'blue' : 'green'}>
+      {labelize(visit.status)}
+    </Badge>
+  );
+}
+
+function VisitCard({ visit, onClick }: { visit: Visit; onClick: () => void }) {
+  return (
+    <Card withBorder p="md" onClick={onClick} style={{ cursor: 'pointer' }}>
+      <Group justify="space-between" wrap="nowrap" align="flex-start">
+        <Text fw={600} lineClamp={2} style={{ minWidth: 0 }}>
+          {visit.title}
+        </Text>
+        <Box style={{ flexShrink: 0 }}>
+          <VisitStatusBadge visit={visit} />
+        </Box>
+      </Group>
+      <Text size="sm" c="dimmed" mt={4}>
+        {visit.visit_date}
+        {visit.start_time ? ` · ${visit.start_time.slice(0, 5)}` : ''}
+      </Text>
+      <Text size="sm" mt={2}>
+        {visit.venue.name}
+        {visit.venue.city ? `, ${visit.venue.city}` : ''}
+      </Text>
+      <Group justify="space-between" mt="sm" wrap="nowrap">
+        <Badge variant="light" size="sm">
+          {labelize(visit.audience_level)}
+        </Badge>
+        <Group gap="md" wrap="nowrap">
+          {visit.rating ? (
+            <Text span size="sm" c="yellow.5">
+              {'★'.repeat(visit.rating)}
+            </Text>
+          ) : null}
+          <Text size="sm" c="dimmed" className="tabular-nums">
+            {visit.people_reached.toLocaleString()} reached
+          </Text>
+        </Group>
+      </Group>
+    </Card>
   );
 }
 

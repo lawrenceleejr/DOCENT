@@ -9,11 +9,13 @@ import {
   Text,
   Title,
 } from '@mantine/core';
+import { IconCalendarPlus } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, buildQuery } from '../api/client';
 import { isOverdue, labelize, type Paginated, type Visit } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { EmptyState } from '../components/EmptyState';
 
 export function SchedulePage() {
   const { user } = useAuth();
@@ -49,7 +51,7 @@ export function SchedulePage() {
           <Button component="a" href={icsHref} variant="default">
             Add to calendar (.ics)
           </Button>
-          <Button onClick={() => navigate('/visits/new?status=planned')}>
+          <Button variant="gradient" onClick={() => navigate('/visits/new?status=planned')}>
             Schedule an event
           </Button>
         </Group>
@@ -57,7 +59,7 @@ export function SchedulePage() {
 
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={640}>
-        <Table highlightOnHover>
+        <Table highlightOnHover stickyHeader stickyHeaderOffset={60}>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Date</Table.Th>
@@ -107,10 +109,14 @@ export function SchedulePage() {
             ))}
             {!isLoading && (data?.items.length ?? 0) === 0 && (
               <Table.Tr>
-                <Table.Td colSpan={6}>
-                  <Text c="dimmed" ta="center" py="lg">
-                    Nothing scheduled yet — plan an outreach event to see it here.
-                  </Text>
+                <Table.Td colSpan={6} p={0}>
+                  <EmptyState
+                    icon={IconCalendarPlus}
+                    title="Nothing scheduled yet"
+                    description="Plan an upcoming outreach event and it will appear here — ready to export to your calendar."
+                    actionLabel="Schedule an event"
+                    onAction={() => navigate('/visits/new?status=planned')}
+                  />
                 </Table.Td>
               </Table.Tr>
             )}

@@ -72,7 +72,7 @@ export function AdminPage() {
       </Title>
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={720}>
-        <Table>
+        <Table highlightOnHover stickyHeader stickyHeaderOffset={60}>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Name</Table.Th>

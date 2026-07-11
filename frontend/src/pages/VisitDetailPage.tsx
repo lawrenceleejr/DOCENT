@@ -86,7 +86,7 @@ export function VisitDetailPage() {
         {canEdit && (
           <Group>
             {visit.status === 'planned' && (
-              <Button onClick={() => navigate(`/visits/${visit.id}/edit`)}>
+              <Button variant="gradient" onClick={() => navigate(`/visits/${visit.id}/edit`)}>
                 Mark as completed
               </Button>
             )}

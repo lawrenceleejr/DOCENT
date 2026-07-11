@@ -2,10 +2,12 @@ import L from 'leaflet';
 
 // Simple colored dot icons — a divIcon avoids Leaflet's bundler image-path issues
 // and reads clearly in both light and dark mode.
+// Harmonized with the app palette: reached = chart green, your-venue = brand
+// violet, gap = a warm amber that reads as "attention / not yet reached".
 export const COLORS = {
-  covered: '#2f9e44', // green — an institution we've reached
-  gap: '#e8590c', // orange-red — a gap (no visit yet)
-  venue: '#1971c2', // blue — a visited venue not in the catalog
+  covered: '#199e70', // green — an institution we've reached
+  gap: '#e8843a', // warm amber — a gap (no visit yet)
+  venue: '#6d41ec', // brand violet — a visited venue
 } as const;
 
 export function dotIcon(color: string): L.DivIcon {

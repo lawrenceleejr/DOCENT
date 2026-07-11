@@ -129,7 +129,8 @@ export function MapPage() {
         <div>
           <Title order={2}>Map</Title>
           <Text c="dimmed" size="sm">
-            {institutions.length.toLocaleString()} institutions in view · {gapCount.toLocaleString()} gaps
+            Spot coverage gaps — {institutions.length.toLocaleString()} institutions in view ·{' '}
+            {gapCount.toLocaleString()} not yet reached
           </Text>
         </div>
       </Group>

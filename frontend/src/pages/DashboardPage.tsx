@@ -11,6 +11,13 @@ import {
   Title,
   useComputedColorScheme,
 } from '@mantine/core';
+import {
+  IconCalendarStats,
+  IconMapPin,
+  IconStar,
+  IconUserBolt,
+  IconUsers,
+} from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -129,12 +136,17 @@ function BreakdownPanel({
   viz: typeof VIZ_LIGHT;
 }) {
   const rows = data.map((row) => ({ ...row, label: labelize(row.key) }));
-  const height = Math.max(160, rows.length * 34 + 40);
+  const height = rows.length <= 1 ? 96 : Math.max(140, rows.length * 38 + 24);
   return (
     <Card withBorder p="md">
       <Text fw={600} mb="xs">
         {title}
       </Text>
+      {rows.length === 0 ? (
+        <Text c="dimmed" size="sm" py="xl" ta="center">
+          No data recorded in this range yet.
+        </Text>
+      ) : (
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={rows} layout="vertical" margin={{ top: 0, right: 24, bottom: 0, left: 8 }}>
           <CartesianGrid stroke={viz.grid} horizontal={false} />
@@ -164,6 +176,7 @@ function BreakdownPanel({
           <Bar dataKey="visits" fill={color} barSize={16} radius={[0, 4, 4, 0]} />
         </BarChart>
       </ResponsiveContainer>
+      )}
     </Card>
   );
 }
@@ -206,10 +219,21 @@ export function DashboardPage() {
     queryFn: () => api.get<LeaderboardRow[]>('/api/stats/leaderboard', { limit: 20, ...dates }),
   });
 
+  const rangeLabel = RANGES.find((r) => r.value === range)?.label.toLowerCase() ?? '';
+  const avgPerVisit =
+    summary && summary.total_visits > 0
+      ? Math.round(summary.total_people_reached / summary.total_visits)
+      : null;
+
   return (
     <Stack>
-      <Group justify="space-between">
-        <Title order={2}>Analysis</Title>
+      <Group justify="space-between" align="flex-end">
+        <div>
+          <Title order={2}>Analysis</Title>
+          <Text c="dimmed" size="sm">
+            Your community’s collective outreach impact.
+          </Text>
+        </div>
         <SegmentedControl
           value={range}
           onChange={(value) => setRange(value as RangeKey)}
@@ -217,20 +241,47 @@ export function DashboardPage() {
         />
       </Group>
 
-      <Group grow align="stretch">
-        <StatTile label="Visits" value={summary?.total_visits.toLocaleString() ?? '—'} />
+      <SimpleGrid cols={{ base: 1, xs: 2, md: 5 }}>
+        <StatTile
+          label="Visits"
+          value={summary?.total_visits.toLocaleString() ?? '—'}
+          icon={IconCalendarStats}
+          color="brand"
+          sub={rangeLabel}
+        />
         <StatTile
           label="People reached"
           value={summary?.total_people_reached.toLocaleString() ?? '—'}
+          icon={IconUsers}
+          color="grape"
+          sub={avgPerVisit != null ? `~${avgPerVisit.toLocaleString()} per visit` : undefined}
         />
-        <StatTile label="Venues visited" value={summary?.distinct_venues ?? '—'} />
-        <StatTile label="Active researchers" value={summary?.active_researchers ?? '—'} />
+        <StatTile
+          label="Venues visited"
+          value={summary?.distinct_venues ?? '—'}
+          icon={IconMapPin}
+          color="teal"
+          sub="distinct locations"
+        />
+        <StatTile
+          label="Active researchers"
+          value={summary?.active_researchers ?? '—'}
+          icon={IconUserBolt}
+          color="indigo"
+          sub="contributing"
+        />
         <StatTile
           label="Avg. rating"
-          value={summary?.avg_rating != null ? `${summary.avg_rating} / 5` : '—'}
+          value={summary?.avg_rating != null ? `${summary.avg_rating}` : '—'}
+          icon={IconStar}
+          color="yellow"
+          sub="out of 5"
         />
-      </Group>
+      </SimpleGrid>
 
+      <Title order={3} mt="sm">
+        Over time
+      </Title>
       {/* Two measures, two panels — never a dual-axis chart. */}
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <TimePanel
@@ -249,6 +300,9 @@ export function DashboardPage() {
         />
       </SimpleGrid>
 
+      <Title order={3} mt="sm">
+        Breakdowns
+      </Title>
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <BreakdownPanel
           title="Visits by venue type"
@@ -270,6 +324,9 @@ export function DashboardPage() {
         />
       </SimpleGrid>
 
+      <Title order={3} mt="sm">
+        Leaders
+      </Title>
       <Grid>
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Card withBorder p="md">

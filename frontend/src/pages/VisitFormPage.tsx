@@ -1,8 +1,8 @@
 import {
   Button,
-  Card,
   Checkbox,
   Collapse,
+  Fieldset,
   Group,
   Input,
   NumberInput,
@@ -11,12 +11,14 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Text,
   Textarea,
   TextInput,
   Title,
   UnstyledButton,
 } from '@mantine/core';
 import { DatePickerInput, TimeInput } from '@mantine/dates';
+import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -220,42 +222,58 @@ export function VisitFormPage() {
     : isPlanned
       ? 'Schedule an event'
       : 'Log a visit';
+  const subtitle = editing
+    ? 'Update the details of this visit.'
+    : isPlanned
+      ? 'Plan an upcoming outreach event — you can fill in attendance once it happens.'
+      : 'Record an outreach visit that already happened.';
 
   return (
-    <Stack maw={720} mx="auto">
-      <Title order={2}>{heading}</Title>
-      <Card withBorder p="lg">
-        <form
-          onSubmit={form.onSubmit((values) => {
-            const count = values.people_reached === '' ? 0 : values.people_reached;
-            if (
-              count > PEOPLE_REACHED_CONFIRM_THRESHOLD &&
-              !window.confirm(
-                `You entered ${count.toLocaleString()} people reached. Is that correct?`,
-              )
-            ) {
-              return;
-            }
-            save.mutate(values);
-          })}
-        >
-          <Stack>
-            <Input.Wrapper label="Status">
-              <div>
-                <SegmentedControl
-                  data={[
-                    { label: 'Planned', value: 'planned' },
-                    { label: 'Completed', value: 'completed' },
-                  ]}
-                  {...form.getInputProps('status')}
-                />
-              </div>
-            </Input.Wrapper>
-            <VenuePicker
-              value={form.values.venue_id}
-              onChange={(venueId) => form.setFieldValue('venue_id', venueId)}
-              error={form.errors.venue_id as string | undefined}
-            />
+    <Stack maw={760} mx="auto">
+      <div>
+        <Title order={2}>{heading}</Title>
+        <Text c="dimmed" size="sm">
+          {subtitle}
+        </Text>
+      </div>
+      <form
+        onSubmit={form.onSubmit((values) => {
+          const count = values.people_reached === '' ? 0 : values.people_reached;
+          if (
+            count > PEOPLE_REACHED_CONFIRM_THRESHOLD &&
+            !window.confirm(
+              `You entered ${count.toLocaleString()} people reached. Is that correct?`,
+            )
+          ) {
+            return;
+          }
+          save.mutate(values);
+        })}
+      >
+        <Stack>
+          <Fieldset legend="Status & venue" radius="md">
+            <Stack>
+              <Input.Wrapper label="Status">
+                <div>
+                  <SegmentedControl
+                    data={[
+                      { label: 'Planned', value: 'planned' },
+                      { label: 'Completed', value: 'completed' },
+                    ]}
+                    {...form.getInputProps('status')}
+                  />
+                </div>
+              </Input.Wrapper>
+              <VenuePicker
+                value={form.values.venue_id}
+                onChange={(venueId) => form.setFieldValue('venue_id', venueId)}
+                error={form.errors.venue_id as string | undefined}
+              />
+            </Stack>
+          </Fieldset>
+
+          <Fieldset legend="Event details" radius="md">
+            <Stack>
             <SimpleGrid cols={{ base: 1, sm: 3 }}>
               <DatePickerInput
                 label="Date"
@@ -305,12 +323,16 @@ export function VisitFormPage() {
                 {...form.getInputProps('duration_minutes')}
               />
             </SimpleGrid>
+            </Stack>
+          </Fieldset>
 
-            <UnstyledButton onClick={host.toggle} c="blue" fz="sm">
-              {hostOpen ? '▾' : '▸'} Host (optional)
+          <Fieldset legend="Host" radius="md">
+            <UnstyledButton onClick={host.toggle} c="brand" fz="sm" fw={600}>
+              {hostOpen ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />} Add host
+              details
             </UnstyledButton>
             <Collapse in={hostOpen}>
-              <Stack gap="sm">
+              <Stack gap="sm" mt="sm">
                 <SimpleGrid cols={{ base: 1, sm: 2 }}>
                   <TextInput
                     label="Host name"
@@ -350,38 +372,43 @@ export function VisitFormPage() {
                 />
               </Stack>
             </Collapse>
+          </Fieldset>
 
-            <Input.Wrapper label="How did it go?">
-              <Rating size="lg" {...form.getInputProps('rating')} />
-            </Input.Wrapper>
-            <Textarea
-              label="Reflection"
-              placeholder="What worked, what didn't, ideas for next time…"
-              autosize
-              minRows={2}
-              {...form.getInputProps('reflection')}
-            />
-            <TextInput
-              label="Additional presenters"
-              placeholder="Co-presenter names, comma separated"
-              description="If a colleague already logged this same event, don't re-enter the headcount here — it would double-count people reached in the community totals."
-              {...form.getInputProps('additional_presenters')}
-            />
-            <Checkbox
-              label="Follow-up planned with this venue"
-              {...form.getInputProps('follow_up_planned', { type: 'checkbox' })}
-            />
-            <Group justify="flex-end">
-              <Button variant="default" onClick={() => navigate(-1)}>
-                Cancel
-              </Button>
-              <Button type="submit" loading={save.isPending}>
-                {editing ? 'Save changes' : isPlanned ? 'Schedule event' : 'Log visit'}
-              </Button>
-            </Group>
-          </Stack>
-        </form>
-      </Card>
+          <Fieldset legend="Outcome & reflection" radius="md">
+            <Stack>
+              <Input.Wrapper label="How did it go?">
+                <Rating size="lg" {...form.getInputProps('rating')} />
+              </Input.Wrapper>
+              <Textarea
+                label="Reflection"
+                placeholder="What worked, what didn't, ideas for next time…"
+                autosize
+                minRows={2}
+                {...form.getInputProps('reflection')}
+              />
+              <TextInput
+                label="Additional presenters"
+                placeholder="Co-presenter names, comma separated"
+                description="If a colleague already logged this same event, don't re-enter the headcount here — it would double-count people reached in the community totals."
+                {...form.getInputProps('additional_presenters')}
+              />
+              <Checkbox
+                label="Follow-up planned with this venue"
+                {...form.getInputProps('follow_up_planned', { type: 'checkbox' })}
+              />
+            </Stack>
+          </Fieldset>
+
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => navigate(-1)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="gradient" loading={save.isPending}>
+              {editing ? 'Save changes' : isPlanned ? 'Schedule event' : 'Log visit'}
+            </Button>
+          </Group>
+        </Stack>
+      </form>
     </Stack>
   );
 }
