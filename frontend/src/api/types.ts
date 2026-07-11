@@ -325,3 +325,29 @@ export interface RegistrationSettings {
   invite_code: string;
   contact_email: string;
 }
+
+export interface AdminInstitution {
+  id: number;
+  name: string;
+  institution_type: InstitutionType;
+  latitude: number;
+  longitude: number;
+  city: string | null;
+  state: string | null;
+  region: string | null;
+  source: string;
+}
+
+export interface BackupFile {
+  path: string;
+  tier: string;
+  size_bytes: number;
+  modified_at: string;
+}
+
+export interface BackupListResponse {
+  items: BackupFile[];
+  count: number;
+  total_size_bytes: number;
+  last_backup_at: string | null;
+}

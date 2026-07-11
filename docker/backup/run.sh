@@ -17,8 +17,16 @@ while true; do
     if [ "$target" -le "$now" ]; then
         target=$(date -d "tomorrow ${BACKUP_HOUR}:00" +%s)
     fi
-    sleep_for=$((target - now))
-    echo "[run] next backup at $(date -d "@$target" -Is) (in ${sleep_for}s)"
-    sleep "$sleep_for"
+    echo "[run] next scheduled backup at $(date -d "@$target" -Is)"
+    # Poll until the scheduled time, honoring an on-demand request from the app
+    # (the backend drops a .run-now sentinel via the admin Backups panel).
+    while [ "$(date +%s)" -lt "$target" ]; do
+        if [ -f "$BACKUP_ROOT/.run-now" ]; then
+            echo "[run] on-demand backup requested"
+            rm -f "$BACKUP_ROOT/.run-now"
+            /backup.sh || echo "[run] on-demand backup FAILED" >&2
+        fi
+        sleep 20
+    done
     /backup.sh || echo "[run] backup FAILED" >&2
 done

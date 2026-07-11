@@ -29,6 +29,9 @@ services:
       # importer trusts a corporate/TLS-inspecting proxy when calling Overpass /
       # Nominatim. Leave empty for normal internet.
       REQUESTS_CA_BUNDLE: ${REQUESTS_CA_BUNDLE:-}
+    volumes:
+      # Read the backup catalog and drop the "run now" sentinel the sidecar polls.
+      - backups:/backups
     depends_on:
       db:
         condition: service_healthy

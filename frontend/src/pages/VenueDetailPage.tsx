@@ -3,25 +3,121 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Group,
+  Modal,
   Stack,
   Table,
   Text,
+  TextInput,
   Title,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import {
   labelize,
   type Paginated,
   type VenueDetail,
+  type VenueListItem,
   type Visit,
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { VenueFormModal } from '../components/VenuePicker';
+
+function MergeVenueModal({
+  targetId,
+  targetName,
+  opened,
+  onClose,
+  onMerged,
+}: {
+  targetId: number;
+  targetName: string;
+  opened: boolean;
+  onClose: () => void;
+  onMerged: () => void;
+}) {
+  const [q, setQ] = useState('');
+  const [selected, setSelected] = useState<number[]>([]);
+  const { data } = useQuery({
+    queryKey: ['venues', 'mergepick', q],
+    queryFn: () => api.get<Paginated<VenueListItem>>('/api/venues', { q: q || undefined, page_size: 20 }),
+    enabled: opened,
+  });
+
+  const merge = useMutation({
+    mutationFn: () =>
+      api.post(`/api/venues/${targetId}/merge`, { from_ids: selected }),
+    onSuccess: () => {
+      onMerged();
+      onClose();
+      setSelected([]);
+      setQ('');
+      notifications.show({ color: 'green', message: 'Venues merged' });
+    },
+    onError: (e) => {
+      notifications.show({
+        color: 'red',
+        title: 'Merge failed',
+        message: e instanceof ApiError ? e.message : 'Unexpected error',
+      });
+    },
+  });
+
+  const candidates = (data?.items ?? []).filter((v) => v.id !== targetId);
+
+  return (
+    <Modal opened={opened} onClose={onClose} title={`Merge duplicates into “${targetName}”`} size="md">
+      <Stack>
+        <Text size="sm" c="dimmed">
+          Pick duplicate venues to absorb. Their visits move to <b>{targetName}</b> and the
+          duplicates are deleted. This can’t be undone.
+        </Text>
+        <TextInput
+          placeholder="Search venues by name or city"
+          value={q}
+          onChange={(e) => setQ(e.currentTarget.value)}
+        />
+        <Stack gap={4} mah={300} style={{ overflowY: 'auto' }}>
+          {candidates.map((v) => (
+            <Checkbox
+              key={v.id}
+              label={`${v.name}${v.city ? `, ${v.city}` : ''} · ${v.visit_count} visit(s)`}
+              checked={selected.includes(v.id)}
+              onChange={(e) =>
+                setSelected((cur) =>
+                  e.currentTarget.checked ? [...cur, v.id] : cur.filter((x) => x !== v.id),
+                )
+              }
+            />
+          ))}
+          {candidates.length === 0 && (
+            <Text size="sm" c="dimmed" py="sm" ta="center">
+              No other venues match.
+            </Text>
+          )}
+        </Stack>
+        <Group justify="flex-end">
+          <Button variant="default" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            color="red"
+            loading={merge.isPending}
+            disabled={selected.length === 0}
+            onClick={() => merge.mutate()}
+          >
+            Merge {selected.length || ''} into this venue
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
+  );
+}
 
 export function VenueDetailPage() {
   const { id } = useParams();
@@ -29,6 +125,7 @@ export function VenueDetailPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [editing, edit] = useDisclosure(false);
+  const [merging, merge] = useDisclosure(false);
 
   const { data: venue } = useQuery({
     queryKey: ['venues', id],
@@ -77,6 +174,11 @@ export function VenueDetailPage() {
         </div>
         {canManage && (
           <Group>
+            {user?.is_admin && (
+              <Button variant="default" onClick={merge.open}>
+                Merge duplicates
+              </Button>
+            )}
             <Button variant="default" onClick={edit.open}>
               Edit
             </Button>
@@ -184,6 +286,17 @@ export function VenueDetailPage() {
         onSaved={() => {
           queryClient.invalidateQueries({ queryKey: ['venues'] });
           edit.close();
+        }}
+      />
+
+      <MergeVenueModal
+        opened={merging}
+        onClose={merge.close}
+        targetId={venue.id}
+        targetName={venue.name}
+        onMerged={() => {
+          queryClient.invalidateQueries({ queryKey: ['venues'] });
+          queryClient.invalidateQueries({ queryKey: ['visits'] });
         }}
       />
     </Stack>

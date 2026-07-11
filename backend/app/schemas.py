@@ -74,6 +74,74 @@ class UserList(BaseModel):
     page_size: int
 
 
+class UserMergeRequest(BaseModel):
+    into_id: int
+
+
+class VenueMergeRequest(BaseModel):
+    from_ids: list[int] = Field(min_length=1)
+
+
+class InstitutionCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+    institution_type: InstitutionType
+    # Either provide coordinates directly, or a location string to geocode.
+    location: str | None = Field(default=None, max_length=300)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+    address: str | None = Field(default=None, max_length=255)
+    city: str | None = Field(default=None, max_length=120)
+    state: str | None = Field(default=None, max_length=120)
+    website: str | None = Field(default=None, max_length=500)
+    phone: str | None = Field(default=None, max_length=50)
+    region: str = Field(default="Manual", max_length=120)
+
+
+class InstitutionUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    institution_type: InstitutionType | None = None
+    address: str | None = Field(default=None, max_length=255)
+    city: str | None = Field(default=None, max_length=120)
+    state: str | None = Field(default=None, max_length=120)
+    website: str | None = Field(default=None, max_length=500)
+    phone: str | None = Field(default=None, max_length=50)
+
+
+class InstitutionAdminItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    institution_type: InstitutionType
+    latitude: float
+    longitude: float
+    city: str | None
+    state: str | None
+    region: str | None
+    source: str
+
+
+class InstitutionAdminList(BaseModel):
+    items: list[InstitutionAdminItem]
+    total: int
+    page: int
+    page_size: int
+
+
+class BackupItem(BaseModel):
+    path: str
+    tier: str
+    size_bytes: int
+    modified_at: datetime
+
+
+class BackupList(BaseModel):
+    items: list[BackupItem]
+    count: int
+    total_size_bytes: int
+    last_backup_at: datetime | None
+
+
 class RegistrationSettings(BaseModel):
     invite_code: str
     contact_email: str

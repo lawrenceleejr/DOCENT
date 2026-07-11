@@ -1,19 +1,33 @@
 from datetime import date
 
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 
-from app.deps import CurrentUser, DbSession
+from app.deps import CurrentAdmin, CurrentUser, DbSession
 from app.models import Institution, Venue, VenueType, Visit
 from app.schemas import (
     VenueCreate,
     VenueDetail,
     VenueList,
     VenueListItem,
+    VenueMergeRequest,
     VenueOut,
     VenueUpdate,
 )
+
+
+def _venue_detail(venue: Venue, db) -> VenueDetail:
+    visit_count, last_visit_date = db.execute(
+        select(func.count(Visit.id), func.max(Visit.visit_date)).where(
+            Visit.venue_id == venue.id
+        )
+    ).one()
+    return VenueDetail(
+        **VenueOut.model_validate(venue).model_dump(),
+        visit_count=visit_count,
+        last_visit_date=last_visit_date,
+    )
 
 router = APIRouter(prefix="/api/venues", tags=["venues"])
 
@@ -89,6 +103,36 @@ def get_venue(venue_id: int, db: DbSession, _user: CurrentUser):
         visit_count=visit_count,
         last_visit_date=last_visit_date,
     )
+
+
+@router.post("/{venue_id}/merge", response_model=VenueDetail)
+def merge_venues(
+    venue_id: int, body: VenueMergeRequest, _admin: CurrentAdmin, db: DbSession
+):
+    """Merge duplicate venues into this one: move all their visits here, then
+    delete them. Admin-only, since it spans other researchers' data."""
+    target = db.get(Venue, venue_id)
+    if not target:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venue not found")
+    from_ids = [i for i in dict.fromkeys(body.from_ids) if i != venue_id]
+    if not from_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Pick at least one other venue to merge in.",
+        )
+    sources = db.scalars(select(Venue).where(Venue.id.in_(from_ids))).all()
+    if len(sources) != len(from_ids):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="One or more venues not found"
+        )
+    db.execute(
+        update(Visit).where(Visit.venue_id.in_(from_ids)).values(venue_id=venue_id)
+    )
+    for source in sources:
+        db.delete(source)
+    db.commit()
+    db.refresh(target)
+    return _venue_detail(target, db)
 
 
 @router.patch("/{venue_id}", response_model=VenueOut)

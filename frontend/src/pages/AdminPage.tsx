@@ -6,6 +6,7 @@ import {
   Code,
   CopyButton,
   Group,
+  Menu,
   Modal,
   Pagination,
   Stack,
@@ -18,13 +19,23 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconPencil, IconX } from '@tabler/icons-react';
+import {
+  IconCheck,
+  IconDots,
+  IconGitMerge,
+  IconKey,
+  IconPencil,
+  IconTrash,
+  IconX,
+} from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api, ApiError } from '../api/client';
 import type { Paginated, PasswordResetResult, RegistrationSettings, User } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { BackupsCard } from '../components/BackupsCard';
 import { InstitutionImportCard } from '../components/InstitutionImportCard';
+import { InstitutionManagerCard } from '../components/InstitutionManagerCard';
 
 const PAGE_SIZE = 25;
 
@@ -165,11 +176,96 @@ function EmailCell({ user, disabled }: { user: User; disabled: boolean }) {
   );
 }
 
+function MergeUserModal({
+  source,
+  onClose,
+  onMerged,
+}: {
+  source: User | null;
+  onClose: () => void;
+  onMerged: () => void;
+}) {
+  const [q, setQ] = useState('');
+  const { data } = useQuery({
+    queryKey: ['admin', 'users', 'mergepick', q],
+    queryFn: () => api.get<Paginated<User>>('/api/admin/users', { q: q || undefined, page_size: 8 }),
+    enabled: !!source,
+  });
+
+  const merge = useMutation({
+    mutationFn: (intoId: number) =>
+      api.post<User>(`/api/admin/users/${source!.id}/merge`, { into_id: intoId }),
+    onSuccess: (target) => {
+      onMerged();
+      onClose();
+      notifications.show({
+        color: 'green',
+        message: `Merged ${source!.name} into ${target.name}`,
+      });
+    },
+    onError: (e) => {
+      notifications.show({
+        color: 'red',
+        title: 'Merge failed',
+        message: e instanceof ApiError ? e.message : 'Unexpected error',
+      });
+    },
+  });
+
+  const candidates = (data?.items ?? []).filter((u) => u.id !== source?.id);
+
+  return (
+    <Modal opened={!!source} onClose={onClose} title={`Merge ${source?.name ?? ''} into…`} size="md">
+      <Stack>
+        <Text size="sm" c="dimmed">
+          All of {source?.name}’s visits and venues move to the account you pick, then{' '}
+          {source?.name}’s account is deleted. This can’t be undone.
+        </Text>
+        <TextInput
+          placeholder="Search the destination account"
+          value={q}
+          onChange={(e) => setQ(e.currentTarget.value)}
+        />
+        <Stack gap="xs">
+          {candidates.map((u) => (
+            <Group key={u.id} justify="space-between" wrap="nowrap">
+              <div>
+                <Text size="sm" fw={500}>
+                  {u.name}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {u.email}
+                </Text>
+              </div>
+              <Button
+                size="xs"
+                variant="light"
+                loading={merge.isPending && merge.variables === u.id}
+                onClick={() => {
+                  if (window.confirm(`Merge ${source?.name} into ${u.name}?`)) merge.mutate(u.id);
+                }}
+              >
+                Merge here
+              </Button>
+            </Group>
+          ))}
+          {candidates.length === 0 && (
+            <Text size="sm" c="dimmed" ta="center" py="sm">
+              No other accounts match.
+            </Text>
+          )}
+        </Stack>
+      </Stack>
+    </Modal>
+  );
+}
+
 export function AdminPage() {
   const { user: me } = useAuth();
   const queryClient = useQueryClient();
   const [resetInfo, setResetInfo] = useState<{ name: string; password: string } | null>(null);
   const [resetOpen, reset] = useDisclosure(false);
+  const [mergeSource, setMergeSource] = useState<User | null>(null);
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
 
@@ -210,13 +306,30 @@ export function AdminPage() {
     },
   });
 
+  const removeUser = useMutation({
+    mutationFn: (user: User) => api.delete(`/api/admin/users/${user.id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      notifications.show({ message: 'User deleted' });
+    },
+    onError: (e) => {
+      notifications.show({
+        color: 'red',
+        title: 'Could not delete user',
+        message: e instanceof ApiError ? e.message : 'Unexpected error',
+      });
+    },
+  });
+
   const total = data?.total ?? 0;
 
   return (
     <Stack>
       <Title order={2}>Admin</Title>
       <RegistrationCard />
+      <BackupsCard />
       <InstitutionImportCard />
+      <InstitutionManagerCard />
 
       <Group justify="space-between" align="flex-end" mt="md">
         <Title order={3}>User management</Title>
@@ -280,14 +393,41 @@ export function AdminPage() {
                     />
                   </Table.Td>
                   <Table.Td>
-                    <Button
-                      size="xs"
-                      variant="default"
-                      loading={resetPassword.isPending && resetPassword.variables?.id === user.id}
-                      onClick={() => resetPassword.mutate(user)}
-                    >
-                      Reset password
-                    </Button>
+                    <Menu shadow="md" position="bottom-end" withinPortal>
+                      <Menu.Target>
+                        <ActionIcon variant="default" aria-label="User actions">
+                          <IconDots size={16} />
+                        </ActionIcon>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          leftSection={<IconKey size={14} />}
+                          onClick={() => resetPassword.mutate(user)}
+                        >
+                          Reset password
+                        </Menu.Item>
+                        <Menu.Item
+                          leftSection={<IconGitMerge size={14} />}
+                          disabled={user.id === me?.id}
+                          onClick={() => setMergeSource(user)}
+                        >
+                          Merge into…
+                        </Menu.Item>
+                        <Menu.Divider />
+                        <Menu.Item
+                          color="red"
+                          leftSection={<IconTrash size={14} />}
+                          disabled={user.id === me?.id}
+                          onClick={() => {
+                            if (window.confirm(`Delete ${user.name}? This cannot be undone.`)) {
+                              removeUser.mutate(user);
+                            }
+                          }}
+                        >
+                          Delete user
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
                   </Table.Td>
                 </Table.Tr>
               ))}
@@ -318,6 +458,12 @@ export function AdminPage() {
       <Text size="sm" c="dimmed">
         Deactivated users can no longer log in, but their visits stay in the community record.
       </Text>
+
+      <MergeUserModal
+        source={mergeSource}
+        onClose={() => setMergeSource(null)}
+        onMerged={() => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })}
+      />
 
       <Modal opened={resetOpen} onClose={reset.close} title="Temporary password" size="md">
         <Stack>

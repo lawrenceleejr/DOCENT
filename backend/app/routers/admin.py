@@ -1,19 +1,31 @@
+import os
 import secrets
+from datetime import datetime, timezone
+from pathlib import Path
 
 import httpx
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlalchemy import func, or_, select
+from fastapi.responses import FileResponse
+from sqlalchemy import func, or_, select, update
 
 from app.deps import CurrentAdmin, DbSession
-from app.models import User
+from app.models import Institution, User, Venue, Visit
 from app.schemas import (
     AdminUserUpdate,
+    BackupItem,
+    BackupList,
+    InstitutionAdminItem,
+    InstitutionAdminList,
+    InstitutionCreate,
+    InstitutionDetail,
     InstitutionImportRequest,
     InstitutionImportResult,
+    InstitutionUpdate,
     PasswordResetResult,
     RegistrationSettings,
     RegistrationSettingsUpdate,
     UserList,
+    UserMergeRequest,
     UserOut,
 )
 from app.security import hash_password
@@ -31,6 +43,7 @@ from app.services.settings import (
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 MAX_RADIUS_M = 100_000  # 100 km (~62 mi) — keep Overpass queries bounded.
+BACKUP_ROOT = Path(os.environ.get("BACKUP_ROOT", "/backups"))
 
 
 @router.get("/users", response_model=UserList)
@@ -181,4 +194,213 @@ def import_institutions_radius(
         radius_km=round(radius_m / 1000, 2),
         region=region,
         **counts,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# User merge / delete
+# --------------------------------------------------------------------------- #
+
+@router.post("/users/{user_id}/merge", response_model=UserOut)
+def merge_user(user_id: int, body: UserMergeRequest, admin: CurrentAdmin, db: DbSession):
+    """Reassign a user's visits & created venues to another account, then delete
+    the now-empty source account. For de-duplicating accounts."""
+    if user_id == body.into_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Pick a different target account")
+    if user_id == admin.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot merge your own account")
+    source = db.get(User, user_id)
+    target = db.get(User, body.into_id)
+    if not source or not target:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    db.execute(update(Visit).where(Visit.author_id == user_id).values(author_id=body.into_id))
+    db.execute(update(Venue).where(Venue.created_by_id == user_id).values(created_by_id=body.into_id))
+    db.delete(source)
+    db.commit()
+    db.refresh(target)
+    return target
+
+
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(user_id: int, admin: CurrentAdmin, db: DbSession):
+    if user_id == admin.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot delete your own account")
+    user = db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    visit_count = db.scalar(select(func.count(Visit.id)).where(Visit.author_id == user_id)) or 0
+    if visit_count:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"This user has {visit_count} visit(s). Merge them into another "
+                "account first (which reassigns the visits), then delete."
+            ),
+        )
+    db.execute(update(Venue).where(Venue.created_by_id == user_id).values(created_by_id=None))
+    db.delete(user)
+    db.commit()
+
+
+# --------------------------------------------------------------------------- #
+# Institution catalog management
+# --------------------------------------------------------------------------- #
+
+@router.get("/institutions", response_model=InstitutionAdminList)
+def admin_list_institutions(
+    db: DbSession,
+    _admin: CurrentAdmin,
+    q: str | None = None,
+    region: str | None = None,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=25, ge=1, le=100),
+):
+    query = select(Institution)
+    if q:
+        pattern = f"%{q.strip()}%"
+        query = query.where(or_(Institution.name.ilike(pattern), Institution.city.ilike(pattern)))
+    if region:
+        query = query.where(Institution.region == region)
+    total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
+    items = db.scalars(
+        query.order_by(Institution.name).offset((page - 1) * page_size).limit(page_size)
+    ).all()
+    return InstitutionAdminList(items=items, total=total, page=page, page_size=page_size)
+
+
+@router.get("/institutions/regions")
+def admin_institution_regions(db: DbSession, _admin: CurrentAdmin):
+    rows = db.execute(
+        select(Institution.region, func.count(Institution.id))
+        .group_by(Institution.region)
+        .order_by(func.count(Institution.id).desc())
+    ).all()
+    return [{"region": r or "(none)", "count": c} for r, c in rows]
+
+
+@router.post("/institutions", response_model=InstitutionDetail, status_code=status.HTTP_201_CREATED)
+def admin_create_institution(body: InstitutionCreate, _admin: CurrentAdmin, db: DbSession):
+    """Manually add an institution the OSM importer can't find (e.g. a school
+    OSM only tags as a building). Give coordinates, or a location to geocode."""
+    lat, lon = body.latitude, body.longitude
+    if lat is None or lon is None:
+        if not body.location:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Provide coordinates, or a location (address or 'lat, lon') to look up.",
+            )
+        try:
+            loc = geocode(body.location)
+        except httpx.HTTPError:
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Geocoding service unavailable")
+        if loc is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find that location")
+        lat, lon = loc.latitude, loc.longitude
+
+    inst = Institution(
+        source="manual",
+        external_id=secrets.token_hex(8),
+        name=body.name.strip(),
+        institution_type=body.institution_type,
+        latitude=lat,
+        longitude=lon,
+        address=body.address,
+        city=body.city,
+        state=body.state,
+        website=body.website,
+        phone=body.phone,
+        region=body.region.strip() or "Manual",
+    )
+    db.add(inst)
+    db.commit()
+    db.refresh(inst)
+    return inst
+
+
+@router.post("/institutions/delete-region")
+def admin_delete_institutions_by_region(
+    db: DbSession, _admin: CurrentAdmin, region: str = Query(min_length=1)
+):
+    result = db.execute(
+        Institution.__table__.delete().where(Institution.region == region)
+    )
+    db.commit()
+    return {"deleted": result.rowcount, "region": region}
+
+
+@router.patch("/institutions/{institution_id}", response_model=InstitutionDetail)
+def admin_update_institution(
+    institution_id: int, body: InstitutionUpdate, _admin: CurrentAdmin, db: DbSession
+):
+    inst = db.get(Institution, institution_id)
+    if not inst:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found")
+    for field, value in body.model_dump(exclude_unset=True).items():
+        setattr(inst, field, value)
+    db.commit()
+    db.refresh(inst)
+    return inst
+
+
+@router.delete("/institutions/{institution_id}", status_code=status.HTTP_204_NO_CONTENT)
+def admin_delete_institution(institution_id: int, _admin: CurrentAdmin, db: DbSession):
+    inst = db.get(Institution, institution_id)
+    if not inst:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found")
+    db.delete(inst)
+    db.commit()
+
+
+# --------------------------------------------------------------------------- #
+# Backups
+# --------------------------------------------------------------------------- #
+
+@router.get("/backups", response_model=BackupList)
+def list_backups(_admin: CurrentAdmin):
+    items: list[BackupItem] = []
+    if BACKUP_ROOT.exists():
+        for p in BACKUP_ROOT.rglob("*.dump"):
+            if not p.is_file():
+                continue
+            rel = p.relative_to(BACKUP_ROOT)
+            tier = rel.parts[0] if len(rel.parts) > 1 else "other"
+            st = p.stat()
+            items.append(
+                BackupItem(
+                    path=str(rel),
+                    tier=tier,
+                    size_bytes=st.st_size,
+                    modified_at=datetime.fromtimestamp(st.st_mtime, tz=timezone.utc),
+                )
+            )
+    items.sort(key=lambda b: b.modified_at, reverse=True)
+    return BackupList(
+        items=items,
+        count=len(items),
+        total_size_bytes=sum(b.size_bytes for b in items),
+        last_backup_at=items[0].modified_at if items else None,
+    )
+
+
+@router.post("/backups/run", status_code=status.HTTP_202_ACCEPTED)
+def run_backup(_admin: CurrentAdmin):
+    """Ask the backup sidecar to take a dump now (it polls for this sentinel)."""
+    if not BACKUP_ROOT.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Backups volume is not mounted on the backend.",
+        )
+    (BACKUP_ROOT / ".run-now").write_text("requested\n")
+    return {"requested": True}
+
+
+@router.get("/backups/download")
+def download_backup(_admin: CurrentAdmin, path: str = Query(min_length=1)):
+    root = BACKUP_ROOT.resolve()
+    target = (root / path).resolve()
+    # Guard against path traversal: the resolved file must live under /backups.
+    if root not in target.parents or target.suffix != ".dump" or not target.is_file():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Backup not found")
+    return FileResponse(
+        target, filename=target.name, media_type="application/octet-stream"
     )
