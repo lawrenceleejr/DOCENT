@@ -113,9 +113,8 @@ end. The only inbound ports the server uses are 80 and 443.
 
 Thanks very much!`;
 
-  const caddyfile = `${host} {
-    reverse_proxy 127.0.0.1:8080
-}`;
+  const envSnippet = `# in your .env on the server, then re-run ./scripts/start.sh
+SITE_DOMAIN=${host}`;
 
   return (
     <Card withBorder p="lg">
@@ -125,11 +124,11 @@ Thanks very much!`;
       </Group>
       <Text size="sm" c="dimmed" mb="md">
         Give your instance a friendly web address like{' '}
-        <Code>https://docent.your-org.edu</Code>. Pointing a domain at a server is a{' '}
-        <strong>DNS</strong> change your IT department makes (an “A record”), plus a small
-        HTTPS proxy on the server — it isn’t something the app can do on its own. Fill in the
-        two fields below and this panel writes the exact request to send IT and the proxy
-        config to drop on your server.
+        <Code>https://docent.your-org.edu</Code>. This takes two things: a{' '}
+        <strong>DNS “A record”</strong> your IT department adds (pointing the name at your
+        machine), and HTTPS on the server — which DOCENT already bundles. Fill in the two
+        fields below and this panel writes the exact request to send IT and the one-line
+        change that turns HTTPS on.
       </Text>
 
       <Stack>
@@ -173,25 +172,25 @@ Thanks very much!`;
           </Text>
           <Text size="sm">
             1. IT creates an <strong>A record</strong> so <Code>{host}</Code> resolves to your
-            server’s IP. 2. A tiny proxy (
+            machine’s IP, and opens ports <strong>80</strong> and <strong>443</strong>. 2. You
+            set <Code>SITE_DOMAIN</Code> in <Code>.env</Code> and re-run{' '}
+            <Code>./scripts/start.sh</Code> — DOCENT’s bundled{' '}
             <a href="https://caddyserver.com" target="_blank" rel="noreferrer">
               Caddy
-            </a>
-            ) on the server terminates HTTPS and forwards to DOCENT on port 8080, getting a
-            free certificate automatically. 3. Open ports <strong>80</strong> and{' '}
-            <strong>443</strong> to the internet. That’s the whole setup.
+            </a>{' '}
+            proxy then serves HTTPS and gets a free, auto-renewing certificate. Nothing extra
+            to install. That’s the whole setup.
           </Text>
         </Alert>
 
         <CopyBlock label="1 · Request to send your IT / DNS department" text={dnsRequest} />
-        <CopyBlock
-          label="2 · Caddyfile for the server (automatic HTTPS)"
-          text={caddyfile}
-        />
+        <CopyBlock label="2 · Turn on HTTPS (on the server)" text={envSnippet} />
         <Text size="xs" c="dimmed">
-          After IT confirms the record is live, save the Caddyfile at{' '}
-          <Code>/etc/caddy/Caddyfile</Code> and run <Code>sudo systemctl restart caddy</Code>.
-          DNS changes can take up to an hour (sometimes longer) to take effect worldwide.
+          Once IT confirms the record is live, add that line to <Code>.env</Code> and run{' '}
+          <Code>./scripts/start.sh</Code> — the bundled Caddy proxy starts automatically and
+          fetches the certificate. DNS changes can take up to an hour to take effect
+          worldwide. Leaving <Code>SITE_DOMAIN</Code> empty keeps the app on{' '}
+          <Code>http://localhost</Code> only.
         </Text>
       </Stack>
     </Card>

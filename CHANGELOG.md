@@ -28,8 +28,11 @@ Impact.**
   ratings.
 
 ### Run it safely
-- One-command Docker deploy; nightly rotated `pg_dump` backups with a restore
-  path and an in-app Backups panel (list / download / run now).
+- One-command Docker deploy: `http://localhost` out of the box, and **built-in
+  HTTPS** — set `SITE_DOMAIN` and a bundled Caddy proxy auto-manages the TLS
+  certificate. No separate web server to install.
+- Nightly rotated `pg_dump` backups with a restore path and an in-app Backups
+  panel (list / download / run now).
 - Published **multi-arch (amd64 + arm64)** release images on GHCR and a
   pull-only `docker-compose.release.yml` — runs free on an Arm always-free VM
   (Oracle Cloud); see the README's free-hosting guide.

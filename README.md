@@ -98,43 +98,30 @@ The admin panel generates a ready-to-send email; it boils down to:
 > same request — IT will tell you the right address to use and open ports **80** and
 > **443** for you.
 
-**2. Run Caddy for automatic HTTPS.** The admin panel also generates a ready-to-use
-`Caddyfile`. Install [Caddy](https://caddyserver.com) on the machine, drop the file
-in place, and it obtains and renews a TLS certificate on its own — no cert wrangling:
+**2. Turn on HTTPS — it's built in.** You don't install or configure a web server.
+Set one line in `.env` and re-run `start.sh`; DOCENT starts a bundled
+[Caddy](https://caddyserver.com) container that serves HTTPS and obtains and renews
+the TLS certificate automatically:
 
 ```bash
-sudo apt-get install -y caddy
-# use the Caddyfile from the admin panel, or write it yourself:
-echo 'docent.university.edu {
-    reverse_proxy 127.0.0.1:8080
-}' | sudo tee /etc/caddy/Caddyfile
-sudo systemctl restart caddy
+echo 'SITE_DOMAIN=docent.university.edu' >> .env   # your subdomain from step 1
+./scripts/start.sh
 ```
 
-<details><summary>Prefer nginx? (you supply the TLS certs)</summary>
+That's the entire HTTPS setup. When `SITE_DOMAIN` is set, `start.sh` brings up the
+Caddy proxy (Docker Compose `tls` profile) on ports 80/443 in front of the app; when
+it's empty, Caddy never runs and you stay on `http://localhost`. The certificate
+persists in a Docker volume across restarts.
 
-```nginx
-server {
-    listen 443 ssl;
-    server_name docent.university.edu;
-    ssl_certificate     /etc/letsencrypt/live/docent.university.edu/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/docent.university.edu/privkey.pem;
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-</details>
+> **Prerequisites for the automatic certificate:** the domain's DNS must already
+> point at this machine (step 1), and inbound ports **80** and **443** must be open.
+> Caddy uses port 80 for the certificate challenge, then serves everything on 443.
 
 Once DNS propagates (usually minutes, up to an hour), open
 `https://docent.university.edu` and share the access code with your community. Set
 `CONTACT_EMAIL` in `.env` (or in the admin panel) so people know who to ask for it.
-Leave `COOKIE_SECURE=auto` (the default) so the login cookie is marked `Secure` over
-HTTPS. DOCENT stays bound to `127.0.0.1`, so it's reachable **only** through Caddy —
-never directly over plain HTTP. (For a trusted private LAN with no proxy, set
-`BIND_HOST=0.0.0.0` in `.env`.)
+`COOKIE_SECURE=auto` (the default) marks the login cookie `Secure` over HTTPS, and
+the app container itself stays bound to `127.0.0.1` — only Caddy is exposed.
 
 See **[SECURITY.md](SECURITY.md)** for the full secure-deployment checklist.
 
@@ -258,20 +245,17 @@ instead: `docker compose -f docker-compose.release.yml up -d` (set the secrets i
 `.env` first — see [Run the published images](#run-the-published-images-no-build)).
 
 **6. Point a domain at it + automatic HTTPS** — you need a domain or subdomain you
-control pointing at the instance's public IP. Either a subdomain your institution
-points at the VM (same A-record request as [Go
-live](#go-live-put-it-on-your-subdomain)), or a domain you own. Add an **A record**
-→ the instance's public IP, then run **[Caddy](https://caddyserver.com)** for
-automatic Let's Encrypt certificates:
+control pointing at the instance's public IP (a subdomain your institution points at
+the VM — same A-record request as [Go
+live](#go-live-put-it-on-your-subdomain) — or a domain you own). Add an **A record**
+→ the instance's public IP, then just set it in `.env` and re-run:
 ```bash
-sudo apt-get install -y caddy
-echo 'docent.example.org {
-    reverse_proxy 127.0.0.1:8080
-}' | sudo tee /etc/caddy/Caddyfile
-sudo systemctl restart caddy
+echo 'SITE_DOMAIN=docent.example.org' >> .env
+./scripts/start.sh
 ```
-Caddy fetches a TLS cert on first request. DOCENT stays bound to `127.0.0.1`, so it's
-reachable **only** through Caddy over HTTPS.
+The bundled Caddy proxy starts automatically, fetches a TLS certificate, and serves
+HTTPS on 443 — no separate install. (The security-list + iptables rules from step 3
+already opened 80/443.)
 
 **7. Create your admin account** — open `https://docent.example.org`, register with
 the access code `start.sh` printed (**the first account becomes admin**), then share
@@ -289,6 +273,8 @@ That's it — a free, self-hosted, HTTPS DOCENT. Take backups off-box periodical
 | `SECRET_KEY` | — (required) | JWT signing key — `openssl rand -hex 32` |
 | `INVITE_CODE` | — (required) | Access code needed to register; empty = registration closed |
 | `CONTACT_EMAIL` | empty | Email shown on login/register for access-code & reset requests |
+| `SITE_DOMAIN` | empty | Set to your domain (e.g. `docent.your-org.edu`) to serve HTTPS via the bundled Caddy proxy; empty = `http://localhost` only |
+| `SITE_URL` | empty | Canonical public address shown in-app; also seeds the admin domain-setup helper |
 | `ACCESS_TOKEN_DAYS` | `7` | Login session lifetime |
 | `COOKIE_SECURE` | `auto` | `auto` sets Secure on HTTPS; force with `true`/`false` |
 | `HTTP_PORT` | `8080` | Host port for the web UI (reverse-proxy forwards here) |

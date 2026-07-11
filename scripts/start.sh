@@ -26,12 +26,28 @@ if [ ! -f .env ]; then
     echo "  password reset, then re-run this script."
 fi
 
+# Read the configured domain (blank on first run). When set, we also start the
+# bundled Caddy HTTPS proxy via the "tls" compose profile; when blank we don't,
+# so the app is reachable at http://localhost only.
+domain=$(grep -E '^SITE_DOMAIN=' .env | cut -d= -f2- | tr -d '[:space:]')
+profile_args=()
+if [ -n "${domain}" ]; then
+    profile_args=(--profile tls)
+fi
+
 echo "Building and starting containers..."
-docker compose up -d --build
+docker compose "${profile_args[@]}" up -d --build
 
 echo
-docker compose ps
+docker compose "${profile_args[@]}" ps
 port=$(grep -E '^HTTP_PORT=' .env | cut -d= -f2)
 echo
-echo "DOCENT is starting on port ${port:-80}."
+if [ -n "${domain}" ]; then
+    echo "DOCENT is going live at https://${domain} (bundled Caddy is fetching a"
+    echo "TLS certificate — this needs the domain's DNS pointing here and ports"
+    echo "80 + 443 open). It's also on http://localhost:${port:-8080}."
+else
+    echo "DOCENT is running at http://localhost:${port:-8080}."
+    echo "To publish it over HTTPS, set SITE_DOMAIN in .env and re-run this script."
+fi
 echo "The FIRST account you register becomes the admin — do that now."
