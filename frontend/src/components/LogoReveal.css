@@ -180,22 +180,30 @@
   .dc-wave { display: none; }
 }
 
-/* ── Ping-only mark (chrome/header): the looping radar ping with NO entrance
-   reveal. Reuses the reveal's loop keyframes but starts immediately. ──────── */
+/* ── Ping-only mark (chrome/header): a clear, frequent radar ping with NO
+   entrance reveal. Dedicated punchier keyframes (the reveal's 5s loop is too
+   subtle at ~30px), tuned to read at small size. ─────────────────────────── */
 .dc-mark [class^='dcm-'] {
   transform-box: fill-box;
   transform-origin: center;
 }
-.dcm-wave  { animation: dcWave 5s cubic-bezier(0.2, 0.5, 0.3, 1) 0s infinite both; }
-.dcm-core  { animation: dcCore 5s ease-in-out 0s infinite both; }
-.dcm-ring1 { animation: dcLit1 5s ease-out 0s infinite; }
-.dcm-ring2 { animation: dcLit2 5s ease-out 0s infinite; }
-.dcm-ring3 { animation: dcLit3 5s ease-out 0s infinite; }
-.dcm-flash1 { animation: dcFlash1 5s ease-out 0s infinite both; }
-.dcm-flash2 { animation: dcFlash2 5s ease-out 0s infinite both; }
-.dcm-flash3 { animation: dcFlash3 5s ease-out 0s infinite both; }
+.dcm-wave { animation: dcmPing 2.6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite both; }
+.dcm-core { animation: dcmPulse 2.6s ease-in-out infinite both; }
+
+/* An expanding sweep out of the hub, past the outer ring, fading as it goes. */
+@keyframes dcmPing {
+  0%   { opacity: 0.9; transform: scale(0.15); }
+  70%  { opacity: 0;   transform: scale(1.2); }
+  100% { opacity: 0;   transform: scale(1.2); }
+}
+/* The hub pulses brightly as each ping launches. */
+@keyframes dcmPulse {
+  0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0)); }
+  14%      { transform: scale(1.35); filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.9)); }
+  38%      { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0)); }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .dc-mark [class^='dcm-'] { animation: none !important; }
   .dcm-wave { display: none; }
+  .dcm-core { animation: none !important; }
 }

@@ -32,20 +32,20 @@ export function LogoMark({ size = 28, ping = false }: { size?: number; ping?: bo
       <rect x="1.5" y="1.5" width="61" height="61" rx="15" fill={`url(#${gid})`} />
 
       {/* orbital rings, centred on the hub */}
-      <circle className={ping ? 'dcm-ring3' : undefined} cx="32" cy="32" r="21.5" fill="none" stroke="rgba(255,255,255,0.32)" strokeWidth="1.7" />
-      <circle className={ping ? 'dcm-ring2' : undefined} cx="32" cy="32" r="15" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.9" />
-      <circle className={ping ? 'dcm-ring1' : undefined} cx="32" cy="32" r="8.5" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2.1" />
+      <circle cx="32" cy="32" r="21.5" fill="none" stroke="rgba(255,255,255,0.32)" strokeWidth="1.7" />
+      <circle cx="32" cy="32" r="15" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.9" />
+      <circle cx="32" cy="32" r="8.5" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2.1" />
 
       {/* radar sweep (only when pinging) */}
       {ping && (
-        <circle className="dcm-wave" cx="32" cy="32" r="24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" />
+        <circle className="dcm-wave" cx="32" cy="32" r="24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2.4" />
       )}
 
       {/* community nodes on their orbits */}
-      <circle className={ping ? 'dcm-flash1' : undefined} cx="37.5" cy="25.5" r="2.5" fill="#fff" />
-      <circle className={ping ? 'dcm-flash2' : undefined} cx="17.9" cy="26.9" r="2.5" fill="#fff" />
-      <circle className={ping ? 'dcm-flash2' : undefined} cx="35.9" cy="46.5" r="2.5" fill="#fff" />
-      <circle className={ping ? 'dcm-flash3' : undefined} cx="51.5" cy="41.1" r="2.5" fill="#fff" />
+      <circle cx="37.5" cy="25.5" r="2.5" fill="#fff" />
+      <circle cx="17.9" cy="26.9" r="2.5" fill="#fff" />
+      <circle cx="35.9" cy="46.5" r="2.5" fill="#fff" />
+      <circle cx="51.5" cy="41.1" r="2.5" fill="#fff" />
 
       {/* central hub node */}
       <circle className={ping ? 'dcm-core' : undefined} cx="32" cy="32" r="4" fill="#fff" />
