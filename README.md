@@ -309,3 +309,19 @@ After deploying (or upgrading), confirm:
 5. Export CSV from the Visits page and open it.
 6. `docker compose exec backup /backup.sh` — a dump appears under `/backups/daily/`.
 7. Run through the restore steps above with a throwaway change.
+
+## License
+
+DOCENT — Decentralized Outreach & Community Engagement Network Tracker
+
+Copyright (C) 2026 Lawrence Lee
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the **GNU General Public License** as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the [GNU General Public License](LICENSE) for more
+details.

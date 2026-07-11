@@ -36,7 +36,7 @@ import { toDateString } from './VisitListPage';
 const PREVIEW_LIMIT = 50;
 
 export function ReportsPage() {
-  const [scope, setScope] = useState<ReportScope>('mine');
+  const [scope, setScope] = useState<ReportScope>('all');
   const [status, setStatus] = useState<ReportStatusFilter>('completed');
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
@@ -241,7 +241,8 @@ export function ReportsPage() {
                 <Table.Tr>
                   <Table.Td colSpan={7}>
                     <Text c="dimmed" ta="center" py="xl">
-                      No activities match these filters. Adjust the date range or filters above.
+                      No activities match these filters. Try “Everyone” instead of “My
+                      activities”, set Status to “All”, or widen the date range.
                     </Text>
                   </Table.Td>
                 </Table.Tr>

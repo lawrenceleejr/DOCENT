@@ -64,6 +64,24 @@ class UserUpdate(BaseModel):
 class AdminUserUpdate(BaseModel):
     is_active: bool | None = None
     is_admin: bool | None = None
+    email: EmailStr | None = None
+
+
+class UserList(BaseModel):
+    items: list[UserOut]
+    total: int
+    page: int
+    page_size: int
+
+
+class RegistrationSettings(BaseModel):
+    invite_code: str
+    contact_email: str
+
+
+class RegistrationSettingsUpdate(BaseModel):
+    invite_code: str | None = None
+    contact_email: str | None = None
 
 
 class PasswordResetResult(BaseModel):

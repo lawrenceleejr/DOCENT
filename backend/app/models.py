@@ -217,3 +217,16 @@ class Visit(Base):
 
     author: Mapped[User] = relationship(back_populates="visits")
     venue: Mapped[Venue] = relationship(back_populates="visits")
+
+
+class Setting(Base):
+    """Runtime key/value settings an admin can change without a redeploy
+    (e.g. the registration access code and the contact email)."""
+
+    __tablename__ = "app_setting"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[str | None] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

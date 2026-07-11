@@ -320,3 +320,8 @@ export interface AuthConfig {
   registration_enabled: boolean;
   contact_email: string | null;
 }
+
+export interface RegistrationSettings {
+  invite_code: string;
+  contact_email: string;
+}

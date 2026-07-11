@@ -1,8 +1,8 @@
 import secrets
 
 import httpx
-from fastapi import APIRouter, HTTPException, status
-from sqlalchemy import select
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy import func, or_, select
 
 from app.deps import CurrentAdmin, DbSession
 from app.models import User
@@ -11,21 +11,45 @@ from app.schemas import (
     InstitutionImportRequest,
     InstitutionImportResult,
     PasswordResetResult,
+    RegistrationSettings,
+    RegistrationSettingsUpdate,
+    UserList,
     UserOut,
 )
 from app.security import hash_password
 from app.services.geocode import geocode, to_meters
 from app.services.institution_import import upsert_institutions
 from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
+from app.services.settings import (
+    CONTACT_EMAIL_KEY,
+    INVITE_CODE_KEY,
+    effective_contact_email,
+    effective_invite_code,
+    set_setting,
+)
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 MAX_RADIUS_M = 100_000  # 100 km (~62 mi) — keep Overpass queries bounded.
 
 
-@router.get("/users", response_model=list[UserOut])
-def list_users(db: DbSession, _admin: CurrentAdmin):
-    return db.scalars(select(User).order_by(User.created_at)).all()
+@router.get("/users", response_model=UserList)
+def list_users(
+    db: DbSession,
+    _admin: CurrentAdmin,
+    q: str | None = None,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=25, ge=1, le=100),
+):
+    query = select(User)
+    if q:
+        pattern = f"%{q.strip()}%"
+        query = query.where(or_(User.name.ilike(pattern), User.email.ilike(pattern)))
+    total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
+    users = db.scalars(
+        query.order_by(User.created_at).offset((page - 1) * page_size).limit(page_size)
+    ).all()
+    return UserList(items=users, total=total, page=page, page_size=page_size)
 
 
 @router.patch("/users/{user_id}", response_model=UserOut)
@@ -43,6 +67,17 @@ def update_user(user_id: int, body: AdminUserUpdate, admin: CurrentAdmin, db: Db
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You cannot deactivate your own account",
         )
+    if body.email is not None:
+        new_email = body.email.lower()
+        clash = db.scalar(
+            select(User).where(User.email == new_email, User.id != user.id)
+        )
+        if clash:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Another account already uses that email",
+            )
+        user.email = new_email
     if body.is_active is not None:
         user.is_active = body.is_active
     if body.is_admin is not None:
@@ -50,6 +85,29 @@ def update_user(user_id: int, body: AdminUserUpdate, admin: CurrentAdmin, db: Db
     db.commit()
     db.refresh(user)
     return user
+
+
+@router.get("/settings", response_model=RegistrationSettings)
+def get_registration_settings(db: DbSession, _admin: CurrentAdmin):
+    return RegistrationSettings(
+        invite_code=effective_invite_code(db),
+        contact_email=effective_contact_email(db),
+    )
+
+
+@router.patch("/settings", response_model=RegistrationSettings)
+def update_registration_settings(
+    body: RegistrationSettingsUpdate, _admin: CurrentAdmin, db: DbSession
+):
+    if body.invite_code is not None:
+        set_setting(db, INVITE_CODE_KEY, body.invite_code.strip())
+    if body.contact_email is not None:
+        set_setting(db, CONTACT_EMAIL_KEY, body.contact_email.strip())
+    db.commit()
+    return RegistrationSettings(
+        invite_code=effective_invite_code(db),
+        contact_email=effective_contact_email(db),
+    )
 
 
 @router.post("/users/{user_id}/reset-password", response_model=PasswordResetResult)

@@ -7,6 +7,7 @@ import {
   Stack,
   Text,
   Title,
+  useComputedColorScheme,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useQuery } from '@tanstack/react-query';
@@ -63,6 +64,12 @@ const DEFAULT_TYPES: InstitutionType[] = ['school', 'college', 'museum', 'librar
 
 export function MapPage() {
   const navigate = useNavigate();
+  const scheme = useComputedColorScheme('dark');
+  // Flat, monochrome CARTO basemap so the colored markers read clearly.
+  const tileUrl =
+    scheme === 'dark'
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
   const [bounds, setBounds] = useState<Bounds | null>(null);
   const [types, setTypes] = useState<InstitutionType[]>(DEFAULT_TYPES);
   const [statusFilter, setStatusFilter] = useState<'all' | 'gap' | 'covered'>('all');
@@ -180,8 +187,10 @@ export function MapPage() {
           scrollWheelZoom
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            key={scheme}
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url={tileUrl}
+            subdomains="abcd"
           />
           <BoundsWatcher onChange={setBounds} />
 

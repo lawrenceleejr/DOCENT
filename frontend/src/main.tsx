@@ -1,3 +1,6 @@
+// DOCENT — Decentralized Outreach & Community Engagement Network Tracker
+// Copyright (C) 2026 Lawrence Lee
+// Licensed under the GNU General Public License v3.0 or later. See LICENSE.
 import '@fontsource-variable/inter';
 import '@fontsource-variable/space-grotesk';
 import '@mantine/core/styles.css';

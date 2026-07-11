@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import func, select
 
-from app.config import get_settings
 from app.deps import CurrentUser, DbSession
 from app.models import User
 from app.ratelimit import login_rate_limit, register_rate_limit
@@ -13,18 +12,18 @@ from app.security import (
     set_auth_cookie,
     verify_password,
 )
+from app.services.settings import effective_contact_email, effective_invite_code
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.get("/config", response_model=AuthConfig)
-def auth_config() -> AuthConfig:
+def auth_config(db: DbSession) -> AuthConfig:
     """Public: whether sign-up is open and where to request access — the
     login/register pages render this so they can point people at the admin."""
-    settings = get_settings()
     return AuthConfig(
-        registration_enabled=bool(settings.invite_code),
-        contact_email=settings.contact_email or None,
+        registration_enabled=bool(effective_invite_code(db)),
+        contact_email=effective_contact_email(db) or None,
     )
 
 
@@ -35,14 +34,14 @@ def auth_config() -> AuthConfig:
     dependencies=[Depends(register_rate_limit)],
 )
 def register(body: RegisterRequest, request: Request, response: Response, db: DbSession):
-    settings = get_settings()
+    invite_code = effective_invite_code(db)
     # An access code is always required. With none configured, sign-up is closed.
-    if not settings.invite_code:
+    if not invite_code:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Registration is closed. Contact the administrator for access.",
         )
-    if not body.invite_code or body.invite_code.strip() != settings.invite_code:
+    if not body.invite_code or body.invite_code.strip() != invite_code:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid or missing access code.",

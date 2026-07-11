@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Anchor,
   AppShell,
   Avatar,
   Container,
@@ -138,7 +139,17 @@ export function Layout({ children }: { children: ReactNode }) {
       </AppShell.Header>
       <AppShell.Main>
         <Container size="xl">{children}</Container>
+        <Container size="xl" py="lg">
+          <Text size="xs" c="dimmed" ta="center">
+            DOCENT · © {COPYRIGHT_YEAR} Lawrence Lee · Free software under the{' '}
+            <Anchor href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" c="dimmed" underline="always">
+              GNU GPL v3
+            </Anchor>
+          </Text>
+        </Container>
       </AppShell.Main>
     </AppShell>
   );
 }
+
+const COPYRIGHT_YEAR = 2026;
