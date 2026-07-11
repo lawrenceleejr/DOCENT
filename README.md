@@ -86,8 +86,14 @@ listens on `http://127.0.0.1:8080` (change with `HTTP_PORT` in `.env`).
   ```
   </details>
 
-Keep `COOKIE_SECURE=true` (the default) since the subdomain serves HTTPS. Only
-set it `false` if you're testing over plain `http://`.
+Leave `COOKIE_SECURE=auto` (the default): the login cookie is marked `Secure`
+whenever the connection is HTTPS, so it works behind the TLS proxy and never
+sends the session cookie in cleartext. By default the app binds only to
+`127.0.0.1`, so it is reachable **only** through your TLS proxy — never directly
+over plain HTTP from the network. (For a trusted private LAN with no proxy, set
+`BIND_HOST=0.0.0.0` in `.env`.)
+
+See **[SECURITY.md](SECURITY.md)** for the full secure-deployment checklist.
 
 **3. Create the admin account**
 

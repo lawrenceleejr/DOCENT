@@ -14,12 +14,13 @@ app = FastAPI(
 
 @app.on_event("startup")
 def _require_real_secret_key() -> None:
-    # Refuse to start with the built-in default — otherwise session tokens are
-    # forgeable. `scripts/start.sh` generates a strong SECRET_KEY automatically.
-    if get_settings().secret_key == INSECURE_SECRET:
+    # Refuse to start with a weak/default SECRET_KEY — otherwise session tokens
+    # are forgeable. `scripts/start.sh` generates a strong one automatically.
+    secret = get_settings().secret_key
+    if secret == INSECURE_SECRET or "change-me" in secret or len(secret) < 32:
         raise RuntimeError(
-            "SECRET_KEY is unset or the insecure default. Set a strong value "
-            "in .env (openssl rand -hex 32)."
+            "SECRET_KEY is unset, a placeholder, or too short. Set a strong "
+            "value in .env (openssl rand -hex 32 gives a good 64-char key)."
         )
 
 app.include_router(auth.router)
