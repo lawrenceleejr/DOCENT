@@ -1,0 +1,108 @@
+import { Box, Center, Group, List, Stack, Text, ThemeIcon } from '@mantine/core';
+import {
+  IconCalendarEvent,
+  IconChartHistogram,
+  IconMapPin,
+} from '@tabler/icons-react';
+import type { ReactNode } from 'react';
+import { LogoMark } from './Logo';
+
+const HIGHLIGHTS = [
+  { icon: IconMapPin, text: 'Map every school, college, museum & library you reach' },
+  { icon: IconCalendarEvent, text: 'Plan events and export them to your calendar' },
+  { icon: IconChartHistogram, text: 'See your community’s collective impact at a glance' },
+];
+
+/**
+ * Two-panel auth layout: a gradient brand hero (left) beside the form (right).
+ * Collapses to a single column with a compact hero band on small screens.
+ */
+export function AuthShell({ children }: { children: ReactNode }) {
+  return (
+    <Box className="auth-grid">
+      {/* Hero panel */}
+      <Box
+        visibleFrom="sm"
+        style={{
+          background: 'linear-gradient(150deg, #4423a3 0%, #6d41ec 45%, #b14fe0 100%)',
+          color: '#fff',
+          padding: '3rem',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <Box
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage:
+              'radial-gradient(60% 50% at 85% 15%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%)',
+            pointerEvents: 'none',
+          }}
+        />
+        <Group gap="sm" style={{ position: 'relative' }}>
+          <LogoMark size={40} />
+          <Text
+            fw={700}
+            fz={28}
+            style={{ fontFamily: "'Space Grotesk Variable', sans-serif", letterSpacing: '0.02em' }}
+          >
+            DOCENT
+          </Text>
+        </Group>
+
+        <Stack gap="lg" style={{ position: 'relative', maxWidth: 460 }}>
+          <div>
+            <Text
+              fz={44}
+              fw={700}
+              lh={1.05}
+              style={{ fontFamily: "'Space Grotesk Variable', sans-serif" }}
+            >
+              Reach out.
+            </Text>
+            <Text fz="lg" mt="sm" style={{ opacity: 0.9 }}>
+              The shared record of your scientific community’s outreach — every
+              classroom visit, lab tour, and public talk, in one place.
+            </Text>
+          </div>
+          <List spacing="sm" listStyleType="none">
+            {HIGHLIGHTS.map((h) => (
+              <List.Item
+                key={h.text}
+                icon={
+                  <ThemeIcon
+                    variant="white"
+                    color="dark"
+                    radius="xl"
+                    size={28}
+                    style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}
+                  >
+                    <h.icon size={16} />
+                  </ThemeIcon>
+                }
+              >
+                <Text style={{ opacity: 0.95 }}>{h.text}</Text>
+              </List.Item>
+            ))}
+          </List>
+        </Stack>
+
+        <Text fz="sm" style={{ position: 'relative', opacity: 0.7 }}>
+          Decentralized Outreach &amp; Community Engagement Network Tracker
+        </Text>
+      </Box>
+
+      {/* Form panel */}
+      <Center p="lg">
+        <Box w="100%" maw={400}>
+          {children}
+        </Box>
+      </Center>
+    </Box>
+  );
+}

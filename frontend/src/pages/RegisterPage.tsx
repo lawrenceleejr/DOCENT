@@ -1,8 +1,7 @@
 import {
   Anchor,
+  Box,
   Button,
-  Card,
-  Center,
   PasswordInput,
   Stack,
   Text,
@@ -14,6 +13,8 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { AuthShell } from '../components/AuthShell';
+import { Logo } from '../components/Logo';
 
 export function RegisterPage() {
   const { user, register } = useAuth();
@@ -52,50 +53,53 @@ export function RegisterPage() {
   });
 
   return (
-    <Center h="100vh" p="md">
-      <Card withBorder shadow="sm" w={420} p="xl">
-        <form onSubmit={submit}>
-          <Stack>
-            <div>
-              <Title order={2}>Create your account</Title>
-              <Text c="dimmed" size="sm">
-                Track your community's outreach with DOCENT
-              </Text>
-            </div>
-            <TextInput label="Full name" placeholder="Ada Lovelace" {...form.getInputProps('name')} />
-            <TextInput label="Email" placeholder="you@university.edu" {...form.getInputProps('email')} />
-            <PasswordInput
-              label="Password"
-              description="At least 8 characters"
-              {...form.getInputProps('password')}
-            />
-            <TextInput
-              label="Affiliation"
-              placeholder="University of Tennessee (optional)"
-              {...form.getInputProps('affiliation')}
-            />
-            <TextInput
-              label="Invite code"
-              placeholder="Leave blank unless your community requires one"
-              {...form.getInputProps('invite_code')}
-            />
-            {error && (
-              <Text c="red" size="sm">
-                {error}
-              </Text>
-            )}
-            <Button type="submit" loading={submitting}>
-              Register
-            </Button>
-            <Text size="sm" c="dimmed">
-              Already have an account?{' '}
-              <Anchor component={Link} to="/login">
-                Log in
-              </Anchor>
+    <AuthShell>
+      <form onSubmit={submit}>
+        <Stack gap="md">
+          <Stack gap={4}>
+            <Box hiddenFrom="sm">
+              <Logo size={30} />
+            </Box>
+            <Title order={2} mt="xs">
+              Create your account
+            </Title>
+            <Text c="dimmed" size="sm">
+              Join your community’s outreach record.
             </Text>
           </Stack>
-        </form>
-      </Card>
-    </Center>
+          <TextInput label="Full name" placeholder="Ada Lovelace" {...form.getInputProps('name')} />
+          <TextInput label="Email" placeholder="you@university.edu" {...form.getInputProps('email')} />
+          <PasswordInput
+            label="Password"
+            description="At least 8 characters"
+            {...form.getInputProps('password')}
+          />
+          <TextInput
+            label="Affiliation"
+            placeholder="University of Tennessee (optional)"
+            {...form.getInputProps('affiliation')}
+          />
+          <TextInput
+            label="Invite code"
+            placeholder="Leave blank unless your community requires one"
+            {...form.getInputProps('invite_code')}
+          />
+          {error && (
+            <Text c="red" size="sm">
+              {error}
+            </Text>
+          )}
+          <Button type="submit" variant="gradient" loading={submitting}>
+            Register
+          </Button>
+          <Text size="sm" c="dimmed">
+            Already have an account?{' '}
+            <Anchor component={Link} to="/login">
+              Log in
+            </Anchor>
+          </Text>
+        </Stack>
+      </form>
+    </AuthShell>
   );
 }

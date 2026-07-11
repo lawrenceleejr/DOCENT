@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6d41ec"/>
+      <stop offset="1" stop-color="#b14fe0"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#g)"/>
+  <!-- "Reach out" broadcast motif: a node with radiating arcs -->
+  <g fill="none" stroke="#fff" stroke-linecap="round">
+    <circle cx="10" cy="22" r="2.4" fill="#fff" stroke="none"/>
+    <path d="M14 18 A 6 6 0 0 1 14 26" stroke-width="2.1" opacity="0.95"/>
+    <path d="M17.5 14.5 A 11 11 0 0 1 17.5 29.5" stroke-width="2.1" opacity="0.7"/>
+    <path d="M21 11 A 16 16 0 0 1 21 33" stroke-width="2.1" opacity="0.45"/>
+  </g>
+</svg>

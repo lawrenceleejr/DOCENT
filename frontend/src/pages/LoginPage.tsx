@@ -1,8 +1,7 @@
 import {
   Anchor,
+  Box,
   Button,
-  Card,
-  Center,
   PasswordInput,
   Stack,
   Text,
@@ -14,6 +13,8 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { AuthShell } from '../components/AuthShell';
+import { Logo } from '../components/Logo';
 
 export function LoginPage() {
   const { user, login } = useAuth();
@@ -45,35 +46,43 @@ export function LoginPage() {
   });
 
   return (
-    <Center h="100vh" p="md">
-      <Card withBorder shadow="sm" w={380} p="xl">
-        <form onSubmit={submit}>
-          <Stack>
-            <div>
-              <Title order={2}>DOCENT</Title>
-              <Text c="dimmed" size="sm">
-                Reach out.
-              </Text>
-            </div>
-            <TextInput label="Email" placeholder="you@university.edu" {...form.getInputProps('email')} />
-            <PasswordInput label="Password" {...form.getInputProps('password')} />
-            {error && (
-              <Text c="red" size="sm">
-                {error}
-              </Text>
-            )}
-            <Button type="submit" loading={submitting}>
-              Log in
-            </Button>
-            <Text size="sm" c="dimmed">
-              No account yet?{' '}
-              <Anchor component={Link} to="/register">
-                Register
-              </Anchor>
+    <AuthShell>
+      <form onSubmit={submit}>
+        <Stack gap="lg">
+          <Stack gap={4}>
+            <Box hiddenFrom="sm">
+              <Logo size={30} />
+            </Box>
+            <Title order={2} mt="xs">
+              Welcome back
+            </Title>
+            <Text c="dimmed" size="sm">
+              Log in to your DOCENT account.
             </Text>
           </Stack>
-        </form>
-      </Card>
-    </Center>
+          <TextInput
+            label="Email"
+            placeholder="you@university.edu"
+            size="md"
+            {...form.getInputProps('email')}
+          />
+          <PasswordInput label="Password" size="md" {...form.getInputProps('password')} />
+          {error && (
+            <Text c="red" size="sm">
+              {error}
+            </Text>
+          )}
+          <Button type="submit" size="md" variant="gradient" loading={submitting}>
+            Log in
+          </Button>
+          <Text size="sm" c="dimmed">
+            No account yet?{' '}
+            <Anchor component={Link} to="/register">
+              Register
+            </Anchor>
+          </Text>
+        </Stack>
+      </form>
+    </AuthShell>
   );
 }

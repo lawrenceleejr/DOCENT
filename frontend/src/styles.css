@@ -1,0 +1,47 @@
+/* Global base tweaks layered on top of Mantine's theme. */
+
+html,
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tabular figures for data-dense numeric contexts (stat tiles, tables). */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Two-panel auth layout: single column on phones, split on >=sm. */
+.auth-grid {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 48em) {
+  .auth-grid {
+    grid-template-columns: 1.05fr 1fr;
+  }
+}
+
+/* Subtle brand wash behind the app body — reads as "bold & modern" without
+   fighting the content. Tuned per color scheme. */
+body {
+  background-attachment: fixed;
+}
+
+[data-mantine-color-scheme='dark'] body {
+  background-image: radial-gradient(
+    120% 80% at 100% 0%,
+    rgba(109, 65, 236, 0.10) 0%,
+    rgba(109, 65, 236, 0) 55%
+  );
+}
+
+[data-mantine-color-scheme='light'] body {
+  background-image: radial-gradient(
+    120% 80% at 100% 0%,
+    rgba(109, 65, 236, 0.06) 0%,
+    rgba(109, 65, 236, 0) 55%
+  );
+}
