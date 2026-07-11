@@ -1,11 +1,11 @@
-import { Box, Center, Group, List, Stack, Text, ThemeIcon } from '@mantine/core';
+import { Box, Center, List, Stack, Text, ThemeIcon } from '@mantine/core';
 import {
   IconCalendarEvent,
   IconChartHistogram,
   IconMapPin,
 } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
-import { LogoMark } from './Logo';
+import { LogoReveal } from './LogoReveal';
 
 const HIGHLIGHTS = [
   { icon: IconMapPin, text: 'Map every school, college, museum & library you reach' },
@@ -29,7 +29,8 @@ export function AuthShell({ children }: { children: ReactNode }) {
           padding: '3rem',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
+          gap: '2.75rem',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -44,32 +45,15 @@ export function AuthShell({ children }: { children: ReactNode }) {
             pointerEvents: 'none',
           }}
         />
-        <Group gap="sm" style={{ position: 'relative' }}>
-          <LogoMark size={40} />
-          <Text
-            fw={700}
-            fz={28}
-            style={{ fontFamily: "'Space Grotesk Variable', sans-serif", letterSpacing: '0.02em' }}
-          >
-            DOCENT
-          </Text>
-        </Group>
+        <Center style={{ position: 'relative' }}>
+          <LogoReveal size={200} showTagline />
+        </Center>
 
-        <Stack gap="lg" style={{ position: 'relative', maxWidth: 460 }}>
-          <div>
-            <Text
-              fz={44}
-              fw={700}
-              lh={1.05}
-              style={{ fontFamily: "'Space Grotesk Variable', sans-serif" }}
-            >
-              Reach out.
-            </Text>
-            <Text fz="lg" mt="sm" style={{ opacity: 0.9 }}>
-              The shared record of your scientific community’s outreach — every
-              classroom visit, lab tour, and public talk, in one place.
-            </Text>
-          </div>
+        <Stack gap="lg" style={{ position: 'relative', maxWidth: 460, alignSelf: 'center' }}>
+          <Text fz="lg" ta="center" style={{ opacity: 0.9 }}>
+            <b>Reach out.</b> The shared record of your scientific community’s outreach —
+            every classroom visit, lab tour, and public talk, in one place.
+          </Text>
           <List spacing="sm" listStyleType="none">
             {HIGHLIGHTS.map((h) => (
               <List.Item
@@ -91,10 +75,6 @@ export function AuthShell({ children }: { children: ReactNode }) {
             ))}
           </List>
         </Stack>
-
-        <Text fz="sm" style={{ position: 'relative', opacity: 0.7 }}>
-          Decentralized Outreach &amp; Community Engagement Network Tracker
-        </Text>
       </Box>
 
       {/* Form panel */}

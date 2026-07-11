@@ -1,0 +1,181 @@
+/* DOCENT animated reveal — all motion for LogoReveal.tsx.
+   Class names are namespaced (dc-*) to avoid collisions with app styles. */
+
+.dc-reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.dc-reveal-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── wordmark ─────────────────────────────────────── */
+.dc-wordmark {
+  display: flex;
+  align-items: baseline;
+  font-family: 'Space Grotesk Variable', 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: #f3f0ff;
+}
+.dc-letter {
+  display: inline-block;
+  animation: dcRise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── tagline (initials spell DOCENT) ──────────────── */
+.dc-tagline {
+  margin-top: 4px;
+  font-family: 'Inter Variable', Inter, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #6d6d80;
+  text-align: center;
+  animation: dcFade 0.8s ease-out 2.15s both;
+}
+.dc-tagline b {
+  color: #a98dff;
+  font-weight: 700;
+}
+
+/* ── replay control (optional) ────────────────────── */
+.dc-replay {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid #34343f;
+  background: #1b1b22;
+  color: #c9c9d4;
+  font-family: 'Inter Variable', Inter, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.dc-replay:hover {
+  border-color: #6d41ec;
+  color: #f3f0ff;
+}
+
+/* ── transform origins ────────────────────────────── */
+.dc-svg [class^='dc-el'],
+.dc-flash1,
+.dc-flash2,
+.dc-flash3,
+.dc-core {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ── reveal (plays once on mount) ─────────────────── */
+.dc-tile  { animation: dcTileIn 0.72s cubic-bezier(0.34, 1.56, 0.64, 1) both; transform-box: fill-box; transform-origin: center; }
+.dc-node  { animation: dcPop 0.5s cubic-bezier(0.34, 1.7, 0.64, 1) 0.5s both; }
+.dc-sat1  { animation: dcPop 0.46s cubic-bezier(0.34, 1.7, 0.64, 1) 1.02s both; }
+.dc-sat2  { animation: dcPop 0.46s cubic-bezier(0.34, 1.7, 0.64, 1) 1.28s both; }
+.dc-sat3  { animation: dcPop 0.46s cubic-bezier(0.34, 1.7, 0.64, 1) 1.42s both; }
+.dc-sat4  { animation: dcPop 0.46s cubic-bezier(0.34, 1.7, 0.64, 1) 1.56s both; }
+
+/* rings: ripple in (once) + brighten as the ping crosses them (looping) */
+.dc-ring1 { animation: dcRing 0.8s  cubic-bezier(0.22, 1, 0.36, 1) 0.68s both, dcLit1 5s ease-out 2.1s infinite; }
+.dc-ring2 { animation: dcRing 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.9s  both, dcLit2 5s ease-out 2.1s infinite; }
+.dc-ring3 { animation: dcRing 0.9s  cubic-bezier(0.22, 1, 0.36, 1) 1.12s both, dcLit3 5s ease-out 2.1s infinite; }
+
+/* ── steady state (loops, one ping every 5s) ─────── */
+.dc-wave  { animation: dcWave 5s cubic-bezier(0.2, 0.5, 0.3, 1) 2.1s infinite both; }
+.dc-core  { animation: dcCore 5s ease-in-out 2.1s infinite both; }
+.dc-flash1 { animation: dcFlash1 5s ease-out 2.1s infinite both; }
+.dc-flash2 { animation: dcFlash2 5s ease-out 2.1s infinite both; }
+.dc-flash3 { animation: dcFlash3 5s ease-out 2.1s infinite both; }
+
+/* ── keyframes ────────────────────────────────────── */
+@keyframes dcTileIn {
+  0%   { opacity: 0; transform: scale(0.55) rotate(-10deg); }
+  58%  { opacity: 1; transform: scale(1.05) rotate(3deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes dcPop {
+  0%   { opacity: 0; transform: scale(0); }
+  68%  { opacity: 1; transform: scale(1.28); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes dcRing {
+  0%   { opacity: 0; transform: scale(0); }
+  55%  { opacity: 1; }
+  78%  { transform: scale(1.07); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes dcRise {
+  0%   { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes dcFade {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* radar sweep grows out of the core, then a long quiet gap */
+@keyframes dcWave {
+  0%   { opacity: 0;    transform: scale(0.04); }
+  3%   { opacity: 0.95; }
+  23%  { opacity: 0.5;  transform: scale(1); }
+  29%  { opacity: 0;    transform: scale(1.05); }
+  100% { opacity: 0;    transform: scale(1.05); }
+}
+/* core breathes as each wave launches */
+@keyframes dcCore {
+  0%, 100% { transform: scale(1.32); filter: drop-shadow(0 0 5px rgba(255,255,255,0.95)); }
+  7%, 93%  { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+}
+/* rings brighten as the wave crosses them (peaks staggered by radius) */
+@keyframes dcLit1 {
+  0%, 3%   { stroke: rgba(255,255,255,0.85); stroke-width: 2.1; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+  6%       { stroke: rgba(255,255,255,1);    stroke-width: 3;   filter: drop-shadow(0 0 3px rgba(255,255,255,0.85)); }
+  9%, 100% { stroke: rgba(255,255,255,0.85); stroke-width: 2.1; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+}
+@keyframes dcLit2 {
+  0%, 10%   { stroke: rgba(255,255,255,0.55); stroke-width: 1.9; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+  13%       { stroke: rgba(255,255,255,0.95); stroke-width: 2.8; filter: drop-shadow(0 0 3px rgba(255,255,255,0.8)); }
+  16%, 100% { stroke: rgba(255,255,255,0.55); stroke-width: 1.9; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+}
+@keyframes dcLit3 {
+  0%, 18%   { stroke: rgba(255,255,255,0.32); stroke-width: 1.7; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+  21%       { stroke: rgba(255,255,255,0.85); stroke-width: 2.6; filter: drop-shadow(0 0 3px rgba(255,255,255,0.75)); }
+  24%, 100% { stroke: rgba(255,255,255,0.32); stroke-width: 1.7; filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+}
+/* dots snap bright the instant the wave reaches their ring, then snap back */
+@keyframes dcFlash1 {
+  0%, 3%   { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+  6%       { transform: scale(1.55); filter: drop-shadow(0 0 3px rgba(255,255,255,0.9)); }
+  10%, 100%{ transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+}
+@keyframes dcFlash2 {
+  0%, 10%  { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+  13%      { transform: scale(1.55); filter: drop-shadow(0 0 3px rgba(255,255,255,0.9)); }
+  17%, 100%{ transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+}
+@keyframes dcFlash3 {
+  0%, 18%  { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+  21%      { transform: scale(1.55); filter: drop-shadow(0 0 3px rgba(255,255,255,0.9)); }
+  25%, 100%{ transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+}
+
+/* Respect reduced-motion: show the finished mark, no reveal or ping. */
+@media (prefers-reduced-motion: reduce) {
+  .dc-tile, .dc-node, .dc-sat1, .dc-sat2, .dc-sat3, .dc-sat4,
+  .dc-ring1, .dc-ring2, .dc-ring3, .dc-wave, .dc-core,
+  .dc-flash1, .dc-flash2, .dc-flash3, .dc-letter, .dc-tagline {
+    animation: none !important;
+  }
+  .dc-wave { display: none; }
+}
