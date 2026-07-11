@@ -78,8 +78,9 @@ export function ReportsPage() {
       <div>
         <Title order={2}>Reports</Title>
         <Text c="dimmed" size="sm">
-          Export a shareable summary of outreach activity — for grant reports and annual
-          reviews. Private notes, reflections, and ratings are never included.
+          Export a shareable summary of your <strong>Broad Impact</strong> — for grant
+          reports and annual reviews. Private notes, reflections, and ratings are never
+          included.
         </Text>
       </div>
 

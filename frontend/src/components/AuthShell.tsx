@@ -10,7 +10,7 @@ import { LogoReveal } from './LogoReveal';
 const HIGHLIGHTS = [
   { icon: IconMapPin, text: 'Map every school, college, museum & library you reach' },
   { icon: IconCalendarEvent, text: 'Plan events and export them to your calendar' },
-  { icon: IconChartHistogram, text: 'See your community’s collective impact at a glance' },
+  { icon: IconChartHistogram, text: 'Prove your Broad Impact with grant-ready reports' },
 ];
 
 /**

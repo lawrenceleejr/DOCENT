@@ -1,10 +1,21 @@
-# DOCENT
+# DOCENT — Reach out. Track it. Prove your Broad Impact.
 
-**D**ecentralized **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker — a self-hosted web app for scientific communities to track outreach efforts: visits to grade schools, community colleges, museums, libraries, and beyond.
+**D**ecentralized **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker — a self-hosted web app that helps a scientific community **Reach out** (to grade schools, community colleges, museums, libraries, and beyond), keep one shared record of every visit, and turn it into **Broad Impact** documentation for grant reports at the click of a button.
 
-Researchers register accounts and log each visit — venue, date, contact person, audience, how it went, people reached — and the whole community shares a live **Analysis** dashboard: events over time, people reached, breakdowns by venue type and audience, top venues, and a researcher leaderboard. Visit data exports to CSV for grant reporting.
+Researchers register accounts and log each visit — venue, date, host, audience, how it went, people reached — and the whole community shares a live **Analysis** dashboard and a coverage **Map**. When it's reporting season, the **Reports** tab exports a grant-ready summary of your collective **Broad Impact** (PDF / CSV / Markdown / JSON) over any date range.
 
-**Stack:** FastAPI + PostgreSQL backend, React (TypeScript, Mantine, Recharts) frontend, nginx, and a backup sidecar with nightly rotated `pg_dump`s — all deployed with a single `docker compose up`.
+### Why self-host? Your data never leaves your institution
+DOCENT runs entirely on **your** server — no third-party cloud, no vendor with a
+copy of your records. Everything stays inside your institution's own
+infrastructure, which makes it far simpler to satisfy campus data-governance and
+**FERPA** obligations for any student-related information. You own the database,
+the backups, and the export — and you can delete or move it whenever you like.
+*(Self-hosting supports FERPA compliance; actual compliance depends on how your
+institution deploys and configures it.)*
+
+**Stack:** FastAPI + PostgreSQL backend, React (TypeScript, Mantine, Recharts) frontend, nginx, and a backup sidecar with nightly rotated `pg_dump`s — deployed with a single `docker compose up`.
+
+**Docs:** [Quickstart](#getting-started) · [Run the published images](#run-the-published-images-no-build) · [Security & safe deployment](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) · GPLv3
 
 ---
 
@@ -117,6 +128,36 @@ Run from the repo root:
 | `./scripts/list-backups.sh` | List backups held in the volume. |
 | `./scripts/download-backups.sh [dir]` | Copy all backups onto the host (for off-site storage). |
 | `./scripts/restore.sh <file>` | Restore the DB from a backup (stops/starts the backend around it). |
+
+## Run the published images (no build)
+
+Every tagged release publishes ready-to-run container images to the GitHub
+Container Registry, so you can deploy without cloning the source or building
+anything locally:
+
+- `ghcr.io/lawrenceleejr/docent-backend`
+- `ghcr.io/lawrenceleejr/docent-frontend`
+- `ghcr.io/lawrenceleejr/docent-backup`
+
+Tags: `:latest` is the newest tagged release, `:vX.Y.Z` pins a specific release,
+and `:edge` tracks the `main` branch. Pull with `docker-compose.release.yml`,
+which references these images instead of building:
+
+```bash
+# 1. grab the pull-based compose file and an env template
+curl -O https://raw.githubusercontent.com/lawrenceleejr/DOCENT/main/docker-compose.release.yml
+curl -o .env https://raw.githubusercontent.com/lawrenceleejr/DOCENT/main/.env.example
+
+# 2. edit .env — set POSTGRES_PASSWORD, SECRET_KEY, INVITE_CODE, CONTACT_EMAIL
+#    (SECRET_KEY: openssl rand -hex 32   INVITE_CODE: any shared access code)
+
+# 3. start it (pin a release with DOCENT_TAG, or omit for :latest)
+DOCENT_TAG=v0.1.0 docker compose -f docker-compose.release.yml up -d
+```
+
+This is the fastest path for a fresh server: no Node/Python toolchain, no build
+step — just Docker pulling the release images. Front it with the same TLS proxy
+as above. To update, `docker compose -f docker-compose.release.yml pull && … up -d`.
 
 ## Configuration (`.env`)
 
