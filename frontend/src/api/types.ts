@@ -313,3 +313,10 @@ export interface ActivityReport {
   summary: ReportSummary;
   rows: ReportRow[];
 }
+
+// Public auth config (login/register pages) — whether sign-up is open and
+// where to request an access code / password reset.
+export interface AuthConfig {
+  registration_enabled: boolean;
+  contact_email: string | null;
+}

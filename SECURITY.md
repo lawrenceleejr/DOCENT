@@ -25,13 +25,15 @@ community. Follow the checklist and you have a safe default deployment.
    Never expose the app's port directly to the internet. Only set
    `BIND_HOST=0.0.0.0` on a trusted private LAN that has no proxy.
 
-3. **Claim the admin account immediately.** The **first** account registered
-   becomes the admin. Register it yourself the moment the site is up, *before*
-   announcing the URL — otherwise whoever registers first is your admin.
+3. **Registration requires an access code.** `start.sh` generates one on first
+   run (stored as `INVITE_CODE` in `.env`) and prints it; with no code set,
+   sign-up is closed entirely. Set `CONTACT_EMAIL` in `.env` so the login/register
+   pages tell people who to ask for a code or a password reset.
 
-4. **Decide who can sign up.** Registration is open by default. To keep the
-   public out, set `INVITE_CODE` in `.env` and re-run `./scripts/start.sh`; share
-   the code only with your community. **Recommended for any non-public group.**
+4. **Claim the admin account immediately.** The **first** account registered
+   (with the access code) becomes the admin. Do that the moment the site is up,
+   *before* sharing the code — then hand the code only to members you want to
+   let in. Rotate it any time by changing `INVITE_CODE` and re-running `start.sh`.
 
 5. **Keep secrets and backups safe.** Restrict who can read `.env` and the host
    (they hold DB and session secrets). Back up off-host regularly
@@ -50,6 +52,9 @@ community. Follow the checklist and you have a safe default deployment.
 - **Rate limiting** on login (10 / 5 min per IP) and registration (5 / hour).
 - **Access control**: only a visit's author or an admin can edit/delete it;
   admin-only endpoints are guarded; you can't remove your own admin/active flag.
+- **Account recovery**: an admin can reset any member's password from
+  *Admin → Reset password*. It shows a one-time temporary password to hand over;
+  the member changes it from their profile after logging back in.
 - **Injection-safe**: all database access is via the SQLAlchemy ORM with bound
   parameters; no string-built SQL.
 - **Same-origin only**: no CORS is enabled; the browser only ever calls this

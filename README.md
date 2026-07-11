@@ -97,9 +97,12 @@ See **[SECURITY.md](SECURITY.md)** for the full secure-deployment checklist.
 
 **3. Create the admin account**
 
-Open `https://docent.example.org` and register. **The first account registered
-automatically becomes the admin.** To keep the public out, set `INVITE_CODE` in
-`.env` and re-run `./scripts/start.sh`.
+Registration **requires an access code**. `start.sh` generates one and prints it
+(also stored as `INVITE_CODE` in `.env`); set `CONTACT_EMAIL` in `.env` so people
+know who to ask for it, then re-run `./scripts/start.sh`. Open
+`https://docent.example.org`, register with the access code — **the first account
+registered automatically becomes the admin** — then share the code only with the
+community members you want to let in.
 
 ### Helper scripts
 
@@ -122,10 +125,12 @@ Run from the repo root:
 | `POSTGRES_DB` / `POSTGRES_USER` | `docent` | Database name / user |
 | `POSTGRES_PASSWORD` | — (required) | Database password |
 | `SECRET_KEY` | — (required) | JWT signing key — `openssl rand -hex 32` |
-| `INVITE_CODE` | empty | If set, registration requires this code; empty = open signup |
+| `INVITE_CODE` | — (required) | Access code needed to register; empty = registration closed |
+| `CONTACT_EMAIL` | empty | Email shown on login/register for access-code & reset requests |
 | `ACCESS_TOKEN_DAYS` | `7` | Login session lifetime |
-| `COOKIE_SECURE` | `true` | Set `false` only when serving over plain http |
+| `COOKIE_SECURE` | `auto` | `auto` sets Secure on HTTPS; force with `true`/`false` |
 | `HTTP_PORT` | `8080` | Host port for the web UI (reverse-proxy forwards here) |
+| `BIND_HOST` | `127.0.0.1` | Interface the port binds to; `0.0.0.0` only for a trusted LAN |
 | `BACKUP_HOUR` | `02` | Hour (UTC, 00–23) of the nightly backup |
 | `OVERPASS_URL` | overpass-api.de | OpenStreetMap Overpass endpoint used by the institution importer |
 

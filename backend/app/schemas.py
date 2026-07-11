@@ -28,6 +28,13 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class AuthConfig(BaseModel):
+    """Public, unauthenticated info the login/register pages need."""
+
+    registration_enabled: bool
+    contact_email: str | None
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

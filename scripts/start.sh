@@ -9,13 +9,21 @@ if [ ! -f .env ]; then
     cp .env.example .env
     secret=$(openssl rand -hex 32)
     dbpass=$(openssl rand -hex 16)
+    invite=$(openssl rand -hex 4)
     # Portable in-place edits (works on GNU and BSD sed).
     tmp=$(mktemp)
     sed -e "s|^SECRET_KEY=.*|SECRET_KEY=${secret}|" \
         -e "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=${dbpass}|" \
+        -e "s|^INVITE_CODE=.*|INVITE_CODE=${invite}|" \
         .env > "$tmp" && mv "$tmp" .env
-    echo "  Generated SECRET_KEY and POSTGRES_PASSWORD."
-    echo "  Review .env (HTTP_PORT, COOKIE_SECURE, INVITE_CODE) before going public."
+    echo "  Generated SECRET_KEY, POSTGRES_PASSWORD, and an access code."
+    echo
+    echo "  ACCESS CODE (required to register): ${invite}"
+    echo "  Share this only with people you want to let in. Register the FIRST"
+    echo "  account now — it becomes the admin."
+    echo
+    echo "  Set CONTACT_EMAIL in .env so people know who to ask for a code or a"
+    echo "  password reset, then re-run this script."
 fi
 
 echo "Building and starting containers..."

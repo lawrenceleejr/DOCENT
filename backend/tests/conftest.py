@@ -20,6 +20,9 @@ get_settings().cookie_secure = False
 # many logins across the suite don't trip it.
 get_settings().secret_key = "test-secret-not-the-insecure-default"
 get_settings().rate_limit_enabled = False
+# Registration now always requires an access code; give the suite a known one.
+TEST_INVITE_CODE = "test-invite-code"
+get_settings().invite_code = TEST_INVITE_CODE
 
 
 def _ensure_test_database() -> None:
@@ -81,10 +84,23 @@ def make_client(db):
     app.dependency_overrides.clear()
 
 
-def register(client, email="user@example.com", name="Test User", password="password123", **extra):
+def register(
+    client,
+    email="user@example.com",
+    name="Test User",
+    password="password123",
+    invite_code=TEST_INVITE_CODE,
+    **extra,
+):
     response = client.post(
         "/api/auth/register",
-        json={"name": name, "email": email, "password": password, **extra},
+        json={
+            "name": name,
+            "email": email,
+            "password": password,
+            "invite_code": invite_code,
+            **extra,
+        },
     )
     return response
 

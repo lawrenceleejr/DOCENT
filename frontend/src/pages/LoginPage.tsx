@@ -9,9 +9,11 @@ import {
   Title,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { ApiError } from '../api/client';
+import { api, ApiError } from '../api/client';
+import type { AuthConfig } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { AuthShell } from '../components/AuthShell';
 import { Logo } from '../components/Logo';
@@ -21,6 +23,11 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const { data: config } = useQuery({
+    queryKey: ['auth', 'config'],
+    queryFn: () => api.get<AuthConfig>('/api/auth/config'),
+  });
 
   const form = useForm({
     initialValues: { email: '', password: '' },
@@ -75,6 +82,17 @@ export function LoginPage() {
           <Button type="submit" size="md" variant="gradient" loading={submitting}>
             Log in
           </Button>
+          <Text size="sm" c="dimmed">
+            Forgot your password?{' '}
+            {config?.contact_email ? (
+              <>
+                Contact <Anchor href={`mailto:${config.contact_email}`}>{config.contact_email}</Anchor>{' '}
+                for a reset.
+              </>
+            ) : (
+              'Ask your community administrator to reset it.'
+            )}
+          </Text>
           <Text size="sm" c="dimmed">
             No account yet?{' '}
             <Anchor component={Link} to="/register">

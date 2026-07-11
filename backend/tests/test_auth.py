@@ -27,11 +27,31 @@ def test_duplicate_email_conflict(client):
     assert response.status_code == 409
 
 
-def test_invite_code_required(client, monkeypatch):
+def test_access_code_required(client, monkeypatch):
     monkeypatch.setattr(get_settings(), "invite_code", "sesame")
-    assert register(client, email="a@example.com").status_code == 403
+    assert register(client, email="a@example.com", invite_code="").status_code == 403
     assert register(client, email="a@example.com", invite_code="wrong").status_code == 403
     assert register(client, email="a@example.com", invite_code="sesame").status_code == 201
+
+
+def test_registration_closed_when_no_code_configured(client, monkeypatch):
+    monkeypatch.setattr(get_settings(), "invite_code", "")
+    # With no access code configured, nobody can register — even with a value.
+    assert register(client, email="x@example.com", invite_code="anything").status_code == 403
+
+
+def test_auth_config_endpoint(client, monkeypatch):
+    monkeypatch.setattr(get_settings(), "invite_code", "sesame")
+    monkeypatch.setattr(get_settings(), "contact_email", "outreach@example.org")
+    cfg = client.get("/api/auth/config").json()
+    assert cfg["registration_enabled"] is True
+    assert cfg["contact_email"] == "outreach@example.org"
+
+    monkeypatch.setattr(get_settings(), "invite_code", "")
+    monkeypatch.setattr(get_settings(), "contact_email", "")
+    cfg = client.get("/api/auth/config").json()
+    assert cfg["registration_enabled"] is False
+    assert cfg["contact_email"] is None
 
 
 def test_login_logout_flow(client, make_client):

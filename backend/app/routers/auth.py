@@ -5,7 +5,7 @@ from app.config import get_settings
 from app.deps import CurrentUser, DbSession
 from app.models import User
 from app.ratelimit import login_rate_limit, register_rate_limit
-from app.schemas import LoginRequest, RegisterRequest, UserOut
+from app.schemas import AuthConfig, LoginRequest, RegisterRequest, UserOut
 from app.security import (
     clear_auth_cookie,
     create_access_token,
@@ -17,6 +17,17 @@ from app.security import (
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
+@router.get("/config", response_model=AuthConfig)
+def auth_config() -> AuthConfig:
+    """Public: whether sign-up is open and where to request access — the
+    login/register pages render this so they can point people at the admin."""
+    settings = get_settings()
+    return AuthConfig(
+        registration_enabled=bool(settings.invite_code),
+        contact_email=settings.contact_email or None,
+    )
+
+
 @router.post(
     "/register",
     response_model=UserOut,
@@ -25,9 +36,16 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 )
 def register(body: RegisterRequest, request: Request, response: Response, db: DbSession):
     settings = get_settings()
-    if settings.invite_code and body.invite_code != settings.invite_code:
+    # An access code is always required. With none configured, sign-up is closed.
+    if not settings.invite_code:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid invite code"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Registration is closed. Contact the administrator for access.",
+        )
+    if not body.invite_code or body.invite_code.strip() != settings.invite_code:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing access code.",
         )
 
     email = body.email.lower()

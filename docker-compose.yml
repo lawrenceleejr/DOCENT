@@ -19,7 +19,10 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-docent}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-docent}
       SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      # Required to register. Empty = registration closed.
       INVITE_CODE: ${INVITE_CODE:-}
+      # Shown on the login/register pages for access-code / reset requests.
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
       ACCESS_TOKEN_DAYS: ${ACCESS_TOKEN_DAYS:-7}
       COOKIE_SECURE: ${COOKIE_SECURE:-auto}
       # Optional: path (inside the container) to a CA bundle so the institution
