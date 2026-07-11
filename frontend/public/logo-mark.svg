@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="DOCENT">
+  <defs>
+    <linearGradient id="docentGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6d41ec"></stop>
+      <stop offset="1" stop-color="#b14fe0"></stop>
+    </linearGradient>
+  </defs>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="15" fill="url(#docentGrad)"></rect>
+  <circle cx="32" cy="32" r="21.5" fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="1.7"></circle>
+  <circle cx="32" cy="32" r="15" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.9"></circle>
+  <circle cx="32" cy="32" r="8.5" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2.1"></circle>
+  <circle cx="37.5" cy="25.5" r="2.5" fill="#fff"></circle>
+  <circle cx="17.9" cy="26.9" r="2.5" fill="#fff"></circle>
+  <circle cx="35.9" cy="46.5" r="2.5" fill="#fff"></circle>
+  <circle cx="51.5" cy="41.1" r="2.5" fill="#fff"></circle>
+  <circle cx="32" cy="32" r="4" fill="#fff"></circle>
+</svg>

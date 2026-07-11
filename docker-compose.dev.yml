@@ -1,0 +1,22 @@
+# Dev helper: runs ONLY Postgres with its port published, so you can run
+# uvicorn and vite locally with hot reload.
+#   docker compose -f docker-compose.dev.yml up -d
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: docent
+      POSTGRES_USER: docent
+      POSTGRES_PASSWORD: docent
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docent -d docent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata_dev: {}

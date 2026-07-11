@@ -1,0 +1,100 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-docent}
+      POSTGRES_USER: ${POSTGRES_USER:-docent}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-docent} -d ${POSTGRES_DB:-docent}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-docent}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-docent}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      # Required to register. Empty = registration closed.
+      INVITE_CODE: ${INVITE_CODE:-}
+      # Shown on the login/register pages for access-code / reset requests.
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+      # Optional canonical public address; admins can also set it in the app.
+      SITE_URL: ${SITE_URL:-}
+      ACCESS_TOKEN_DAYS: ${ACCESS_TOKEN_DAYS:-7}
+      COOKIE_SECURE: ${COOKIE_SECURE:-auto}
+      # Optional: path (inside the container) to a CA bundle so the institution
+      # importer trusts a corporate/TLS-inspecting proxy when calling Overpass /
+      # Nominatim. Leave empty for normal internet.
+      REQUESTS_CA_BUNDLE: ${REQUESTS_CA_BUNDLE:-}
+    volumes:
+      # Read the backup catalog and drop the "run now" sentinel the sidecar polls.
+      - backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      # Bind to localhost by default so the plain-HTTP app is NOT reachable
+      # directly from the network. With no domain set you reach it here
+      # (http://localhost:8080); when SITE_DOMAIN is set the bundled caddy
+      # service below fronts it with HTTPS. Set BIND_HOST=0.0.0.0 only for a
+      # trusted private LAN with no proxy.
+      - "${BIND_HOST:-127.0.0.1}:${HTTP_PORT:-8080}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Optional bundled HTTPS reverse proxy. It only runs under the "tls" profile,
+  # which start.sh turns on automatically when SITE_DOMAIN is set in .env:
+  #   • no SITE_DOMAIN  → caddy stays OFF; use the app at http://localhost:8080
+  #   • SITE_DOMAIN set → caddy serves https://$SITE_DOMAIN on :443, obtains and
+  #     renews the TLS certificate automatically, and proxies to the frontend.
+  # Requires the domain's DNS to point at this machine and ports 80+443 open.
+  caddy:
+    image: caddy:2
+    profiles: ["tls"]
+    command: caddy reverse-proxy --from ${SITE_DOMAIN:-} --to frontend:80
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data      # persists the issued certificate across restarts
+      - caddy_config:/config
+    depends_on:
+      - frontend
+    restart: unless-stopped
+
+  backup:
+    build: ./docker/backup
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-docent}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB:-docent}
+      BACKUP_HOUR: ${BACKUP_HOUR:-02}
+    volumes:
+      - backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata: {}
+  backups: {}
+  caddy_data: {}
+  caddy_config: {}

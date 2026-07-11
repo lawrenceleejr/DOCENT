@@ -1,0 +1,99 @@
+# DOCENT — run the published release images (no source checkout / build needed).
+#
+#   1. curl -O https://raw.githubusercontent.com/lawrenceleejr/DOCENT/main/docker-compose.release.yml
+#   2. curl -O https://raw.githubusercontent.com/lawrenceleejr/DOCENT/main/.env.example && mv .env.example .env
+#   3. edit .env  (set POSTGRES_PASSWORD, SECRET_KEY, INVITE_CODE, CONTACT_EMAIL)
+#   4. docker compose -f docker-compose.release.yml up -d
+#      → reach it at http://localhost:8080
+#
+# Go live over HTTPS: set SITE_DOMAIN=your.domain in .env (DNS must point at this
+# machine, ports 80+443 open) and add the bundled Caddy proxy:
+#   docker compose -f docker-compose.release.yml --profile tls up -d
+#
+# Pin a specific release with DOCENT_TAG (e.g. DOCENT_TAG=v0.1.0); defaults to
+# the latest tagged release.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-docent}
+      POSTGRES_USER: ${POSTGRES_USER:-docent}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-docent} -d ${POSTGRES_DB:-docent}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  backend:
+    image: ${DOCENT_IMAGE_PREFIX:-ghcr.io/lawrenceleejr/docent}-backend:${DOCENT_TAG:-latest}
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-docent}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-docent}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      INVITE_CODE: ${INVITE_CODE:-}
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+      SITE_URL: ${SITE_URL:-}
+      ACCESS_TOKEN_DAYS: ${ACCESS_TOKEN_DAYS:-7}
+      COOKIE_SECURE: ${COOKIE_SECURE:-auto}
+    volumes:
+      - backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    restart: unless-stopped
+
+  frontend:
+    image: ${DOCENT_IMAGE_PREFIX:-ghcr.io/lawrenceleejr/docent}-frontend:${DOCENT_TAG:-latest}
+    ports:
+      - "${BIND_HOST:-127.0.0.1}:${HTTP_PORT:-8080}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Optional bundled HTTPS proxy — runs only under the "tls" profile, which is
+  # enabled automatically when SITE_DOMAIN is set (see docker-compose.yml notes).
+  # No SITE_DOMAIN → reach the app at http://localhost:8080; SITE_DOMAIN set →
+  # https://$SITE_DOMAIN with an auto-managed certificate.
+  caddy:
+    image: caddy:2
+    profiles: ["tls"]
+    command: caddy reverse-proxy --from ${SITE_DOMAIN:-} --to frontend:80
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+    restart: unless-stopped
+
+  backup:
+    image: ${DOCENT_IMAGE_PREFIX:-ghcr.io/lawrenceleejr/docent}-backup:${DOCENT_TAG:-latest}
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-docent}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB:-docent}
+      BACKUP_HOUR: ${BACKUP_HOUR:-02}
+    volumes:
+      - backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata: {}
+  backups: {}
+  caddy_data: {}
+  caddy_config: {}

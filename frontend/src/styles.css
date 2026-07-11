@@ -1,0 +1,75 @@
+/* Global base tweaks layered on top of Mantine's theme. */
+
+html,
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tabular figures for data-dense numeric contexts (stat tiles, tables). */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Badges carry short status/category labels — never truncate them. Letting the
+   label render at full width also lets auto-layout table cells grow to fit,
+   which fixes "COMPLET…" / "GENERAL PUB…" clipping in the visits table. */
+.mantine-Badge-label {
+  overflow: visible;
+}
+
+/* Map: render the basemap tiles in true monochrome so the colored coverage
+   markers (gap / reached / your-venue) stand out clearly. Only the tile pane is
+   filtered — markers, clusters, and controls live in other panes and keep their
+   color. */
+.leaflet-tile-pane {
+  filter: grayscale(1);
+}
+
+/* Two-panel auth layout: single column on phones, split on >=sm. */
+.auth-grid {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+/* The LogoReveal tagline ships tuned for a near-black surface; on the bright
+   brand-gradient hero it needs lighter ink and a tighter track so it stays
+   readable and doesn't overflow the panel. */
+.auth-grid .dc-tagline {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  max-width: 100%;
+}
+.auth-grid .dc-tagline b {
+  color: #fff;
+}
+@media (min-width: 48em) {
+  .auth-grid {
+    grid-template-columns: 1.05fr 1fr;
+  }
+}
+
+/* Subtle brand wash behind the app body — reads as "bold & modern" without
+   fighting the content. Tuned per color scheme. */
+body {
+  background-attachment: fixed;
+}
+
+[data-mantine-color-scheme='dark'] body {
+  background-image: radial-gradient(
+    120% 80% at 100% 0%,
+    rgba(109, 65, 236, 0.10) 0%,
+    rgba(109, 65, 236, 0) 55%
+  );
+}
+
+[data-mantine-color-scheme='light'] body {
+  background-image: radial-gradient(
+    120% 80% at 100% 0%,
+    rgba(109, 65, 236, 0.06) 0%,
+    rgba(109, 65, 236, 0) 55%
+  );
+}

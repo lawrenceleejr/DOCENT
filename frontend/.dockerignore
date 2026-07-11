@@ -1,0 +1,6 @@
+# The image runs `npm ci` during the build, so local installs/artifacts should
+# never be shipped as build context.
+node_modules/
+dist/
+*.tsbuildinfo
+.env

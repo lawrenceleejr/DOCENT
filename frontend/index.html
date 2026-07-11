@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/logo-mark.svg" />
+    <meta name="theme-color" content="#6d41ec" />
+    <title>DOCENT — Outreach Tracker</title>
+    <script>
+      // Apply the color scheme before first paint to avoid a flash.
+      // Honors a saved preference; defaults to dark.
+      (function () {
+        try {
+          var stored = localStorage.getItem('mantine-color-scheme-value');
+          document.documentElement.setAttribute(
+            'data-mantine-color-scheme',
+            stored || 'dark',
+          );
+        } catch (e) {
+          document.documentElement.setAttribute('data-mantine-color-scheme', 'dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
