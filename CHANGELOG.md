@@ -30,6 +30,9 @@ Impact.**
 ### Run it safely
 - One-command Docker deploy; nightly rotated `pg_dump` backups with a restore
   path and an in-app Backups panel (list / download / run now).
+- Published **multi-arch (amd64 + arm64)** release images on GHCR and a
+  pull-only `docker-compose.release.yml` — runs free on an Arm always-free VM
+  (Oracle Cloud); see the README's free-hosting guide.
 - Registration gated by an admin-set access code; admin password reset for
   recovery; admin tools for users (search, email edit, merge/delete), venue
   merge, and the institution catalog.

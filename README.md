@@ -15,7 +15,7 @@ institution deploys and configures it.)*
 
 **Stack:** FastAPI + PostgreSQL backend, React (TypeScript, Mantine, Recharts) frontend, nginx, and a backup sidecar with nightly rotated `pg_dump`s — deployed with a single `docker compose up`.
 
-**Docs:** [Quickstart](#getting-started) · [Run the published images](#run-the-published-images-no-build) · [Security & safe deployment](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) · GPLv3
+**Docs:** [Quickstart](#getting-started) · [Run the published images](#run-the-published-images-no-build) · [Free hosting](#free-hosting-run-it-at-no-cost) · [Security & safe deployment](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) · GPLv3
 
 ---
 
@@ -158,6 +158,102 @@ DOCENT_TAG=v0.1.0 docker compose -f docker-compose.release.yml up -d
 This is the fastest path for a fresh server: no Node/Python toolchain, no build
 step — just Docker pulling the release images. Front it with the same TLS proxy
 as above. To update, `docker compose -f docker-compose.release.yml pull && … up -d`.
+The images are built for **amd64 and arm64**, so they run on both x86 servers and
+Arm hosts (see the free Oracle option below).
+
+## Free hosting (run it at no cost)
+
+DOCENT's whole stack fits comfortably inside a free "always-free" cloud VM. These
+tiers are genuinely $0 (a card may be required for identity verification but you
+are not charged while you stay on always-free resources):
+
+| Provider | Always-free VM | Notes for DOCENT |
+|---|---|---|
+| **Oracle Cloud** ⭐ | **Ampere A1 (Arm): up to 4 cores / 24 GB RAM**, 200 GB storage — *forever* | **Recommended.** Huge headroom; step-by-step below. |
+| **Oracle Cloud** | `VM.Standard.E2.1.Micro` (x86, 1 core / 1 GB RAM) ×2 — forever | Works but 1 GB RAM is tight; add swap. Use if you prefer x86. |
+| **Google Cloud** | one `e2-micro` (2 shared vCPU / 1 GB RAM), 30 GB disk, select US regions — forever | Fine for a light demo; add swap for Postgres. |
+| **AWS** | `t3.micro` — **12 months only**, then billed | OK for a time-boxed demo, not free forever. |
+
+> PaaS "one-click" free tiers (Render/Railway/Fly) either sleep on idle, drop your
+> disk, or expire the database after ~30 days — not suitable for a durable
+> deployment. A free always-free **VM** keeps your data and the backup sidecar
+> intact, which is why it's the recommendation here.
+
+### Deploy on Oracle Cloud Always Free (step by step)
+
+This gets you a public, HTTPS DOCENT on a free Arm VM in about 20 minutes.
+
+**1. Create the account** — sign up at
+[oracle.com/cloud/free](https://www.oracle.com/cloud/free/). Pick a Home Region
+near you (can't be changed later). A card is used for identity verification only;
+"Always Free" resources are never billed.
+
+**2. Create the VM instance**
+- Console → hamburger menu → **Compute → Instances → Create instance**.
+- **Image & shape → Edit shape → Ampere** → `VM.Standard.A1.Flex`. Set **1–2
+  OCPUs** and **6–12 GB RAM** (all within the 4-core/24 GB always-free limit).
+- **Image**: **Canonical Ubuntu 22.04** (or newer).
+- **Networking**: keep "Create new virtual cloud network", and ensure **"Assign a
+  public IPv4 address"** is on.
+- **SSH keys**: upload your public key (`~/.ssh/id_ed25519.pub`) or download the
+  generated key pair — you need it to log in.
+- Click **Create** and wait for the instance to reach **Running**; note its
+  **Public IP address**.
+
+**3. Open the firewall — both layers** (this is the #1 Oracle gotcha)
+- *Cloud security list*: Instance → its **Virtual Cloud Network → Security Lists →
+  Default Security List → Add Ingress Rules**. Add two rules, Source `0.0.0.0/0`,
+  IP Protocol **TCP**, Destination port **80**, then another for **443**.
+- *OS firewall*: Oracle's Ubuntu image ships with restrictive iptables rules, so
+  also open the ports on the host after you SSH in (next step):
+  ```bash
+  sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80  -j ACCEPT
+  sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
+  sudo netfilter-persistent save        # persist across reboots
+  ```
+
+**4. SSH in and install Docker**
+```bash
+ssh ubuntu@<PUBLIC_IP>
+
+sudo apt-get update
+sudo apt-get install -y docker.io docker-compose-v2 git
+sudo usermod -aG docker $USER && newgrp docker   # run docker without sudo
+```
+
+**5. Start DOCENT**
+```bash
+git clone https://github.com/lawrenceleejr/DOCENT.git && cd DOCENT
+./scripts/start.sh
+```
+`start.sh` writes a `.env` with random secrets, **prints your access code**
+(`INVITE_CODE`), builds the images (native on Arm), and starts everything on
+`127.0.0.1:8080`. Prefer no build at all? Use the published multi-arch images
+instead: `docker compose -f docker-compose.release.yml up -d` (set the secrets in
+`.env` first — see [Run the published images](#run-the-published-images-no-build)).
+
+**6. Get a free domain + automatic HTTPS**
+- Free subdomain: create one at [duckdns.org](https://www.duckdns.org) (e.g.
+  `yourname.duckdns.org`) and point it at your instance's public IP. (Any domain
+  you own works too — add an **A record** to the public IP.)
+- Put **[Caddy](https://caddyserver.com)** in front for automatic Let's Encrypt
+  certificates:
+  ```bash
+  sudo apt-get install -y caddy
+  echo 'yourname.duckdns.org {
+      reverse_proxy 127.0.0.1:8080
+  }' | sudo tee /etc/caddy/Caddyfile
+  sudo systemctl restart caddy
+  ```
+  Caddy fetches a TLS cert on first request. DOCENT stays bound to `127.0.0.1`, so
+  it's reachable **only** through Caddy over HTTPS.
+
+**7. Create your admin account** — open `https://yourname.duckdns.org`, register
+with the access code `start.sh` printed (**the first account becomes admin**),
+then share the code only with the people you want to let in.
+
+That's it — a free, self-hosted, HTTPS DOCENT. Take backups off-box periodically
+(`./scripts/download-backups.sh`) since a free VM is still a single machine.
 
 ## Configuration (`.env`)
 
