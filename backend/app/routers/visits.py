@@ -167,11 +167,13 @@ def export_csv(
                 "people_reached", "duration_minutes", "rating", "venue", "venue_type",
                 "city", "state", "author", "host_name", "host_role", "host_relationship",
                 "host_relationship_detail", "host_email", "host_phone", "host_notes",
-                "follow_up_planned", "additional_presenters", "tags", "description",
-                "reflection",
+                "follow_up_planned", "additional_presenters", "tags", "coverage",
+                "coverage_links", "description", "reflection",
             ]
         )
         for v in visits:
+            cats = sorted({(lk.get("category") or "other") for lk in (v.links or [])})
+            urls = "; ".join(lk.get("url", "") for lk in (v.links or []))
             writer.writerow(
                 [
                     v.visit_date.isoformat(),
@@ -183,7 +185,8 @@ def export_csv(
                     v.host_relationship.value if v.host_relationship else None,
                     v.host_relationship_detail, v.contact_email, v.contact_phone,
                     v.host_notes, v.follow_up_planned, v.additional_presenters,
-                    "; ".join(v.tags), v.description, v.reflection,
+                    "; ".join(v.tags), "; ".join(cats), urls,
+                    v.description, v.reflection,
                 ]
             )
             yield buffer.getvalue()

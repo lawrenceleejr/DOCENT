@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Button,
   Checkbox,
   Collapse,
@@ -19,7 +20,7 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { DatePickerInput, TimeInput } from '@mantine/dates';
-import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
+import { IconChevronDown, IconChevronRight, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -29,11 +30,14 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import {
   AUDIENCE_LEVELS,
+  COVERAGE_CATEGORIES,
+  COVERAGE_LABELS,
   EVENT_TYPES,
   HOST_RELATIONSHIPS,
   labelize,
   MAX_PEOPLE_REACHED,
   PEOPLE_REACHED_CONFIRM_THRESHOLD,
+  type CoverageLink,
   type Visit,
   type VisitStatus,
 } from '../api/types';
@@ -63,6 +67,7 @@ interface FormValues {
   follow_up_planned: boolean;
   additional_presenters: string;
   tags: string[];
+  links: CoverageLink[];
 }
 
 export function VisitFormPage() {
@@ -110,6 +115,7 @@ export function VisitFormPage() {
       follow_up_planned: false,
       additional_presenters: '',
       tags: [],
+      links: [],
     },
     validate: {
       venue_id: (v) => (v !== null ? null : 'Pick or create a venue'),
@@ -158,6 +164,7 @@ export function VisitFormPage() {
         follow_up_planned: existing.follow_up_planned,
         additional_presenters: existing.additional_presenters ?? '',
         tags: existing.tags ?? [],
+        links: (existing.links ?? []).map((l) => ({ ...l, label: l.label ?? '' })),
       });
       if (
         existing.contact_name ||
@@ -207,6 +214,9 @@ export function VisitFormPage() {
         follow_up_planned: values.follow_up_planned,
         additional_presenters: values.additional_presenters.trim() || null,
         tags: values.tags,
+        links: values.links
+          .filter((l) => l.url.trim())
+          .map((l) => ({ url: l.url.trim(), category: l.category, label: l.label })),
       };
       return editing
         ? api.patch<Visit>(`/api/visits/${id}`, payload)
@@ -414,6 +424,57 @@ export function VisitFormPage() {
                 label="Follow-up planned with this venue"
                 {...form.getInputProps('follow_up_planned', { type: 'checkbox' })}
               />
+            </Stack>
+          </Fieldset>
+
+          <Fieldset legend="Coverage & links" radius="md">
+            <Stack gap="sm">
+              <Text size="sm" c="dimmed">
+                Link to press coverage, social posts, videos, or blog write-ups of this
+                event. Reports show which activities drew which kinds of coverage.
+              </Text>
+              {form.values.links.map((_, i) => (
+                <Group key={i} gap="xs" align="flex-end" wrap="nowrap">
+                  <Select
+                    label={i === 0 ? 'Type' : undefined}
+                    w={140}
+                    allowDeselect={false}
+                    data={COVERAGE_CATEGORIES.map((c) => ({ value: c, label: COVERAGE_LABELS[c] }))}
+                    {...form.getInputProps(`links.${i}.category`)}
+                  />
+                  <TextInput
+                    label={i === 0 ? 'URL' : undefined}
+                    placeholder="https://…"
+                    style={{ flex: 1 }}
+                    {...form.getInputProps(`links.${i}.url`)}
+                  />
+                  <TextInput
+                    label={i === 0 ? 'Label (optional)' : undefined}
+                    placeholder="e.g. WBIR segment"
+                    w={200}
+                    {...form.getInputProps(`links.${i}.label`)}
+                  />
+                  <ActionIcon
+                    variant="subtle"
+                    color="red"
+                    size="lg"
+                    aria-label="Remove link"
+                    onClick={() => form.removeListItem('links', i)}
+                  >
+                    <IconTrash size={18} />
+                  </ActionIcon>
+                </Group>
+              ))}
+              <Button
+                variant="light"
+                leftSection={<IconPlus size={16} />}
+                style={{ alignSelf: 'flex-start' }}
+                onClick={() =>
+                  form.insertListItem('links', { url: '', category: 'press', label: '' })
+                }
+              >
+                Add a link
+              </Button>
             </Stack>
           </Fieldset>
 

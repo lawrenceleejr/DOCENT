@@ -17,7 +17,7 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -213,6 +213,11 @@ class Visit(Base):
     # Free-text labels for grouping/filtering (e.g. "nsf-career", "girls-in-stem").
     tags: Mapped[list[str]] = mapped_column(
         ARRAY(String), nullable=False, server_default=text("'{}'")
+    )
+    # Coverage links: list of {url, category, label} recording press, social
+    # media, video, blog, or other coverage of the event.
+    links: Mapped[list[dict]] = mapped_column(
+        JSONB, nullable=False, server_default=text("'[]'")
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

@@ -35,7 +35,7 @@ from app.models import (
     Visit,
     VisitStatus,
 )
-from app.schemas import normalize_tags
+from app.schemas import normalize_links, normalize_tags
 from app.security import hash_password
 
 EXPORT_VERSION = 1
@@ -131,6 +131,7 @@ def export_data(db: Session) -> dict[str, Any]:
                 "follow_up_planned": v.follow_up_planned,
                 "additional_presenters": v.additional_presenters,
                 "tags": list(v.tags or []),
+                "links": list(v.links or []),
             }
             for v in visits
         ],
@@ -275,6 +276,7 @@ def import_data(db: Session, payload: dict[str, Any]) -> dict[str, int]:
             follow_up_planned=row.get("follow_up_planned", False),
             additional_presenters=row.get("additional_presenters"),
             tags=normalize_tags(row.get("tags")),
+            links=normalize_links(row.get("links")),
         )
         db.add(visit)
         existing_visits.add(sig)

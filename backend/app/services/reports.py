@@ -35,8 +35,18 @@ REPORT_COLUMNS: list[tuple[str, str]] = [
     ("host", "Host"),
     ("host_role", "Host role"),
     ("tags", "Tags"),
+    ("coverage", "Coverage"),
+    ("coverage_links", "Coverage links"),
     ("status", "Status"),
 ]
+
+COVERAGE_LABELS = {
+    "press": "Press",
+    "social_media": "Social media",
+    "video": "Video",
+    "blog": "Blog",
+    "other": "Other",
+}
 
 # Narrower set for the PDF's fixed-width landscape table.
 PDF_COLUMNS: list[tuple[str, str]] = [
@@ -80,6 +90,7 @@ class ReportVisit:
     host_name: str | None
     host_role: str | None
     tags: list[str]
+    links: list[dict]
 
     @classmethod
     def from_visit(cls, v: Any) -> "ReportVisit":
@@ -99,7 +110,13 @@ class ReportVisit:
             host_name=v.contact_name,
             host_role=v.host_role,
             tags=list(v.tags or []),
+            links=list(v.links or []),
         )
+
+    def coverage_categories(self) -> list[str]:
+        """Distinct coverage categories present on this visit, in a stable order."""
+        present = {(lk.get("category") or "other") for lk in self.links}
+        return [c for c in COVERAGE_LABELS if c in present]
 
     def as_row(self) -> dict[str, Any]:
         location = ", ".join(p for p in (self.venue_city, self.venue_state) if p)
@@ -119,6 +136,10 @@ class ReportVisit:
             "host": self.host_name or "",
             "host_role": self.host_role or "",
             "tags": "; ".join(self.tags),
+            "coverage": "; ".join(COVERAGE_LABELS[c] for c in self.coverage_categories()),
+            "coverage_links": "; ".join(
+                lk.get("url", "") for lk in self.links if lk.get("url")
+            ),
             "status": _label(self.status),
         }
 
@@ -141,6 +162,16 @@ def build_report(
     venues = {rv.venue_name for rv in report_visits}
     dates = [rv.visit_date for rv in report_visits]
 
+    # How many activities got each kind of coverage (press / social / …).
+    coverage_counts = {c: 0 for c in COVERAGE_LABELS}
+    activities_with_coverage = 0
+    for rv in report_visits:
+        cats = rv.coverage_categories()
+        if cats:
+            activities_with_coverage += 1
+        for c in cats:
+            coverage_counts[c] += 1
+
     return {
         "title": REPORT_TITLE,
         "scope": scope,
@@ -153,6 +184,8 @@ def build_report(
             "distinct_venues": len(venues),
             "first_activity": min(dates).isoformat() if dates else None,
             "last_activity": max(dates).isoformat() if dates else None,
+            "activities_with_coverage": activities_with_coverage,
+            "coverage_counts": coverage_counts,
         },
         "rows": rows,
     }
@@ -201,10 +234,15 @@ def report_markdown(report: dict[str, Any]) -> str:
         f"- **Activities:** {s['total_activities']:,}",
         f"- **People reached:** {s['total_people_reached']:,}",
         f"- **Distinct venues:** {s['distinct_venues']:,}",
-        "",
-        "## Activities",
-        "",
     ]
+    cc = s.get("coverage_counts") or {}
+    if s.get("activities_with_coverage"):
+        parts = [f"{COVERAGE_LABELS[c]}: {n}" for c, n in cc.items() if n]
+        lines.append(
+            f"- **Activities with coverage:** {s['activities_with_coverage']:,} "
+            f"({', '.join(parts)})"
+        )
+    lines += ["", "## Activities", ""]
     if not report["rows"]:
         lines.append("_No activities match the selected filters._")
         return "\n".join(lines) + "\n"

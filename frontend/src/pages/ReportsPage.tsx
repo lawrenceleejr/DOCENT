@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   Card,
   Group,
@@ -237,6 +238,7 @@ export function ReportsPage() {
                 <Table.Th>Audience</Table.Th>
                 <Table.Th ta="right">People</Table.Th>
                 <Table.Th>Presenter</Table.Th>
+                <Table.Th>Coverage</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -254,11 +256,26 @@ export function ReportsPage() {
                     {r.people_reached.toLocaleString()}
                   </Table.Td>
                   <Table.Td>{r.presenter}</Table.Td>
+                  <Table.Td>
+                    {r.coverage ? (
+                      <Group gap={4}>
+                        {r.coverage.split('; ').map((c) => (
+                          <Badge key={c} size="xs" variant="light" color="blue">
+                            {c}
+                          </Badge>
+                        ))}
+                      </Group>
+                    ) : (
+                      <Text c="dimmed" size="sm">
+                        —
+                      </Text>
+                    )}
+                  </Table.Td>
                 </Table.Tr>
               ))}
               {!isFetching && rows.length === 0 && (
                 <Table.Tr>
-                  <Table.Td colSpan={7}>
+                  <Table.Td colSpan={8}>
                     <Text c="dimmed" ta="center" py="xl">
                       No activities match these filters. Try “Everyone” instead of “My
                       activities”, set Status to “All”, or widen the date range.

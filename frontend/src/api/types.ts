@@ -144,8 +144,25 @@ export interface Visit {
   follow_up_planned: boolean;
   additional_presenters: string | null;
   tags: string[];
+  links: CoverageLink[];
   created_at: string;
   updated_at: string;
+}
+
+export const COVERAGE_CATEGORIES = ['press', 'social_media', 'video', 'blog', 'other'] as const;
+export type CoverageCategory = (typeof COVERAGE_CATEGORIES)[number];
+export const COVERAGE_LABELS: Record<string, string> = {
+  press: 'Press',
+  social_media: 'Social media',
+  video: 'Video',
+  blog: 'Blog',
+  other: 'Other',
+};
+
+export interface CoverageLink {
+  url: string;
+  category: string;
+  label: string | null;
 }
 
 export interface Paginated<T> {
@@ -285,6 +302,8 @@ export interface ReportSummary {
   distinct_venues: number;
   first_activity: string | null;
   last_activity: string | null;
+  activities_with_coverage: number;
+  coverage_counts: Record<string, number>;
 }
 
 export interface ReportRow {
@@ -303,6 +322,8 @@ export interface ReportRow {
   host: string;
   host_role: string;
   tags: string;
+  coverage: string;
+  coverage_links: string;
   status: string;
 }
 

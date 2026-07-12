@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime, time
 from typing import Literal
 
@@ -5,6 +6,10 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 MAX_TAGS = 30
 MAX_TAG_LEN = 50
+MAX_LINKS = 50
+
+# Kinds of external coverage a visit can link to.
+COVERAGE_CATEGORIES = ("press", "social_media", "video", "blog", "other")
 
 
 def normalize_tags(tags: list[str] | None) -> list[str]:
@@ -19,6 +24,52 @@ def normalize_tags(tags: list[str] | None) -> list[str]:
             seen.add(t)
             out.append(t)
     return out[:MAX_TAGS]
+
+
+class VisitLink(BaseModel):
+    """An external link documenting coverage of a visit (press, social, …)."""
+
+    url: str = Field(min_length=1, max_length=1000)
+    category: str = "other"
+    label: str | None = Field(default=None, max_length=200)
+
+    @field_validator("url")
+    @classmethod
+    def _clean_url(cls, v: str) -> str:
+        v = v.strip()
+        if v and not re.match(r"^https?://", v, re.IGNORECASE):
+            v = f"https://{v}"  # be forgiving: prepend scheme if missing
+        return v[:1000]
+
+    @field_validator("category")
+    @classmethod
+    def _clean_category(cls, v: str) -> str:
+        v = (v or "").strip().lower()
+        return v if v in COVERAGE_CATEGORIES else "other"
+
+    @field_validator("label")
+    @classmethod
+    def _clean_label(cls, v: str | None) -> str | None:
+        v = (v or "").strip()
+        return v[:200] or None
+
+
+def normalize_links(links: list | None) -> list[dict]:
+    """Validate/clean link dicts, drop blank URLs, cap the count. Returns plain
+    JSON-serializable dicts (string category) for storage in the JSONB column."""
+    if not links:
+        return []
+    out: list[dict] = []
+    for raw in links:
+        try:
+            item = VisitLink.model_validate(raw)
+        except Exception:
+            continue
+        if item.url:
+            out.append(item.model_dump())
+        if len(out) >= MAX_LINKS:
+            break
+    return out
 
 from app.models import (
     AudienceLevel,
@@ -306,11 +357,17 @@ class VisitCreate(BaseModel):
     follow_up_planned: bool = False
     additional_presenters: str | None = Field(default=None, max_length=500)
     tags: list[str] = Field(default_factory=list)
+    links: list[VisitLink] = Field(default_factory=list)
 
     @field_validator("tags")
     @classmethod
     def _clean_tags(cls, v: list[str]) -> list[str]:
         return normalize_tags(v)
+
+    @field_validator("links")
+    @classmethod
+    def _cap_links(cls, v: list[VisitLink]) -> list[VisitLink]:
+        return [x for x in v if x.url][:MAX_LINKS]
 
 
 class VisitUpdate(BaseModel):
@@ -336,11 +393,17 @@ class VisitUpdate(BaseModel):
     follow_up_planned: bool | None = None
     additional_presenters: str | None = Field(default=None, max_length=500)
     tags: list[str] | None = None
+    links: list[VisitLink] | None = None
 
     @field_validator("tags")
     @classmethod
     def _clean_tags(cls, v: list[str] | None) -> list[str] | None:
         return None if v is None else normalize_tags(v)
+
+    @field_validator("links")
+    @classmethod
+    def _cap_links(cls, v: list[VisitLink] | None) -> list[VisitLink] | None:
+        return None if v is None else [x for x in v if x.url][:MAX_LINKS]
 
 
 class VisitOut(BaseModel):
@@ -370,6 +433,7 @@ class VisitOut(BaseModel):
     follow_up_planned: bool
     additional_presenters: str | None
     tags: list[str]
+    links: list[VisitLink]
     created_at: datetime
     updated_at: datetime
 

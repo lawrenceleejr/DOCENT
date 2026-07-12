@@ -14,7 +14,7 @@ import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
-import { isOverdue, labelize, type Visit } from '../api/types';
+import { COVERAGE_LABELS, isOverdue, labelize, type Visit } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -146,6 +146,22 @@ export function VisitDetailPage() {
                   </Badge>
                 ))}
               </Group>
+            </Field>
+          )}
+          {visit.links.length > 0 && (
+            <Field label="Coverage & links">
+              <Stack gap={6}>
+                {visit.links.map((lk, i) => (
+                  <Group key={i} gap={8} wrap="nowrap">
+                    <Badge variant="light" color="blue" size="sm" style={{ flexShrink: 0 }}>
+                      {COVERAGE_LABELS[lk.category] ?? lk.category}
+                    </Badge>
+                    <Anchor href={lk.url} target="_blank" rel="noreferrer" size="sm" lineClamp={1}>
+                      {lk.label || lk.url}
+                    </Anchor>
+                  </Group>
+                ))}
+              </Stack>
             </Field>
           )}
           {(visit.contact_name ||
