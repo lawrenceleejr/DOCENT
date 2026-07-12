@@ -60,7 +60,9 @@ function BoundsWatcher({ onChange }: { onChange: (b: Bounds) => void }) {
   return null;
 }
 
-const DEFAULT_TYPES: InstitutionType[] = ['school', 'college', 'museum', 'library'];
+// Show every institution category by default (including "other"), so nothing is
+// silently hidden; the checkboxes + All/None let users narrow it down.
+const DEFAULT_TYPES: InstitutionType[] = [...INSTITUTION_TYPES];
 
 export function MapPage() {
   const navigate = useNavigate();
@@ -149,10 +151,28 @@ export function MapPage() {
               value={types}
               onChange={(v) => setTypes(v as InstitutionType[])}
             >
-              <Group gap="sm">
-                {INSTITUTION_TYPES.filter((t) => t !== 'other').map((t) => (
+              <Group gap="sm" align="center">
+                {INSTITUTION_TYPES.map((t) => (
                   <Checkbox key={t} value={t} label={labelize(t)} />
                 ))}
+                <Button.Group>
+                  <Button
+                    size="compact-xs"
+                    variant="default"
+                    onClick={() => setTypes([...INSTITUTION_TYPES])}
+                    disabled={types.length === INSTITUTION_TYPES.length}
+                  >
+                    All
+                  </Button>
+                  <Button
+                    size="compact-xs"
+                    variant="default"
+                    onClick={() => setTypes([])}
+                    disabled={types.length === 0}
+                  >
+                    None
+                  </Button>
+                </Button.Group>
               </Group>
             </Checkbox.Group>
             <SegmentedControl

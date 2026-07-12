@@ -63,6 +63,51 @@ function rangeToDates(range: RangeKey): { date_from?: string; date_to?: string }
   return {};
 }
 
+interface TimeRow {
+  t: number; // epoch ms of the half-year bucket start (for a real time axis)
+  label: string; // e.g. "2026 H1"
+  visits: number;
+  people_reached: number;
+}
+
+const halfStart = (year: number, half: 1 | 2) => Date.UTC(year, half === 1 ? 0 : 6, 1);
+
+/** Turn "YYYY H1"/"YYYY H2" rows into a gap-filled series on a real time axis:
+ * every 6-month bucket between the first and last present period is included
+ * (missing ones as zero), so spacing reflects actual elapsed time. */
+function buildTimeSeries(points: TimeseriesPoint[]): TimeRow[] {
+  const parsed = points
+    .map((p) => {
+      const m = /^(\d{4})\sH([12])$/.exec(p.period);
+      if (!m) return null;
+      const year = Number(m[1]);
+      const half = Number(m[2]) as 1 | 2;
+      return { t: halfStart(year, half), year, half, visits: p.visits, people_reached: p.people_reached };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null)
+    .sort((a, b) => a.t - b.t);
+  if (parsed.length === 0) return [];
+
+  const byT = new Map(parsed.map((d) => [d.t, d]));
+  const end = parsed[parsed.length - 1];
+  const out: TimeRow[] = [];
+  let year = parsed[0].year;
+  let half = parsed[0].half as 1 | 2;
+  for (;;) {
+    const t = halfStart(year, half);
+    const hit = byT.get(t);
+    out.push({
+      t,
+      label: `${year} H${half}`,
+      visits: hit?.visits ?? 0,
+      people_reached: hit?.people_reached ?? 0,
+    });
+    if (year === end.year && half === end.half) break;
+    [year, half] = half === 1 ? [year, 2] : [year + 1, 1];
+  }
+  return out;
+}
+
 const tooltipStyle = (viz: typeof VIZ_LIGHT) => ({
   backgroundColor: viz.tooltipBg,
   border: `1px solid ${viz.tooltipBorder}`,
@@ -74,16 +119,19 @@ const tooltipStyle = (viz: typeof VIZ_LIGHT) => ({
 function TimePanel({
   title,
   data,
+  ticks,
   dataKey,
   color,
   viz,
 }: {
   title: string;
-  data: TimeseriesPoint[];
+  data: TimeRow[];
+  ticks: number[];
   dataKey: 'visits' | 'people_reached';
   color: string;
   viz: typeof VIZ_LIGHT;
 }) {
+  const labelFor = (t: number) => data.find((d) => d.t === t)?.label ?? '';
   return (
     <Card withBorder p="md">
       <Text fw={600} mb="xs">
@@ -93,7 +141,12 @@ function TimePanel({
         <LineChart data={data} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
           <CartesianGrid stroke={viz.grid} vertical={false} />
           <XAxis
-            dataKey="period"
+            dataKey="t"
+            type="number"
+            scale="time"
+            domain={['dataMin', 'dataMax']}
+            ticks={ticks}
+            tickFormatter={(t: number) => String(new Date(t).getUTCFullYear())}
             stroke={viz.axis}
             tick={{ fill: viz.mutedInk, fontSize: 12 }}
             tickLine={false}
@@ -108,6 +161,7 @@ function TimePanel({
           />
           <Tooltip
             contentStyle={tooltipStyle(viz)}
+            labelFormatter={(t: number) => labelFor(t)}
             formatter={(value: number) => [value.toLocaleString(), title]}
           />
           <Line
@@ -219,6 +273,16 @@ export function DashboardPage() {
     queryFn: () => api.get<LeaderboardRow[]>('/api/stats/leaderboard', { limit: 20, ...dates }),
   });
 
+  const series = useMemo(() => buildTimeSeries(timeseries ?? []), [timeseries]);
+  // One tick per calendar year (Jan 1) that falls within the data range.
+  const yearTicks = useMemo(() => {
+    if (series.length === 0) return [];
+    const years = new Set(series.map((d) => new Date(d.t).getUTCFullYear()));
+    return [...years].map((y) => Date.UTC(y, 0, 1)).filter(
+      (t) => t >= series[0].t && t <= series[series.length - 1].t,
+    );
+  }, [series]);
+
   const rangeLabel = RANGES.find((r) => r.value === range)?.label.toLowerCase() ?? '';
   const avgPerVisit =
     summary && summary.total_visits > 0
@@ -264,8 +328,8 @@ export function DashboardPage() {
           sub="distinct locations"
         />
         <StatTile
-          label="Active researchers"
-          value={summary?.active_researchers ?? '—'}
+          label="Active communicators"
+          value={summary?.active_communicators ?? '—'}
           icon={IconUserBolt}
           color="indigo"
           sub="contributing"
@@ -286,14 +350,16 @@ export function DashboardPage() {
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <TimePanel
           title="Visits per 6 months"
-          data={timeseries ?? []}
+          data={series}
+          ticks={yearTicks}
           dataKey="visits"
           color={viz.series1}
           viz={viz}
         />
         <TimePanel
           title="People reached per 6 months"
-          data={timeseries ?? []}
+          data={series}
+          ticks={yearTicks}
           dataKey="people_reached"
           color={viz.series2}
           viz={viz}
@@ -379,12 +445,12 @@ export function DashboardPage() {
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Card withBorder p="md">
             <Text fw={600} mb="xs">
-              Researcher leaderboard
+              Communicator leaderboard
             </Text>
             <Table>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Researcher</Table.Th>
+                  <Table.Th>Communicator</Table.Th>
                   <Table.Th ta="right">Visits</Table.Th>
                   <Table.Th ta="right">People reached</Table.Th>
                 </Table.Tr>

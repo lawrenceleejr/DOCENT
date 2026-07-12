@@ -61,7 +61,7 @@ def summary(
         total_visits=row[0],
         total_people_reached=row[1],
         distinct_venues=row[2],
-        active_researchers=row[3],
+        active_communicators=row[3],
         avg_rating=round(float(row[4]), 2) if row[4] is not None else None,
     )
 

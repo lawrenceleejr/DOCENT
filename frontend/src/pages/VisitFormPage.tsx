@@ -11,6 +11,7 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  TagsInput,
   Text,
   Textarea,
   TextInput,
@@ -61,6 +62,7 @@ interface FormValues {
   reflection: string;
   follow_up_planned: boolean;
   additional_presenters: string;
+  tags: string[];
 }
 
 export function VisitFormPage() {
@@ -77,6 +79,11 @@ export function VisitFormPage() {
     queryKey: ['visits', id],
     queryFn: () => api.get<Visit>(`/api/visits/${id}`),
     enabled: editing,
+  });
+
+  const { data: tagOptions = [] } = useQuery({
+    queryKey: ['visits', 'tags'],
+    queryFn: () => api.get<string[]>('/api/visits/tags'),
   });
 
   const form = useForm<FormValues>({
@@ -102,6 +109,7 @@ export function VisitFormPage() {
       reflection: '',
       follow_up_planned: false,
       additional_presenters: '',
+      tags: [],
     },
     validate: {
       venue_id: (v) => (v !== null ? null : 'Pick or create a venue'),
@@ -149,6 +157,7 @@ export function VisitFormPage() {
         reflection: existing.reflection ?? '',
         follow_up_planned: existing.follow_up_planned,
         additional_presenters: existing.additional_presenters ?? '',
+        tags: existing.tags ?? [],
       });
       if (
         existing.contact_name ||
@@ -197,6 +206,7 @@ export function VisitFormPage() {
         reflection: values.reflection.trim() || null,
         follow_up_planned: values.follow_up_planned,
         additional_presenters: values.additional_presenters.trim() || null,
+        tags: values.tags,
       };
       return editing
         ? api.patch<Visit>(`/api/visits/${id}`, payload)
@@ -323,6 +333,14 @@ export function VisitFormPage() {
                 {...form.getInputProps('duration_minutes')}
               />
             </SimpleGrid>
+            <TagsInput
+              label="Tags"
+              description="Free-text labels for grouping and filtering (e.g. grant name, program, theme). Press Enter to add."
+              placeholder="Add a tag…"
+              data={tagOptions}
+              clearable
+              {...form.getInputProps('tags')}
+            />
             </Stack>
           </Fieldset>
 

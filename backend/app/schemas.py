@@ -1,7 +1,24 @@
 from datetime import date, datetime, time
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+MAX_TAGS = 30
+MAX_TAG_LEN = 50
+
+
+def normalize_tags(tags: list[str] | None) -> list[str]:
+    """Trim, lowercase, drop blanks, dedupe (stable), and cap tag lists."""
+    if not tags:
+        return []
+    seen: set[str] = set()
+    out: list[str] = []
+    for raw in tags:
+        t = " ".join(str(raw).strip().lower().split())[:MAX_TAG_LEN]
+        if t and t not in seen:
+            seen.add(t)
+            out.append(t)
+    return out[:MAX_TAGS]
 
 from app.models import (
     AudienceLevel,
@@ -142,6 +159,14 @@ class BackupList(BaseModel):
     last_backup_at: datetime | None
 
 
+class DbImportResult(BaseModel):
+    users_created: int
+    institutions_created: int
+    venues_created: int
+    visits_created: int
+    visits_skipped: int
+
+
 class RegistrationSettings(BaseModel):
     invite_code: str
     contact_email: str
@@ -280,6 +305,12 @@ class VisitCreate(BaseModel):
     reflection: str | None = None
     follow_up_planned: bool = False
     additional_presenters: str | None = Field(default=None, max_length=500)
+    tags: list[str] = Field(default_factory=list)
+
+    @field_validator("tags")
+    @classmethod
+    def _clean_tags(cls, v: list[str]) -> list[str]:
+        return normalize_tags(v)
 
 
 class VisitUpdate(BaseModel):
@@ -304,6 +335,12 @@ class VisitUpdate(BaseModel):
     reflection: str | None = None
     follow_up_planned: bool | None = None
     additional_presenters: str | None = Field(default=None, max_length=500)
+    tags: list[str] | None = None
+
+    @field_validator("tags")
+    @classmethod
+    def _clean_tags(cls, v: list[str] | None) -> list[str] | None:
+        return None if v is None else normalize_tags(v)
 
 
 class VisitOut(BaseModel):
@@ -332,6 +369,7 @@ class VisitOut(BaseModel):
     reflection: str | None
     follow_up_planned: bool
     additional_presenters: str | None
+    tags: list[str]
     created_at: datetime
     updated_at: datetime
 
@@ -349,7 +387,7 @@ class StatsSummary(BaseModel):
     total_visits: int
     total_people_reached: int
     distinct_venues: int
-    active_researchers: int
+    active_communicators: int
     avg_rating: float | None
 
 

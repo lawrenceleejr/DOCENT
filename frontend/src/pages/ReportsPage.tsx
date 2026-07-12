@@ -2,6 +2,7 @@ import {
   Button,
   Card,
   Group,
+  MultiSelect,
   SegmentedControl,
   Select,
   SimpleGrid,
@@ -43,6 +44,12 @@ export function ReportsPage() {
   const [venueType, setVenueType] = useState<string | null>(null);
   const [eventType, setEventType] = useState<string | null>(null);
   const [audience, setAudience] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+
+  const { data: tagOptions = [] } = useQuery({
+    queryKey: ['visits', 'tags'],
+    queryFn: () => api.get<string[]>('/api/visits/tags'),
+  });
 
   const filterParams = {
     scope,
@@ -52,6 +59,7 @@ export function ReportsPage() {
     venue_type: venueType ?? undefined,
     event_type: eventType ?? undefined,
     audience_level: audience ?? undefined,
+    tags: tags.length ? tags.join(',') : undefined,
   };
 
   const { data, isFetching } = useQuery({
@@ -163,6 +171,16 @@ export function ReportsPage() {
               onChange={setAudience}
             />
           </SimpleGrid>
+
+          <MultiSelect
+            label="Tags"
+            placeholder={tags.length ? undefined : 'Any tag'}
+            clearable
+            searchable
+            data={tagOptions}
+            value={tags}
+            onChange={setTags}
+          />
 
           <div>
             <Text size="sm" fw={500} mb={6}>

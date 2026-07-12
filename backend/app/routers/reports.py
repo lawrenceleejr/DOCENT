@@ -6,7 +6,7 @@ from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentUser, DbSession
 from app.models import AudienceLevel, EventType, VenueType, Visit, VisitStatus
-from app.routers.visits import _apply_sort, _filtered_query
+from app.routers.visits import _apply_sort, _filtered_query, _parse_tags
 from app.services import reports as R
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
@@ -28,6 +28,7 @@ def activities_report(
     venue_type: VenueType | None = None,
     event_type: EventType | None = None,
     audience_level: AudienceLevel | None = None,
+    tags: str | None = None,
 ):
     """Export a grant-ready outreach report in JSON / CSV / Markdown / PDF.
 
@@ -48,6 +49,7 @@ def activities_report(
             author_id=author_id,
             q=None,
             status=status_filter,
+            tags=_parse_tags(tags),
         ),
         "-visit_date",
     ).options(joinedload(Visit.author), joinedload(Visit.venue))

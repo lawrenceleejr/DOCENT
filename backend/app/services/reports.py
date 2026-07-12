@@ -34,6 +34,7 @@ REPORT_COLUMNS: list[tuple[str, str]] = [
     ("additional_presenters", "Co-presenters"),
     ("host", "Host"),
     ("host_role", "Host role"),
+    ("tags", "Tags"),
     ("status", "Status"),
 ]
 
@@ -78,6 +79,7 @@ class ReportVisit:
     additional_presenters: str | None
     host_name: str | None
     host_role: str | None
+    tags: list[str]
 
     @classmethod
     def from_visit(cls, v: Any) -> "ReportVisit":
@@ -96,6 +98,7 @@ class ReportVisit:
             additional_presenters=v.additional_presenters,
             host_name=v.contact_name,
             host_role=v.host_role,
+            tags=list(v.tags or []),
         )
 
     def as_row(self) -> dict[str, Any]:
@@ -115,6 +118,7 @@ class ReportVisit:
             "additional_presenters": self.additional_presenters or "",
             "host": self.host_name or "",
             "host_role": self.host_role or "",
+            "tags": "; ".join(self.tags),
             "status": _label(self.status),
         }
 

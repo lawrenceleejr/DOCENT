@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   Group,
+  MultiSelect,
   Pagination,
   Select,
   Stack,
@@ -61,6 +62,11 @@ export function VisitListPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['visits', params],
     queryFn: () => api.get<Paginated<Visit>>('/api/visits', params),
+  });
+
+  const { data: tagOptions = [] } = useQuery({
+    queryKey: ['visits', 'tags'],
+    queryFn: () => api.get<string[]>('/api/visits/tags'),
   });
 
   const update = (patch: Partial<VisitFilters>) => {
@@ -161,6 +167,16 @@ export function VisitListPage() {
               update({ audience_level: (v ?? '') as VisitFilters['audience_level'] })
             }
           />
+          <MultiSelect
+            label="Tags"
+            placeholder={filters.tags?.length ? undefined : 'Any'}
+            clearable
+            searchable
+            data={tagOptions}
+            value={filters.tags ?? []}
+            onChange={(v) => update({ tags: v })}
+            w={200}
+          />
           <Switch
             label="Mine only"
             checked={mineOnly}
@@ -186,7 +202,7 @@ export function VisitListPage() {
               <Table.Th>Status</Table.Th>
               <Table.Th>Title</Table.Th>
               <Table.Th>Venue</Table.Th>
-              <Table.Th>Researcher</Table.Th>
+              <Table.Th>Communicator</Table.Th>
               <Table.Th>Audience</Table.Th>
               <Table.Th ta="right">
                 <UnstyledButton fw={700} fz="sm" onClick={() => toggleSort('people_reached')}>
@@ -226,6 +242,15 @@ export function VisitListPage() {
                   <Anchor component={Link} to={`/visits/${visit.id}`} onClick={(e) => e.stopPropagation()}>
                     {visit.title}
                   </Anchor>
+                  {visit.tags.length > 0 && (
+                    <Group gap={4} mt={4}>
+                      {visit.tags.map((t) => (
+                        <Badge key={t} size="xs" variant="light" color="grape">
+                          {t}
+                        </Badge>
+                      ))}
+                    </Group>
+                  )}
                 </Table.Td>
                 <Table.Td>
                   {visit.venue.name}

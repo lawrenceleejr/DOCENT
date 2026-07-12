@@ -15,7 +15,9 @@ from sqlalchemy import (
     Time,
     UniqueConstraint,
     func,
+    text,
 )
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -208,6 +210,10 @@ class Visit(Base):
     reflection: Mapped[str | None] = mapped_column(Text)
     follow_up_planned: Mapped[bool] = mapped_column(Boolean, default=False)
     additional_presenters: Mapped[str | None] = mapped_column(String(500))
+    # Free-text labels for grouping/filtering (e.g. "nsf-career", "girls-in-stem").
+    tags: Mapped[list[str]] = mapped_column(
+        ARRAY(String), nullable=False, server_default=text("'{}'")
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

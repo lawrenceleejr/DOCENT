@@ -143,6 +143,7 @@ export interface Visit {
   reflection: string | null;
   follow_up_planned: boolean;
   additional_presenters: string | null;
+  tags: string[];
   created_at: string;
   updated_at: string;
 }
@@ -158,7 +159,7 @@ export interface StatsSummary {
   total_visits: number;
   total_people_reached: number;
   distinct_venues: number;
-  active_researchers: number;
+  active_communicators: number;
   avg_rating: number | null;
 }
 
@@ -301,6 +302,7 @@ export interface ReportRow {
   additional_presenters: string;
   host: string;
   host_role: string;
+  tags: string;
   status: string;
 }
 
@@ -325,6 +327,14 @@ export interface RegistrationSettings {
   invite_code: string;
   contact_email: string;
   site_url: string;
+}
+
+export interface DbImportResult {
+  users_created: number;
+  institutions_created: number;
+  venues_created: number;
+  visits_created: number;
+  visits_skipped: number;
 }
 
 export interface AdminInstitution {

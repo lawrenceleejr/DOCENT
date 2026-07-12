@@ -7,6 +7,7 @@ export interface VisitFilters {
   event_type?: EventType | '';
   audience_level?: AudienceLevel | '';
   author_id?: number;
+  tags?: string[];
 }
 
 export function filterParams(filters: VisitFilters): Record<string, string | number | undefined> {
@@ -17,5 +18,6 @@ export function filterParams(filters: VisitFilters): Record<string, string | num
     event_type: filters.event_type || undefined,
     audience_level: filters.audience_level || undefined,
     author_id: filters.author_id,
+    tags: filters.tags && filters.tags.length ? filters.tags.join(',') : undefined,
   };
 }

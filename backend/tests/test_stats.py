@@ -26,7 +26,7 @@ def test_summary(seeded, client):
     assert summary["total_visits"] == 4
     assert summary["total_people_reached"] == 200
     assert summary["distinct_venues"] == 2
-    assert summary["active_researchers"] == 2
+    assert summary["active_communicators"] == 2
     assert summary["avg_rating"] == 4.0
 
     january = client.get(

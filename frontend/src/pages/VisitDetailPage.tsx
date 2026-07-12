@@ -112,7 +112,7 @@ export function VisitDetailPage() {
       <Card withBorder p="lg">
         <Stack gap="md">
           <Group grow>
-            <Field label="Researcher">{visit.author.name}</Field>
+            <Field label="Communicator">{visit.author.name}</Field>
             <Field label="Event type">
               <Badge variant="light">{labelize(visit.event_type)}</Badge>
             </Field>
@@ -136,6 +136,17 @@ export function VisitDetailPage() {
           {visit.reflection && <Field label="Reflection">{visit.reflection}</Field>}
           {visit.additional_presenters && (
             <Field label="Additional presenters">{visit.additional_presenters}</Field>
+          )}
+          {visit.tags.length > 0 && (
+            <Field label="Tags">
+              <Group gap={6}>
+                {visit.tags.map((t) => (
+                  <Badge key={t} variant="light" color="grape">
+                    {t}
+                  </Badge>
+                ))}
+              </Group>
+            </Field>
           )}
           {(visit.contact_name ||
             visit.contact_email ||

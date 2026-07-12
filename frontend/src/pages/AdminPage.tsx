@@ -37,6 +37,7 @@ import { BackupsCard } from '../components/BackupsCard';
 import { InstitutionImportCard } from '../components/InstitutionImportCard';
 import { InstitutionManagerCard } from '../components/InstitutionManagerCard';
 import { SiteSetupCard } from '../components/SiteSetupCard';
+import { DbToolsCard } from '../components/DbToolsCard';
 
 const PAGE_SIZE = 25;
 
@@ -329,6 +330,7 @@ export function AdminPage() {
       <Title order={2}>Admin</Title>
       <RegistrationCard />
       <SiteSetupCard />
+      <DbToolsCard />
       <BackupsCard />
       <InstitutionImportCard />
       <InstitutionManagerCard />

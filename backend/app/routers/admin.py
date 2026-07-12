@@ -1,11 +1,13 @@
+import json
 import os
 import secrets
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
+from typing import Any
 
 import httpx
-from fastapi import APIRouter, HTTPException, Query, status
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Body, HTTPException, Query, status
+from fastapi.responses import FileResponse, Response
 from sqlalchemy import func, or_, select, update
 
 from app.deps import CurrentAdmin, DbSession
@@ -14,6 +16,7 @@ from app.schemas import (
     AdminUserUpdate,
     BackupItem,
     BackupList,
+    DbImportResult,
     InstitutionAdminItem,
     InstitutionAdminList,
     InstitutionCreate,
@@ -29,6 +32,7 @@ from app.schemas import (
     UserOut,
 )
 from app.security import hash_password
+from app.services import dbtransfer
 from app.services.geocode import geocode, to_meters
 from app.services.institution_import import upsert_institutions
 from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
@@ -127,6 +131,32 @@ def update_registration_settings(
         contact_email=effective_contact_email(db),
         site_url=effective_site_url(db),
     )
+
+
+@router.get("/db/export")
+def export_database(db: DbSession, _admin: CurrentAdmin):
+    """Download all outreach data as a portable JSON file (institutions,
+    venues, visits, and their authors). For moving/merging between instances."""
+    payload = dbtransfer.export_data(db)
+    body = json.dumps(payload, indent=2).encode("utf-8")
+    filename = f"docent-data-{date.today().strftime('%Y%m%d')}.json"
+    return Response(
+        content=body,
+        media_type="application/json",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@router.post("/db/import", response_model=DbImportResult)
+def import_database(_admin: CurrentAdmin, db: DbSession, payload: dict[str, Any] = Body(...)):
+    """Merge a previously exported JSON file into this database. Idempotent:
+    existing users/venues/institutions/visits are matched by natural key and
+    left untouched, so re-importing never duplicates."""
+    try:
+        counts = dbtransfer.import_data(db, payload)
+    except dbtransfer.ImportError_ as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return DbImportResult(**counts)
 
 
 @router.post("/users/{user_id}/reset-password", response_model=PasswordResetResult)
