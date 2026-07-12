@@ -8,7 +8,7 @@ auth / splash screen. Everything here is drop-in for the existing
 
 A central hub node radiating three orbital rings, with community nodes sitting
 exactly on those orbits — it reads as an outreach ripple **and** as an
-atom / solar system: a decentralized network reaching outward. It reuses the
+atom / solar system: a distributed network reaching outward. It reuses the
 existing brand gradient (`#6d41ec → #b14fe0`) so nothing else in the theme
 changes.
 

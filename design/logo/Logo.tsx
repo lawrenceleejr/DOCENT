@@ -3,7 +3,7 @@ import { Group, Text } from '@mantine/core';
 /**
  * The DOCENT brand mark — a central hub node radiating three orbital rings, with
  * community nodes sitting exactly on those orbits. Reads as a signal/outreach
- * ripple and as an atom / solar system: a decentralized network reaching outward.
+ * ripple and as an atom / solar system: a distributed network reaching outward.
  *
  * Static (chrome) mark. For the animated splash/auth reveal see LogoReveal.tsx.
  */

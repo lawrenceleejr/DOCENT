@@ -1,4 +1,4 @@
-# DOCENT — Decentralized Outreach & Community Engagement Network Tracker
+# DOCENT — Distributed Outreach & Community Engagement Network Tracker
 # Copyright (C) 2026 Lawrence Lee
 # Licensed under the GNU General Public License v3.0 or later. See LICENSE.
 from fastapi import FastAPI
@@ -10,7 +10,7 @@ INSECURE_SECRET = "dev-secret-do-not-use-in-production"
 
 app = FastAPI(
     title="DOCENT API",
-    description="Decentralized Outreach & Community Engagement Network Tracker",
+    description="Distributed Outreach & Community Engagement Network Tracker",
     version="0.1.0",
 )
 

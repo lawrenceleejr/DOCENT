@@ -1,6 +1,6 @@
 # DOCENT — Reach out. Track it. Prove your Broad Impact.
 
-**D**ecentralized **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker — a self-hosted web app that helps a scientific community **Reach out** (to grade schools, community colleges, museums, libraries, and beyond), keep one shared record of every visit, and turn it into **Broad Impact** documentation for grant reports at the click of a button.
+**D**istributed **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker — a self-hosted web app that helps a scientific community **Reach out** (to grade schools, community colleges, museums, libraries, and beyond), keep one shared record of every visit, and turn it into **Broad Impact** documentation for grant reports at the click of a button.
 
 Researchers register accounts and log each visit — venue, date, host, audience, how it went, people reached — and the whole community shares a live **Analysis** dashboard and a coverage **Map**. When it's reporting season, the **Reports** tab exports a grant-ready summary of your collective **Broad Impact** (PDF / CSV / Markdown / JSON) over any date range.
 
@@ -122,6 +122,42 @@ Once DNS propagates (usually minutes, up to an hour), open
 `CONTACT_EMAIL` in `.env` (or in the admin panel) so people know who to ask for it.
 `COOKIE_SECURE=auto` (the default) marks the login cookie `Secure` over HTTPS, and
 the app container itself stays bound to `127.0.0.1` — only Caddy is exposed.
+
+#### Already have a reverse proxy? (bring your own)
+
+If the machine already runs nginx / Traefik / Apache / HAProxy and you just want to
+add DOCENT behind it, **leave `SITE_DOMAIN` empty** — that keeps the bundled Caddy
+switched off so it never touches ports 80/443 or fights your existing proxy. DOCENT
+just listens on `http://127.0.0.1:8080`; point a `location` / virtual host / service
+in your proxy at that address and you're done.
+
+**Do you need to tell DOCENT its subdomain? No.** The app is host-agnostic — it's
+served same-origin behind whatever proxy fronts it, the session cookie is host-only,
+and its content-security-policy is `self`, so it works at any hostname without being
+configured for one. Setting `SITE_URL` is purely cosmetic (it just labels the
+in-app domain-setup helper); the app functions identically whether or not you set it.
+
+The one thing your proxy **must** do is forward the original scheme so the login
+cookie gets its `Secure` flag over HTTPS. Either pass the header (DOCENT honors it):
+
+```nginx
+# in your existing nginx server block for docent.university.edu (TLS terminated by you)
+location / {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Forwarded-Proto $scheme;   # ← so DOCENT knows it's HTTPS
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+}
+```
+
+…or, if your proxy doesn't send `X-Forwarded-Proto`, just force it in `.env` with
+`COOKIE_SECURE=true`. (Traefik and Caddy send the header by default, so no extra
+config there.)
+
+> If your proxy runs in a **separate container**, put it on the same Docker network
+> as `frontend` and target `http://frontend:80` instead — no host port needed. If it
+> runs on a **different host**, set `BIND_HOST=0.0.0.0` so `:8080` is reachable, and
+> firewall that port so only your proxy can reach it.
 
 See **[SECURITY.md](SECURITY.md)** for the full secure-deployment checklist.
 
@@ -460,7 +496,7 @@ After deploying (or upgrading), confirm:
 
 ## License
 
-DOCENT — Decentralized Outreach & Community Engagement Network Tracker
+DOCENT — Distributed Outreach & Community Engagement Network Tracker
 
 Copyright (C) 2026 Lawrence Lee
 

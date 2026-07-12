@@ -1,7 +1,7 @@
 [project]
 name = "docent-backend"
 version = "0.1.0"
-description = "DOCENT — Decentralized Outreach & Community Engagement Network Tracker (API)"
+description = "DOCENT — Distributed Outreach & Community Engagement Network Tracker (API)"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115,<1",
