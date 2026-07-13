@@ -253,6 +253,7 @@ export interface VenuePoint {
   longitude: number;
   city: string | null;
   visit_count: number;
+  visited: boolean;
   institution_id: number | null;
 }
 

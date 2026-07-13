@@ -517,4 +517,5 @@ class VenuePoint(BaseModel):
     longitude: float
     city: str | None
     visit_count: int
+    visited: bool
     institution_id: int | None

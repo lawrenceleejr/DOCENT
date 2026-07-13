@@ -88,13 +88,18 @@ def map_venues(
     west: float | None = None,
     east: float | None = None,
 ):
-    visit_count = func.count(Visit.id).label("visit_count")
+    # Completed-visit count for the popup, and "visited" = has any visit that has
+    # already happened (date today-or-earlier, any status). The latter drives the
+    # green "reached" dot, so an overdue planned event still counts as visited.
+    visit_count = func.count(Visit.id).filter(Visit.status == VisitStatus.completed).label(
+        "visit_count"
+    )
+    visited = func.coalesce(
+        func.bool_or(Visit.visit_date <= func.current_date()), False
+    ).label("visited")
     query = (
-        select(Venue, visit_count)
-        .outerjoin(
-            Visit,
-            (Visit.venue_id == Venue.id) & (Visit.status == VisitStatus.completed),
-        )
+        select(Venue, visit_count, visited)
+        .outerjoin(Visit, Visit.venue_id == Venue.id)
         .where(Venue.latitude.isnot(None), Venue.longitude.isnot(None))
         .group_by(Venue.id)
         .limit(MAX_POINTS)
@@ -110,9 +115,10 @@ def map_venues(
             longitude=venue.longitude,
             city=venue.city,
             visit_count=count,
+            visited=visited_flag,
             institution_id=venue.institution_id,
         )
-        for venue, count in rows
+        for venue, count, visited_flag in rows
     ]
 
 

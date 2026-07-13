@@ -320,7 +320,7 @@ export function MapPage() {
               <Marker
                 key={`v-${v.id}`}
                 position={[v.latitude, v.longitude]}
-                icon={v.visit_count > 0 ? coveredIcon : venueIcon}
+                icon={v.visited || v.visit_count > 0 ? coveredIcon : venueIcon}
               >
                 <Popup>
                   <strong>{v.name}</strong>
