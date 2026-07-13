@@ -14,7 +14,7 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { IconLogout, IconMoon, IconSun, IconUser } from '@tabler/icons-react';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Logo } from './Logo';
@@ -65,6 +65,16 @@ export function Layout({ children }: { children: ReactNode }) {
     tabs
       .filter((t) => t.value !== '/')
       .find((t) => location.pathname.startsWith(t.value))?.value ?? '/';
+
+  // Keep the browser tab title in sync with the section ("Visits · DOCENT").
+  useEffect(() => {
+    const section =
+      location.pathname === '/profile'
+        ? 'Profile'
+        : tabs.find((t) => t.value === active)?.label ?? '';
+    document.title = section ? `${section} · DOCENT` : 'DOCENT';
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, active]);
 
   return (
     <AppShell header={{ height: 60 }} padding="md">
@@ -141,7 +151,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <Container size="xl">{children}</Container>
         <Container size="xl" py="lg">
           <Text size="xs" c="dimmed" ta="center">
-            DOCENT · © {COPYRIGHT_YEAR} Lawrence Lee · Free software under the{' '}
+            DOCENT {APP_VERSION} · © {COPYRIGHT_YEAR} Lawrence Lee · Free software under the{' '}
             <Anchor href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" c="dimmed" underline="always">
               GNU GPL v3
             </Anchor>
@@ -153,3 +163,5 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 const COPYRIGHT_YEAR = 2026;
+// Keep in step with package.json / backend version / CHANGELOG.
+const APP_VERSION = 'v0.1.0';

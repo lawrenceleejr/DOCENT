@@ -324,19 +324,22 @@ export function VisitFormPage() {
               minRows={2}
               {...form.getInputProps('description')}
             />
-            <SimpleGrid cols={{ base: 1, sm: 3 }}>
+            <SimpleGrid cols={{ base: 1, sm: isPlanned ? 2 : 3 }}>
               <Select
                 label="Audience level"
                 placeholder="Pick one"
                 data={AUDIENCE_LEVELS.map((t) => ({ value: t, label: labelize(t) }))}
                 {...form.getInputProps('audience_level')}
               />
-              <NumberInput
-                label={isPlanned ? 'People reached (when done)' : 'People reached'}
-                min={0}
-                placeholder={isPlanned ? 'optional' : '30'}
-                {...form.getInputProps('people_reached')}
-              />
+              {/* Attendance isn't known until the event happens — hidden while planned. */}
+              {!isPlanned && (
+                <NumberInput
+                  label="People reached"
+                  min={0}
+                  placeholder="30"
+                  {...form.getInputProps('people_reached')}
+                />
+              )}
               <NumberInput
                 label="Duration (minutes)"
                 min={0}
@@ -345,6 +348,16 @@ export function VisitFormPage() {
                 {...form.getInputProps('duration_minutes')}
               />
             </SimpleGrid>
+            <TextInput
+              label="Additional presenters"
+              placeholder="Co-presenter names, comma separated"
+              description={
+                isPlanned
+                  ? undefined
+                  : "If a colleague already logged this same event, don't re-enter the headcount here — it would double-count people reached in the community totals."
+              }
+              {...form.getInputProps('additional_presenters')}
+            />
             <TagsInput
               label="Tags"
               description="Free-text labels for grouping and filtering (e.g. grant name, program, theme). Press Enter to add."
@@ -404,6 +417,9 @@ export function VisitFormPage() {
             </Collapse>
           </Fieldset>
 
+          {/* Outcome fields only make sense once the event has happened — they
+              appear automatically when the visit is marked Completed. */}
+          {!isPlanned && (
           <Fieldset legend="Outcome & reflection" radius="md">
             <Stack>
               <Input.Wrapper label="How did it go?">
@@ -416,19 +432,15 @@ export function VisitFormPage() {
                 minRows={2}
                 {...form.getInputProps('reflection')}
               />
-              <TextInput
-                label="Additional presenters"
-                placeholder="Co-presenter names, comma separated"
-                description="If a colleague already logged this same event, don't re-enter the headcount here — it would double-count people reached in the community totals."
-                {...form.getInputProps('additional_presenters')}
-              />
               <Checkbox
                 label="Follow-up planned with this venue"
                 {...form.getInputProps('follow_up_planned', { type: 'checkbox' })}
               />
             </Stack>
           </Fieldset>
+          )}
 
+          {!isPlanned && (
           <Fieldset legend="Coverage & links" radius="md">
             <Stack gap="sm">
               <Text size="sm" c="dimmed">
@@ -479,6 +491,7 @@ export function VisitFormPage() {
               </Button>
             </Stack>
           </Fieldset>
+          )}
 
           <Group justify="flex-end">
             <Button variant="default" onClick={() => navigate(-1)}>

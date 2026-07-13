@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use DOCENT in your outreach or Broader Impacts reporting, please cite it as below."
+title: "DOCENT: Distributed Outreach & Community Engagement Network Tracker"
+type: software
+authors:
+  - family-names: Lee
+    given-names: Lawrence
+version: 0.1.0
+date-released: 2026-07-13
+license: GPL-3.0-or-later
+repository-code: "https://github.com/lawrenceleejr/DOCENT"
+abstract: >-
+  DOCENT is a self-hosted web application that helps scientific communities
+  track outreach activities (school visits, lab tours, public talks), plan
+  upcoming events, visualize geographic coverage, and export grant-ready
+  Broader Impacts reports.
+keywords:
+  - outreach
+  - broader impacts
+  - science communication
+  - grant reporting

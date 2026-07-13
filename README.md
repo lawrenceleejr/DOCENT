@@ -174,6 +174,7 @@ Run from the repo root:
 | `./scripts/list-backups.sh` | List backups held in the volume. |
 | `./scripts/download-backups.sh [dir]` | Copy all backups onto the host (for off-site storage). |
 | `./scripts/restore.sh <file>` | Restore the DB from a backup (stops/starts the backend around it). |
+| `./scripts/seed-demo.sh` | Fill the app with a realistic demo dataset (fictional communicators/venues/visits) for evaluation or a talk. Merge-safe: re-running never duplicates. |
 
 ## Run the published images (no build)
 
