@@ -194,7 +194,7 @@ export function MapPage() {
           <Group gap="md">
             <LegendDot color={COLORS.gap} label="Gap" />
             <LegendDot color={COLORS.covered} label="Reached" />
-            <LegendDot color={COLORS.venue} label="Your venue" />
+            <LegendDot color={COLORS.venue} label="Venue (no visits yet)" />
           </Group>
         </Group>
       </Card>
@@ -247,10 +247,15 @@ export function MapPage() {
           </MarkerClusterGroup>
 
           {/* Your venues are drawn as individual dots (never clustered into
-              summary bubbles) so every engagement is always visible. */}
+              summary bubbles) so every engagement is always visible. A venue
+              with a completed visit shows green (reached); otherwise blue. */}
           {showVenues &&
             venues.map((v) => (
-              <Marker key={`v-${v.id}`} position={[v.latitude, v.longitude]} icon={venueIcon}>
+              <Marker
+                key={`v-${v.id}`}
+                position={[v.latitude, v.longitude]}
+                icon={v.visit_count > 0 ? coveredIcon : venueIcon}
+              >
                 <Popup>
                   <strong>{v.name}</strong>
                   <br />
