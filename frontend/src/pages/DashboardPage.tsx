@@ -1,13 +1,16 @@
 import {
   Anchor,
+  Button,
   Card,
   Grid,
   Group,
+  MultiSelect,
   SegmentedControl,
+  Select,
   SimpleGrid,
   Stack,
-  Table,
   Text,
+  Table,
   Title,
   useComputedColorScheme,
 } from '@mantine/core';
@@ -34,7 +37,10 @@ import {
 } from 'recharts';
 import { api } from '../api/client';
 import {
+  AUDIENCE_LEVELS,
+  EVENT_TYPES,
   labelize,
+  VENUE_TYPES,
   type BreakdownRow,
   type LeaderboardRow,
   type StatsSummary,
@@ -238,39 +244,68 @@ function BreakdownPanel({
 export function DashboardPage() {
   const scheme = useComputedColorScheme('dark');
   const viz = scheme === 'dark' ? VIZ_DARK : VIZ_LIGHT;
-  const [range, setRange] = useState<RangeKey>('3y');
+  const [range, setRange] = useState<RangeKey>('5y');
   const dates = useMemo(() => rangeToDates(range), [range]);
 
+  // Dashboard-wide filters, applied to every stat below.
+  const [venueType, setVenueType] = useState<string | null>(null);
+  const [eventType, setEventType] = useState<string | null>(null);
+  const [audience, setAudience] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+
+  const { data: tagOptions = [] } = useQuery({
+    queryKey: ['visits', 'tags'],
+    queryFn: () => api.get<string[]>('/api/visits/tags'),
+  });
+
+  const filters = useMemo(
+    () => ({
+      ...dates,
+      venue_type: venueType ?? undefined,
+      event_type: eventType ?? undefined,
+      audience_level: audience ?? undefined,
+      tags: tags.length ? tags.join(',') : undefined,
+    }),
+    [dates, venueType, eventType, audience, tags],
+  );
+  const hasFilters = !!(venueType || eventType || audience || tags.length);
+  const clearFilters = () => {
+    setVenueType(null);
+    setEventType(null);
+    setAudience(null);
+    setTags([]);
+  };
+
   const { data: summary } = useQuery({
-    queryKey: ['stats', 'summary', dates],
-    queryFn: () => api.get<StatsSummary>('/api/stats/summary', dates),
+    queryKey: ['stats', 'summary', filters],
+    queryFn: () => api.get<StatsSummary>('/api/stats/summary', filters),
   });
   const { data: timeseries } = useQuery({
-    queryKey: ['stats', 'timeseries', dates],
-    queryFn: () => api.get<TimeseriesPoint[]>('/api/stats/timeseries', dates),
+    queryKey: ['stats', 'timeseries', filters],
+    queryFn: () => api.get<TimeseriesPoint[]>('/api/stats/timeseries', filters),
   });
   const { data: byVenueType } = useQuery({
-    queryKey: ['stats', 'breakdown', 'venue_type', dates],
+    queryKey: ['stats', 'breakdown', 'venue_type', filters],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'venue_type', ...dates }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'venue_type', ...filters }),
   });
   const { data: byAudience } = useQuery({
-    queryKey: ['stats', 'breakdown', 'audience_level', dates],
+    queryKey: ['stats', 'breakdown', 'audience_level', filters],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'audience_level', ...dates }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'audience_level', ...filters }),
   });
   const { data: byRelationship } = useQuery({
-    queryKey: ['stats', 'breakdown', 'host_relationship', dates],
+    queryKey: ['stats', 'breakdown', 'host_relationship', filters],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'host_relationship', ...dates }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'host_relationship', ...filters }),
   });
   const { data: topVenues } = useQuery({
-    queryKey: ['stats', 'top-venues', dates],
-    queryFn: () => api.get<TopVenueRow[]>('/api/stats/top-venues', { limit: 10, ...dates }),
+    queryKey: ['stats', 'top-venues', filters],
+    queryFn: () => api.get<TopVenueRow[]>('/api/stats/top-venues', { limit: 10, ...filters }),
   });
   const { data: leaderboard } = useQuery({
-    queryKey: ['stats', 'leaderboard', dates],
-    queryFn: () => api.get<LeaderboardRow[]>('/api/stats/leaderboard', { limit: 20, ...dates }),
+    queryKey: ['stats', 'leaderboard', filters],
+    queryFn: () => api.get<LeaderboardRow[]>('/api/stats/leaderboard', { limit: 20, ...filters }),
   });
 
   const series = useMemo(() => buildTimeSeries(timeseries ?? []), [timeseries]);
@@ -304,6 +339,53 @@ export function DashboardPage() {
           data={RANGES.map((r) => ({ label: r.label, value: r.value }))}
         />
       </Group>
+
+      <Card withBorder p="md">
+        <Group align="flex-end">
+          <Select
+            label="Venue type"
+            placeholder="All"
+            clearable
+            data={VENUE_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            value={venueType}
+            onChange={setVenueType}
+            w={180}
+          />
+          <Select
+            label="Event type"
+            placeholder="All"
+            clearable
+            data={EVENT_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            value={eventType}
+            onChange={setEventType}
+            w={180}
+          />
+          <Select
+            label="Audience"
+            placeholder="All"
+            clearable
+            data={AUDIENCE_LEVELS.map((t) => ({ value: t, label: labelize(t) }))}
+            value={audience}
+            onChange={setAudience}
+            w={180}
+          />
+          <MultiSelect
+            label="Tags"
+            placeholder={tags.length ? undefined : 'Any'}
+            clearable
+            searchable
+            data={tagOptions}
+            value={tags}
+            onChange={setTags}
+            w={220}
+          />
+          {hasFilters && (
+            <Button variant="subtle" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          )}
+        </Group>
+      </Card>
 
       <SimpleGrid cols={{ base: 1, xs: 2, md: 5 }}>
         <StatTile

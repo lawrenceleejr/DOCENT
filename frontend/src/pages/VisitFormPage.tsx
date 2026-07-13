@@ -19,7 +19,7 @@ import {
   Title,
   UnstyledButton,
 } from '@mantine/core';
-import { DatePickerInput, TimeInput } from '@mantine/dates';
+import { DateInput, TimeInput } from '@mantine/dates';
 import { IconChevronDown, IconChevronRight, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -295,9 +295,11 @@ export function VisitFormPage() {
           <Fieldset legend="Event details" radius="md">
             <Stack>
             <SimpleGrid cols={{ base: 1, sm: 3 }}>
-              <DatePickerInput
+              <DateInput
                 label="Date"
                 valueFormat="YYYY-MM-DD"
+                placeholder="YYYY-MM-DD"
+                popoverProps={{ withinPortal: true }}
                 {...form.getInputProps('visit_date')}
               />
               <TimeInput

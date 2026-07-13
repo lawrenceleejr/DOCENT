@@ -16,7 +16,7 @@ import {
   Title,
   UnstyledButton,
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import { DateInput } from '@mantine/dates';
 import { IconClipboardList } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -125,7 +125,7 @@ export function VisitListPage() {
               setPage(1);
             }}
           />
-          <DatePickerInput
+          <DateInput
             label="From"
             placeholder="Any"
             clearable
@@ -133,7 +133,7 @@ export function VisitListPage() {
             value={filters.date_from ? new Date(`${filters.date_from}T00:00:00`) : null}
             onChange={(d) => update({ date_from: d ? toDateString(d) : undefined })}
           />
-          <DatePickerInput
+          <DateInput
             label="To"
             placeholder="Any"
             clearable

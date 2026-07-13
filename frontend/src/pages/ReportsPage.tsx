@@ -12,7 +12,7 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import { DateInput } from '@mantine/dates';
 import {
   IconFileTypeCsv,
   IconFileTypePdf,
@@ -128,7 +128,7 @@ export function ReportsPage() {
           </SimpleGrid>
 
           <SimpleGrid cols={{ base: 1, sm: 2 }}>
-            <DatePickerInput
+            <DateInput
               label="From"
               placeholder="Earliest"
               clearable
@@ -136,7 +136,7 @@ export function ReportsPage() {
               value={dateFrom}
               onChange={setDateFrom}
             />
-            <DatePickerInput
+            <DateInput
               label="To"
               placeholder="Latest"
               clearable
