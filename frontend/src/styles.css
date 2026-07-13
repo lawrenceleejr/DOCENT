@@ -19,6 +19,22 @@ body {
   overflow: visible;
 }
 
+/* Map cluster bubble (custom grid clusterer: only shown for >20 close dots). */
+.dc-cluster {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(109, 65, 236, 0.85);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
 /* Two-panel auth layout: single column on phones, split on >=sm. */
 .auth-grid {
   min-height: 100vh;
