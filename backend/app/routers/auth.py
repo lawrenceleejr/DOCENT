@@ -12,7 +12,12 @@ from app.security import (
     set_auth_cookie,
     verify_password,
 )
-from app.services.settings import effective_contact_email, effective_invite_code
+from app.services.settings import (
+    effective_contact_email,
+    effective_invite_code,
+    effective_site_name,
+    public_page_enabled,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -24,6 +29,8 @@ def auth_config(db: DbSession) -> AuthConfig:
     return AuthConfig(
         registration_enabled=bool(effective_invite_code(db)),
         contact_email=effective_contact_email(db) or None,
+        site_name=effective_site_name(db) or None,
+        public_page=public_page_enabled(db),
     )
 
 

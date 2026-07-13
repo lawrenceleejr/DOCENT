@@ -39,10 +39,14 @@ from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
 from app.services.settings import (
     CONTACT_EMAIL_KEY,
     INVITE_CODE_KEY,
+    PUBLIC_PAGE_KEY,
+    SITE_NAME_KEY,
     SITE_URL_KEY,
     effective_contact_email,
     effective_invite_code,
+    effective_site_name,
     effective_site_url,
+    public_page_enabled,
     set_setting,
 )
 
@@ -106,13 +110,19 @@ def update_user(user_id: int, body: AdminUserUpdate, admin: CurrentAdmin, db: Db
     return user
 
 
-@router.get("/settings", response_model=RegistrationSettings)
-def get_registration_settings(db: DbSession, _admin: CurrentAdmin):
+def _settings_out(db) -> RegistrationSettings:
     return RegistrationSettings(
         invite_code=effective_invite_code(db),
         contact_email=effective_contact_email(db),
         site_url=effective_site_url(db),
+        site_name=effective_site_name(db),
+        public_page=public_page_enabled(db),
     )
+
+
+@router.get("/settings", response_model=RegistrationSettings)
+def get_registration_settings(db: DbSession, _admin: CurrentAdmin):
+    return _settings_out(db)
 
 
 @router.patch("/settings", response_model=RegistrationSettings)
@@ -125,12 +135,12 @@ def update_registration_settings(
         set_setting(db, CONTACT_EMAIL_KEY, body.contact_email.strip())
     if body.site_url is not None:
         set_setting(db, SITE_URL_KEY, body.site_url.strip())
+    if body.site_name is not None:
+        set_setting(db, SITE_NAME_KEY, body.site_name.strip())
+    if body.public_page is not None:
+        set_setting(db, PUBLIC_PAGE_KEY, "1" if body.public_page else "")
     db.commit()
-    return RegistrationSettings(
-        invite_code=effective_invite_code(db),
-        contact_email=effective_contact_email(db),
-        site_url=effective_site_url(db),
-    )
+    return _settings_out(db)
 
 
 @router.get("/db/export")

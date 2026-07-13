@@ -312,6 +312,8 @@ That's it — a free, self-hosted, HTTPS DOCENT. Take backups off-box periodical
 | `CONTACT_EMAIL` | empty | Email shown on login/register for access-code & reset requests |
 | `SITE_DOMAIN` | empty | Set to your domain (e.g. `docent.your-org.edu`) to serve HTTPS via the bundled Caddy proxy; empty = `http://localhost` only |
 | `SITE_URL` | empty | Canonical public address shown in-app; also seeds the admin domain-setup helper |
+| `SITE_NAME` | empty | Community name shown in the header, login page, and public impact page (admins can also set it in-app) |
+| `PUBLIC_PAGE` | `false` | Serve the read-only public impact summary at `/impact` (admins can also toggle it in-app) |
 | `ACCESS_TOKEN_DAYS` | `7` | Login session lifetime |
 | `COOKIE_SECURE` | `auto` | `auto` sets Secure on HTTPS; force with `true`/`false` |
 | `HTTP_PORT` | `8080` | Host port for the web UI (reverse-proxy forwards here) |
@@ -386,6 +388,20 @@ data, never private notes, reflections, ratings, or host contact details.
 
 Columns are factual: date, activity, event type, venue, city/state, audience,
 people reached, duration, presenter, co-presenters, host name/role, and status.
+
+## Public impact page & branding
+
+Every instance can publish a **read-only impact page** at `/impact` — a shareable
+"look what our community has done" summary for department pages, funders, and the
+public. It shows aggregate numbers (events, people reached, venues,
+communicators), the over-time charts, a venue-type breakdown, and recent activity
+titles — and **never** private notes, ratings, host contacts, or who logged what.
+
+It's **off by default**. An admin turns it on (and sets the **community name**
+that brands the header, login page, and impact page) under **Admin →
+Registration**, or via `SITE_NAME` / `PUBLIC_PAGE` in `.env`.
+
+![Public impact page](docs/screenshots/08-impact.png)
 
 ## Map & coverage (finding gaps)
 
@@ -494,6 +510,22 @@ After deploying (or upgrading), confirm:
 5. Export CSV from the Visits page and open it.
 6. `docker compose exec backup /backup.sh` — a dump appears under `/backups/daily/`.
 7. Run through the restore steps above with a throwaway change.
+
+## Citing DOCENT
+
+If DOCENT helps your outreach or Broader Impacts reporting, please cite it —
+GitHub's **"Cite this repository"** button (top right of the repo page) generates
+the reference from [`CITATION.cff`](CITATION.cff).
+
+**Getting a DOI (one-time setup, ~5 minutes):**
+
+1. Log in to [zenodo.org](https://zenodo.org) with your GitHub account.
+2. On Zenodo's **GitHub** settings page, flip the toggle for `lawrenceleejr/DOCENT`.
+3. Publish a **GitHub release** (e.g. `v0.1.0`) — Zenodo automatically archives it
+   and mints a DOI (plus a *concept DOI* that always points at the latest version).
+4. Paste the concept-DOI badge Zenodo gives you at the top of this README, and add
+   the DOI to `CITATION.cff` (`doi:` field). Metadata for the archive is already
+   provided in [`.zenodo.json`](.zenodo.json).
 
 ## License
 

@@ -101,6 +101,8 @@ class AuthConfig(BaseModel):
 
     registration_enabled: bool
     contact_email: str | None
+    site_name: str | None
+    public_page: bool
 
 
 class UserOut(BaseModel):
@@ -222,12 +224,18 @@ class RegistrationSettings(BaseModel):
     invite_code: str
     contact_email: str
     site_url: str
+    site_name: str
+    public_page: bool
 
 
 class RegistrationSettingsUpdate(BaseModel):
     invite_code: str | None = None
     contact_email: str | None = None
     site_url: str | None = None
+    site_name: str | None = Field(default=None, max_length=120)
+    public_page: bool | None = None
+
+
 
 
 class PasswordResetResult(BaseModel):
@@ -471,6 +479,31 @@ class TopVenueRow(BaseModel):
     venue: VenueBrief
     visits: int
     people_reached: int
+
+
+# --- Public impact page (unauthenticated, aggregate-only) ---
+
+class PublicActivity(BaseModel):
+    """A report-safe slice of a visit for the public page — factual fields
+    only, never notes/ratings/host contact details."""
+
+    visit_date: date
+    title: str
+    event_type: EventType
+    venue_name: str
+    venue_city: str | None
+    people_reached: int
+
+
+class PublicImpact(BaseModel):
+    site_name: str | None
+    total_visits: int
+    total_people_reached: int
+    distinct_venues: int
+    active_communicators: int
+    timeseries: list[TimeseriesPoint]
+    by_venue_type: list[BreakdownRow]
+    recent: list[PublicActivity]
 
 
 class LeaderboardRow(BaseModel):

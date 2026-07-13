@@ -14,8 +14,11 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { IconLogout, IconMoon, IconSun, IconUser } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { api } from '../api/client';
+import type { AuthConfig } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { Logo } from './Logo';
 
@@ -60,6 +63,14 @@ export function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Instance branding (community name) — public config, cached aggressively.
+  const { data: config } = useQuery({
+    queryKey: ['auth', 'config'],
+    queryFn: () => api.get<AuthConfig>('/api/auth/config'),
+    staleTime: 5 * 60 * 1000,
+  });
+  const siteName = config?.site_name ?? '';
+
   const tabs = [...TABS, ...(user?.is_admin ? [{ value: '/admin', label: 'Admin' }] : [])];
   const active =
     tabs
@@ -88,7 +99,14 @@ export function Layout({ children }: { children: ReactNode }) {
               style={{ flexShrink: 0 }}
               aria-label="DOCENT home"
             >
-              <Logo size={30} ping />
+              <Group gap={8} wrap="nowrap">
+                <Logo size={30} ping />
+                {siteName && (
+                  <Text fw={700} size="sm" visibleFrom="md" style={{ whiteSpace: 'nowrap' }}>
+                    {siteName}
+                  </Text>
+                )}
+              </Group>
             </UnstyledButton>
             {/* Horizontal-scroll the tabs so all nav stays reachable on phones. */}
             <ScrollArea type="never" style={{ minWidth: 0 }}>

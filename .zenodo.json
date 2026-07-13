@@ -1,0 +1,15 @@
+{
+  "title": "DOCENT: Distributed Outreach & Community Engagement Network Tracker",
+  "description": "DOCENT is a self-hosted web application that helps scientific communities track outreach activities (school visits, lab tours, public talks), plan upcoming events, visualize geographic coverage, and export grant-ready Broader Impacts reports.",
+  "creators": [{ "name": "Lee, Lawrence" }],
+  "license": "GPL-3.0-or-later",
+  "upload_type": "software",
+  "access_right": "open",
+  "keywords": [
+    "outreach",
+    "broader impacts",
+    "science communication",
+    "grant reporting",
+    "self-hosted"
+  ]
+}

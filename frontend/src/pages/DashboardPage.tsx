@@ -69,7 +69,7 @@ function rangeToDates(range: RangeKey): { date_from?: string; date_to?: string }
   return {};
 }
 
-interface TimeRow {
+export interface TimeRow {
   t: number; // epoch ms of the half-year bucket start (for a real time axis)
   label: string; // e.g. "2026 H1"
   visits: number;
@@ -81,7 +81,7 @@ const halfStart = (year: number, half: 1 | 2) => Date.UTC(year, half === 1 ? 0 :
 /** Turn "YYYY H1"/"YYYY H2" rows into a gap-filled series on a real time axis:
  * every 6-month bucket between the first and last present period is included
  * (missing ones as zero), so spacing reflects actual elapsed time. */
-function buildTimeSeries(points: TimeseriesPoint[]): TimeRow[] {
+export function buildTimeSeries(points: TimeseriesPoint[]): TimeRow[] {
   const parsed = points
     .map((p) => {
       const m = /^(\d{4})\sH([12])$/.exec(p.period);

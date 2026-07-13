@@ -22,6 +22,13 @@ Impact.**
 - **Map**: institutions plotted from OpenStreetMap as *reached* vs *coverage
   gaps* on a monochrome basemap; radius import + manual catalog entry.
 
+### Share your impact
+- **Public impact page** (`/impact`, off by default): a read-only, shareable
+  summary — totals, charts, venue breakdown, recent activity — that never
+  exposes private notes, ratings, or communicator identities.
+- **Per-instance branding**: set a community name shown in the header, on the
+  login page, and on the public page.
+
 ### Report (Broad Impact)
 - **Reports**: grant-ready activity exports (PDF / CSV / Markdown / JSON) over a
   custom date range with filters — factual data only, never private notes or

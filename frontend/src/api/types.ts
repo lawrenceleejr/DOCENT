@@ -343,12 +343,36 @@ export interface ActivityReport {
 export interface AuthConfig {
   registration_enabled: boolean;
   contact_email: string | null;
+  site_name: string | null;
+  public_page: boolean;
+}
+
+export interface PublicActivity {
+  visit_date: string;
+  title: string;
+  event_type: EventType;
+  venue_name: string;
+  venue_city: string | null;
+  people_reached: number;
+}
+
+export interface PublicImpact {
+  site_name: string | null;
+  total_visits: number;
+  total_people_reached: number;
+  distinct_venues: number;
+  active_communicators: number;
+  timeseries: TimeseriesPoint[];
+  by_venue_type: BreakdownRow[];
+  recent: PublicActivity[];
 }
 
 export interface RegistrationSettings {
   invite_code: string;
   contact_email: string;
   site_url: string;
+  site_name: string;
+  public_page: boolean;
 }
 
 export interface DbImportResult {
