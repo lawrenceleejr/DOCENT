@@ -143,8 +143,26 @@ export interface Visit {
   reflection: string | null;
   follow_up_planned: boolean;
   additional_presenters: string | null;
+  tags: string[];
+  links: CoverageLink[];
   created_at: string;
   updated_at: string;
+}
+
+export const COVERAGE_CATEGORIES = ['press', 'social_media', 'video', 'blog', 'other'] as const;
+export type CoverageCategory = (typeof COVERAGE_CATEGORIES)[number];
+export const COVERAGE_LABELS: Record<string, string> = {
+  press: 'Press',
+  social_media: 'Social media',
+  video: 'Video',
+  blog: 'Blog',
+  other: 'Other',
+};
+
+export interface CoverageLink {
+  url: string;
+  category: string;
+  label: string | null;
 }
 
 export interface Paginated<T> {
@@ -158,7 +176,7 @@ export interface StatsSummary {
   total_visits: number;
   total_people_reached: number;
   distinct_venues: number;
-  active_researchers: number;
+  active_communicators: number;
   avg_rating: number | null;
 }
 
@@ -235,6 +253,7 @@ export interface VenuePoint {
   longitude: number;
   city: string | null;
   visit_count: number;
+  visited: boolean;
   institution_id: number | null;
 }
 
@@ -284,6 +303,8 @@ export interface ReportSummary {
   distinct_venues: number;
   first_activity: string | null;
   last_activity: string | null;
+  activities_with_coverage: number;
+  coverage_counts: Record<string, number>;
 }
 
 export interface ReportRow {
@@ -301,6 +322,9 @@ export interface ReportRow {
   additional_presenters: string;
   host: string;
   host_role: string;
+  tags: string;
+  coverage: string;
+  coverage_links: string;
   status: string;
 }
 
@@ -319,12 +343,44 @@ export interface ActivityReport {
 export interface AuthConfig {
   registration_enabled: boolean;
   contact_email: string | null;
+  site_name: string | null;
+  public_page: boolean;
+}
+
+export interface PublicActivity {
+  visit_date: string;
+  title: string;
+  event_type: EventType;
+  venue_name: string;
+  venue_city: string | null;
+  people_reached: number;
+}
+
+export interface PublicImpact {
+  site_name: string | null;
+  total_visits: number;
+  total_people_reached: number;
+  distinct_venues: number;
+  active_communicators: number;
+  timeseries: TimeseriesPoint[];
+  by_venue_type: BreakdownRow[];
+  recent: PublicActivity[];
 }
 
 export interface RegistrationSettings {
   invite_code: string;
   contact_email: string;
   site_url: string;
+  site_name: string;
+  public_page: boolean;
+}
+
+export interface DbImportResult {
+  users_created: number;
+  institutions_created: number;
+  venues_created: number;
+  visits_created: number;
+  visits_skipped: number;
 }
 
 export interface AdminInstitution {

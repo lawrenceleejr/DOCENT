@@ -1,13 +1,16 @@
 import {
   Anchor,
+  Button,
   Card,
   Grid,
   Group,
+  MultiSelect,
   SegmentedControl,
+  Select,
   SimpleGrid,
   Stack,
-  Table,
   Text,
+  Table,
   Title,
   useComputedColorScheme,
 } from '@mantine/core';
@@ -34,7 +37,10 @@ import {
 } from 'recharts';
 import { api } from '../api/client';
 import {
+  AUDIENCE_LEVELS,
+  EVENT_TYPES,
   labelize,
+  VENUE_TYPES,
   type BreakdownRow,
   type LeaderboardRow,
   type StatsSummary,
@@ -63,6 +69,51 @@ function rangeToDates(range: RangeKey): { date_from?: string; date_to?: string }
   return {};
 }
 
+export interface TimeRow {
+  t: number; // epoch ms of the half-year bucket start (for a real time axis)
+  label: string; // e.g. "2026 H1"
+  visits: number;
+  people_reached: number;
+}
+
+const halfStart = (year: number, half: 1 | 2) => Date.UTC(year, half === 1 ? 0 : 6, 1);
+
+/** Turn "YYYY H1"/"YYYY H2" rows into a gap-filled series on a real time axis:
+ * every 6-month bucket between the first and last present period is included
+ * (missing ones as zero), so spacing reflects actual elapsed time. */
+export function buildTimeSeries(points: TimeseriesPoint[]): TimeRow[] {
+  const parsed = points
+    .map((p) => {
+      const m = /^(\d{4})\sH([12])$/.exec(p.period);
+      if (!m) return null;
+      const year = Number(m[1]);
+      const half = Number(m[2]) as 1 | 2;
+      return { t: halfStart(year, half), year, half, visits: p.visits, people_reached: p.people_reached };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null)
+    .sort((a, b) => a.t - b.t);
+  if (parsed.length === 0) return [];
+
+  const byT = new Map(parsed.map((d) => [d.t, d]));
+  const end = parsed[parsed.length - 1];
+  const out: TimeRow[] = [];
+  let year = parsed[0].year;
+  let half = parsed[0].half as 1 | 2;
+  for (;;) {
+    const t = halfStart(year, half);
+    const hit = byT.get(t);
+    out.push({
+      t,
+      label: `${year} H${half}`,
+      visits: hit?.visits ?? 0,
+      people_reached: hit?.people_reached ?? 0,
+    });
+    if (year === end.year && half === end.half) break;
+    [year, half] = half === 1 ? [year, 2] : [year + 1, 1];
+  }
+  return out;
+}
+
 const tooltipStyle = (viz: typeof VIZ_LIGHT) => ({
   backgroundColor: viz.tooltipBg,
   border: `1px solid ${viz.tooltipBorder}`,
@@ -74,16 +125,19 @@ const tooltipStyle = (viz: typeof VIZ_LIGHT) => ({
 function TimePanel({
   title,
   data,
+  ticks,
   dataKey,
   color,
   viz,
 }: {
   title: string;
-  data: TimeseriesPoint[];
+  data: TimeRow[];
+  ticks: number[];
   dataKey: 'visits' | 'people_reached';
   color: string;
   viz: typeof VIZ_LIGHT;
 }) {
+  const labelFor = (t: number) => data.find((d) => d.t === t)?.label ?? '';
   return (
     <Card withBorder p="md">
       <Text fw={600} mb="xs">
@@ -93,7 +147,12 @@ function TimePanel({
         <LineChart data={data} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
           <CartesianGrid stroke={viz.grid} vertical={false} />
           <XAxis
-            dataKey="period"
+            dataKey="t"
+            type="number"
+            scale="time"
+            domain={['dataMin', 'dataMax']}
+            ticks={ticks}
+            tickFormatter={(t: number) => String(new Date(t).getUTCFullYear())}
             stroke={viz.axis}
             tick={{ fill: viz.mutedInk, fontSize: 12 }}
             tickLine={false}
@@ -108,6 +167,7 @@ function TimePanel({
           />
           <Tooltip
             contentStyle={tooltipStyle(viz)}
+            labelFormatter={(t: number) => labelFor(t)}
             formatter={(value: number) => [value.toLocaleString(), title]}
           />
           <Line
@@ -184,40 +244,79 @@ function BreakdownPanel({
 export function DashboardPage() {
   const scheme = useComputedColorScheme('dark');
   const viz = scheme === 'dark' ? VIZ_DARK : VIZ_LIGHT;
-  const [range, setRange] = useState<RangeKey>('3y');
+  const [range, setRange] = useState<RangeKey>('5y');
   const dates = useMemo(() => rangeToDates(range), [range]);
 
+  // Dashboard-wide filters, applied to every stat below.
+  const [venueType, setVenueType] = useState<string | null>(null);
+  const [eventType, setEventType] = useState<string | null>(null);
+  const [audience, setAudience] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+
+  const { data: tagOptions = [] } = useQuery({
+    queryKey: ['visits', 'tags'],
+    queryFn: () => api.get<string[]>('/api/visits/tags'),
+  });
+
+  const filters = useMemo(
+    () => ({
+      ...dates,
+      venue_type: venueType ?? undefined,
+      event_type: eventType ?? undefined,
+      audience_level: audience ?? undefined,
+      tags: tags.length ? tags.join(',') : undefined,
+    }),
+    [dates, venueType, eventType, audience, tags],
+  );
+  const hasFilters = !!(venueType || eventType || audience || tags.length);
+  const clearFilters = () => {
+    setVenueType(null);
+    setEventType(null);
+    setAudience(null);
+    setTags([]);
+  };
+
   const { data: summary } = useQuery({
-    queryKey: ['stats', 'summary', dates],
-    queryFn: () => api.get<StatsSummary>('/api/stats/summary', dates),
+    queryKey: ['stats', 'summary', filters],
+    queryFn: () => api.get<StatsSummary>('/api/stats/summary', filters),
   });
   const { data: timeseries } = useQuery({
-    queryKey: ['stats', 'timeseries', dates],
-    queryFn: () => api.get<TimeseriesPoint[]>('/api/stats/timeseries', dates),
+    queryKey: ['stats', 'timeseries', filters],
+    queryFn: () => api.get<TimeseriesPoint[]>('/api/stats/timeseries', filters),
   });
   const { data: byVenueType } = useQuery({
-    queryKey: ['stats', 'breakdown', 'venue_type', dates],
+    queryKey: ['stats', 'breakdown', 'venue_type', filters],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'venue_type', ...dates }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'venue_type', ...filters }),
   });
   const { data: byAudience } = useQuery({
-    queryKey: ['stats', 'breakdown', 'audience_level', dates],
+    queryKey: ['stats', 'breakdown', 'audience_level', filters],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'audience_level', ...dates }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'audience_level', ...filters }),
   });
   const { data: byRelationship } = useQuery({
-    queryKey: ['stats', 'breakdown', 'host_relationship', dates],
+    queryKey: ['stats', 'breakdown', 'host_relationship', filters],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'host_relationship', ...dates }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'host_relationship', ...filters }),
   });
   const { data: topVenues } = useQuery({
-    queryKey: ['stats', 'top-venues', dates],
-    queryFn: () => api.get<TopVenueRow[]>('/api/stats/top-venues', { limit: 10, ...dates }),
+    queryKey: ['stats', 'top-venues', filters],
+    queryFn: () => api.get<TopVenueRow[]>('/api/stats/top-venues', { limit: 10, ...filters }),
   });
   const { data: leaderboard } = useQuery({
-    queryKey: ['stats', 'leaderboard', dates],
-    queryFn: () => api.get<LeaderboardRow[]>('/api/stats/leaderboard', { limit: 20, ...dates }),
+    queryKey: ['stats', 'leaderboard', filters],
+    queryFn: () => api.get<LeaderboardRow[]>('/api/stats/leaderboard', { limit: 20, ...filters }),
   });
+
+  const series = useMemo(() => buildTimeSeries(timeseries ?? []), [timeseries]);
+  // One tick per calendar year (Jan 1) that falls within the data range.
+  const yearTicks = useMemo(() => {
+    if (series.length === 0) return [];
+    const years = new Set(series.map((d) => new Date(d.t).getUTCFullYear()));
+    return [...years].map((y) => Date.UTC(y, 0, 1)).filter(
+      (t) => t >= series[0].t && t <= series[series.length - 1].t,
+    );
+  }, [series]);
 
   const rangeLabel = RANGES.find((r) => r.value === range)?.label.toLowerCase() ?? '';
   const avgPerVisit =
@@ -240,6 +339,53 @@ export function DashboardPage() {
           data={RANGES.map((r) => ({ label: r.label, value: r.value }))}
         />
       </Group>
+
+      <Card withBorder p="md">
+        <Group align="flex-end">
+          <Select
+            label="Venue type"
+            placeholder="All"
+            clearable
+            data={VENUE_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            value={venueType}
+            onChange={setVenueType}
+            w={180}
+          />
+          <Select
+            label="Event type"
+            placeholder="All"
+            clearable
+            data={EVENT_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            value={eventType}
+            onChange={setEventType}
+            w={180}
+          />
+          <Select
+            label="Audience"
+            placeholder="All"
+            clearable
+            data={AUDIENCE_LEVELS.map((t) => ({ value: t, label: labelize(t) }))}
+            value={audience}
+            onChange={setAudience}
+            w={180}
+          />
+          <MultiSelect
+            label="Tags"
+            placeholder={tags.length ? undefined : 'Any'}
+            clearable
+            searchable
+            data={tagOptions}
+            value={tags}
+            onChange={setTags}
+            w={220}
+          />
+          {hasFilters && (
+            <Button variant="subtle" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          )}
+        </Group>
+      </Card>
 
       <SimpleGrid cols={{ base: 1, xs: 2, md: 5 }}>
         <StatTile
@@ -264,8 +410,8 @@ export function DashboardPage() {
           sub="distinct locations"
         />
         <StatTile
-          label="Active researchers"
-          value={summary?.active_researchers ?? '—'}
+          label="Active communicators"
+          value={summary?.active_communicators ?? '—'}
           icon={IconUserBolt}
           color="indigo"
           sub="contributing"
@@ -286,14 +432,16 @@ export function DashboardPage() {
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <TimePanel
           title="Visits per 6 months"
-          data={timeseries ?? []}
+          data={series}
+          ticks={yearTicks}
           dataKey="visits"
           color={viz.series1}
           viz={viz}
         />
         <TimePanel
           title="People reached per 6 months"
-          data={timeseries ?? []}
+          data={series}
+          ticks={yearTicks}
           dataKey="people_reached"
           color={viz.series2}
           viz={viz}
@@ -379,12 +527,12 @@ export function DashboardPage() {
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Card withBorder p="md">
             <Text fw={600} mb="xs">
-              Researcher leaderboard
+              Communicator leaderboard
             </Text>
             <Table>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Researcher</Table.Th>
+                  <Table.Th>Communicator</Table.Th>
                   <Table.Th ta="right">Visits</Table.Th>
                   <Table.Th ta="right">People reached</Table.Th>
                 </Table.Tr>

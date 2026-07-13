@@ -1,16 +1,16 @@
-# DOCENT — Decentralized Outreach & Community Engagement Network Tracker
+# DOCENT — Distributed Outreach & Community Engagement Network Tracker
 # Copyright (C) 2026 Lawrence Lee
 # Licensed under the GNU General Public License v3.0 or later. See LICENSE.
 from fastapi import FastAPI
 
 from app.config import get_settings
-from app.routers import admin, auth, map, reports, stats, users, venues, visits
+from app.routers import admin, auth, map, public, reports, stats, users, venues, visits
 
 INSECURE_SECRET = "dev-secret-do-not-use-in-production"
 
 app = FastAPI(
     title="DOCENT API",
-    description="Decentralized Outreach & Community Engagement Network Tracker",
+    description="Distributed Outreach & Community Engagement Network Tracker",
     version="0.1.0",
 )
 
@@ -34,6 +34,7 @@ app.include_router(stats.router)
 app.include_router(admin.router)
 app.include_router(map.router)
 app.include_router(reports.router)
+app.include_router(public.router)
 
 
 @app.get("/api/health")

@@ -6,6 +6,7 @@ import { AdminPage } from './pages/AdminPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { MapPage } from './pages/MapPage';
+import { PublicImpactPage } from './pages/PublicImpactPage';
 import { SchedulePage } from './pages/SchedulePage';
 import { ProfilePage } from './pages/ProfilePage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -38,6 +39,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/impact" element={<PublicImpactPage />} />
       <Route element={<RequireAuth />}>
         <Route path="/" element={<VisitListPage />} />
         <Route path="/visits/new" element={<VisitFormPage />} />

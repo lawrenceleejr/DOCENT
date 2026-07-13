@@ -26,7 +26,7 @@ def test_summary(seeded, client):
     assert summary["total_visits"] == 4
     assert summary["total_people_reached"] == 200
     assert summary["distinct_venues"] == 2
-    assert summary["active_researchers"] == 2
+    assert summary["active_communicators"] == 2
     assert summary["avg_rating"] == 4.0
 
     january = client.get(
@@ -82,3 +82,28 @@ def test_top_venues_and_leaderboard(seeded, client):
     assert board[0]["visits"] == 3
     assert board[1]["user"]["name"] == "Grace"
     assert board[1]["people_reached"] == 45
+
+
+def test_stats_filters(client):
+    from tests.conftest import create_venue, create_visit, register
+
+    register(client)
+    school = create_venue(client, name="Filter School", venue_type="high_school", city="Memphis")
+    museum = create_venue(client, name="Filter Museum", venue_type="museum", city="Memphis")
+    create_visit(client, school["id"], title="S1", people_reached=10,
+                 event_type="classroom_visit", audience_level="high_school", tags=["alpha"])
+    create_visit(client, museum["id"], title="M1", people_reached=100,
+                 event_type="lab_tour", audience_level="general_public", tags=["beta"])
+
+    # venue_type filter
+    s = client.get("/api/stats/summary", params={"venue_type": "museum"}).json()
+    assert s["total_visits"] == 1 and s["total_people_reached"] == 100
+    # event_type filter
+    s = client.get("/api/stats/summary", params={"event_type": "classroom_visit"}).json()
+    assert s["total_visits"] == 1 and s["total_people_reached"] == 10
+    # tag filter
+    s = client.get("/api/stats/summary", params={"tags": "beta"}).json()
+    assert s["total_visits"] == 1 and s["total_people_reached"] == 100
+    # audience filter feeds breakdown too
+    b = client.get("/api/stats/breakdown", params={"by": "venue_type", "audience_level": "high_school"}).json()
+    assert len(b) == 1 and b[0]["key"] == "high_school"

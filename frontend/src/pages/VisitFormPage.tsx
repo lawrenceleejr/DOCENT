@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Button,
   Checkbox,
   Collapse,
@@ -11,14 +12,15 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  TagsInput,
   Text,
   Textarea,
   TextInput,
   Title,
   UnstyledButton,
 } from '@mantine/core';
-import { DatePickerInput, TimeInput } from '@mantine/dates';
-import { IconChevronDown, IconChevronRight } from '@tabler/icons-react';
+import { DateInput, TimeInput } from '@mantine/dates';
+import { IconChevronDown, IconChevronRight, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -28,11 +30,14 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import {
   AUDIENCE_LEVELS,
+  COVERAGE_CATEGORIES,
+  COVERAGE_LABELS,
   EVENT_TYPES,
   HOST_RELATIONSHIPS,
   labelize,
   MAX_PEOPLE_REACHED,
   PEOPLE_REACHED_CONFIRM_THRESHOLD,
+  type CoverageLink,
   type Visit,
   type VisitStatus,
 } from '../api/types';
@@ -61,6 +66,8 @@ interface FormValues {
   reflection: string;
   follow_up_planned: boolean;
   additional_presenters: string;
+  tags: string[];
+  links: CoverageLink[];
 }
 
 export function VisitFormPage() {
@@ -77,6 +84,11 @@ export function VisitFormPage() {
     queryKey: ['visits', id],
     queryFn: () => api.get<Visit>(`/api/visits/${id}`),
     enabled: editing,
+  });
+
+  const { data: tagOptions = [] } = useQuery({
+    queryKey: ['visits', 'tags'],
+    queryFn: () => api.get<string[]>('/api/visits/tags'),
   });
 
   const form = useForm<FormValues>({
@@ -102,6 +114,8 @@ export function VisitFormPage() {
       reflection: '',
       follow_up_planned: false,
       additional_presenters: '',
+      tags: [],
+      links: [],
     },
     validate: {
       venue_id: (v) => (v !== null ? null : 'Pick or create a venue'),
@@ -149,6 +163,8 @@ export function VisitFormPage() {
         reflection: existing.reflection ?? '',
         follow_up_planned: existing.follow_up_planned,
         additional_presenters: existing.additional_presenters ?? '',
+        tags: existing.tags ?? [],
+        links: (existing.links ?? []).map((l) => ({ ...l, label: l.label ?? '' })),
       });
       if (
         existing.contact_name ||
@@ -197,6 +213,10 @@ export function VisitFormPage() {
         reflection: values.reflection.trim() || null,
         follow_up_planned: values.follow_up_planned,
         additional_presenters: values.additional_presenters.trim() || null,
+        tags: values.tags,
+        links: values.links
+          .filter((l) => l.url.trim())
+          .map((l) => ({ url: l.url.trim(), category: l.category, label: l.label })),
       };
       return editing
         ? api.patch<Visit>(`/api/visits/${id}`, payload)
@@ -275,9 +295,11 @@ export function VisitFormPage() {
           <Fieldset legend="Event details" radius="md">
             <Stack>
             <SimpleGrid cols={{ base: 1, sm: 3 }}>
-              <DatePickerInput
+              <DateInput
                 label="Date"
                 valueFormat="YYYY-MM-DD"
+                placeholder="YYYY-MM-DD"
+                popoverProps={{ withinPortal: true }}
                 {...form.getInputProps('visit_date')}
               />
               <TimeInput
@@ -302,19 +324,22 @@ export function VisitFormPage() {
               minRows={2}
               {...form.getInputProps('description')}
             />
-            <SimpleGrid cols={{ base: 1, sm: 3 }}>
+            <SimpleGrid cols={{ base: 1, sm: isPlanned ? 2 : 3 }}>
               <Select
                 label="Audience level"
                 placeholder="Pick one"
                 data={AUDIENCE_LEVELS.map((t) => ({ value: t, label: labelize(t) }))}
                 {...form.getInputProps('audience_level')}
               />
-              <NumberInput
-                label={isPlanned ? 'People reached (when done)' : 'People reached'}
-                min={0}
-                placeholder={isPlanned ? 'optional' : '30'}
-                {...form.getInputProps('people_reached')}
-              />
+              {/* Attendance isn't known until the event happens — hidden while planned. */}
+              {!isPlanned && (
+                <NumberInput
+                  label="People reached"
+                  min={0}
+                  placeholder="30"
+                  {...form.getInputProps('people_reached')}
+                />
+              )}
               <NumberInput
                 label="Duration (minutes)"
                 min={0}
@@ -323,6 +348,24 @@ export function VisitFormPage() {
                 {...form.getInputProps('duration_minutes')}
               />
             </SimpleGrid>
+            <TextInput
+              label="Additional presenters"
+              placeholder="Co-presenter names, comma separated"
+              description={
+                isPlanned
+                  ? undefined
+                  : "If a colleague already logged this same event, don't re-enter the headcount here — it would double-count people reached in the community totals."
+              }
+              {...form.getInputProps('additional_presenters')}
+            />
+            <TagsInput
+              label="Tags"
+              description="Free-text labels for grouping and filtering (e.g. grant name, program, theme). Press Enter to add."
+              placeholder="Add a tag…"
+              data={tagOptions}
+              clearable
+              {...form.getInputProps('tags')}
+            />
             </Stack>
           </Fieldset>
 
@@ -374,6 +417,9 @@ export function VisitFormPage() {
             </Collapse>
           </Fieldset>
 
+          {/* Outcome fields only make sense once the event has happened — they
+              appear automatically when the visit is marked Completed. */}
+          {!isPlanned && (
           <Fieldset legend="Outcome & reflection" radius="md">
             <Stack>
               <Input.Wrapper label="How did it go?">
@@ -386,18 +432,66 @@ export function VisitFormPage() {
                 minRows={2}
                 {...form.getInputProps('reflection')}
               />
-              <TextInput
-                label="Additional presenters"
-                placeholder="Co-presenter names, comma separated"
-                description="If a colleague already logged this same event, don't re-enter the headcount here — it would double-count people reached in the community totals."
-                {...form.getInputProps('additional_presenters')}
-              />
               <Checkbox
                 label="Follow-up planned with this venue"
                 {...form.getInputProps('follow_up_planned', { type: 'checkbox' })}
               />
             </Stack>
           </Fieldset>
+          )}
+
+          {!isPlanned && (
+          <Fieldset legend="Coverage & links" radius="md">
+            <Stack gap="sm">
+              <Text size="sm" c="dimmed">
+                Link to press coverage, social posts, videos, or blog write-ups of this
+                event. Reports show which activities drew which kinds of coverage.
+              </Text>
+              {form.values.links.map((_, i) => (
+                <Group key={i} gap="xs" align="flex-end" wrap="nowrap">
+                  <Select
+                    label={i === 0 ? 'Type' : undefined}
+                    w={140}
+                    allowDeselect={false}
+                    data={COVERAGE_CATEGORIES.map((c) => ({ value: c, label: COVERAGE_LABELS[c] }))}
+                    {...form.getInputProps(`links.${i}.category`)}
+                  />
+                  <TextInput
+                    label={i === 0 ? 'URL' : undefined}
+                    placeholder="https://…"
+                    style={{ flex: 1 }}
+                    {...form.getInputProps(`links.${i}.url`)}
+                  />
+                  <TextInput
+                    label={i === 0 ? 'Label (optional)' : undefined}
+                    placeholder="e.g. WBIR segment"
+                    w={200}
+                    {...form.getInputProps(`links.${i}.label`)}
+                  />
+                  <ActionIcon
+                    variant="subtle"
+                    color="red"
+                    size="lg"
+                    aria-label="Remove link"
+                    onClick={() => form.removeListItem('links', i)}
+                  >
+                    <IconTrash size={18} />
+                  </ActionIcon>
+                </Group>
+              ))}
+              <Button
+                variant="light"
+                leftSection={<IconPlus size={16} />}
+                style={{ alignSelf: 'flex-start' }}
+                onClick={() =>
+                  form.insertListItem('links', { url: '', category: 'press', label: '' })
+                }
+              >
+                Add a link
+              </Button>
+            </Stack>
+          </Fieldset>
+          )}
 
           <Group justify="flex-end">
             <Button variant="default" onClick={() => navigate(-1)}>

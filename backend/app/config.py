@@ -16,6 +16,12 @@ class Settings(BaseSettings):
     # Informational: used to generate the DNS / reverse-proxy setup guide in the
     # admin panel. Admins can set it from the UI (DB value overrides this).
     site_url: str = ""
+    # Community name shown in the header, on the login page, and on the public
+    # impact page (e.g. "UTK Physics Outreach"). Empty = plain DOCENT branding.
+    site_name: str = ""
+    # Whether the unauthenticated read-only /impact page is served. Default off;
+    # admins can flip it from the UI (DB value overrides this).
+    public_page: bool = False
     access_token_days: int = 7
     # "auto" (default): Secure flag follows the real connection (X-Forwarded-Proto
     # / scheme) so login works on plain http AND https. "true"/"false" force it.

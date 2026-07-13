@@ -64,7 +64,9 @@ export function LoginPage() {
               Welcome back
             </Title>
             <Text c="dimmed" size="sm">
-              Log in to your DOCENT account.
+              {config?.site_name
+                ? `Log in to ${config.site_name}.`
+                : 'Log in to your DOCENT account.'}
             </Text>
           </Stack>
           <TextInput

@@ -102,6 +102,10 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
         searchable
         clearable
         data={options}
+        // Results are already filtered server-side by `search`; disable Mantine's
+        // own filtering so the "＋ Create new venue…" and catalog options are
+        // never hidden just because their label doesn't contain the typed text.
+        filter={({ options }) => options}
         value={value !== null ? String(value) : null}
         searchValue={search}
         onSearchChange={setSearch}

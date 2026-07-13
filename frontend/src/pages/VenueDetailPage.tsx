@@ -242,7 +242,7 @@ export function VenueDetailPage() {
             <Table.Tr>
               <Table.Th>Date</Table.Th>
               <Table.Th>Title</Table.Th>
-              <Table.Th>Researcher</Table.Th>
+              <Table.Th>Communicator</Table.Th>
               <Table.Th>Audience</Table.Th>
               <Table.Th ta="right">People reached</Table.Th>
             </Table.Tr>

@@ -1,7 +1,9 @@
 import {
+  Badge,
   Button,
   Card,
   Group,
+  MultiSelect,
   SegmentedControl,
   Select,
   SimpleGrid,
@@ -10,7 +12,7 @@ import {
   Text,
   Title,
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import { DateInput } from '@mantine/dates';
 import {
   IconFileTypeCsv,
   IconFileTypePdf,
@@ -43,6 +45,12 @@ export function ReportsPage() {
   const [venueType, setVenueType] = useState<string | null>(null);
   const [eventType, setEventType] = useState<string | null>(null);
   const [audience, setAudience] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+
+  const { data: tagOptions = [] } = useQuery({
+    queryKey: ['visits', 'tags'],
+    queryFn: () => api.get<string[]>('/api/visits/tags'),
+  });
 
   const filterParams = {
     scope,
@@ -52,6 +60,7 @@ export function ReportsPage() {
     venue_type: venueType ?? undefined,
     event_type: eventType ?? undefined,
     audience_level: audience ?? undefined,
+    tags: tags.length ? tags.join(',') : undefined,
   };
 
   const { data, isFetching } = useQuery({
@@ -119,7 +128,7 @@ export function ReportsPage() {
           </SimpleGrid>
 
           <SimpleGrid cols={{ base: 1, sm: 2 }}>
-            <DatePickerInput
+            <DateInput
               label="From"
               placeholder="Earliest"
               clearable
@@ -127,7 +136,7 @@ export function ReportsPage() {
               value={dateFrom}
               onChange={setDateFrom}
             />
-            <DatePickerInput
+            <DateInput
               label="To"
               placeholder="Latest"
               clearable
@@ -163,6 +172,16 @@ export function ReportsPage() {
               onChange={setAudience}
             />
           </SimpleGrid>
+
+          <MultiSelect
+            label="Tags"
+            placeholder={tags.length ? undefined : 'Any tag'}
+            clearable
+            searchable
+            data={tagOptions}
+            value={tags}
+            onChange={setTags}
+          />
 
           <div>
             <Text size="sm" fw={500} mb={6}>
@@ -219,6 +238,7 @@ export function ReportsPage() {
                 <Table.Th>Audience</Table.Th>
                 <Table.Th ta="right">People</Table.Th>
                 <Table.Th>Presenter</Table.Th>
+                <Table.Th>Coverage</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -236,11 +256,26 @@ export function ReportsPage() {
                     {r.people_reached.toLocaleString()}
                   </Table.Td>
                   <Table.Td>{r.presenter}</Table.Td>
+                  <Table.Td>
+                    {r.coverage ? (
+                      <Group gap={4}>
+                        {r.coverage.split('; ').map((c) => (
+                          <Badge key={c} size="xs" variant="light" color="blue">
+                            {c}
+                          </Badge>
+                        ))}
+                      </Group>
+                    ) : (
+                      <Text c="dimmed" size="sm">
+                        —
+                      </Text>
+                    )}
+                  </Table.Td>
                 </Table.Tr>
               ))}
               {!isFetching && rows.length === 0 && (
                 <Table.Tr>
-                  <Table.Td colSpan={7}>
+                  <Table.Td colSpan={8}>
                     <Text c="dimmed" ta="center" py="xl">
                       No activities match these filters. Try “Everyone” instead of “My
                       activities”, set Status to “All”, or widen the date range.

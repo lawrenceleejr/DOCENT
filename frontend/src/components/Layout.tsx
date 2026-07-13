@@ -14,8 +14,11 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { IconLogout, IconMoon, IconSun, IconUser } from '@tabler/icons-react';
-import type { ReactNode } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { api } from '../api/client';
+import type { AuthConfig } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { Logo } from './Logo';
 
@@ -60,11 +63,29 @@ export function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Instance branding (community name) — public config, cached aggressively.
+  const { data: config } = useQuery({
+    queryKey: ['auth', 'config'],
+    queryFn: () => api.get<AuthConfig>('/api/auth/config'),
+    staleTime: 5 * 60 * 1000,
+  });
+  const siteName = config?.site_name ?? '';
+
   const tabs = [...TABS, ...(user?.is_admin ? [{ value: '/admin', label: 'Admin' }] : [])];
   const active =
     tabs
       .filter((t) => t.value !== '/')
       .find((t) => location.pathname.startsWith(t.value))?.value ?? '/';
+
+  // Keep the browser tab title in sync with the section ("Visits · DOCENT").
+  useEffect(() => {
+    const section =
+      location.pathname === '/profile'
+        ? 'Profile'
+        : tabs.find((t) => t.value === active)?.label ?? '';
+    document.title = section ? `${section} · DOCENT` : 'DOCENT';
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, active]);
 
   return (
     <AppShell header={{ height: 60 }} padding="md">
@@ -78,7 +99,14 @@ export function Layout({ children }: { children: ReactNode }) {
               style={{ flexShrink: 0 }}
               aria-label="DOCENT home"
             >
-              <Logo size={30} ping />
+              <Group gap={8} wrap="nowrap">
+                <Logo size={30} ping />
+                {siteName && (
+                  <Text fw={700} size="sm" visibleFrom="md" style={{ whiteSpace: 'nowrap' }}>
+                    {siteName}
+                  </Text>
+                )}
+              </Group>
             </UnstyledButton>
             {/* Horizontal-scroll the tabs so all nav stays reachable on phones. */}
             <ScrollArea type="never" style={{ minWidth: 0 }}>
@@ -141,7 +169,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <Container size="xl">{children}</Container>
         <Container size="xl" py="lg">
           <Text size="xs" c="dimmed" ta="center">
-            DOCENT · © {COPYRIGHT_YEAR} Lawrence Lee · Free software under the{' '}
+            DOCENT {APP_VERSION} · © {COPYRIGHT_YEAR} Lawrence Lee · Free software under the{' '}
             <Anchor href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" c="dimmed" underline="always">
               GNU GPL v3
             </Anchor>
@@ -153,3 +181,5 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 const COPYRIGHT_YEAR = 2026;
+// Keep in step with package.json / backend version / CHANGELOG.
+const APP_VERSION = 'v0.1.0';

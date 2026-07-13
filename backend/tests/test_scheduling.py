@@ -101,3 +101,9 @@ def test_calendar_ics_endpoint(client, make_client):
     assert "SUMMARY:My event" in body
     assert "Not mine" not in body
     assert "DTSTART:20270501T100000" in body  # timed, floating
+
+    # everyone=true exports the whole community's planned events
+    all_resp = client.get("/api/visits/calendar.ics", params={"everyone": "true"})
+    all_body = all_resp.text
+    assert all_body.count("BEGIN:VEVENT") == 2
+    assert "SUMMARY:My event" in all_body and "Not mine" in all_body

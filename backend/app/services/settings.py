@@ -12,6 +12,8 @@ from app.models import Setting
 INVITE_CODE_KEY = "invite_code"
 CONTACT_EMAIL_KEY = "contact_email"
 SITE_URL_KEY = "site_url"
+SITE_NAME_KEY = "site_name"
+PUBLIC_PAGE_KEY = "public_page"
 
 
 def get_setting(db: Session, key: str) -> str | None:
@@ -40,3 +42,15 @@ def effective_contact_email(db: Session) -> str:
 def effective_site_url(db: Session) -> str:
     override = get_setting(db, SITE_URL_KEY)
     return override if override is not None else get_settings().site_url
+
+
+def effective_site_name(db: Session) -> str:
+    override = get_setting(db, SITE_NAME_KEY)
+    return override if override is not None else get_settings().site_name
+
+
+def public_page_enabled(db: Session) -> bool:
+    override = get_setting(db, PUBLIC_PAGE_KEY)
+    if override is not None:
+        return override == "1"
+    return get_settings().public_page

@@ -1,7 +1,75 @@
+import re
 from datetime import date, datetime, time
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+MAX_TAGS = 30
+MAX_TAG_LEN = 50
+MAX_LINKS = 50
+
+# Kinds of external coverage a visit can link to.
+COVERAGE_CATEGORIES = ("press", "social_media", "video", "blog", "other")
+
+
+def normalize_tags(tags: list[str] | None) -> list[str]:
+    """Trim, lowercase, drop blanks, dedupe (stable), and cap tag lists."""
+    if not tags:
+        return []
+    seen: set[str] = set()
+    out: list[str] = []
+    for raw in tags:
+        t = " ".join(str(raw).strip().lower().split())[:MAX_TAG_LEN]
+        if t and t not in seen:
+            seen.add(t)
+            out.append(t)
+    return out[:MAX_TAGS]
+
+
+class VisitLink(BaseModel):
+    """An external link documenting coverage of a visit (press, social, …)."""
+
+    url: str = Field(min_length=1, max_length=1000)
+    category: str = "other"
+    label: str | None = Field(default=None, max_length=200)
+
+    @field_validator("url")
+    @classmethod
+    def _clean_url(cls, v: str) -> str:
+        v = v.strip()
+        if v and not re.match(r"^https?://", v, re.IGNORECASE):
+            v = f"https://{v}"  # be forgiving: prepend scheme if missing
+        return v[:1000]
+
+    @field_validator("category")
+    @classmethod
+    def _clean_category(cls, v: str) -> str:
+        v = (v or "").strip().lower()
+        return v if v in COVERAGE_CATEGORIES else "other"
+
+    @field_validator("label")
+    @classmethod
+    def _clean_label(cls, v: str | None) -> str | None:
+        v = (v or "").strip()
+        return v[:200] or None
+
+
+def normalize_links(links: list | None) -> list[dict]:
+    """Validate/clean link dicts, drop blank URLs, cap the count. Returns plain
+    JSON-serializable dicts (string category) for storage in the JSONB column."""
+    if not links:
+        return []
+    out: list[dict] = []
+    for raw in links:
+        try:
+            item = VisitLink.model_validate(raw)
+        except Exception:
+            continue
+        if item.url:
+            out.append(item.model_dump())
+        if len(out) >= MAX_LINKS:
+            break
+    return out
 
 from app.models import (
     AudienceLevel,
@@ -33,6 +101,8 @@ class AuthConfig(BaseModel):
 
     registration_enabled: bool
     contact_email: str | None
+    site_name: str | None
+    public_page: bool
 
 
 class UserOut(BaseModel):
@@ -142,16 +212,30 @@ class BackupList(BaseModel):
     last_backup_at: datetime | None
 
 
+class DbImportResult(BaseModel):
+    users_created: int
+    institutions_created: int
+    venues_created: int
+    visits_created: int
+    visits_skipped: int
+
+
 class RegistrationSettings(BaseModel):
     invite_code: str
     contact_email: str
     site_url: str
+    site_name: str
+    public_page: bool
 
 
 class RegistrationSettingsUpdate(BaseModel):
     invite_code: str | None = None
     contact_email: str | None = None
     site_url: str | None = None
+    site_name: str | None = Field(default=None, max_length=120)
+    public_page: bool | None = None
+
+
 
 
 class PasswordResetResult(BaseModel):
@@ -280,6 +364,18 @@ class VisitCreate(BaseModel):
     reflection: str | None = None
     follow_up_planned: bool = False
     additional_presenters: str | None = Field(default=None, max_length=500)
+    tags: list[str] = Field(default_factory=list)
+    links: list[VisitLink] = Field(default_factory=list)
+
+    @field_validator("tags")
+    @classmethod
+    def _clean_tags(cls, v: list[str]) -> list[str]:
+        return normalize_tags(v)
+
+    @field_validator("links")
+    @classmethod
+    def _cap_links(cls, v: list[VisitLink]) -> list[VisitLink]:
+        return [x for x in v if x.url][:MAX_LINKS]
 
 
 class VisitUpdate(BaseModel):
@@ -304,6 +400,18 @@ class VisitUpdate(BaseModel):
     reflection: str | None = None
     follow_up_planned: bool | None = None
     additional_presenters: str | None = Field(default=None, max_length=500)
+    tags: list[str] | None = None
+    links: list[VisitLink] | None = None
+
+    @field_validator("tags")
+    @classmethod
+    def _clean_tags(cls, v: list[str] | None) -> list[str] | None:
+        return None if v is None else normalize_tags(v)
+
+    @field_validator("links")
+    @classmethod
+    def _cap_links(cls, v: list[VisitLink] | None) -> list[VisitLink] | None:
+        return None if v is None else [x for x in v if x.url][:MAX_LINKS]
 
 
 class VisitOut(BaseModel):
@@ -332,6 +440,8 @@ class VisitOut(BaseModel):
     reflection: str | None
     follow_up_planned: bool
     additional_presenters: str | None
+    tags: list[str]
+    links: list[VisitLink]
     created_at: datetime
     updated_at: datetime
 
@@ -349,7 +459,7 @@ class StatsSummary(BaseModel):
     total_visits: int
     total_people_reached: int
     distinct_venues: int
-    active_researchers: int
+    active_communicators: int
     avg_rating: float | None
 
 
@@ -369,6 +479,31 @@ class TopVenueRow(BaseModel):
     venue: VenueBrief
     visits: int
     people_reached: int
+
+
+# --- Public impact page (unauthenticated, aggregate-only) ---
+
+class PublicActivity(BaseModel):
+    """A report-safe slice of a visit for the public page — factual fields
+    only, never notes/ratings/host contact details."""
+
+    visit_date: date
+    title: str
+    event_type: EventType
+    venue_name: str
+    venue_city: str | None
+    people_reached: int
+
+
+class PublicImpact(BaseModel):
+    site_name: str | None
+    total_visits: int
+    total_people_reached: int
+    distinct_venues: int
+    active_communicators: int
+    timeseries: list[TimeseriesPoint]
+    by_venue_type: list[BreakdownRow]
+    recent: list[PublicActivity]
 
 
 class LeaderboardRow(BaseModel):
@@ -415,4 +550,5 @@ class VenuePoint(BaseModel):
     longitude: float
     city: str | None
     visit_count: int
+    visited: bool
     institution_id: int | None

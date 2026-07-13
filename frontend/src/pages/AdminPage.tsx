@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Anchor,
   Badge,
   Button,
   Card,
@@ -37,6 +38,7 @@ import { BackupsCard } from '../components/BackupsCard';
 import { InstitutionImportCard } from '../components/InstitutionImportCard';
 import { InstitutionManagerCard } from '../components/InstitutionManagerCard';
 import { SiteSetupCard } from '../components/SiteSetupCard';
+import { DbToolsCard } from '../components/DbToolsCard';
 
 const PAGE_SIZE = 25;
 
@@ -48,22 +50,30 @@ function RegistrationCard() {
   });
   const [code, setCode] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(null);
+  const [publicPage, setPublicPage] = useState<boolean | null>(null);
 
   const codeValue = code ?? data?.invite_code ?? '';
   const emailValue = email ?? data?.contact_email ?? '';
+  const nameValue = name ?? data?.site_name ?? '';
+  const publicValue = publicPage ?? data?.public_page ?? false;
 
   const save = useMutation({
     mutationFn: () =>
       api.patch<RegistrationSettings>('/api/admin/settings', {
         invite_code: codeValue,
         contact_email: emailValue,
+        site_name: nameValue,
+        public_page: publicValue,
       }),
     onSuccess: (updated) => {
       queryClient.setQueryData(['admin', 'settings'], updated);
       queryClient.invalidateQueries({ queryKey: ['auth', 'config'] });
       setCode(null);
       setEmail(null);
-      notifications.show({ message: 'Registration settings saved', color: 'green' });
+      setName(null);
+      setPublicPage(null);
+      notifications.show({ message: 'Settings saved', color: 'green' });
     },
     onError: (e) => {
       notifications.show({
@@ -108,11 +118,33 @@ function RegistrationCard() {
           value={emailValue}
           onChange={(e) => setEmail(e.currentTarget.value)}
         />
+        <TextInput
+          label="Community name"
+          description="Shown in the header, on the login page, and on the public impact page. Empty = plain DOCENT branding."
+          placeholder="e.g. UTK Physics Outreach"
+          value={nameValue}
+          onChange={(e) => setName(e.currentTarget.value)}
+        />
+        <Switch
+          label="Public impact page"
+          description={
+            <>
+              Serve a read-only summary of your community’s impact (totals, charts, recent
+              activity — never private notes or names) at{' '}
+              <Anchor href="/impact" target="_blank" size="xs">
+                /impact
+              </Anchor>
+              . Anyone with the link can view it.
+            </>
+          }
+          checked={publicValue}
+          onChange={(e) => setPublicPage(e.currentTarget.checked)}
+        />
         <Group justify="flex-end">
           <Button
             variant="gradient"
             loading={save.isPending}
-            disabled={code === null && email === null}
+            disabled={code === null && email === null && name === null && publicPage === null}
             onClick={() => save.mutate()}
           >
             Save
@@ -329,6 +361,7 @@ export function AdminPage() {
       <Title order={2}>Admin</Title>
       <RegistrationCard />
       <SiteSetupCard />
+      <DbToolsCard />
       <BackupsCard />
       <InstitutionImportCard />
       <InstitutionManagerCard />

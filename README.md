@@ -1,6 +1,6 @@
 # DOCENT — Reach out. Track it. Prove your Broad Impact.
 
-**D**ecentralized **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker — a self-hosted web app that helps a scientific community **Reach out** (to grade schools, community colleges, museums, libraries, and beyond), keep one shared record of every visit, and turn it into **Broad Impact** documentation for grant reports at the click of a button.
+**D**istributed **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker — a self-hosted web app that helps a scientific community **Reach out** (to grade schools, community colleges, museums, libraries, and beyond), keep one shared record of every visit, and turn it into **Broad Impact** documentation for grant reports at the click of a button.
 
 Researchers register accounts and log each visit — venue, date, host, audience, how it went, people reached — and the whole community shares a live **Analysis** dashboard and a coverage **Map**. When it's reporting season, the **Reports** tab exports a grant-ready summary of your collective **Broad Impact** (PDF / CSV / Markdown / JSON) over any date range.
 
@@ -123,6 +123,42 @@ Once DNS propagates (usually minutes, up to an hour), open
 `COOKIE_SECURE=auto` (the default) marks the login cookie `Secure` over HTTPS, and
 the app container itself stays bound to `127.0.0.1` — only Caddy is exposed.
 
+#### Already have a reverse proxy? (bring your own)
+
+If the machine already runs nginx / Traefik / Apache / HAProxy and you just want to
+add DOCENT behind it, **leave `SITE_DOMAIN` empty** — that keeps the bundled Caddy
+switched off so it never touches ports 80/443 or fights your existing proxy. DOCENT
+just listens on `http://127.0.0.1:8080`; point a `location` / virtual host / service
+in your proxy at that address and you're done.
+
+**Do you need to tell DOCENT its subdomain? No.** The app is host-agnostic — it's
+served same-origin behind whatever proxy fronts it, the session cookie is host-only,
+and its content-security-policy is `self`, so it works at any hostname without being
+configured for one. Setting `SITE_URL` is purely cosmetic (it just labels the
+in-app domain-setup helper); the app functions identically whether or not you set it.
+
+The one thing your proxy **must** do is forward the original scheme so the login
+cookie gets its `Secure` flag over HTTPS. Either pass the header (DOCENT honors it):
+
+```nginx
+# in your existing nginx server block for docent.university.edu (TLS terminated by you)
+location / {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Forwarded-Proto $scheme;   # ← so DOCENT knows it's HTTPS
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+}
+```
+
+…or, if your proxy doesn't send `X-Forwarded-Proto`, just force it in `.env` with
+`COOKIE_SECURE=true`. (Traefik and Caddy send the header by default, so no extra
+config there.)
+
+> If your proxy runs in a **separate container**, put it on the same Docker network
+> as `frontend` and target `http://frontend:80` instead — no host port needed. If it
+> runs on a **different host**, set `BIND_HOST=0.0.0.0` so `:8080` is reachable, and
+> firewall that port so only your proxy can reach it.
+
 See **[SECURITY.md](SECURITY.md)** for the full secure-deployment checklist.
 
 ### Helper scripts
@@ -138,6 +174,7 @@ Run from the repo root:
 | `./scripts/list-backups.sh` | List backups held in the volume. |
 | `./scripts/download-backups.sh [dir]` | Copy all backups onto the host (for off-site storage). |
 | `./scripts/restore.sh <file>` | Restore the DB from a backup (stops/starts the backend around it). |
+| `./scripts/seed-demo.sh` | Fill the app with a realistic demo dataset (fictional communicators/venues/visits) for evaluation or a talk. Merge-safe: re-running never duplicates. |
 
 ## Run the published images (no build)
 
@@ -275,6 +312,8 @@ That's it — a free, self-hosted, HTTPS DOCENT. Take backups off-box periodical
 | `CONTACT_EMAIL` | empty | Email shown on login/register for access-code & reset requests |
 | `SITE_DOMAIN` | empty | Set to your domain (e.g. `docent.your-org.edu`) to serve HTTPS via the bundled Caddy proxy; empty = `http://localhost` only |
 | `SITE_URL` | empty | Canonical public address shown in-app; also seeds the admin domain-setup helper |
+| `SITE_NAME` | empty | Community name shown in the header, login page, and public impact page (admins can also set it in-app) |
+| `PUBLIC_PAGE` | `false` | Serve the read-only public impact summary at `/impact` (admins can also toggle it in-app) |
 | `ACCESS_TOKEN_DAYS` | `7` | Login session lifetime |
 | `COOKIE_SECURE` | `auto` | `auto` sets Secure on HTTPS; force with `true`/`false` |
 | `HTTP_PORT` | `8080` | Host port for the web UI (reverse-proxy forwards here) |
@@ -349,6 +388,20 @@ data, never private notes, reflections, ratings, or host contact details.
 
 Columns are factual: date, activity, event type, venue, city/state, audience,
 people reached, duration, presenter, co-presenters, host name/role, and status.
+
+## Public impact page & branding
+
+Every instance can publish a **read-only impact page** at `/impact` — a shareable
+"look what our community has done" summary for department pages, funders, and the
+public. It shows aggregate numbers (events, people reached, venues,
+communicators), the over-time charts, a venue-type breakdown, and recent activity
+titles — and **never** private notes, ratings, host contacts, or who logged what.
+
+It's **off by default**. An admin turns it on (and sets the **community name**
+that brands the header, login page, and impact page) under **Admin →
+Registration**, or via `SITE_NAME` / `PUBLIC_PAGE` in `.env`.
+
+![Public impact page](docs/screenshots/08-impact.png)
 
 ## Map & coverage (finding gaps)
 
@@ -458,9 +511,25 @@ After deploying (or upgrading), confirm:
 6. `docker compose exec backup /backup.sh` — a dump appears under `/backups/daily/`.
 7. Run through the restore steps above with a throwaway change.
 
+## Citing DOCENT
+
+If DOCENT helps your outreach or Broader Impacts reporting, please cite it —
+GitHub's **"Cite this repository"** button (top right of the repo page) generates
+the reference from [`CITATION.cff`](CITATION.cff).
+
+**Getting a DOI (one-time setup, ~5 minutes):**
+
+1. Log in to [zenodo.org](https://zenodo.org) with your GitHub account.
+2. On Zenodo's **GitHub** settings page, flip the toggle for `lawrenceleejr/DOCENT`.
+3. Publish a **GitHub release** (e.g. `v0.1.0`) — Zenodo automatically archives it
+   and mints a DOI (plus a *concept DOI* that always points at the latest version).
+4. Paste the concept-DOI badge Zenodo gives you at the top of this README, and add
+   the DOI to `CITATION.cff` (`doi:` field). Metadata for the archive is already
+   provided in [`.zenodo.json`](.zenodo.json).
+
 ## License
 
-DOCENT — Decentralized Outreach & Community Engagement Network Tracker
+DOCENT — Distributed Outreach & Community Engagement Network Tracker
 
 Copyright (C) 2026 Lawrence Lee
 

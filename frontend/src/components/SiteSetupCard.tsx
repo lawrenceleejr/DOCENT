@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   Code,
+  Collapse,
   CopyButton,
   Group,
   Stack,
@@ -11,9 +12,18 @@ import {
   TextInput,
   Title,
   Tooltip,
+  UnstyledButton,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconCopy, IconInfoCircle, IconWorld } from '@tabler/icons-react';
+import {
+  IconCheck,
+  IconChevronDown,
+  IconChevronRight,
+  IconCopy,
+  IconInfoCircle,
+  IconWorld,
+} from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api, ApiError } from '../api/client';
@@ -60,6 +70,8 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
 
 export function SiteSetupCard() {
   const queryClient = useQueryClient();
+  // Collapsed by default — most deployments won't touch domain setup.
+  const [open, { toggle }] = useDisclosure(false);
   const { data } = useQuery({
     queryKey: ['admin', 'settings'],
     queryFn: () => api.get<RegistrationSettings>('/api/admin/settings'),
@@ -118,11 +130,20 @@ SITE_DOMAIN=${host}`;
 
   return (
     <Card withBorder p="lg">
-      <Group gap="xs" mb="xs">
-        <IconWorld size={20} />
-        <Title order={3}>Site address & domain setup</Title>
-      </Group>
-      <Text size="sm" c="dimmed" mb="md">
+      <UnstyledButton onClick={toggle} w="100%">
+        <Group gap="xs" wrap="nowrap">
+          {open ? <IconChevronDown size={18} /> : <IconChevronRight size={18} />}
+          <IconWorld size={20} />
+          <Title order={3}>Site address &amp; domain setup</Title>
+          {!open && (
+            <Text size="sm" c="dimmed">
+              — point a subdomain at this server (optional)
+            </Text>
+          )}
+        </Group>
+      </UnstyledButton>
+      <Collapse in={open}>
+      <Text size="sm" c="dimmed" mb="md" mt="md">
         Give your instance a friendly web address like{' '}
         <Code>https://docent.your-org.edu</Code>. This takes two things: a{' '}
         <strong>DNS “A record”</strong> your IT department adds (pointing the name at your
@@ -193,6 +214,7 @@ SITE_DOMAIN=${host}`;
           <Code>http://localhost</Code> only.
         </Text>
       </Stack>
+      </Collapse>
     </Card>
   );
 }

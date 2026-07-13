@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   Group,
+  MultiSelect,
   Pagination,
   Select,
   Stack,
@@ -15,7 +16,7 @@ import {
   Title,
   UnstyledButton,
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import { DateInput } from '@mantine/dates';
 import { IconClipboardList } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -61,6 +62,11 @@ export function VisitListPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['visits', params],
     queryFn: () => api.get<Paginated<Visit>>('/api/visits', params),
+  });
+
+  const { data: tagOptions = [] } = useQuery({
+    queryKey: ['visits', 'tags'],
+    queryFn: () => api.get<string[]>('/api/visits/tags'),
   });
 
   const update = (patch: Partial<VisitFilters>) => {
@@ -119,7 +125,7 @@ export function VisitListPage() {
               setPage(1);
             }}
           />
-          <DatePickerInput
+          <DateInput
             label="From"
             placeholder="Any"
             clearable
@@ -127,7 +133,7 @@ export function VisitListPage() {
             value={filters.date_from ? new Date(`${filters.date_from}T00:00:00`) : null}
             onChange={(d) => update({ date_from: d ? toDateString(d) : undefined })}
           />
-          <DatePickerInput
+          <DateInput
             label="To"
             placeholder="Any"
             clearable
@@ -161,6 +167,16 @@ export function VisitListPage() {
               update({ audience_level: (v ?? '') as VisitFilters['audience_level'] })
             }
           />
+          <MultiSelect
+            label="Tags"
+            placeholder={filters.tags?.length ? undefined : 'Any'}
+            clearable
+            searchable
+            data={tagOptions}
+            value={filters.tags ?? []}
+            onChange={(v) => update({ tags: v })}
+            w={200}
+          />
           <Switch
             label="Mine only"
             checked={mineOnly}
@@ -186,7 +202,7 @@ export function VisitListPage() {
               <Table.Th>Status</Table.Th>
               <Table.Th>Title</Table.Th>
               <Table.Th>Venue</Table.Th>
-              <Table.Th>Researcher</Table.Th>
+              <Table.Th>Communicator</Table.Th>
               <Table.Th>Audience</Table.Th>
               <Table.Th ta="right">
                 <UnstyledButton fw={700} fz="sm" onClick={() => toggleSort('people_reached')}>
@@ -226,6 +242,15 @@ export function VisitListPage() {
                   <Anchor component={Link} to={`/visits/${visit.id}`} onClick={(e) => e.stopPropagation()}>
                     {visit.title}
                   </Anchor>
+                  {visit.tags.length > 0 && (
+                    <Group gap={4} mt={4}>
+                      {visit.tags.map((t) => (
+                        <Badge key={t} size="xs" variant="light" color="grape">
+                          {t}
+                        </Badge>
+                      ))}
+                    </Group>
+                  )}
                 </Table.Td>
                 <Table.Td>
                   {visit.venue.name}

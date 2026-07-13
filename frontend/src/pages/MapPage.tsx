@@ -11,9 +11,9 @@ import {
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
-import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from 'react-leaflet';
-import MarkerClusterGroup from 'react-leaflet-cluster';
+import { divIcon } from 'leaflet';
+import { useMemo, useReducer, useState } from 'react';
+import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import {
@@ -60,7 +60,105 @@ function BoundsWatcher({ onChange }: { onChange: (b: Bounds) => void }) {
   return null;
 }
 
-const DEFAULT_TYPES: InstitutionType[] = ['school', 'college', 'museum', 'library'];
+// Show every institution category by default (including "other"), so nothing is
+// silently hidden; the checkboxes + All/None let users narrow it down.
+const DEFAULT_TYPES: InstitutionType[] = [...INSTITUTION_TYPES];
+
+// Grid-based, count-thresholded clustering: institutions are only collapsed
+// into a summary bubble when MORE THAN CLUSTER_MIN of them fall within the same
+// small on-screen cell; otherwise every dot is drawn individually.
+const CELL_PX = 46;
+const CLUSTER_MIN = 20;
+
+function clusterDivIcon(count: number) {
+  return divIcon({
+    html: `<div class="dc-cluster">${count.toLocaleString()}</div>`,
+    className: '',
+    iconSize: [42, 42],
+    iconAnchor: [21, 21],
+  });
+}
+
+function AdaptiveInstitutions({
+  institutions,
+  onLog,
+}: {
+  institutions: InstitutionPoint[];
+  onLog: (inst: InstitutionPoint) => void;
+}) {
+  const map = useMap();
+  const [tick, bump] = useReducer((x) => x + 1, 0);
+  // Recompute the grid whenever the view changes (pan/zoom shifts pixel positions).
+  useMapEvents({ moveend: () => bump(), zoomend: () => bump() });
+
+  const { singles, clusters } = useMemo(() => {
+    const cells = new Map<string, InstitutionPoint[]>();
+    for (const inst of institutions) {
+      const p = map.latLngToContainerPoint([inst.latitude, inst.longitude]);
+      const key = `${Math.floor(p.x / CELL_PX)}:${Math.floor(p.y / CELL_PX)}`;
+      const arr = cells.get(key);
+      if (arr) arr.push(inst);
+      else cells.set(key, [inst]);
+    }
+    const singles: InstitutionPoint[] = [];
+    const clusters: { lat: number; lng: number; count: number }[] = [];
+    for (const arr of cells.values()) {
+      if (arr.length > CLUSTER_MIN) {
+        const lat = arr.reduce((s, i) => s + i.latitude, 0) / arr.length;
+        const lng = arr.reduce((s, i) => s + i.longitude, 0) / arr.length;
+        clusters.push({ lat, lng, count: arr.length });
+      } else {
+        singles.push(...arr);
+      }
+    }
+    return { singles, clusters };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [institutions, map, tick]);
+
+  return (
+    <>
+      {singles.map((inst) => (
+        <Marker
+          key={`i-${inst.id}`}
+          position={[inst.latitude, inst.longitude]}
+          icon={inst.covered ? coveredIcon : gapIcon}
+        >
+          <Popup>
+            <strong>{inst.name}</strong>
+            <br />
+            {labelize(inst.institution_type)}
+            {inst.city ? ` · ${inst.city}` : ''}
+            <br />
+            {inst.covered ? (
+              <span>Reached — {inst.visit_count} visit(s)</span>
+            ) : (
+              <span>No visits yet</span>
+            )}
+            <br />
+            <Button
+              size="compact-xs"
+              mt={6}
+              variant={inst.covered ? 'light' : 'filled'}
+              onClick={() => onLog(inst)}
+            >
+              Log a visit here
+            </Button>
+          </Popup>
+        </Marker>
+      ))}
+      {clusters.map((c, i) => (
+        <Marker
+          key={`c-${i}`}
+          position={[c.lat, c.lng]}
+          icon={clusterDivIcon(c.count)}
+          eventHandlers={{
+            click: () => map.setView([c.lat, c.lng], Math.min(map.getZoom() + 2, 18)),
+          }}
+        />
+      ))}
+    </>
+  );
+}
 
 export function MapPage() {
   const navigate = useNavigate();
@@ -149,10 +247,28 @@ export function MapPage() {
               value={types}
               onChange={(v) => setTypes(v as InstitutionType[])}
             >
-              <Group gap="sm">
-                {INSTITUTION_TYPES.filter((t) => t !== 'other').map((t) => (
+              <Group gap="sm" align="center">
+                {INSTITUTION_TYPES.map((t) => (
                   <Checkbox key={t} value={t} label={labelize(t)} />
                 ))}
+                <Button.Group>
+                  <Button
+                    size="compact-xs"
+                    variant="default"
+                    onClick={() => setTypes([...INSTITUTION_TYPES])}
+                    disabled={types.length === INSTITUTION_TYPES.length}
+                  >
+                    All
+                  </Button>
+                  <Button
+                    size="compact-xs"
+                    variant="default"
+                    onClick={() => setTypes([])}
+                    disabled={types.length === 0}
+                  >
+                    None
+                  </Button>
+                </Button.Group>
               </Group>
             </Checkbox.Group>
             <SegmentedControl
@@ -174,7 +290,7 @@ export function MapPage() {
           <Group gap="md">
             <LegendDot color={COLORS.gap} label="Gap" />
             <LegendDot color={COLORS.covered} label="Reached" />
-            <LegendDot color={COLORS.venue} label="Your venue" />
+            <LegendDot color={COLORS.venue} label="Venue (no visits yet)" />
           </Group>
         </Group>
       </Card>
@@ -194,58 +310,32 @@ export function MapPage() {
           />
           <BoundsWatcher onChange={setBounds} />
 
-          <MarkerClusterGroup chunkedLoading>
-            {institutions.map((inst) => (
+          <AdaptiveInstitutions institutions={institutions} onLog={logVisitHere} />
+
+          {/* Your venues are drawn as individual dots (never clustered into
+              summary bubbles) so every engagement is always visible. A venue
+              with a completed visit shows green (reached); otherwise blue. */}
+          {showVenues &&
+            venues.map((v) => (
               <Marker
-                key={`i-${inst.id}`}
-                position={[inst.latitude, inst.longitude]}
-                icon={inst.covered ? coveredIcon : gapIcon}
+                key={`v-${v.id}`}
+                position={[v.latitude, v.longitude]}
+                icon={v.visited || v.visit_count > 0 ? coveredIcon : venueIcon}
               >
                 <Popup>
-                  <strong>{inst.name}</strong>
+                  <strong>{v.name}</strong>
                   <br />
-                  {labelize(inst.institution_type)}
-                  {inst.city ? ` · ${inst.city}` : ''}
+                  {labelize(v.venue_type)}
+                  {v.city ? ` · ${v.city}` : ''}
                   <br />
-                  {inst.covered ? (
-                    <span>Reached — {inst.visit_count} visit(s)</span>
-                  ) : (
-                    <span>No visits yet</span>
-                  )}
+                  {v.visit_count} visit(s)
                   <br />
-                  <Button
-                    size="compact-xs"
-                    mt={6}
-                    variant={inst.covered ? 'light' : 'filled'}
-                    onClick={() => logVisitHere(inst)}
-                  >
-                    Log a visit here
+                  <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
+                    Open venue
                   </Button>
                 </Popup>
               </Marker>
             ))}
-          </MarkerClusterGroup>
-
-          {showVenues && (
-            <MarkerClusterGroup chunkedLoading>
-              {venues.map((v) => (
-                <Marker key={`v-${v.id}`} position={[v.latitude, v.longitude]} icon={venueIcon}>
-                  <Popup>
-                    <strong>{v.name}</strong>
-                    <br />
-                    {labelize(v.venue_type)}
-                    {v.city ? ` · ${v.city}` : ''}
-                    <br />
-                    {v.visit_count} visit(s)
-                    <br />
-                    <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
-                      Open venue
-                    </Button>
-                  </Popup>
-                </Marker>
-              ))}
-            </MarkerClusterGroup>
-          )}
         </MapContainer>
       </Card>
       <Text size="xs" c="dimmed">
