@@ -246,26 +246,25 @@ export function MapPage() {
             ))}
           </MarkerClusterGroup>
 
-          {showVenues && (
-            <MarkerClusterGroup chunkedLoading>
-              {venues.map((v) => (
-                <Marker key={`v-${v.id}`} position={[v.latitude, v.longitude]} icon={venueIcon}>
-                  <Popup>
-                    <strong>{v.name}</strong>
-                    <br />
-                    {labelize(v.venue_type)}
-                    {v.city ? ` · ${v.city}` : ''}
-                    <br />
-                    {v.visit_count} visit(s)
-                    <br />
-                    <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
-                      Open venue
-                    </Button>
-                  </Popup>
-                </Marker>
-              ))}
-            </MarkerClusterGroup>
-          )}
+          {/* Your venues are drawn as individual dots (never clustered into
+              summary bubbles) so every engagement is always visible. */}
+          {showVenues &&
+            venues.map((v) => (
+              <Marker key={`v-${v.id}`} position={[v.latitude, v.longitude]} icon={venueIcon}>
+                <Popup>
+                  <strong>{v.name}</strong>
+                  <br />
+                  {labelize(v.venue_type)}
+                  {v.city ? ` · ${v.city}` : ''}
+                  <br />
+                  {v.visit_count} visit(s)
+                  <br />
+                  <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
+                    Open venue
+                  </Button>
+                </Popup>
+              </Marker>
+            ))}
         </MapContainer>
       </Card>
       <Text size="xs" c="dimmed">

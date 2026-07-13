@@ -216,10 +216,12 @@ def calendar_ics(
     q: str | None = None,
     status: VisitStatus | None = VisitStatus.planned,
     tags: str | None = None,
+    everyone: bool = False,
 ):
     # Default to the current user's planned (upcoming) events; params allow
     # broader exports (e.g. all of my events) via the same filter machinery.
-    if author_id is None:
+    # `everyone=true` exports the whole community's schedule (no author filter).
+    if author_id is None and not everyone:
         author_id = user.id
     query = _apply_sort(
         _filtered_query(
