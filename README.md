@@ -2,7 +2,13 @@
 
 **D**istributed **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker — a self-hosted web app that helps a scientific community **Reach out** (to grade schools, community colleges, museums, libraries, and beyond), keep one shared record of every visit, and turn it into **Broad Impact** documentation for grant reports at the click of a button.
 
-Researchers register accounts and log each visit — venue, date, host, audience, how it went, people reached — and the whole community shares a live **Analysis** dashboard and a coverage **Map**. When it's reporting season, the **Reports** tab exports a grant-ready summary of your collective **Broad Impact** (PDF / CSV / Markdown / JSON) over any date range.
+Communicators register accounts and log each visit — venue, date, host, audience, how it went, people reached — and the whole community shares a live **Analysis** dashboard and a coverage **Map**. When it's reporting season, the **Reports** tab exports a grant-ready summary of your collective **Broad Impact** (PDF / CSV / Markdown / JSON) over any date range.
+
+> ### 🚀 Try it now
+> A public **test instance** is running at **<http://150.230.170.143>** — click
+> around, log a demo visit, explore the map, dashboard, and reports. It's a
+> sandbox: don't put anything real in it, and expect the data to be wiped from
+> time to time.
 
 ### Why self-host? Your data never leaves your institution
 DOCENT runs entirely on **your** server — no third-party cloud, no vendor with a
