@@ -3,6 +3,7 @@ import {
   Anchor,
   AppShell,
   Avatar,
+  Box,
   Container,
   Group,
   Menu,
@@ -13,7 +14,7 @@ import {
   useComputedColorScheme,
   useMantineColorScheme,
 } from '@mantine/core';
-import { IconLogout, IconMoon, IconSun, IconUser } from '@tabler/icons-react';
+import { IconLogout, IconMenu2, IconMoon, IconSun, IconUser } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -108,8 +109,10 @@ export function Layout({ children }: { children: ReactNode }) {
                 )}
               </Group>
             </UnstyledButton>
-            {/* Horizontal-scroll the tabs so all nav stays reachable on phones. */}
-            <ScrollArea type="never" style={{ minWidth: 0 }}>
+            {/* Desktop: full tab strip. Below sm a burger menu replaces this
+                (a horizontal-scrolling pill strip was unreadably cramped and
+                mostly-hidden on phone-width screens). */}
+            <ScrollArea type="never" style={{ minWidth: 0 }} visibleFrom="sm">
               <Tabs
                 value={active}
                 onChange={(value) => value && navigate(value)}
@@ -127,6 +130,32 @@ export function Layout({ children }: { children: ReactNode }) {
             </ScrollArea>
           </Group>
           <Group gap="sm" wrap="nowrap">
+            <Box hiddenFrom="sm">
+              <Menu shadow="md" width={200} position="bottom-end">
+                <Menu.Target>
+                  <ActionIcon
+                    variant="default"
+                    size="lg"
+                    radius="md"
+                    aria-label="Open navigation menu"
+                  >
+                    <IconMenu2 size={18} />
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  {tabs.map((tab) => (
+                    <Menu.Item
+                      key={tab.value}
+                      onClick={() => navigate(tab.value)}
+                      fw={active === tab.value ? 700 : 400}
+                      c={active === tab.value ? 'brand' : undefined}
+                    >
+                      {tab.label}
+                    </Menu.Item>
+                  ))}
+                </Menu.Dropdown>
+              </Menu>
+            </Box>
             <ColorSchemeToggle />
             <Menu shadow="md" width={220} position="bottom-end">
               <Menu.Target>

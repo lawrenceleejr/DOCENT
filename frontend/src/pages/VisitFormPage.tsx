@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Button,
+  Card,
   Checkbox,
   Collapse,
   Fieldset,
@@ -447,38 +448,79 @@ export function VisitFormPage() {
                 Link to press coverage, social posts, videos, or blog write-ups of this
                 event. Reports show which activities drew which kinds of coverage.
               </Text>
-              {form.values.links.map((_, i) => (
-                <Group key={i} gap="xs" align="flex-end" wrap="nowrap">
-                  <Select
-                    label={i === 0 ? 'Type' : undefined}
-                    w={140}
-                    allowDeselect={false}
-                    data={COVERAGE_CATEGORIES.map((c) => ({ value: c, label: COVERAGE_LABELS[c] }))}
-                    {...form.getInputProps(`links.${i}.category`)}
-                  />
-                  <TextInput
-                    label={i === 0 ? 'URL' : undefined}
-                    placeholder="https://…"
-                    style={{ flex: 1 }}
-                    {...form.getInputProps(`links.${i}.url`)}
-                  />
-                  <TextInput
-                    label={i === 0 ? 'Label (optional)' : undefined}
-                    placeholder="e.g. WBIR segment"
-                    w={200}
-                    {...form.getInputProps(`links.${i}.label`)}
-                  />
-                  <ActionIcon
-                    variant="subtle"
-                    color="red"
-                    size="lg"
-                    aria-label="Remove link"
-                    onClick={() => form.removeListItem('links', i)}
-                  >
-                    <IconTrash size={18} />
-                  </ActionIcon>
-                </Group>
-              ))}
+              {/* Desktop: compact single-row editor (unchanged). */}
+              <Stack gap="xs" visibleFrom="sm">
+                {form.values.links.map((_, i) => (
+                  <Group key={i} gap="xs" align="flex-end" wrap="nowrap">
+                    <Select
+                      label={i === 0 ? 'Type' : undefined}
+                      w={140}
+                      allowDeselect={false}
+                      data={COVERAGE_CATEGORIES.map((c) => ({ value: c, label: COVERAGE_LABELS[c] }))}
+                      {...form.getInputProps(`links.${i}.category`)}
+                    />
+                    <TextInput
+                      label={i === 0 ? 'URL' : undefined}
+                      placeholder="https://…"
+                      style={{ flex: 1 }}
+                      {...form.getInputProps(`links.${i}.url`)}
+                    />
+                    <TextInput
+                      label={i === 0 ? 'Label (optional)' : undefined}
+                      placeholder="e.g. WBIR segment"
+                      w={200}
+                      {...form.getInputProps(`links.${i}.label`)}
+                    />
+                    <ActionIcon
+                      variant="subtle"
+                      color="red"
+                      size="lg"
+                      aria-label="Remove link"
+                      onClick={() => form.removeListItem('links', i)}
+                    >
+                      <IconTrash size={18} />
+                    </ActionIcon>
+                  </Group>
+                ))}
+              </Stack>
+
+              {/* Mobile: each link as its own stacked mini-card — a single
+                  cramped row doesn't fit a phone width, so fields get room to
+                  breathe and "Remove" is a real tap target. */}
+              <Stack gap="sm" hiddenFrom="sm">
+                {form.values.links.map((_, i) => (
+                  <Card key={i} withBorder p="sm" radius="md">
+                    <Stack gap="xs">
+                      <Select
+                        label="Type"
+                        allowDeselect={false}
+                        data={COVERAGE_CATEGORIES.map((c) => ({ value: c, label: COVERAGE_LABELS[c] }))}
+                        {...form.getInputProps(`links.${i}.category`)}
+                      />
+                      <TextInput
+                        label="URL"
+                        placeholder="https://…"
+                        {...form.getInputProps(`links.${i}.url`)}
+                      />
+                      <TextInput
+                        label="Label (optional)"
+                        placeholder="e.g. WBIR segment"
+                        {...form.getInputProps(`links.${i}.label`)}
+                      />
+                      <Button
+                        variant="subtle"
+                        color="red"
+                        size="xs"
+                        leftSection={<IconTrash size={14} />}
+                        style={{ alignSelf: 'flex-start' }}
+                        onClick={() => form.removeListItem('links', i)}
+                      >
+                        Remove
+                      </Button>
+                    </Stack>
+                  </Card>
+                ))}
+              </Stack>
               <Button
                 variant="light"
                 leftSection={<IconPlus size={16} />}

@@ -156,7 +156,14 @@ export function VisitDetailPage() {
                     <Badge variant="light" color="blue" size="sm" style={{ flexShrink: 0 }}>
                       {COVERAGE_LABELS[lk.category] ?? lk.category}
                     </Badge>
-                    <Anchor href={lk.url} target="_blank" rel="noreferrer" size="sm" lineClamp={1}>
+                    <Anchor
+                      href={lk.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      size="sm"
+                      lineClamp={1}
+                      style={{ minWidth: 0, flex: 1 }}
+                    >
                       {lk.label || lk.url}
                     </Anchor>
                   </Group>
