@@ -6,9 +6,9 @@ Communicators register accounts and log each visit — venue, date, host, audien
 
 > ### 🚀 Try it now
 > A public **test instance** is running at **<http://150.230.170.143>** — click
-> around, log a demo visit, explore the map, dashboard, and reports. It's a
-> sandbox: don't put anything real in it, and expect the data to be wiped from
-> time to time.
+> around, log a demo visit, explore the map, dashboard, and reports. Registration
+> access code: **`3dd2b671`**. It's a sandbox: don't put anything real in it, and
+> expect the data to be wiped from time to time.
 
 ### Why self-host? Your data never leaves your institution
 DOCENT runs entirely on **your** server — no third-party cloud, no vendor with a
