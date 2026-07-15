@@ -101,6 +101,14 @@ export function LoginPage() {
               Register
             </Anchor>
           </Text>
+          {config?.public_page && (
+            <Text size="sm" c="dimmed">
+              <Anchor component={Link} to="/impact">
+                View our public impact page
+              </Anchor>{' '}
+              — no account needed.
+            </Text>
+          )}
         </Stack>
       </form>
     </AuthShell>
