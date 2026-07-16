@@ -104,6 +104,8 @@ class AuthConfig(BaseModel):
     site_name: str | None
     public_page: bool
     login_message: str | None
+    map_center_lat: float
+    map_center_lon: float
 
 
 class UserOut(BaseModel):
@@ -228,6 +230,8 @@ class RegistrationSettings(BaseModel):
     site_name: str
     public_page: bool
     login_message: str
+    map_center_lat: float
+    map_center_lon: float
 
 
 class RegistrationSettingsUpdate(BaseModel):
@@ -237,6 +241,8 @@ class RegistrationSettingsUpdate(BaseModel):
     site_name: str | None = Field(default=None, max_length=120)
     public_page: bool | None = None
     login_message: str | None = Field(default=None, max_length=2000)
+    map_center_lat: float | None = Field(default=None, ge=-90, le=90)
+    map_center_lon: float | None = Field(default=None, ge=-180, le=180)
 
 
 

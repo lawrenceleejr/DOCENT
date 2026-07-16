@@ -40,12 +40,16 @@ from app.services.settings import (
     CONTACT_EMAIL_KEY,
     INVITE_CODE_KEY,
     LOGIN_MESSAGE_KEY,
+    MAP_CENTER_LAT_KEY,
+    MAP_CENTER_LON_KEY,
     PUBLIC_PAGE_KEY,
     SITE_NAME_KEY,
     SITE_URL_KEY,
     effective_contact_email,
     effective_invite_code,
     effective_login_message,
+    effective_map_center_lat,
+    effective_map_center_lon,
     effective_site_name,
     effective_site_url,
     public_page_enabled,
@@ -120,6 +124,8 @@ def _settings_out(db) -> RegistrationSettings:
         site_name=effective_site_name(db),
         public_page=public_page_enabled(db),
         login_message=effective_login_message(db),
+        map_center_lat=effective_map_center_lat(db),
+        map_center_lon=effective_map_center_lon(db),
     )
 
 
@@ -144,6 +150,10 @@ def update_registration_settings(
         set_setting(db, PUBLIC_PAGE_KEY, "1" if body.public_page else "")
     if body.login_message is not None:
         set_setting(db, LOGIN_MESSAGE_KEY, body.login_message.strip())
+    if body.map_center_lat is not None:
+        set_setting(db, MAP_CENTER_LAT_KEY, str(body.map_center_lat))
+    if body.map_center_lon is not None:
+        set_setting(db, MAP_CENTER_LON_KEY, str(body.map_center_lon))
     db.commit()
     return _settings_out(db)
 

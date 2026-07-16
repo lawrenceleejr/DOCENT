@@ -346,6 +346,8 @@ export interface AuthConfig {
   site_name: string | null;
   public_page: boolean;
   login_message: string | null;
+  map_center_lat: number;
+  map_center_lon: number;
 }
 
 export interface PublicActivity {
@@ -375,6 +377,8 @@ export interface RegistrationSettings {
   site_name: string;
   public_page: boolean;
   login_message: string;
+  map_center_lat: number;
+  map_center_lon: number;
 }
 
 export interface DbImportResult {

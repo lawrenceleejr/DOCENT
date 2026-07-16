@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     # Optional free-text announcement shown on the login page (e.g. maintenance
     # notices, a welcome blurb). Empty = nothing shown. Admin-editable from the UI.
     login_message: str = ""
+    # Where the Map page centers on first load (defaults to Tennessee, this
+    # project's original deployment). Admin-editable from the UI.
+    map_center_lat: float = 35.86
+    map_center_lon: float = -86.36
     access_token_days: int = 7
     # "auto" (default): Secure flag follows the real connection (X-Forwarded-Proto
     # / scheme) so login works on plain http AND https. "true"/"false" force it.

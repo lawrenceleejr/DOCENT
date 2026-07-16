@@ -52,6 +52,32 @@ def test_admin_sets_login_message(client):
     assert client.get("/api/auth/config").json()["login_message"] is None
 
 
+def test_admin_sets_map_center(client):
+    register(client, email="admin@example.com")
+    # Defaults to the Tennessee center baked into config.py.
+    default = client.get("/api/auth/config").json()
+    assert default["map_center_lat"] == 35.86
+    assert default["map_center_lon"] == -86.36
+
+    r = client.patch(
+        "/api/admin/settings", json={"map_center_lat": 40.7128, "map_center_lon": -74.006}
+    )
+    assert r.status_code == 200
+    assert r.json()["map_center_lat"] == 40.7128
+    assert r.json()["map_center_lon"] == -74.006
+    cfg = client.get("/api/auth/config").json()
+    assert cfg["map_center_lat"] == 40.7128
+    assert cfg["map_center_lon"] == -74.006
+
+
+def test_admin_map_center_out_of_range_rejected(client):
+    register(client, email="admin@example.com")
+    r = client.patch("/api/admin/settings", json={"map_center_lat": 95})
+    assert r.status_code == 422
+    r = client.patch("/api/admin/settings", json={"map_center_lon": -200})
+    assert r.status_code == 422
+
+
 def test_admin_changes_user_email(client, make_client):
     register(client, email="admin@example.com")
     other = make_client()

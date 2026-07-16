@@ -20,6 +20,7 @@ import {
   INSTITUTION_TYPES,
   institutionVenueType,
   labelize,
+  type AuthConfig,
   type InstitutionPoint,
   type InstitutionType,
   type Venue,
@@ -174,6 +175,14 @@ export function MapPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'gap' | 'covered'>('all');
   const [showVenues, setShowVenues] = useState(true);
 
+  // Admin-configured starting point (defaults to Tennessee). Shared cache key
+  // with Layout's fetch, so this is already warm by the time the page mounts.
+  const { data: config } = useQuery({
+    queryKey: ['auth', 'config'],
+    queryFn: () => api.get<AuthConfig>('/api/auth/config'),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const rounded = bounds ? roundBounds(bounds) : null;
   const typeParam = types.join(',');
 
@@ -302,47 +311,51 @@ export function MapPage() {
       </FilterCard>
 
       <Card withBorder p={0} style={{ overflow: 'hidden' }}>
-        <MapContainer
-          center={[35.86, -86.36]} // Tennessee
-          zoom={7}
-          style={{ height: '70vh', width: '100%' }}
-          scrollWheelZoom
-        >
-          <TileLayer
-            key={scheme}
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url={tileUrl}
-            subdomains="abcd"
-          />
-          <BoundsWatcher onChange={setBounds} />
+        {config && (
+          // center is only read on mount — wait for the admin-configured
+          // starting point so the map never flashes at the wrong location.
+          <MapContainer
+            center={[config.map_center_lat, config.map_center_lon]}
+            zoom={7}
+            style={{ height: '70vh', width: '100%' }}
+            scrollWheelZoom
+          >
+            <TileLayer
+              key={scheme}
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              url={tileUrl}
+              subdomains="abcd"
+            />
+            <BoundsWatcher onChange={setBounds} />
 
-          <AdaptiveInstitutions institutions={institutions} onLog={logVisitHere} />
+            <AdaptiveInstitutions institutions={institutions} onLog={logVisitHere} />
 
-          {/* Your venues are drawn as individual dots (never clustered into
-              summary bubbles) so every engagement is always visible. A venue
-              with a completed visit shows green (reached); otherwise blue. */}
-          {showVenues &&
-            venues.map((v) => (
-              <Marker
-                key={`v-${v.id}`}
-                position={[v.latitude, v.longitude]}
-                icon={v.visited || v.visit_count > 0 ? coveredIcon : venueIcon}
-              >
-                <Popup>
-                  <strong>{v.name}</strong>
-                  <br />
-                  {labelize(v.venue_type)}
-                  {v.city ? ` · ${v.city}` : ''}
-                  <br />
-                  {v.visit_count} visit(s)
-                  <br />
-                  <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
-                    Open venue
-                  </Button>
-                </Popup>
-              </Marker>
-            ))}
-        </MapContainer>
+            {/* Your venues are drawn as individual dots (never clustered into
+                summary bubbles) so every engagement is always visible. A venue
+                with a completed visit shows green (reached); otherwise blue. */}
+            {showVenues &&
+              venues.map((v) => (
+                <Marker
+                  key={`v-${v.id}`}
+                  position={[v.latitude, v.longitude]}
+                  icon={v.visited || v.visit_count > 0 ? coveredIcon : venueIcon}
+                >
+                  <Popup>
+                    <strong>{v.name}</strong>
+                    <br />
+                    {labelize(v.venue_type)}
+                    {v.city ? ` · ${v.city}` : ''}
+                    <br />
+                    {v.visit_count} visit(s)
+                    <br />
+                    <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
+                      Open venue
+                    </Button>
+                  </Popup>
+                </Marker>
+              ))}
+          </MapContainer>
+        )}
       </Card>
       <Text size="xs" c="dimmed">
         Institution data © OpenStreetMap contributors. Import more regions with{' '}

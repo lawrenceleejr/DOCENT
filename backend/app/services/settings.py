@@ -15,6 +15,8 @@ SITE_URL_KEY = "site_url"
 SITE_NAME_KEY = "site_name"
 PUBLIC_PAGE_KEY = "public_page"
 LOGIN_MESSAGE_KEY = "login_message"
+MAP_CENTER_LAT_KEY = "map_center_lat"
+MAP_CENTER_LON_KEY = "map_center_lon"
 
 
 def get_setting(db: Session, key: str) -> str | None:
@@ -60,3 +62,13 @@ def public_page_enabled(db: Session) -> bool:
 def effective_login_message(db: Session) -> str:
     override = get_setting(db, LOGIN_MESSAGE_KEY)
     return override if override is not None else get_settings().login_message
+
+
+def effective_map_center_lat(db: Session) -> float:
+    override = get_setting(db, MAP_CENTER_LAT_KEY)
+    return float(override) if override is not None else get_settings().map_center_lat
+
+
+def effective_map_center_lon(db: Session) -> float:
+    override = get_setting(db, MAP_CENTER_LON_KEY)
+    return float(override) if override is not None else get_settings().map_center_lon
