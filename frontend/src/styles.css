@@ -19,6 +19,17 @@ body {
   overflow: visible;
 }
 
+/* Leaflet's own panes/controls use z-index up to 1000, well above Mantine's
+   popover/menu default (300). Leaflet sets `position: relative` on its
+   container but no z-index, so those internal z-indices aren't scoped to a
+   stacking context of their own and leak above unrelated page content —
+   e.g. an open nav menu rendering visibly *behind* the map. Giving the
+   container an explicit z-index (any value) confines Leaflet's internal
+   stacking to itself without touching Mantine's z-index scale. */
+.leaflet-container {
+  z-index: 0;
+}
+
 /* Map cluster bubble (custom grid clusterer: only shown for >20 close dots). */
 .dc-cluster {
   width: 42px;
