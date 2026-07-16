@@ -31,6 +31,7 @@ import {
   type ReportScope,
   type ReportStatusFilter,
 } from '../api/types';
+import { FilterCard } from '../components/FilterCard';
 import { StatTile } from '../components/StatTile';
 import { IconCalendarStats, IconMapPin, IconUsers } from '@tabler/icons-react';
 import { toDateString } from './VisitListPage';
@@ -72,6 +73,10 @@ export function ReportsPage() {
   const downloadHref = (format: 'json' | 'csv' | 'md' | 'pdf') =>
     `/api/reports/activities${buildQuery({ format, ...filterParams })}`;
 
+  const activeFilterCount =
+    [dateFrom, dateTo, venueType, eventType, audience].filter(Boolean).length +
+    (tags.length > 0 ? 1 : 0);
+
   const rows = data?.rows ?? [];
   const shown = rows.slice(0, PREVIEW_LIMIT);
 
@@ -93,7 +98,7 @@ export function ReportsPage() {
         </Text>
       </div>
 
-      <Card withBorder p="lg">
+      <FilterCard activeCount={activeFilterCount}>
         <Stack>
           <SimpleGrid cols={{ base: 1, sm: 2 }}>
             <div>
@@ -182,27 +187,27 @@ export function ReportsPage() {
             value={tags}
             onChange={setTags}
           />
-
-          <div>
-            <Text size="sm" fw={500} mb={6}>
-              Download
-            </Text>
-            <Group>
-              {FORMATS.map(({ fmt, label, icon: Icon }) => (
-                <Button
-                  key={fmt}
-                  component="a"
-                  href={downloadHref(fmt)}
-                  variant={fmt === 'pdf' ? 'gradient' : 'default'}
-                  leftSection={<Icon size={18} />}
-                  disabled={rows.length === 0}
-                >
-                  {label}
-                </Button>
-              ))}
-            </Group>
-          </div>
         </Stack>
+      </FilterCard>
+
+      <Card withBorder p="lg">
+        <Text size="sm" fw={500} mb={6}>
+          Download
+        </Text>
+        <Group>
+          {FORMATS.map(({ fmt, label, icon: Icon }) => (
+            <Button
+              key={fmt}
+              component="a"
+              href={downloadHref(fmt)}
+              variant={fmt === 'pdf' ? 'gradient' : 'default'}
+              leftSection={<Icon size={18} />}
+              disabled={rows.length === 0}
+            >
+              {label}
+            </Button>
+          ))}
+        </Group>
       </Card>
 
       <SimpleGrid cols={{ base: 1, xs: 3 }}>

@@ -47,6 +47,7 @@ import {
   type TimeseriesPoint,
   type TopVenueRow,
 } from '../api/types';
+import { FilterCard } from '../components/FilterCard';
 import { StatTile } from '../components/StatTile';
 import { VIZ_DARK, VIZ_LIGHT } from '../components/vizTheme';
 import { toDateString } from './VisitListPage';
@@ -268,7 +269,9 @@ export function DashboardPage() {
     }),
     [dates, venueType, eventType, audience, tags],
   );
-  const hasFilters = !!(venueType || eventType || audience || tags.length);
+  const activeFilterCount =
+    [venueType, eventType, audience].filter(Boolean).length + (tags.length > 0 ? 1 : 0);
+  const hasFilters = activeFilterCount > 0;
   const clearFilters = () => {
     setVenueType(null);
     setEventType(null);
@@ -340,7 +343,7 @@ export function DashboardPage() {
         />
       </Group>
 
-      <Card withBorder p="md">
+      <FilterCard activeCount={activeFilterCount}>
         <Group align="flex-end">
           <Select
             label="Venue type"
@@ -385,7 +388,7 @@ export function DashboardPage() {
             </Button>
           )}
         </Group>
-      </Card>
+      </FilterCard>
 
       <SimpleGrid cols={{ base: 1, xs: 2, md: 5 }}>
         <StatTile

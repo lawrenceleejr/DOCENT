@@ -29,6 +29,7 @@ import {
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { EmptyState } from '../components/EmptyState';
+import { FilterCard } from '../components/FilterCard';
 import { filterParams, type VisitFilters } from '../components/filters';
 import { toDateString } from './VisitListPage';
 
@@ -65,6 +66,12 @@ export function SchedulePage() {
     ...(mineOnly ? { author_id: user?.id } : { everyone: true }),
   })}`;
 
+  const activeFilterCount =
+    [filters.date_from, filters.date_to, filters.venue_type, filters.event_type,
+      filters.audience_level].filter(Boolean).length +
+    ((filters.tags?.length ?? 0) > 0 ? 1 : 0) +
+    (mineOnly ? 1 : 0);
+
   return (
     <Stack>
       <Group justify="space-between">
@@ -84,7 +91,7 @@ export function SchedulePage() {
         </Group>
       </Group>
 
-      <Card withBorder p="md">
+      <FilterCard activeCount={activeFilterCount}>
         <Group align="flex-end">
           <DateInput
             label="From"
@@ -145,7 +152,7 @@ export function SchedulePage() {
             pb={8}
           />
         </Group>
-      </Card>
+      </FilterCard>
 
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={760}>

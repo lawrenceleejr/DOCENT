@@ -25,6 +25,7 @@ import {
   type Venue,
   type VenuePoint,
 } from '../api/types';
+import { FilterCard } from '../components/FilterCard';
 import { COLORS, coveredIcon, gapIcon, venueIcon } from '../components/mapIcons';
 
 interface Bounds {
@@ -195,6 +196,11 @@ export function MapPage() {
 
   const gapCount = institutions.filter((i) => !i.covered).length;
 
+  const activeFilterCount =
+    (types.length !== DEFAULT_TYPES.length ? 1 : 0) +
+    (statusFilter !== 'all' ? 1 : 0) +
+    (!showVenues ? 1 : 0);
+
   const logVisitHere = async (inst: InstitutionPoint) => {
     try {
       let venue: Venue;
@@ -240,7 +246,7 @@ export function MapPage() {
         </div>
       </Group>
 
-      <Card withBorder p="md">
+      <FilterCard activeCount={activeFilterCount}>
         <Group justify="space-between" align="center">
           <Group gap="lg">
             <Checkbox.Group
@@ -293,7 +299,7 @@ export function MapPage() {
             <LegendDot color={COLORS.venue} label="Venue (no visits yet)" />
           </Group>
         </Group>
-      </Card>
+      </FilterCard>
 
       <Card withBorder p={0} style={{ overflow: 'hidden' }}>
         <MapContainer

@@ -22,6 +22,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { EmptyState } from '../components/EmptyState';
+import { FilterCard } from '../components/FilterCard';
 import { buildQuery } from '../api/client';
 import { api } from '../api/client';
 import {
@@ -88,6 +89,12 @@ export function VisitListPage() {
     author_id: mineOnly ? user?.id : undefined,
   })}`;
 
+  const activeFilterCount =
+    [q, statusFilter, filters.date_from, filters.date_to, filters.venue_type,
+      filters.event_type, filters.audience_level].filter(Boolean).length +
+    ((filters.tags?.length ?? 0) > 0 ? 1 : 0) +
+    (mineOnly ? 1 : 0);
+
   return (
     <Stack>
       <Group justify="space-between">
@@ -102,7 +109,7 @@ export function VisitListPage() {
         </Group>
       </Group>
 
-      <Card withBorder p="md">
+      <FilterCard activeCount={activeFilterCount}>
         <Group align="flex-end">
           <TextInput
             label="Search"
@@ -187,7 +194,7 @@ export function VisitListPage() {
             pb={8}
           />
         </Group>
-      </Card>
+      </FilterCard>
 
       <Card withBorder p={0} visibleFrom="sm">
         <Table.ScrollContainer minWidth={780}>
