@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # Whether the unauthenticated read-only /impact page is served. Default off;
     # admins can flip it from the UI (DB value overrides this).
     public_page: bool = False
+    # Optional free-text announcement shown on the login page (e.g. maintenance
+    # notices, a welcome blurb). Empty = nothing shown. Admin-editable from the UI.
+    login_message: str = ""
     access_token_days: int = 7
     # "auto" (default): Secure flag follows the real connection (X-Forwarded-Proto
     # / scheme) so login works on plain http AND https. "true"/"false" force it.

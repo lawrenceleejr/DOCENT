@@ -345,6 +345,7 @@ export interface AuthConfig {
   contact_email: string | null;
   site_name: string | null;
   public_page: boolean;
+  login_message: string | null;
 }
 
 export interface PublicActivity {
@@ -373,6 +374,7 @@ export interface RegistrationSettings {
   site_url: string;
   site_name: string;
   public_page: boolean;
+  login_message: string;
 }
 
 export interface DbImportResult {

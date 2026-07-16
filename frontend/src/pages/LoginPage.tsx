@@ -1,4 +1,5 @@
 import {
+  Alert,
   Anchor,
   Box,
   Button,
@@ -69,6 +70,13 @@ export function LoginPage() {
                 : 'Log in to your DOCENT account.'}
             </Text>
           </Stack>
+          {config?.login_message && (
+            <Alert color="brand" variant="light">
+              <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>
+                {config.login_message}
+              </Text>
+            </Alert>
+          )}
           <TextInput
             label="Email"
             placeholder="you@university.edu"

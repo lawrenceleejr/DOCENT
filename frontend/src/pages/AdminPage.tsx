@@ -14,6 +14,7 @@ import {
   Switch,
   Table,
   Text,
+  Textarea,
   TextInput,
   Title,
   Tooltip,
@@ -52,11 +53,13 @@ function RegistrationCard() {
   const [email, setEmail] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
   const [publicPage, setPublicPage] = useState<boolean | null>(null);
+  const [loginMessage, setLoginMessage] = useState<string | null>(null);
 
   const codeValue = code ?? data?.invite_code ?? '';
   const emailValue = email ?? data?.contact_email ?? '';
   const nameValue = name ?? data?.site_name ?? '';
   const publicValue = publicPage ?? data?.public_page ?? false;
+  const loginMessageValue = loginMessage ?? data?.login_message ?? '';
 
   const save = useMutation({
     mutationFn: () =>
@@ -65,6 +68,7 @@ function RegistrationCard() {
         contact_email: emailValue,
         site_name: nameValue,
         public_page: publicValue,
+        login_message: loginMessageValue,
       }),
     onSuccess: (updated) => {
       queryClient.setQueryData(['admin', 'settings'], updated);
@@ -73,6 +77,7 @@ function RegistrationCard() {
       setEmail(null);
       setName(null);
       setPublicPage(null);
+      setLoginMessage(null);
       notifications.show({ message: 'Settings saved', color: 'green' });
     },
     onError: (e) => {
@@ -140,11 +145,27 @@ function RegistrationCard() {
           checked={publicValue}
           onChange={(e) => setPublicPage(e.currentTarget.checked)}
         />
+        <Textarea
+          label="Login page message"
+          description="Optional announcement shown on the login page — a welcome note, a maintenance notice, whatever your community needs to see before signing in. Leave blank to show nothing."
+          placeholder="e.g. Scheduled maintenance this Friday 6-8am."
+          minRows={2}
+          autosize
+          maxRows={8}
+          value={loginMessageValue}
+          onChange={(e) => setLoginMessage(e.currentTarget.value)}
+        />
         <Group justify="flex-end">
           <Button
             variant="gradient"
             loading={save.isPending}
-            disabled={code === null && email === null && name === null && publicPage === null}
+            disabled={
+              code === null &&
+              email === null &&
+              name === null &&
+              publicPage === null &&
+              loginMessage === null
+            }
             onClick={() => save.mutate()}
           >
             Save

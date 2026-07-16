@@ -103,6 +103,7 @@ class AuthConfig(BaseModel):
     contact_email: str | None
     site_name: str | None
     public_page: bool
+    login_message: str | None
 
 
 class UserOut(BaseModel):
@@ -226,6 +227,7 @@ class RegistrationSettings(BaseModel):
     site_url: str
     site_name: str
     public_page: bool
+    login_message: str
 
 
 class RegistrationSettingsUpdate(BaseModel):
@@ -234,6 +236,7 @@ class RegistrationSettingsUpdate(BaseModel):
     site_url: str | None = None
     site_name: str | None = Field(default=None, max_length=120)
     public_page: bool | None = None
+    login_message: str | None = Field(default=None, max_length=2000)
 
 
 

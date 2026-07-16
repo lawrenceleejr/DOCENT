@@ -15,6 +15,7 @@ from app.security import (
 from app.services.settings import (
     effective_contact_email,
     effective_invite_code,
+    effective_login_message,
     effective_site_name,
     public_page_enabled,
 )
@@ -31,6 +32,7 @@ def auth_config(db: DbSession) -> AuthConfig:
         contact_email=effective_contact_email(db) or None,
         site_name=effective_site_name(db) or None,
         public_page=public_page_enabled(db),
+        login_message=effective_login_message(db) or None,
     )
 
 

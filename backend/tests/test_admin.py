@@ -39,6 +39,19 @@ def test_admin_sets_site_url(client):
     assert client.get("/api/admin/settings").json()["site_url"] == "https://docent.lab.edu"
 
 
+def test_admin_sets_login_message(client):
+    register(client, email="admin@example.com")
+    assert client.get("/api/auth/config").json()["login_message"] is None
+
+    r = client.patch("/api/admin/settings", json={"login_message": "  Down for maintenance  "})
+    assert r.status_code == 200
+    assert r.json()["login_message"] == "Down for maintenance"  # trimmed
+    assert client.get("/api/auth/config").json()["login_message"] == "Down for maintenance"
+
+    client.patch("/api/admin/settings", json={"login_message": ""})
+    assert client.get("/api/auth/config").json()["login_message"] is None
+
+
 def test_admin_changes_user_email(client, make_client):
     register(client, email="admin@example.com")
     other = make_client()

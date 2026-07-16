@@ -14,6 +14,7 @@ CONTACT_EMAIL_KEY = "contact_email"
 SITE_URL_KEY = "site_url"
 SITE_NAME_KEY = "site_name"
 PUBLIC_PAGE_KEY = "public_page"
+LOGIN_MESSAGE_KEY = "login_message"
 
 
 def get_setting(db: Session, key: str) -> str | None:
@@ -54,3 +55,8 @@ def public_page_enabled(db: Session) -> bool:
     if override is not None:
         return override == "1"
     return get_settings().public_page
+
+
+def effective_login_message(db: Session) -> str:
+    override = get_setting(db, LOGIN_MESSAGE_KEY)
+    return override if override is not None else get_settings().login_message

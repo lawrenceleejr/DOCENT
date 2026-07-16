@@ -39,11 +39,13 @@ from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
 from app.services.settings import (
     CONTACT_EMAIL_KEY,
     INVITE_CODE_KEY,
+    LOGIN_MESSAGE_KEY,
     PUBLIC_PAGE_KEY,
     SITE_NAME_KEY,
     SITE_URL_KEY,
     effective_contact_email,
     effective_invite_code,
+    effective_login_message,
     effective_site_name,
     effective_site_url,
     public_page_enabled,
@@ -117,6 +119,7 @@ def _settings_out(db) -> RegistrationSettings:
         site_url=effective_site_url(db),
         site_name=effective_site_name(db),
         public_page=public_page_enabled(db),
+        login_message=effective_login_message(db),
     )
 
 
@@ -139,6 +142,8 @@ def update_registration_settings(
         set_setting(db, SITE_NAME_KEY, body.site_name.strip())
     if body.public_page is not None:
         set_setting(db, PUBLIC_PAGE_KEY, "1" if body.public_page else "")
+    if body.login_message is not None:
+        set_setting(db, LOGIN_MESSAGE_KEY, body.login_message.strip())
     db.commit()
     return _settings_out(db)
 
