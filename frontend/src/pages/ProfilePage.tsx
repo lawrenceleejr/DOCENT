@@ -121,9 +121,14 @@ export function ProfilePage() {
             <Title order={4}>Change password</Title>
             <PasswordInput
               label="Current password"
+              autoComplete="current-password"
               {...passwordForm.getInputProps('current_password')}
             />
-            <PasswordInput label="New password" {...passwordForm.getInputProps('new_password')} />
+            <PasswordInput
+              label="New password"
+              autoComplete="new-password"
+              {...passwordForm.getInputProps('new_password')}
+            />
             <Group justify="flex-end">
               <Button type="submit" loading={changePassword.isPending}>
                 Change password

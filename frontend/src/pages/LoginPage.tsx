@@ -72,10 +72,17 @@ export function LoginPage() {
           <TextInput
             label="Email"
             placeholder="you@university.edu"
+            type="email"
+            autoComplete="username"
             size="md"
             {...form.getInputProps('email')}
           />
-          <PasswordInput label="Password" size="md" {...form.getInputProps('password')} />
+          <PasswordInput
+            label="Password"
+            autoComplete="current-password"
+            size="md"
+            {...form.getInputProps('password')}
+          />
           {error && (
             <Text c="red" size="sm">
               {error}

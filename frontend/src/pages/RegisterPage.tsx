@@ -120,11 +120,23 @@ export function RegisterPage() {
       <form onSubmit={submit}>
         <Stack gap="md">
           {header}
-          <TextInput label="Full name" placeholder="Ada Lovelace" {...form.getInputProps('name')} />
-          <TextInput label="Email" placeholder="you@university.edu" {...form.getInputProps('email')} />
+          <TextInput
+            label="Full name"
+            placeholder="Ada Lovelace"
+            autoComplete="name"
+            {...form.getInputProps('name')}
+          />
+          <TextInput
+            label="Email"
+            placeholder="you@university.edu"
+            type="email"
+            autoComplete="username"
+            {...form.getInputProps('email')}
+          />
           <PasswordInput
             label="Password"
             description="At least 8 characters"
+            autoComplete="new-password"
             {...form.getInputProps('password')}
           />
           <TextInput
