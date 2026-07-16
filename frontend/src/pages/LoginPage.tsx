@@ -8,11 +8,14 @@ import {
   Text,
   TextInput,
   Title,
+  TypographyStylesProvider,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import remarkBreaks from 'remark-breaks';
 import { api, ApiError } from '../api/client';
 import type { AuthConfig } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
@@ -72,9 +75,16 @@ export function LoginPage() {
           </Stack>
           {config?.login_message && (
             <Alert color="brand" variant="light">
-              <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>
-                {config.login_message}
-              </Text>
+              <TypographyStylesProvider p={0} fz="sm">
+                <ReactMarkdown
+                  remarkPlugins={[remarkBreaks]}
+                  components={{
+                    a: (props) => <a {...props} target="_blank" rel="noreferrer" />,
+                  }}
+                >
+                  {config.login_message}
+                </ReactMarkdown>
+              </TypographyStylesProvider>
             </Alert>
           )}
           <TextInput

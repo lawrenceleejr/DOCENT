@@ -147,7 +147,7 @@ function RegistrationCard() {
         />
         <Textarea
           label="Login page message"
-          description="Optional announcement shown on the login page — a welcome note, a maintenance notice, whatever your community needs to see before signing in. Leave blank to show nothing."
+          description="Optional announcement shown on the login page — a welcome note, a maintenance notice, whatever your community needs to see before signing in. Supports basic Markdown (**bold**, *italic*, [links](https://…), lists). Leave blank to show nothing."
           placeholder="e.g. Scheduled maintenance this Friday 6-8am."
           minRows={2}
           autosize
