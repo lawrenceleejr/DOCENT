@@ -24,6 +24,8 @@ def update_me(body: UserUpdate, user: CurrentUser, db: DbSession):
         user.name = body.name
     if body.affiliation is not None:
         user.affiliation = body.affiliation
+    if body.position is not None:
+        user.position = body.position
     if body.languages_spoken is not None:
         user.languages_spoken = body.languages_spoken
 
@@ -153,6 +155,7 @@ def user_directory(
             id=u.id,
             name=u.name,
             affiliation=u.affiliation,
+            position=u.position,
             languages_spoken=u.languages_spoken,
             schools=[s.venue for s in u.schools],
         )

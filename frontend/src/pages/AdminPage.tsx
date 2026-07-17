@@ -498,6 +498,7 @@ export function AdminPage() {
                 <Table.Th>{t('admin.nameHeader')}</Table.Th>
                 <Table.Th>{t('admin.emailHeader')}</Table.Th>
                 <Table.Th>{t('admin.affiliationHeader')}</Table.Th>
+                <Table.Th>{t('admin.positionHeader')}</Table.Th>
                 <Table.Th>{t('admin.schoolsHeader')}</Table.Th>
                 <Table.Th>{t('admin.languagesHeader')}</Table.Th>
                 <Table.Th>{t('admin.joinedHeader')}</Table.Th>
@@ -521,6 +522,7 @@ export function AdminPage() {
                     <EmailCell user={user} disabled={false} />
                   </Table.Td>
                   <Table.Td>{user.affiliation ?? '—'}</Table.Td>
+                  <Table.Td>{user.position ?? '—'}</Table.Td>
                   <Table.Td>
                     {user.schools.length > 0 ? (
                       <Group gap={4}>
@@ -597,7 +599,7 @@ export function AdminPage() {
               ))}
               {(data?.items.length ?? 0) === 0 && (
                 <Table.Tr>
-                  <Table.Td colSpan={9}>
+                  <Table.Td colSpan={10}>
                     <Text c="dimmed" ta="center" py="lg">
                       {t('admin.noUsersMatch', { q })}
                     </Text>

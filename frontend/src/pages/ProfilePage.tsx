@@ -53,6 +53,7 @@ export function ProfilePage() {
     initialValues: {
       name: user?.name ?? '',
       affiliation: user?.affiliation ?? '',
+      position: user?.position ?? '',
       languages_spoken: user?.languages_spoken ?? [],
     },
     validate: { name: (v) => (v.trim().length > 0 ? null : t('profile.validation.nameRequired')) },
@@ -67,10 +68,16 @@ export function ProfilePage() {
   });
 
   const saveProfile = useMutation({
-    mutationFn: (values: { name: string; affiliation: string; languages_spoken: string[] }) =>
+    mutationFn: (values: {
+      name: string;
+      affiliation: string;
+      position: string;
+      languages_spoken: string[];
+    }) =>
       api.patch<User>('/api/users/me', {
         name: values.name.trim(),
         affiliation: values.affiliation.trim(),
+        position: values.position.trim(),
         languages_spoken: values.languages_spoken,
       }),
     onSuccess: async () => {
@@ -151,6 +158,11 @@ export function ProfilePage() {
             <TextInput
               label={t('profile.affiliationLabel')}
               {...profileForm.getInputProps('affiliation')}
+            />
+            <TextInput
+              label={t('profile.positionLabel')}
+              placeholder={t('profile.positionPlaceholder')}
+              {...profileForm.getInputProps('position')}
             />
             <MultiSelect
               label={t('profile.languagesLabel')}

@@ -120,6 +120,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
     affiliation: str | None = Field(default=None, max_length=255)
+    position: str | None = Field(default=None, max_length=255)
     invite_code: str | None = None
 
 
@@ -148,6 +149,7 @@ class UserOut(BaseModel):
     email: str
     name: str
     affiliation: str | None
+    position: str | None
     is_admin: bool
     is_active: bool
     languages_spoken: list[str]
@@ -164,6 +166,7 @@ class UserBrief(BaseModel):
 class UserUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     affiliation: str | None = Field(default=None, max_length=255)
+    position: str | None = Field(default=None, max_length=255)
     languages_spoken: list[str] | None = None
     current_password: str | None = None
     new_password: str | None = Field(default=None, min_length=8, max_length=128)
@@ -391,6 +394,7 @@ class DirectoryUserOut(BaseModel):
     id: int
     name: str
     affiliation: str | None
+    position: str | None
     languages_spoken: list[str]
     schools: list[VenueBrief]
 

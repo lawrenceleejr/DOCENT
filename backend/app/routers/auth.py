@@ -76,6 +76,7 @@ def register(body: RegisterRequest, request: Request, response: Response, db: Db
         email=email,
         name=body.name,
         affiliation=body.affiliation,
+        position=body.position,
         password_hash=hash_password(body.password),
         is_admin=is_first_user,
     )

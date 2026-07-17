@@ -200,6 +200,7 @@ export interface User {
   email: string;
   name: string;
   affiliation: string | null;
+  position: string | null;
   is_admin: boolean;
   is_active: boolean;
   languages_spoken: string[];
@@ -225,6 +226,7 @@ export interface DirectoryUser {
   id: number;
   name: string;
   affiliation: string | null;
+  position: string | null;
   languages_spoken: string[];
   schools: VenueBrief[];
 }

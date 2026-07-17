@@ -11,6 +11,7 @@ interface AuthState {
     email: string;
     password: string;
     affiliation?: string;
+    position?: string;
     invite_code?: string;
   }) => Promise<void>;
   logout: () => Promise<void>;

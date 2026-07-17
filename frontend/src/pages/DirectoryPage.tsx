@@ -66,6 +66,7 @@ export function DirectoryPage() {
               <Table.Tr>
                 <Table.Th>{t('directory.colName')}</Table.Th>
                 <Table.Th>{t('directory.colAffiliation')}</Table.Th>
+                <Table.Th>{t('directory.colPosition')}</Table.Th>
                 <Table.Th>{t('directory.colSchools')}</Table.Th>
                 <Table.Th>{t('directory.colLanguages')}</Table.Th>
               </Table.Tr>
@@ -75,6 +76,7 @@ export function DirectoryPage() {
                 <Table.Tr key={member.id}>
                   <Table.Td>{member.name}</Table.Td>
                   <Table.Td>{member.affiliation ?? '—'}</Table.Td>
+                  <Table.Td>{member.position ?? '—'}</Table.Td>
                   <Table.Td>
                     {member.schools.length > 0 ? (
                       <Group gap={4}>
@@ -95,7 +97,7 @@ export function DirectoryPage() {
               ))}
               {!isLoading && (data?.items.length ?? 0) === 0 && (
                 <Table.Tr>
-                  <Table.Td colSpan={4}>
+                  <Table.Td colSpan={5}>
                     <Text c="dimmed" ta="center" py="lg">
                       {t('directory.noMembersMatch')}
                     </Text>

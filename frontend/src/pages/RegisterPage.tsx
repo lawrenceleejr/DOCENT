@@ -51,7 +51,14 @@ export function RegisterPage() {
   const registrationEnabled = config?.registration_enabled ?? true;
 
   const form = useForm({
-    initialValues: { name: '', email: '', password: '', affiliation: '', invite_code: '' },
+    initialValues: {
+      name: '',
+      email: '',
+      password: '',
+      affiliation: '',
+      position: '',
+      invite_code: '',
+    },
     validate: {
       name: (v) => (v.trim().length > 0 ? null : t('register.validation.nameRequired')),
       email: (v) => (/^\S+@\S+$/.test(v) ? null : t('register.validation.invalidEmail')),
@@ -71,6 +78,7 @@ export function RegisterPage() {
         email: values.email,
         password: values.password,
         affiliation: values.affiliation.trim() || undefined,
+        position: values.position.trim() || undefined,
         invite_code: values.invite_code.trim(),
       });
       navigate('/');
@@ -146,6 +154,11 @@ export function RegisterPage() {
             label={t('register.affiliationLabel')}
             placeholder={t('register.affiliationPlaceholder')}
             {...form.getInputProps('affiliation')}
+          />
+          <TextInput
+            label={t('register.positionLabel')}
+            placeholder={t('register.positionPlaceholder')}
+            {...form.getInputProps('position')}
           />
           <TextInput
             label={t('register.accessCodeLabel')}

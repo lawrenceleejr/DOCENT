@@ -65,6 +65,7 @@ def export_data(db: Session) -> dict[str, Any]:
                 "email": u.email,
                 "name": u.name,
                 "affiliation": u.affiliation,
+                "position": u.position,
                 "is_admin": u.is_admin,
             }
             for u in users
@@ -167,6 +168,7 @@ def import_data(db: Session, payload: dict[str, Any]) -> dict[str, int]:
             email=email,
             name=row.get("name") or email,
             affiliation=row.get("affiliation"),
+            position=row.get("position"),
             password_hash=hash_password(secrets.token_urlsafe(32)),
             is_admin=False,  # never grant admin via import
             is_active=False,  # placeholder — no login until an admin enables it
