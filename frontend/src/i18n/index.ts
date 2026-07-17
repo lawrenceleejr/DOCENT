@@ -41,10 +41,11 @@ i18n
       tl: { translation: tl },
     },
     fallbackLng: 'en',
-    // Strip region subtags (en-US -> en, es-MX -> es) so i18n.language always
-    // matches one of our resource codes — otherwise it's the raw browser
-    // locale, which breaks exact-match checks like "is this English?".
-    load: 'languageOnly',
+    // The exact set of codes we have resources for. NOT `load:
+    // 'languageOnly'` — that strips everything after the first hyphen,
+    // which turns our script-tagged 'zh-Hant'/'zh-Hans' into 'zh' (a code
+    // with no registered resources) and silently falls back to English.
+    supportedLngs: SUPPORTED_LANGUAGES.map((l) => l.code),
     interpolation: { escapeValue: false },
     detection: {
       // Client-side "remembered" preference wins; otherwise fall back to the
@@ -55,10 +56,15 @@ i18n
     },
   });
 
-/** i18n.language can carry a region subtag (en-US, es-MX, …) straight from
- * the browser/localStorage even with load: 'languageOnly' — this strips it
- * down to the bare code our resources/SUPPORTED_LANGUAGES are keyed by. */
+const SUPPORTED_CODES: readonly string[] = SUPPORTED_LANGUAGES.map((l) => l.code);
+
+/** i18n.language can carry a region subtag straight from the browser
+ * (en-US, es-MX, …) that doesn't match any of our resource codes. Strips it
+ * down to the bare language — but leaves an exact match alone first, since
+ * our Chinese codes ('zh-Hant', 'zh-Hans') carry a *script* subtag, not a
+ * region, and naively splitting on '-' would wrongly collapse both to 'zh'. */
 export function baseLanguage(code: string): string {
+  if (SUPPORTED_CODES.includes(code)) return code;
   return code.split('-')[0];
 }
 
