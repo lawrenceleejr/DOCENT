@@ -29,6 +29,7 @@ export const HOST_RELATIONSHIPS = [
   'counselor',
   'alumnus',
   'former_student',
+  'former_teacher',
   'collaborator',
   'community_partner',
   'family_friend',

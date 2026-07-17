@@ -30,6 +30,23 @@ def test_create_and_list_connection(client):
     assert listed.json()[0]["id"] == connection["id"]
 
 
+def test_former_teacher_relationship_type(client):
+    # "This person used to teach me" is a relationship, not a role — distinct
+    # from teacher_faculty (their current job at the venue).
+    register(client, email="admin@example.com")
+    venue = create_venue(client)
+    connection = create_connection(
+        client,
+        venue["id"],
+        name="Mr. Alan Rivera",
+        role=None,
+        relationship_type="former_teacher",
+        relationship_detail="Taught me physics in high school",
+    )
+    assert connection["relationship_type"] == "former_teacher"
+    assert connection["role"] is None
+
+
 def test_connection_requires_existing_venue(client):
     register(client, email="admin@example.com")
     response = client.post("/api/connections", json={"venue_id": 999999, "name": "Nobody"})

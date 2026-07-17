@@ -78,6 +78,10 @@ class HostRelationship(str, enum.Enum):
     counselor = "counselor"
     alumnus = "alumnus"
     former_student = "former_student"
+    # The mirror image of former_student: this person used to teach *me*
+    # (e.g. a communicator's own grade-school teacher), not their current
+    # job title — that's teacher_faculty or the free-text role field.
+    former_teacher = "former_teacher"
     collaborator = "collaborator"
     community_partner = "community_partner"
     family_friend = "family_friend"
