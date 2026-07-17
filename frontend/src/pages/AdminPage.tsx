@@ -34,6 +34,7 @@ import {
 } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
 import type {
   AdminUser,
@@ -54,6 +55,7 @@ import { VenueFilterSelect } from '../components/VenueFilterSelect';
 const PAGE_SIZE = 25;
 
 function RegistrationCard() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data } = useQuery({
     queryKey: ['admin', 'settings'],
@@ -100,13 +102,13 @@ function RegistrationCard() {
       setMapLat(null);
       setMapLon(null);
       setDirectoryVisible(null);
-      notifications.show({ message: 'Settings saved', color: 'green' });
+      notifications.show({ message: t('admin.settingsSaved'), color: 'green' });
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not save',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('admin.couldNotSave'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
@@ -116,67 +118,61 @@ function RegistrationCard() {
   return (
     <Card withBorder p="lg">
       <Group justify="space-between" mb="xs">
-        <Title order={3}>Registration</Title>
+        <Title order={3}>{t('admin.registrationTitle')}</Title>
         {closed ? (
           <Badge color="red" variant="light">
-            Sign-up closed
+            {t('admin.signupClosed')}
           </Badge>
         ) : (
           <Badge color="green" variant="light">
-            Open with access code
+            {t('admin.signupOpen')}
           </Badge>
         )}
       </Group>
       <Text size="sm" c="dimmed" mb="md">
-        New accounts require this access code. Share it only with people you want to let in;
-        clear it to close sign-up entirely. The contact email is shown on the login and
-        register pages so people know where to request a code or a password reset.
+        {t('admin.registrationDescription')}
       </Text>
       <Stack>
         <TextInput
-          label="Access code"
-          placeholder="Required to register (empty = closed)"
+          label={t('admin.accessCodeLabel')}
+          placeholder={t('admin.accessCodePlaceholder')}
           value={codeValue}
           onChange={(e) => setCode(e.currentTarget.value)}
         />
         <TextInput
-          label="Contact email"
-          placeholder="outreach@your-org.edu"
+          label={t('admin.contactEmailLabel')}
+          placeholder={t('admin.contactEmailPlaceholder')}
           value={emailValue}
           onChange={(e) => setEmail(e.currentTarget.value)}
         />
         <TextInput
-          label="Community name"
-          description="Shown in the header, on the login page, and on the public impact page. Empty = plain DOCENT branding."
-          placeholder="e.g. UTK Physics Outreach"
+          label={t('admin.communityNameLabel')}
+          description={t('admin.communityNameDescription')}
+          placeholder={t('admin.communityNamePlaceholder')}
           value={nameValue}
           onChange={(e) => setName(e.currentTarget.value)}
         />
         <Switch
-          label="Public impact page"
+          label={t('admin.publicImpactPageLabel')}
           description={
-            <>
-              Serve a read-only summary of your community’s impact (totals, charts, recent
-              activity — never private notes or names) at{' '}
-              <Anchor href="/impact" target="_blank" size="xs">
-                /impact
-              </Anchor>
-              . Anyone with the link can view it.
-            </>
+            <Trans
+              i18nKey="admin.publicImpactPageDescription"
+              components={{ link: <Anchor href="/impact" target="_blank" size="xs" /> }}
+            />
           }
           checked={publicValue}
           onChange={(e) => setPublicPage(e.currentTarget.checked)}
         />
         <Switch
-          label="Member directory"
-          description="Let any signed-in user browse the member directory (schools attended, languages spoken) — not just admins. Admins can always see it."
+          label={t('admin.memberDirectoryLabel')}
+          description={t('admin.memberDirectoryDescription')}
           checked={directoryValue}
           onChange={(e) => setDirectoryVisible(e.currentTarget.checked)}
         />
         <Textarea
-          label="Login page message"
-          description="Optional announcement shown on the login page — a welcome note, a maintenance notice, whatever your community needs to see before signing in. Supports basic Markdown (**bold**, *italic*, [links](https://…), lists). Leave blank to show nothing."
-          placeholder="e.g. Scheduled maintenance this Friday 6-8am."
+          label={t('admin.loginMessageLabel')}
+          description={t('admin.loginMessageDescription')}
+          placeholder={t('admin.loginMessagePlaceholder')}
           minRows={2}
           autosize
           maxRows={8}
@@ -185,15 +181,14 @@ function RegistrationCard() {
         />
         <div>
           <Text size="sm" fw={500} mb={4}>
-            Map starting point
+            {t('admin.mapStartingPointTitle')}
           </Text>
           <Text size="xs" c="dimmed" mb={8}>
-            Where the Map page centers on first load, before anyone pans around. Defaults to
-            Tennessee.
+            {t('admin.mapStartingPointDescription')}
           </Text>
           <Group grow>
             <NumberInput
-              label="Latitude"
+              label={t('admin.latitudeLabel')}
               min={-90}
               max={90}
               decimalScale={4}
@@ -201,7 +196,7 @@ function RegistrationCard() {
               onChange={setMapLat}
             />
             <NumberInput
-              label="Longitude"
+              label={t('admin.longitudeLabel')}
               min={-180}
               max={180}
               decimalScale={4}
@@ -226,7 +221,7 @@ function RegistrationCard() {
             }
             onClick={() => save.mutate()}
           >
-            Save
+            {t('admin.save')}
           </Button>
         </Group>
       </Stack>
@@ -235,6 +230,7 @@ function RegistrationCard() {
 }
 
 function EmailCell({ user, disabled }: { user: User; disabled: boolean }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(user.email);
@@ -244,13 +240,13 @@ function EmailCell({ user, disabled }: { user: User; disabled: boolean }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       setEditing(false);
-      notifications.show({ message: 'Email updated', color: 'green' });
+      notifications.show({ message: t('admin.emailUpdated'), color: 'green' });
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not update email',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('admin.couldNotUpdateEmail'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
@@ -260,7 +256,7 @@ function EmailCell({ user, disabled }: { user: User; disabled: boolean }) {
       <Group gap={6} wrap="nowrap">
         <span>{user.email}</span>
         {!disabled && (
-          <Tooltip label="Change email">
+          <Tooltip label={t('admin.changeEmailTooltip')}>
             <ActionIcon variant="subtle" size="sm" onClick={() => { setValue(user.email); setEditing(true); }}>
               <IconPencil size={14} />
             </ActionIcon>
@@ -297,6 +293,7 @@ function MergeUserModal({
   onClose: () => void;
   onMerged: () => void;
 }) {
+  const { t } = useTranslation();
   const [q, setQ] = useState('');
   const { data } = useQuery({
     queryKey: ['admin', 'users', 'mergepick', q],
@@ -312,14 +309,14 @@ function MergeUserModal({
       onClose();
       notifications.show({
         color: 'green',
-        message: `Merged ${source!.name} into ${target.name}`,
+        message: t('admin.mergedNotification', { source: source!.name, target: target.name }),
       });
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Merge failed',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('admin.mergeFailed'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
@@ -327,14 +324,18 @@ function MergeUserModal({
   const candidates = (data?.items ?? []).filter((u) => u.id !== source?.id);
 
   return (
-    <Modal opened={!!source} onClose={onClose} title={`Merge ${source?.name ?? ''} into…`} size="md">
+    <Modal
+      opened={!!source}
+      onClose={onClose}
+      title={t('admin.mergeModalTitle', { name: source?.name ?? '' })}
+      size="md"
+    >
       <Stack>
         <Text size="sm" c="dimmed">
-          All of {source?.name}’s visits and venues move to the account you pick, then{' '}
-          {source?.name}’s account is deleted. This can’t be undone.
+          {t('admin.mergeModalDescription', { name: source?.name })}
         </Text>
         <TextInput
-          placeholder="Search the destination account"
+          placeholder={t('admin.mergeSearchPlaceholder')}
           value={q}
           onChange={(e) => setQ(e.currentTarget.value)}
         />
@@ -354,16 +355,17 @@ function MergeUserModal({
                 variant="light"
                 loading={merge.isPending && merge.variables === u.id}
                 onClick={() => {
-                  if (window.confirm(`Merge ${source?.name} into ${u.name}?`)) merge.mutate(u.id);
+                  if (window.confirm(t('admin.confirmMerge', { source: source?.name, target: u.name })))
+                    merge.mutate(u.id);
                 }}
               >
-                Merge here
+                {t('admin.mergeHereButton')}
               </Button>
             </Group>
           ))}
           {candidates.length === 0 && (
             <Text size="sm" c="dimmed" ta="center" py="sm">
-              No other accounts match.
+              {t('admin.noOtherAccountsMatch')}
             </Text>
           )}
         </Stack>
@@ -373,6 +375,7 @@ function MergeUserModal({
 }
 
 export function AdminPage() {
+  const { t } = useTranslation();
   const { user: me } = useAuth();
   const queryClient = useQueryClient();
   const [resetInfo, setResetInfo] = useState<{ name: string; password: string } | null>(null);
@@ -402,8 +405,8 @@ export function AdminPage() {
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Update failed',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('admin.updateFailed'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
@@ -420,8 +423,8 @@ export function AdminPage() {
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Reset failed',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('admin.resetFailed'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
@@ -430,13 +433,13 @@ export function AdminPage() {
     mutationFn: (user: User) => api.delete(`/api/admin/users/${user.id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-      notifications.show({ message: 'User deleted' });
+      notifications.show({ message: t('admin.userDeleted') });
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not delete user',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('admin.couldNotDeleteUser'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
@@ -445,7 +448,7 @@ export function AdminPage() {
 
   return (
     <Stack>
-      <Title order={2}>Admin</Title>
+      <Title order={2}>{t('admin.title')}</Title>
       <RegistrationCard />
       <SiteSetupCard />
       <DbToolsCard />
@@ -454,10 +457,10 @@ export function AdminPage() {
       <InstitutionManagerCard />
 
       <Group justify="space-between" align="flex-end" mt="md" wrap="wrap">
-        <Title order={3}>User management</Title>
+        <Title order={3}>{t('admin.userManagementHeading')}</Title>
         <Group align="flex-end">
           <TextInput
-            placeholder="Search name or email"
+            placeholder={t('admin.searchPlaceholder')}
             value={q}
             onChange={(e) => {
               setQ(e.currentTarget.value);
@@ -473,7 +476,7 @@ export function AdminPage() {
             }}
           />
           <Select
-            placeholder="Filter by language"
+            placeholder={t('admin.filterByLanguagePlaceholder')}
             searchable
             clearable
             data={LANGUAGES}
@@ -492,15 +495,15 @@ export function AdminPage() {
           <Table highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Email</Table.Th>
-                <Table.Th>Affiliation</Table.Th>
-                <Table.Th>Schools</Table.Th>
-                <Table.Th>Languages</Table.Th>
-                <Table.Th>Joined</Table.Th>
-                <Table.Th>Active</Table.Th>
-                <Table.Th>Admin</Table.Th>
-                <Table.Th>Actions</Table.Th>
+                <Table.Th>{t('admin.nameHeader')}</Table.Th>
+                <Table.Th>{t('admin.emailHeader')}</Table.Th>
+                <Table.Th>{t('admin.affiliationHeader')}</Table.Th>
+                <Table.Th>{t('admin.schoolsHeader')}</Table.Th>
+                <Table.Th>{t('admin.languagesHeader')}</Table.Th>
+                <Table.Th>{t('admin.joinedHeader')}</Table.Th>
+                <Table.Th>{t('admin.activeHeader')}</Table.Th>
+                <Table.Th>{t('admin.adminHeader')}</Table.Th>
+                <Table.Th>{t('admin.actionsHeader')}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -510,7 +513,7 @@ export function AdminPage() {
                     {user.name}{' '}
                     {user.id === me?.id && (
                       <Badge size="xs" variant="light">
-                        you
+                        {t('admin.youBadge')}
                       </Badge>
                     )}
                   </Table.Td>
@@ -556,7 +559,7 @@ export function AdminPage() {
                   <Table.Td>
                     <Menu shadow="md" position="bottom-end" withinPortal>
                       <Menu.Target>
-                        <ActionIcon variant="default" aria-label="User actions">
+                        <ActionIcon variant="default" aria-label={t('admin.userActionsAriaLabel')}>
                           <IconDots size={16} />
                         </ActionIcon>
                       </Menu.Target>
@@ -565,14 +568,14 @@ export function AdminPage() {
                           leftSection={<IconKey size={14} />}
                           onClick={() => resetPassword.mutate(user)}
                         >
-                          Reset password
+                          {t('admin.resetPasswordMenuItem')}
                         </Menu.Item>
                         <Menu.Item
                           leftSection={<IconGitMerge size={14} />}
                           disabled={user.id === me?.id}
                           onClick={() => setMergeSource(user)}
                         >
-                          Merge into…
+                          {t('admin.mergeIntoMenuItem')}
                         </Menu.Item>
                         <Menu.Divider />
                         <Menu.Item
@@ -580,12 +583,12 @@ export function AdminPage() {
                           leftSection={<IconTrash size={14} />}
                           disabled={user.id === me?.id}
                           onClick={() => {
-                            if (window.confirm(`Delete ${user.name}? This cannot be undone.`)) {
+                            if (window.confirm(t('admin.confirmDeleteUser', { name: user.name }))) {
                               removeUser.mutate(user);
                             }
                           }}
                         >
-                          Delete user
+                          {t('admin.deleteUserMenuItem')}
                         </Menu.Item>
                       </Menu.Dropdown>
                     </Menu>
@@ -596,7 +599,7 @@ export function AdminPage() {
                 <Table.Tr>
                   <Table.Td colSpan={9}>
                     <Text c="dimmed" ta="center" py="lg">
-                      No users match “{q}”.
+                      {t('admin.noUsersMatch', { q })}
                     </Text>
                   </Table.Td>
                 </Table.Tr>
@@ -608,7 +611,7 @@ export function AdminPage() {
 
       <Group justify="space-between">
         <Text size="sm" c="dimmed">
-          {total.toLocaleString()} user{total === 1 ? '' : 's'}
+          {t('admin.userCount', { count: total, formattedCount: total.toLocaleString() })}
         </Text>
         <Pagination
           value={page}
@@ -617,7 +620,7 @@ export function AdminPage() {
         />
       </Group>
       <Text size="sm" c="dimmed">
-        Deactivated users can no longer log in, but their visits stay in the community record.
+        {t('admin.deactivatedUsersNote')}
       </Text>
 
       <MergeUserModal
@@ -626,11 +629,14 @@ export function AdminPage() {
         onMerged={() => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })}
       />
 
-      <Modal opened={resetOpen} onClose={reset.close} title="Temporary password" size="md">
+      <Modal opened={resetOpen} onClose={reset.close} title={t('admin.tempPasswordModalTitle')} size="md">
         <Stack>
           <Text size="sm">
-            Share this one-time password with <b>{resetInfo?.name}</b> over a secure channel.
-            They should log in and change it from their profile. It is shown only once.
+            <Trans
+              i18nKey="admin.tempPasswordBody"
+              values={{ name: resetInfo?.name }}
+              components={{ bold: <b /> }}
+            />
           </Text>
           <Group>
             <Code fz="md" p="xs">
@@ -639,7 +645,7 @@ export function AdminPage() {
             <CopyButton value={resetInfo?.password ?? ''}>
               {({ copied, copy }) => (
                 <Button variant="light" onClick={copy}>
-                  {copied ? 'Copied' : 'Copy'}
+                  {copied ? t('admin.copiedButton') : t('admin.copyButton')}
                 </Button>
               )}
             </CopyButton>

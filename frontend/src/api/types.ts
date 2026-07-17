@@ -482,11 +482,13 @@ export interface ReportRow {
   date: string;
   title: string;
   event_type: string;
+  event_type_raw: string;
   venue: string;
   city: string;
   state: string;
   location: string;
   audience: string;
+  audience_raw: string;
   people_reached: number;
   duration_minutes: number | null;
   presenter: string;
@@ -495,8 +497,10 @@ export interface ReportRow {
   host_role: string;
   tags: string;
   coverage: string;
+  coverage_categories: string[];
   coverage_links: string;
   status: string;
+  status_raw: string;
 }
 
 export interface ActivityReport {

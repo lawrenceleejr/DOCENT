@@ -16,12 +16,14 @@ import { IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
 import { LANGUAGES, type School, type StatsSummary, type User } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { VenuePicker } from '../components/VenuePicker';
 
 export function ProfilePage() {
+  const { t } = useTranslation();
   const { user, refresh } = useAuth();
   const queryClient = useQueryClient();
   const [newSchoolId, setNewSchoolId] = useState<number | null>(null);
@@ -53,14 +55,14 @@ export function ProfilePage() {
       affiliation: user?.affiliation ?? '',
       languages_spoken: user?.languages_spoken ?? [],
     },
-    validate: { name: (v) => (v.trim().length > 0 ? null : 'Name is required') },
+    validate: { name: (v) => (v.trim().length > 0 ? null : t('profile.validation.nameRequired')) },
   });
 
   const passwordForm = useForm({
     initialValues: { current_password: '', new_password: '' },
     validate: {
-      current_password: (v) => (v ? null : 'Required'),
-      new_password: (v) => (v.length >= 8 ? null : 'At least 8 characters'),
+      current_password: (v) => (v ? null : t('profile.validation.currentPasswordRequired')),
+      new_password: (v) => (v.length >= 8 ? null : t('profile.validation.passwordMin')),
     },
   });
 
@@ -73,7 +75,7 @@ export function ProfilePage() {
       }),
     onSuccess: async () => {
       await refresh();
-      notifications.show({ message: 'Profile updated' });
+      notifications.show({ message: t('profile.profileUpdated') });
     },
   });
 
@@ -82,13 +84,13 @@ export function ProfilePage() {
       api.patch<User>('/api/users/me', values),
     onSuccess: () => {
       passwordForm.reset();
-      notifications.show({ message: 'Password changed' });
+      notifications.show({ message: t('profile.passwordChanged') });
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not change password',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('profile.couldNotChangePassword'),
+        message: e instanceof ApiError ? e.message : t('profile.unexpectedError'),
       });
     },
   });
@@ -103,8 +105,8 @@ export function ProfilePage() {
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not add school',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('profile.couldNotAddSchool'),
+        message: e instanceof ApiError ? e.message : t('profile.unexpectedError'),
       });
     },
   });
@@ -120,12 +122,12 @@ export function ProfilePage() {
 
   return (
     <Stack maw={640} mx="auto">
-      <Title order={2}>Profile</Title>
+      <Title order={2}>{t('profile.title')}</Title>
 
       <Group grow>
         <Card withBorder p="md">
           <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-            Your visits
+            {t('profile.yourVisits')}
           </Text>
           <Text fz={28} fw={700}>
             {myStats ?? '—'}
@@ -133,7 +135,7 @@ export function ProfilePage() {
         </Card>
         <Card withBorder p="md">
           <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-            Community visits
+            {t('profile.communityVisits')}
           </Text>
           <Text fz={28} fw={700}>
             {community?.total_visits ?? '—'}
@@ -144,12 +146,15 @@ export function ProfilePage() {
       <Card withBorder p="lg">
         <form onSubmit={profileForm.onSubmit((values) => saveProfile.mutate(values))}>
           <Stack>
-            <TextInput label="Email" value={user.email} disabled />
-            <TextInput label="Full name" {...profileForm.getInputProps('name')} />
-            <TextInput label="Affiliation" {...profileForm.getInputProps('affiliation')} />
+            <TextInput label={t('profile.emailLabel')} value={user.email} disabled />
+            <TextInput label={t('profile.fullNameLabel')} {...profileForm.getInputProps('name')} />
+            <TextInput
+              label={t('profile.affiliationLabel')}
+              {...profileForm.getInputProps('affiliation')}
+            />
             <MultiSelect
-              label="Languages you can present in"
-              placeholder="Search languages…"
+              label={t('profile.languagesLabel')}
+              placeholder={t('profile.languagesPlaceholder')}
               searchable
               clearable
               data={LANGUAGES}
@@ -157,7 +162,7 @@ export function ProfilePage() {
             />
             <Group justify="flex-end">
               <Button type="submit" loading={saveProfile.isPending}>
-                Save profile
+                {t('profile.saveProfile')}
               </Button>
             </Group>
           </Stack>
@@ -167,9 +172,9 @@ export function ProfilePage() {
       <Card withBorder p="lg">
         <Stack gap="sm">
           <div>
-            <Title order={4}>Schools you attended</Title>
+            <Title order={4}>{t('profile.schoolsTitle')}</Title>
             <Text size="sm" c="dimmed">
-              Adding a school also lists you as an alumnus contact on its page.
+              {t('profile.schoolsDescription')}
             </Text>
           </div>
           {schools.length > 0 && (
@@ -184,7 +189,7 @@ export function ProfilePage() {
                       size="xs"
                       color="gray"
                       variant="transparent"
-                      aria-label={`Remove ${school.venue.name}`}
+                      aria-label={t('profile.removeSchoolAria', { name: school.venue.name })}
                       onClick={() => removeSchool.mutate(school.id)}
                     >
                       <IconTrash size={12} />
@@ -206,7 +211,7 @@ export function ProfilePage() {
               loading={addSchool.isPending}
               onClick={() => newSchoolId !== null && addSchool.mutate(newSchoolId)}
             >
-              Add
+              {t('profile.add')}
             </Button>
           </Group>
         </Stack>
@@ -215,20 +220,20 @@ export function ProfilePage() {
       <Card withBorder p="lg">
         <form onSubmit={passwordForm.onSubmit((values) => changePassword.mutate(values))}>
           <Stack>
-            <Title order={4}>Change password</Title>
+            <Title order={4}>{t('profile.changePassword')}</Title>
             <PasswordInput
-              label="Current password"
+              label={t('profile.currentPasswordLabel')}
               autoComplete="current-password"
               {...passwordForm.getInputProps('current_password')}
             />
             <PasswordInput
-              label="New password"
+              label={t('profile.newPasswordLabel')}
               autoComplete="new-password"
               {...passwordForm.getInputProps('new_password')}
             />
             <Group justify="flex-end">
               <Button type="submit" loading={changePassword.isPending}>
-                Change password
+                {t('profile.changePassword')}
               </Button>
             </Group>
           </Stack>

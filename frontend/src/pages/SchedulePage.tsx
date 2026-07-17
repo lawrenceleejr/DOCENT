@@ -16,13 +16,13 @@ import { DateInput } from '@mantine/dates';
 import { IconCalendarPlus } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, buildQuery } from '../api/client';
 import {
   AUDIENCE_LEVELS,
   EVENT_TYPES,
   isOverdue,
-  labelize,
   VENUE_TYPES,
   type Paginated,
   type Visit,
@@ -31,9 +31,12 @@ import { useAuth } from '../auth/AuthContext';
 import { EmptyState } from '../components/EmptyState';
 import { FilterCard } from '../components/FilterCard';
 import { filterParams, type VisitFilters } from '../components/filters';
+import { useEnumLabel } from '../i18n/enumLabels';
 import { toDateString } from './VisitListPage';
 
 export function SchedulePage() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [filters, setFilters] = useState<VisitFilters>({});
@@ -76,17 +79,17 @@ export function SchedulePage() {
     <Stack>
       <Group justify="space-between">
         <div>
-          <Title order={2}>Schedule</Title>
+          <Title order={2}>{t('schedule.title')}</Title>
           <Text c="dimmed" size="sm">
-            Upcoming planned events across the community. Mark one done to record attendance.
+            {t('schedule.subtitle')}
           </Text>
         </div>
         <Group>
           <Button component="a" href={icsHref} variant="default">
-            Add to calendar (.ics)
+            {t('schedule.addToCalendar')}
           </Button>
           <Button variant="gradient" onClick={() => navigate('/visits/new?status=planned')}>
-            Schedule an event
+            {t('schedule.scheduleEvent')}
           </Button>
         </Group>
       </Group>
@@ -94,50 +97,50 @@ export function SchedulePage() {
       <FilterCard activeCount={activeFilterCount}>
         <Group align="flex-end">
           <DateInput
-            label="From"
-            placeholder="Any"
+            label={t('schedule.fromLabel')}
+            placeholder={t('common.any')}
             clearable
             valueFormat="YYYY-MM-DD"
             value={filters.date_from ? new Date(`${filters.date_from}T00:00:00`) : null}
             onChange={(d) => update({ date_from: d ? toDateString(d) : undefined })}
           />
           <DateInput
-            label="To"
-            placeholder="Any"
+            label={t('schedule.toLabel')}
+            placeholder={t('common.any')}
             clearable
             valueFormat="YYYY-MM-DD"
             value={filters.date_to ? new Date(`${filters.date_to}T00:00:00`) : null}
             onChange={(d) => update({ date_to: d ? toDateString(d) : undefined })}
           />
           <Select
-            label="Venue type"
-            placeholder="All"
+            label={t('schedule.venueTypeLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={VENUE_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            data={VENUE_TYPES.map((v) => ({ value: v, label: enumLabel.venueType(v) }))}
             value={filters.venue_type || null}
             onChange={(v) => update({ venue_type: (v ?? '') as VisitFilters['venue_type'] })}
           />
           <Select
-            label="Event type"
-            placeholder="All"
+            label={t('schedule.eventTypeLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={EVENT_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            data={EVENT_TYPES.map((v) => ({ value: v, label: enumLabel.eventType(v) }))}
             value={filters.event_type || null}
             onChange={(v) => update({ event_type: (v ?? '') as VisitFilters['event_type'] })}
           />
           <Select
-            label="Audience"
-            placeholder="All"
+            label={t('schedule.audienceLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={AUDIENCE_LEVELS.map((t) => ({ value: t, label: labelize(t) }))}
+            data={AUDIENCE_LEVELS.map((v) => ({ value: v, label: enumLabel.audienceLevel(v) }))}
             value={filters.audience_level || null}
             onChange={(v) =>
               update({ audience_level: (v ?? '') as VisitFilters['audience_level'] })
             }
           />
           <MultiSelect
-            label="Tags"
-            placeholder={filters.tags?.length ? undefined : 'Any'}
+            label={t('schedule.tagsLabel')}
+            placeholder={filters.tags?.length ? undefined : t('common.any')}
             clearable
             searchable
             data={tagOptions}
@@ -146,7 +149,7 @@ export function SchedulePage() {
             w={200}
           />
           <Switch
-            label="Mine only"
+            label={t('schedule.mineOnly')}
             checked={mineOnly}
             onChange={(e) => setMineOnly(e.currentTarget.checked)}
             pb={8}
@@ -159,12 +162,12 @@ export function SchedulePage() {
         <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Date</Table.Th>
-              <Table.Th>Time</Table.Th>
-              <Table.Th>Title</Table.Th>
-              <Table.Th>Venue</Table.Th>
-              <Table.Th>Communicator</Table.Th>
-              <Table.Th>Audience</Table.Th>
+              <Table.Th>{t('schedule.colDate')}</Table.Th>
+              <Table.Th>{t('schedule.colTime')}</Table.Th>
+              <Table.Th>{t('schedule.colTitle')}</Table.Th>
+              <Table.Th>{t('schedule.colVenue')}</Table.Th>
+              <Table.Th>{t('schedule.colCommunicator')}</Table.Th>
+              <Table.Th>{t('schedule.colAudience')}</Table.Th>
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
@@ -176,7 +179,7 @@ export function SchedulePage() {
                     {visit.visit_date}
                     {isOverdue(visit) && (
                       <Badge variant="light" color="red" size="sm">
-                        Overdue
+                        {t('schedule.overdue')}
                       </Badge>
                     )}
                   </Group>
@@ -193,7 +196,7 @@ export function SchedulePage() {
                 </Table.Td>
                 <Table.Td>{visit.author.name}</Table.Td>
                 <Table.Td>
-                  <Badge variant="light">{labelize(visit.audience_level)}</Badge>
+                  <Badge variant="light">{enumLabel.audienceLevel(visit.audience_level)}</Badge>
                 </Table.Td>
                 <Table.Td ta="right">
                   {(visit.author.id === user?.id || user?.is_admin) && (
@@ -202,7 +205,7 @@ export function SchedulePage() {
                       variant="light"
                       onClick={() => navigate(`/visits/${visit.id}/edit`)}
                     >
-                      Mark done
+                      {t('schedule.markDone')}
                     </Button>
                   )}
                 </Table.Td>
@@ -213,9 +216,9 @@ export function SchedulePage() {
                 <Table.Td colSpan={7} p={0}>
                   <EmptyState
                     icon={IconCalendarPlus}
-                    title="Nothing scheduled"
-                    description="No upcoming planned events match these filters. Schedule one and it will appear here — ready to export to your calendar."
-                    actionLabel="Schedule an event"
+                    title={t('schedule.emptyTitle')}
+                    description={t('schedule.emptyDescription')}
+                    actionLabel={t('schedule.scheduleEvent')}
                     onAction={() => navigate('/visits/new?status=planned')}
                   />
                 </Table.Td>

@@ -1,11 +1,13 @@
 import { Badge, Card, Group, Select, Stack, Table, Text, TextInput, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import { LANGUAGES, type DirectoryUser, type Paginated } from '../api/types';
 import { VenueFilterSelect } from '../components/VenueFilterSelect';
 
 export function DirectoryPage() {
+  const { t } = useTranslation();
   const [q, setQ] = useState('');
   const [venueFilter, setVenueFilter] = useState<number | null>(null);
   const [languageFilter, setLanguageFilter] = useState<string | null>(null);
@@ -24,25 +26,29 @@ export function DirectoryPage() {
   return (
     <Stack>
       <div>
-        <Title order={2}>Directory</Title>
+        <Title order={2}>{t('directory.title')}</Title>
         <Text c="dimmed" size="sm">
-          Fellow communicators — the schools they've attended and the languages they speak.
+          {t('directory.subtitle')}
         </Text>
       </div>
 
       <Card withBorder p="lg">
         <Group align="flex-end">
           <TextInput
-            label="Search"
-            placeholder="Name"
+            label={t('directory.searchLabel')}
+            placeholder={t('directory.namePlaceholder')}
             value={q}
             onChange={(e) => setQ(e.currentTarget.value)}
             w={220}
           />
-          <VenueFilterSelect value={venueFilter} onChange={setVenueFilter} placeholder="Any school" />
+          <VenueFilterSelect
+            value={venueFilter}
+            onChange={setVenueFilter}
+            placeholder={t('directory.anySchoolPlaceholder')}
+          />
           <Select
-            label="Language"
-            placeholder="Any"
+            label={t('directory.languageLabel')}
+            placeholder={t('common.any')}
             searchable
             clearable
             data={LANGUAGES}
@@ -58,10 +64,10 @@ export function DirectoryPage() {
           <Table highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Affiliation</Table.Th>
-                <Table.Th>Schools</Table.Th>
-                <Table.Th>Languages</Table.Th>
+                <Table.Th>{t('directory.colName')}</Table.Th>
+                <Table.Th>{t('directory.colAffiliation')}</Table.Th>
+                <Table.Th>{t('directory.colSchools')}</Table.Th>
+                <Table.Th>{t('directory.colLanguages')}</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -91,7 +97,7 @@ export function DirectoryPage() {
                 <Table.Tr>
                   <Table.Td colSpan={4}>
                     <Text c="dimmed" ta="center" py="lg">
-                      No members match these filters.
+                      {t('directory.noMembersMatch')}
                     </Text>
                   </Table.Td>
                 </Table.Tr>
@@ -102,7 +108,10 @@ export function DirectoryPage() {
       </Card>
 
       <Text size="sm" c="dimmed">
-        {(data?.total ?? 0).toLocaleString()} member{data?.total === 1 ? '' : 's'}
+        {t('directory.memberCount', {
+          count: data?.total ?? 0,
+          formattedCount: (data?.total ?? 0).toLocaleString(),
+        })}
       </Text>
     </Stack>
   );

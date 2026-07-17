@@ -14,12 +14,12 @@ import { useQuery } from '@tanstack/react-query';
 import { divIcon } from 'leaflet';
 import { useMemo, useReducer, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import {
   INSTITUTION_TYPES,
   institutionVenueType,
-  labelize,
   type AuthConfig,
   type InstitutionPoint,
   type InstitutionType,
@@ -28,6 +28,7 @@ import {
 } from '../api/types';
 import { FilterCard } from '../components/FilterCard';
 import { COLORS, coveredIcon, gapIcon, venueIcon } from '../components/mapIcons';
+import { useEnumLabel } from '../i18n/enumLabels';
 
 interface Bounds {
   south: number;
@@ -88,6 +89,8 @@ function AdaptiveInstitutions({
   institutions: InstitutionPoint[];
   onLog: (inst: InstitutionPoint) => void;
 }) {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const map = useMap();
   const [tick, bump] = useReducer((x) => x + 1, 0);
   // Recompute the grid whenever the view changes (pan/zoom shifts pixel positions).
@@ -128,13 +131,18 @@ function AdaptiveInstitutions({
           <Popup>
             <strong>{inst.name}</strong>
             <br />
-            {labelize(inst.institution_type)}
+            {enumLabel.institutionType(inst.institution_type)}
             {inst.city ? ` · ${inst.city}` : ''}
             <br />
             {inst.covered ? (
-              <span>Reached — {inst.visit_count} visit(s)</span>
+              <span>
+                {t('map.popupReached', {
+                  count: inst.visit_count,
+                  formattedCount: inst.visit_count.toLocaleString(),
+                })}
+              </span>
             ) : (
-              <span>No visits yet</span>
+              <span>{t('map.popupNoVisitsYet')}</span>
             )}
             <br />
             <Button
@@ -143,7 +151,7 @@ function AdaptiveInstitutions({
               variant={inst.covered ? 'light' : 'filled'}
               onClick={() => onLog(inst)}
             >
-              Log a visit here
+              {t('map.logVisitHere')}
             </Button>
           </Popup>
         </Marker>
@@ -163,6 +171,8 @@ function AdaptiveInstitutions({
 }
 
 export function MapPage() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const navigate = useNavigate();
   const scheme = useComputedColorScheme('dark');
   // Flat, monochrome CARTO basemap so the colored markers read clearly.
@@ -237,8 +247,8 @@ export function MapPage() {
     } catch (e) {
       notifications.show({
         color: 'red',
-        title: 'Could not start a visit',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('map.couldNotStartVisit'),
+        message: e instanceof ApiError ? e.message : t('map.unexpectedError'),
       });
     }
   };
@@ -247,10 +257,18 @@ export function MapPage() {
     <Stack>
       <Group justify="space-between" align="flex-end">
         <div>
-          <Title order={2}>Map</Title>
+          <Title order={2}>{t('map.title')}</Title>
           <Text c="dimmed" size="sm">
-            Spot coverage gaps — {institutions.length.toLocaleString()} institutions in view ·{' '}
-            {gapCount.toLocaleString()} not yet reached
+            {t('map.gapsPrefix')}{' '}
+            {t('map.institutionsInView', {
+              count: institutions.length,
+              formattedCount: institutions.length.toLocaleString(),
+            })}{' '}
+            ·{' '}
+            {t('map.notYetReached', {
+              count: gapCount,
+              formattedCount: gapCount.toLocaleString(),
+            })}
           </Text>
         </div>
       </Group>
@@ -263,8 +281,8 @@ export function MapPage() {
               onChange={(v) => setTypes(v as InstitutionType[])}
             >
               <Group gap="sm" align="center">
-                {INSTITUTION_TYPES.map((t) => (
-                  <Checkbox key={t} value={t} label={labelize(t)} />
+                {INSTITUTION_TYPES.map((it) => (
+                  <Checkbox key={it} value={it} label={enumLabel.institutionType(it)} />
                 ))}
                 <Button.Group>
                   <Button
@@ -273,7 +291,7 @@ export function MapPage() {
                     onClick={() => setTypes([...INSTITUTION_TYPES])}
                     disabled={types.length === INSTITUTION_TYPES.length}
                   >
-                    All
+                    {t('common.all')}
                   </Button>
                   <Button
                     size="compact-xs"
@@ -281,7 +299,7 @@ export function MapPage() {
                     onClick={() => setTypes([])}
                     disabled={types.length === 0}
                   >
-                    None
+                    {t('map.none')}
                   </Button>
                 </Button.Group>
               </Group>
@@ -291,21 +309,21 @@ export function MapPage() {
               value={statusFilter}
               onChange={(v) => setStatusFilter(v as typeof statusFilter)}
               data={[
-                { label: 'All', value: 'all' },
-                { label: 'Gaps only', value: 'gap' },
-                { label: 'Reached', value: 'covered' },
+                { label: t('common.all'), value: 'all' },
+                { label: t('map.gapsOnly'), value: 'gap' },
+                { label: t('map.reached'), value: 'covered' },
               ]}
             />
             <Checkbox
-              label="Show my venues"
+              label={t('map.showMyVenues')}
               checked={showVenues}
               onChange={(e) => setShowVenues(e.currentTarget.checked)}
             />
           </Group>
           <Group gap="md">
-            <LegendDot color={COLORS.gap} label="Gap" />
-            <LegendDot color={COLORS.covered} label="Reached" />
-            <LegendDot color={COLORS.venue} label="Venue (no visits yet)" />
+            <LegendDot color={COLORS.gap} label={t('map.legendGap')} />
+            <LegendDot color={COLORS.covered} label={t('map.legendReached')} />
+            <LegendDot color={COLORS.venue} label={t('map.legendVenueNoVisits')} />
           </Group>
         </Group>
       </FilterCard>
@@ -343,13 +361,16 @@ export function MapPage() {
                   <Popup>
                     <strong>{v.name}</strong>
                     <br />
-                    {labelize(v.venue_type)}
+                    {enumLabel.venueType(v.venue_type)}
                     {v.city ? ` · ${v.city}` : ''}
                     <br />
-                    {v.visit_count} visit(s)
+                    {t('map.popupVisitCount', {
+                      count: v.visit_count,
+                      formattedCount: v.visit_count.toLocaleString(),
+                    })}
                     <br />
                     <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
-                      Open venue
+                      {t('map.openVenue')}
                     </Button>
                   </Popup>
                 </Marker>
@@ -358,8 +379,8 @@ export function MapPage() {
         )}
       </Card>
       <Text size="xs" c="dimmed">
-        Institution data © OpenStreetMap contributors. Import more regions with{' '}
-        <code>scripts/import-institutions.sh</code>.
+        {t('map.institutionDataAttribution')}{' '}
+        {t('map.importMoreRegionsPrefix')} <code>scripts/import-institutions.sh</code>.
       </Text>
     </Stack>
   );

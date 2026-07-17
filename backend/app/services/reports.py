@@ -127,11 +127,13 @@ class ReportVisit:
             "date": self.visit_date.isoformat(),
             "title": self.title,
             "event_type": _label(self.event_type),
+            "event_type_raw": getattr(self.event_type, "value", self.event_type),
             "venue": self.venue_name,
             "city": self.venue_city or "",
             "state": self.venue_state or "",
             "location": location,
             "audience": _label(self.audience_level),
+            "audience_raw": getattr(self.audience_level, "value", self.audience_level),
             "language": self.language or "",
             "people_reached": self.people_reached,
             "duration_minutes": self.duration_minutes,
@@ -141,10 +143,12 @@ class ReportVisit:
             "host_role": self.host_role or "",
             "tags": "; ".join(self.tags),
             "coverage": "; ".join(COVERAGE_LABELS[c] for c in self.coverage_categories()),
+            "coverage_categories": self.coverage_categories(),
             "coverage_links": "; ".join(
                 lk.get("url", "") for lk in self.links if lk.get("url")
             ),
             "status": _label(self.status),
+            "status_raw": getattr(self.status, "value", self.status),
         }
 
 

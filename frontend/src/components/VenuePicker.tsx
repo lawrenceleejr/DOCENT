@@ -14,16 +14,17 @@ import { useDebouncedValue } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
 import {
   institutionVenueType,
-  labelize,
   VENUE_TYPES,
   type InstitutionDetail,
   type Paginated,
   type PlaceSuggestion,
   type Venue,
 } from '../api/types';
+import { useEnumLabel } from '../i18n/enumLabels';
 
 const CREATE_OPTION = '__create__';
 const CATALOG_PREFIX = 'inst:';
@@ -35,6 +36,8 @@ interface VenuePickerProps {
 }
 
 export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const [search, setSearch] = useState('');
   const [creating, setCreating] = useState(false);
   const [prefill, setPrefill] = useState<VenuePrefill | undefined>();
@@ -65,7 +68,7 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
     if (selected && !byId.has(selected.id)) byId.set(selected.id, selected);
     const venueOpts = [...byId.values()].map((v) => ({
       value: String(v.id),
-      label: `${v.name}${v.city ? ` — ${v.city}` : ''} (${labelize(v.venue_type)})`,
+      label: `${v.name}${v.city ? ` — ${v.city}` : ''} (${enumLabel.venueType(v.venue_type)})`,
     }));
 
     // Catalog entries whose name doesn't already match an existing venue option.
@@ -74,11 +77,15 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
       .filter((i) => !existingNames.has(i.name.toLowerCase()))
       .map((i) => ({
         value: `${CATALOG_PREFIX}${i.id}`,
-        label: `＋ ${i.name}${i.city ? ` — ${i.city}` : ''} (${labelize(i.institution_type)}) · from catalog`,
+        label: `＋ ${i.name}${i.city ? ` — ${i.city}` : ''} (${enumLabel.institutionType(i.institution_type)}) · ${t('venuePicker.fromCatalog')}`,
       }));
 
-    return [...venueOpts, ...catalogOpts, { value: CREATE_OPTION, label: '+ Create new venue…' }];
-  }, [data, selected, institutions]);
+    return [
+      ...venueOpts,
+      ...catalogOpts,
+      { value: CREATE_OPTION, label: t('venuePicker.createNewVenue') },
+    ];
+  }, [data, selected, institutions, enumLabel, t]);
 
   const openFromCatalog = (institutionId: number) => {
     const inst = (institutions ?? []).find((i) => i.id === institutionId);
@@ -100,8 +107,8 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
   return (
     <>
       <Select
-        label="Venue"
-        placeholder="Search schools, colleges, museums…"
+        label={t('venuePicker.venueLabel')}
+        placeholder={t('venuePicker.searchPlaceholder')}
         searchable
         clearable
         data={options}
@@ -113,7 +120,7 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
         searchValue={search}
         onSearchChange={setSearch}
         error={error}
-        nothingFoundMessage="No matches — create a venue"
+        nothingFoundMessage={t('venuePicker.nothingFound')}
         onChange={(picked) => {
           if (picked === CREATE_OPTION) {
             setPrefill(undefined);
@@ -172,6 +179,8 @@ export function VenueFormModal({
   initialName = '',
   prefill,
 }: VenueFormModalProps) {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const editing = venue !== undefined;
   const [addressQuery, setAddressQuery] = useState('');
   const [debouncedAddressQuery] = useDebouncedValue(addressQuery, 400);
@@ -201,8 +210,8 @@ export function VenueFormModal({
       notes: venue?.notes ?? '',
     },
     validate: {
-      name: (v) => (v.trim().length > 0 ? null : 'Name is required'),
-      venue_type: (v) => (v ? null : 'Type is required'),
+      name: (v) => (v.trim().length > 0 ? null : t('venuePicker.validation.nameRequired')),
+      venue_type: (v) => (v ? null : t('venuePicker.validation.typeRequired')),
     },
   });
 
@@ -231,28 +240,37 @@ export function VenueFormModal({
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: editing ? 'Could not save venue' : 'Could not create venue',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: editing ? t('venuePicker.couldNotSaveVenue') : t('venuePicker.couldNotCreateVenue'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
 
   return (
-    <Modal opened={opened} onClose={onClose} title={editing ? 'Edit venue' : 'New venue'} size="lg">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={editing ? t('venuePicker.editVenueTitle') : t('venuePicker.newVenueTitle')}
+      size="lg"
+    >
       <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
         <Stack>
           <Group grow>
-            <TextInput label="Name" placeholder="Lincoln Elementary" {...form.getInputProps('name')} />
+            <TextInput
+              label={t('venuePicker.nameLabel')}
+              placeholder={t('venuePicker.namePlaceholder')}
+              {...form.getInputProps('name')}
+            />
             <Select
-              label="Type"
-              data={VENUE_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+              label={t('venuePicker.typeLabel')}
+              data={VENUE_TYPES.map((vt) => ({ value: vt, label: enumLabel.venueType(vt) }))}
               {...form.getInputProps('venue_type')}
             />
           </Group>
           <Autocomplete
-            label="Search for an address"
-            description="Optional — look up a place to prefill the fields below. Never changes the name or type above."
-            placeholder="Start typing an address or place…"
+            label={t('venuePicker.addressSearchLabel')}
+            description={t('venuePicker.addressSearchDescription')}
+            placeholder={t('venuePicker.addressSearchPlaceholder')}
             data={(suggestions ?? []).map((s) => s.label)}
             value={addressQuery}
             onChange={setAddressQuery}
@@ -267,35 +285,35 @@ export function VenueFormModal({
               form.setFieldValue('longitude', s.longitude);
             }}
           />
-          <TextInput label="Street address" {...form.getInputProps('address')} />
+          <TextInput label={t('venuePicker.streetAddressLabel')} {...form.getInputProps('address')} />
           <Group grow>
-            <TextInput label="City" {...form.getInputProps('city')} />
-            <TextInput label="State / region" {...form.getInputProps('state')} />
-            <TextInput label="Country" {...form.getInputProps('country')} />
+            <TextInput label={t('venuePicker.cityLabel')} {...form.getInputProps('city')} />
+            <TextInput label={t('venuePicker.stateLabel')} {...form.getInputProps('state')} />
+            <TextInput label={t('venuePicker.countryLabel')} {...form.getInputProps('country')} />
           </Group>
           <Group grow>
             <NumberInput
-              label="Latitude"
+              label={t('venuePicker.latitudeLabel')}
               decimalScale={6}
               min={-90}
               max={90}
               {...form.getInputProps('latitude')}
             />
             <NumberInput
-              label="Longitude"
+              label={t('venuePicker.longitudeLabel')}
               decimalScale={6}
               min={-180}
               max={180}
               {...form.getInputProps('longitude')}
             />
           </Group>
-          <Textarea label="Notes" autosize minRows={2} {...form.getInputProps('notes')} />
+          <Textarea label={t('venuePicker.notesLabel')} autosize minRows={2} {...form.getInputProps('notes')} />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {editing ? 'Save changes' : 'Create venue'}
+              {editing ? t('common.saveChanges') : t('venuePicker.createVenueButton')}
             </Button>
           </Group>
         </Stack>

@@ -2,8 +2,10 @@ import { Button, Group, Modal, Select, Stack, Text, Textarea, TextInput } from '
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
-import { HOST_RELATIONSHIPS, labelize, type Connection } from '../api/types';
+import { HOST_RELATIONSHIPS, type Connection } from '../api/types';
+import { useEnumLabel } from '../i18n/enumLabels';
 import { VenuePicker } from './VenuePicker';
 
 interface ConnectionFormModalProps {
@@ -37,6 +39,8 @@ export function ConnectionFormModal({
   venueName,
   initial,
 }: ConnectionFormModalProps) {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const editing = connection !== undefined;
 
   const form = useForm({
@@ -52,8 +56,9 @@ export function ConnectionFormModal({
       notes: connection?.notes ?? '',
     },
     validate: {
-      name: (v) => (v.trim().length > 0 ? null : 'Name is required'),
-      venue_id: (v) => (editing || v !== null ? null : 'Pick or create a venue'),
+      name: (v) => (v.trim().length > 0 ? null : t('connectionForm.validation.nameRequired')),
+      venue_id: (v) =>
+        editing || v !== null ? null : t('connectionForm.validation.venueRequired'),
     },
   });
 
@@ -79,8 +84,10 @@ export function ConnectionFormModal({
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: editing ? 'Could not save connection' : 'Could not add connection',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: editing
+          ? t('connectionForm.couldNotSaveTitle')
+          : t('connectionForm.couldNotAddTitle'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
@@ -89,7 +96,7 @@ export function ConnectionFormModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={editing ? 'Edit connection' : 'Add a connection'}
+      title={editing ? t('connectionForm.editTitle') : t('connectionForm.addTitle')}
       size="lg"
     >
       <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
@@ -97,7 +104,7 @@ export function ConnectionFormModal({
           {!editing &&
             (venueId ? (
               <Text size="sm" c="dimmed">
-                At <b>{venueName}</b>
+                {t('connectionForm.atVenue')} <b>{venueName}</b>
               </Text>
             ) : (
               <VenuePicker
@@ -107,40 +114,45 @@ export function ConnectionFormModal({
               />
             ))}
           <TextInput
-            label="Name"
-            placeholder="Jane Doe"
+            label={t('connectionForm.nameLabel')}
+            placeholder={t('connectionForm.namePlaceholder')}
             {...form.getInputProps('name')}
           />
           <Group grow>
             <TextInput
-              label="Role / title"
-              placeholder="5th grade teacher"
+              label={t('connectionForm.roleLabel')}
+              placeholder={t('connectionForm.rolePlaceholder')}
               {...form.getInputProps('role')}
             />
             <Select
-              label="Relationship"
-              placeholder="How do you know them?"
+              label={t('connectionForm.relationshipLabel')}
+              placeholder={t('connectionForm.relationshipPlaceholder')}
               clearable
-              data={HOST_RELATIONSHIPS.map((r) => ({ value: r, label: labelize(r) }))}
+              data={HOST_RELATIONSHIPS.map((r) => ({ value: r, label: enumLabel.hostRelationship(r) }))}
               {...form.getInputProps('relationship_type')}
             />
           </Group>
           <TextInput
-            label="Relationship detail"
-            placeholder="Optional — e.g. coaches the robotics club"
+            label={t('connectionForm.relationshipDetailLabel')}
+            placeholder={t('connectionForm.relationshipDetailPlaceholder')}
             {...form.getInputProps('relationship_detail')}
           />
           <Group grow>
-            <TextInput label="Email" {...form.getInputProps('email')} />
-            <TextInput label="Phone" {...form.getInputProps('phone')} />
+            <TextInput label={t('connectionForm.emailLabel')} {...form.getInputProps('email')} />
+            <TextInput label={t('connectionForm.phoneLabel')} {...form.getInputProps('phone')} />
           </Group>
-          <Textarea label="Notes" autosize minRows={2} {...form.getInputProps('notes')} />
+          <Textarea
+            label={t('connectionForm.notesLabel')}
+            autosize
+            minRows={2}
+            {...form.getInputProps('notes')}
+          />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {editing ? 'Save changes' : 'Add connection'}
+              {editing ? t('common.saveChanges') : t('connectionForm.addButton')}
             </Button>
           </Group>
         </Stack>

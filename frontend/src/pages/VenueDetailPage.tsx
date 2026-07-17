@@ -19,10 +19,10 @@ import { notifications } from '@mantine/notifications';
 import { IconChevronDown, IconChevronUp, IconPencil, IconTrash, IconUserPlus } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import {
-  labelize,
   type Connection,
   type HostRelationship,
   type Paginated,
@@ -33,6 +33,7 @@ import {
 import { useAuth } from '../auth/AuthContext';
 import { ConnectionFormModal } from '../components/ConnectionFormModal';
 import { VenueFormModal } from '../components/VenuePicker';
+import { useEnumLabel } from '../i18n/enumLabels';
 
 interface ContactRow {
   key: string;
@@ -120,6 +121,7 @@ function MergeVenueModal({
   onClose: () => void;
   onMerged: () => void;
 }) {
+  const { t } = useTranslation();
   const [q, setQ] = useState('');
   const [selected, setSelected] = useState<number[]>([]);
   const { data } = useQuery({
@@ -136,13 +138,13 @@ function MergeVenueModal({
       onClose();
       setSelected([]);
       setQ('');
-      notifications.show({ color: 'green', message: 'Venues merged' });
+      notifications.show({ color: 'green', message: t('venueDetail.mergeSuccess') });
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Merge failed',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('venueDetail.mergeFailedTitle'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
@@ -150,14 +152,22 @@ function MergeVenueModal({
   const candidates = (data?.items ?? []).filter((v) => v.id !== targetId);
 
   return (
-    <Modal opened={opened} onClose={onClose} title={`Merge duplicates into “${targetName}”`} size="md">
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={t('venueDetail.mergeModalTitle', { name: targetName })}
+      size="md"
+    >
       <Stack>
         <Text size="sm" c="dimmed">
-          Pick duplicate venues to absorb. Their visits move to <b>{targetName}</b> and the
-          duplicates are deleted. This can’t be undone.
+          <Trans
+            i18nKey="venueDetail.mergeDescription"
+            values={{ name: targetName }}
+            components={{ bold: <b /> }}
+          />
         </Text>
         <TextInput
-          placeholder="Search venues by name or city"
+          placeholder={t('venueDetail.mergeSearchPlaceholder')}
           value={q}
           onChange={(e) => setQ(e.currentTarget.value)}
         />
@@ -165,7 +175,7 @@ function MergeVenueModal({
           {candidates.map((v) => (
             <Checkbox
               key={v.id}
-              label={`${v.name}${v.city ? `, ${v.city}` : ''} · ${v.visit_count} visit(s)`}
+              label={`${v.name}${v.city ? `, ${v.city}` : ''} · ${t('venueDetail.mergeCandidateVisitCount', { count: v.visit_count, formattedCount: v.visit_count.toLocaleString() })}`}
               checked={selected.includes(v.id)}
               onChange={(e) =>
                 setSelected((cur) =>
@@ -176,13 +186,13 @@ function MergeVenueModal({
           ))}
           {candidates.length === 0 && (
             <Text size="sm" c="dimmed" py="sm" ta="center">
-              No other venues match.
+              {t('venueDetail.mergeNoCandidates')}
             </Text>
           )}
         </Stack>
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             color="red"
@@ -190,7 +200,10 @@ function MergeVenueModal({
             disabled={selected.length === 0}
             onClick={() => merge.mutate()}
           >
-            Merge {selected.length || ''} into this venue
+            {t('venueDetail.mergeButton', {
+              count: selected.length,
+              formattedCount: selected.length.toLocaleString(),
+            })}
           </Button>
         </Group>
       </Stack>
@@ -199,6 +212,8 @@ function MergeVenueModal({
 }
 
 export function VenueDetailPage() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -215,14 +230,14 @@ export function VenueDetailPage() {
     mutationFn: () => api.delete(`/api/venues/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['venues'] });
-      notifications.show({ message: 'Venue deleted' });
+      notifications.show({ message: t('venueDetail.deleteSuccess') });
       navigate('/venues');
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not delete venue',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('venueDetail.deleteFailedTitle'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
@@ -256,7 +271,7 @@ export function VenueDetailPage() {
         case 'role':
           return (row.role ?? '').toLowerCase();
         case 'relationship':
-          return row.relationshipType ? labelize(row.relationshipType) : '';
+          return row.relationshipType ? enumLabel.hostRelationship(row.relationshipType) : '';
         case 'email':
           return (row.email ?? '').toLowerCase();
         case 'visits':
@@ -270,7 +285,7 @@ export function VenueDetailPage() {
       if (av > bv) return 1 * dir;
       return 0;
     });
-  }, [contactRows, sort]);
+  }, [contactRows, sort, enumLabel]);
 
   const toggleSort = (field: SortField) =>
     setSort((cur) => (cur.field === field ? { field, dir: (cur.dir * -1) as 1 | -1 } : { field, dir: 1 }));
@@ -298,20 +313,20 @@ export function VenueDetailPage() {
           <Group gap="sm">
             <Title order={2}>{venue.name}</Title>
             <Badge variant="light" size="lg">
-              {labelize(venue.venue_type)}
+              {enumLabel.venueType(venue.venue_type)}
             </Badge>
           </Group>
-          <Text c="dimmed">{address || 'No address recorded'}</Text>
+          <Text c="dimmed">{address || t('venueDetail.noAddress')}</Text>
         </div>
         {canManage && (
           <Group>
             {user?.is_admin && (
               <Button variant="default" onClick={merge.open}>
-                Merge duplicates
+                {t('venueDetail.mergeDuplicates')}
               </Button>
             )}
             <Button variant="default" onClick={edit.open}>
-              Edit
+              {t('common.edit')}
             </Button>
             <Button
               color="red"
@@ -321,17 +336,20 @@ export function VenueDetailPage() {
                 if (venue.visit_count > 0) {
                   notifications.show({
                     color: 'red',
-                    title: 'Cannot delete venue',
-                    message: `This venue has ${venue.visit_count} visit(s). Delete or reassign them first.`,
+                    title: t('venueDetail.cannotDeleteTitle'),
+                    message: t('venueDetail.cannotDeleteMessage', {
+                      count: venue.visit_count,
+                      formattedCount: venue.visit_count.toLocaleString(),
+                    }),
                   });
                   return;
                 }
-                if (window.confirm('Delete this venue? This cannot be undone.')) {
+                if (window.confirm(t('venueDetail.deleteConfirm'))) {
                   remove.mutate();
                 }
               }}
             >
-              Delete
+              {t('common.delete')}
             </Button>
           </Group>
         )}
@@ -340,7 +358,7 @@ export function VenueDetailPage() {
       <Group>
         <Card withBorder p="md">
           <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-            Total visits
+            {t('venueDetail.totalVisits')}
           </Text>
           <Text fz={28} fw={700}>
             {venue.visit_count}
@@ -348,7 +366,7 @@ export function VenueDetailPage() {
         </Card>
         <Card withBorder p="md">
           <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-            Last visit
+            {t('venueDetail.lastVisit')}
           </Text>
           <Text fz={28} fw={700}>
             {venue.last_visit_date ?? '—'}
@@ -359,20 +377,20 @@ export function VenueDetailPage() {
       {venue.notes && (
         <Card withBorder p="md">
           <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-            Notes
+            {t('venueDetail.notes')}
           </Text>
           <Text>{venue.notes}</Text>
         </Card>
       )}
 
       <Group justify="space-between" align="center">
-        <Title order={3}>Contacts</Title>
+        <Title order={3}>{t('venueDetail.contacts')}</Title>
         <Button
           variant="default"
           leftSection={<IconUserPlus size={16} />}
           onClick={() => setModalState({ mode: 'add' })}
         >
-          Add a connection
+          {t('venueDetail.addConnection')}
         </Button>
       </Group>
       <Card withBorder p={0}>
@@ -382,12 +400,12 @@ export function VenueDetailPage() {
               <Table.Tr>
                 <Table.Th style={{ cursor: 'pointer' }} onClick={() => toggleSort('name')}>
                   <Group gap={4} wrap="nowrap">
-                    Name {sortIcon('name')}
+                    {t('venueDetail.colName')} {sortIcon('name')}
                   </Group>
                 </Table.Th>
                 <Table.Th style={{ cursor: 'pointer' }} onClick={() => toggleSort('role')}>
                   <Group gap={4} wrap="nowrap">
-                    Role {sortIcon('role')}
+                    {t('venueDetail.colRole')} {sortIcon('role')}
                   </Group>
                 </Table.Th>
                 <Table.Th
@@ -395,12 +413,12 @@ export function VenueDetailPage() {
                   onClick={() => toggleSort('relationship')}
                 >
                   <Group gap={4} wrap="nowrap">
-                    Relationship {sortIcon('relationship')}
+                    {t('venueDetail.colRelationship')} {sortIcon('relationship')}
                   </Group>
                 </Table.Th>
                 <Table.Th style={{ cursor: 'pointer' }} onClick={() => toggleSort('email')}>
                   <Group gap={4} wrap="nowrap">
-                    Email {sortIcon('email')}
+                    {t('venueDetail.colEmail')} {sortIcon('email')}
                   </Group>
                 </Table.Th>
                 <Table.Th
@@ -409,10 +427,10 @@ export function VenueDetailPage() {
                   onClick={() => toggleSort('visits')}
                 >
                   <Group gap={4} wrap="nowrap" justify="flex-end">
-                    Visits {sortIcon('visits')}
+                    {t('venueDetail.colVisits')} {sortIcon('visits')}
                   </Group>
                 </Table.Th>
-                <Table.Th>Added by</Table.Th>
+                <Table.Th>{t('venueDetail.colAddedBy')}</Table.Th>
                 <Table.Th />
               </Table.Tr>
             </Table.Thead>
@@ -435,7 +453,7 @@ export function VenueDetailPage() {
                     <Table.Td>{row.role ?? '—'}</Table.Td>
                     <Table.Td>
                       {row.relationshipType ? (
-                        <Badge variant="light">{labelize(row.relationshipType)}</Badge>
+                        <Badge variant="light">{enumLabel.hostRelationship(row.relationshipType)}</Badge>
                       ) : (
                         '—'
                       )}
@@ -468,7 +486,7 @@ export function VenueDetailPage() {
                         {row.connection ? (
                           canManageConnection && (
                             <>
-                              <Tooltip label="Edit connection">
+                              <Tooltip label={t('venueDetail.editConnectionTooltip')}>
                                 <ActionIcon
                                   variant="subtle"
                                   onClick={() =>
@@ -478,28 +496,34 @@ export function VenueDetailPage() {
                                   <IconPencil size={16} />
                                 </ActionIcon>
                               </Tooltip>
-                              <Tooltip label="Delete connection">
+                              <Tooltip label={t('venueDetail.deleteConnectionTooltip')}>
                                 <ActionIcon
                                   variant="subtle"
                                   color="red"
                                   onClick={() => {
-                                    if (window.confirm(`Remove ${row.name} as a connection?`)) {
+                                    if (
+                                      window.confirm(
+                                        t('venueDetail.removeConnectionConfirm', { name: row.name }),
+                                      )
+                                    ) {
                                       api
                                         .delete(`/api/connections/${row.connection!.id}`)
                                         .then(() => {
                                           queryClient.invalidateQueries({
                                             queryKey: ['connections', { venue_id: id }],
                                           });
-                                          notifications.show({ message: 'Connection removed' });
+                                          notifications.show({
+                                            message: t('venueDetail.connectionRemoved'),
+                                          });
                                         })
                                         .catch((e) =>
                                           notifications.show({
                                             color: 'red',
-                                            title: 'Could not remove connection',
+                                            title: t('venueDetail.removeConnectionFailedTitle'),
                                             message:
                                               e instanceof ApiError
                                                 ? e.message
-                                                : 'Unexpected error',
+                                                : t('common.unexpectedError'),
                                           }),
                                         );
                                     }
@@ -516,7 +540,7 @@ export function VenueDetailPage() {
                             variant="subtle"
                             onClick={() => setModalState({ mode: 'track', row })}
                           >
-                            + Track
+                            {t('venueDetail.trackButton')}
                           </Button>
                         )}
                       </Group>
@@ -528,7 +552,7 @@ export function VenueDetailPage() {
                 <Table.Tr>
                   <Table.Td colSpan={7}>
                     <Text c="dimmed" ta="center" py="lg">
-                      No contacts recorded yet — add a connection or log a visit with a host.
+                      {t('venueDetail.noContacts')}
                     </Text>
                   </Table.Td>
                 </Table.Tr>
@@ -538,17 +562,17 @@ export function VenueDetailPage() {
         </Table.ScrollContainer>
       </Card>
 
-      <Title order={3}>Visit history</Title>
+      <Title order={3}>{t('venueDetail.visitHistory')}</Title>
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={640}>
         <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Date</Table.Th>
-              <Table.Th>Title</Table.Th>
-              <Table.Th>Communicator</Table.Th>
-              <Table.Th>Audience</Table.Th>
-              <Table.Th ta="right">People reached</Table.Th>
+              <Table.Th>{t('venueDetail.colDate')}</Table.Th>
+              <Table.Th>{t('venueDetail.colVisitTitle')}</Table.Th>
+              <Table.Th>{t('venueDetail.colCommunicator')}</Table.Th>
+              <Table.Th>{t('venueDetail.colAudience')}</Table.Th>
+              <Table.Th ta="right">{t('venueDetail.colPeopleReached')}</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -565,7 +589,7 @@ export function VenueDetailPage() {
                   </Anchor>
                 </Table.Td>
                 <Table.Td>{visit.author.name}</Table.Td>
-                <Table.Td>{labelize(visit.audience_level)}</Table.Td>
+                <Table.Td>{enumLabel.audienceLevel(visit.audience_level)}</Table.Td>
                 <Table.Td ta="right">{visit.people_reached.toLocaleString()}</Table.Td>
               </Table.Tr>
             ))}
@@ -573,7 +597,7 @@ export function VenueDetailPage() {
               <Table.Tr>
                 <Table.Td colSpan={5}>
                   <Text c="dimmed" ta="center" py="lg">
-                    No visits recorded at this venue yet
+                    {t('venueDetail.noVisits')}
                   </Text>
                 </Table.Td>
               </Table.Tr>
@@ -632,7 +656,10 @@ export function VenueDetailPage() {
         onSaved={() => {
           queryClient.invalidateQueries({ queryKey: ['connections', { venue_id: id }] });
           notifications.show({
-            message: modalState.mode === 'edit' ? 'Connection updated' : 'Connection added',
+            message:
+              modalState.mode === 'edit'
+                ? t('venueDetail.connectionUpdated')
+                : t('venueDetail.connectionAdded'),
             color: 'green',
           });
           setModalState({ mode: 'closed' });

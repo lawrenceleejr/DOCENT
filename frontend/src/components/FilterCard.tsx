@@ -2,6 +2,7 @@ import { Badge, Card, Collapse, Group, Text, UnstyledButton } from '@mantine/cor
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { IconChevronDown, IconChevronUp, IconFilter } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * A filter bar in a Card. On desktop it's always expanded (identical to a
@@ -18,6 +19,7 @@ export function FilterCard({
 }) {
   // Mirrors the "sm" breakpoint used by hiddenFrom/visibleFrom elsewhere in
   // the app, so this collapses exactly where the header switches to mobile.
+  const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width: 47.99em)') ?? false;
   const [opened, { toggle }] = useDisclosure(false);
 
@@ -29,7 +31,7 @@ export function FilterCard({
             <Group gap={6} wrap="nowrap">
               <IconFilter size={16} />
               <Text fw={600} size="sm">
-                Filters
+                {t('common.filters')}
               </Text>
               {activeCount > 0 && (
                 <Badge size="sm" variant="filled" circle>

@@ -2,6 +2,7 @@ import { Select } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import type { Paginated, Venue } from '../api/types';
 
@@ -10,7 +11,7 @@ import type { Paginated, Venue } from '../api/types';
 export function VenueFilterSelect({
   value,
   onChange,
-  placeholder = 'Filter by school/venue',
+  placeholder,
   w = 240,
 }: {
   value: number | null;
@@ -18,6 +19,7 @@ export function VenueFilterSelect({
   placeholder?: string;
   w?: number;
 }) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [debounced] = useDebouncedValue(search, 250);
   const { data } = useQuery({
@@ -30,7 +32,7 @@ export function VenueFilterSelect({
   }));
   return (
     <Select
-      placeholder={placeholder}
+      placeholder={placeholder ?? t('venueFilterSelect.placeholder')}
       searchable
       clearable
       data={options}
