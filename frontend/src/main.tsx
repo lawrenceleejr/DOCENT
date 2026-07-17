@@ -8,6 +8,7 @@ import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 import 'leaflet/dist/leaflet.css';
 import './styles.css';
+import './i18n';
 
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';

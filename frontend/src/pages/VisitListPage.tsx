@@ -20,6 +20,7 @@ import { DateInput } from '@mantine/dates';
 import { IconClipboardList } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { EmptyState } from '../components/EmptyState';
 import { FilterCard } from '../components/FilterCard';
@@ -29,7 +30,7 @@ import {
   AUDIENCE_LEVELS,
   EVENT_TYPES,
   isOverdue,
-  labelize,
+  LANGUAGES,
   VENUE_TYPES,
   VISIT_STATUSES,
   type Paginated,
@@ -37,10 +38,13 @@ import {
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { filterParams, type VisitFilters } from '../components/filters';
+import { useEnumLabel } from '../i18n/enumLabels';
 
 const PAGE_SIZE = 25;
 
 export function VisitListPage() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [filters, setFilters] = useState<VisitFilters>({});
@@ -91,20 +95,20 @@ export function VisitListPage() {
 
   const activeFilterCount =
     [q, statusFilter, filters.date_from, filters.date_to, filters.venue_type,
-      filters.event_type, filters.audience_level].filter(Boolean).length +
+      filters.event_type, filters.audience_level, filters.language].filter(Boolean).length +
     ((filters.tags?.length ?? 0) > 0 ? 1 : 0) +
     (mineOnly ? 1 : 0);
 
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Visits</Title>
+        <Title order={2}>{t('visitList.title')}</Title>
         <Group>
           <Button component="a" href={exportHref} variant="default">
-            Export CSV
+            {t('visitList.exportCsv')}
           </Button>
           <Button variant="gradient" onClick={() => navigate('/visits/new')}>
-            Log a visit
+            {t('visitList.logVisit')}
           </Button>
         </Group>
       </Group>
@@ -112,8 +116,8 @@ export function VisitListPage() {
       <FilterCard activeCount={activeFilterCount}>
         <Group align="flex-end">
           <TextInput
-            label="Search"
-            placeholder="Title or notes"
+            label={t('visitList.searchLabel')}
+            placeholder={t('visitList.searchPlaceholder')}
             value={q}
             onChange={(e) => {
               setQ(e.currentTarget.value);
@@ -122,10 +126,10 @@ export function VisitListPage() {
             w={200}
           />
           <Select
-            label="Status"
-            placeholder="All"
+            label={t('visitList.statusLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={VISIT_STATUSES.map((s) => ({ value: s, label: labelize(s) }))}
+            data={VISIT_STATUSES.map((s) => ({ value: s, label: enumLabel.visitStatus(s) }))}
             value={statusFilter}
             onChange={(v) => {
               setStatusFilter(v);
@@ -133,50 +137,59 @@ export function VisitListPage() {
             }}
           />
           <DateInput
-            label="From"
-            placeholder="Any"
+            label={t('visitList.fromLabel')}
+            placeholder={t('common.any')}
             clearable
             valueFormat="YYYY-MM-DD"
             value={filters.date_from ? new Date(`${filters.date_from}T00:00:00`) : null}
             onChange={(d) => update({ date_from: d ? toDateString(d) : undefined })}
           />
           <DateInput
-            label="To"
-            placeholder="Any"
+            label={t('visitList.toLabel')}
+            placeholder={t('common.any')}
             clearable
             valueFormat="YYYY-MM-DD"
             value={filters.date_to ? new Date(`${filters.date_to}T00:00:00`) : null}
             onChange={(d) => update({ date_to: d ? toDateString(d) : undefined })}
           />
           <Select
-            label="Venue type"
-            placeholder="All"
+            label={t('visitList.venueTypeLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={VENUE_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            data={VENUE_TYPES.map((v) => ({ value: v, label: enumLabel.venueType(v) }))}
             value={filters.venue_type || null}
             onChange={(v) => update({ venue_type: (v ?? '') as VisitFilters['venue_type'] })}
           />
           <Select
-            label="Event type"
-            placeholder="All"
+            label={t('visitList.eventTypeLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={EVENT_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            data={EVENT_TYPES.map((v) => ({ value: v, label: enumLabel.eventType(v) }))}
             value={filters.event_type || null}
             onChange={(v) => update({ event_type: (v ?? '') as VisitFilters['event_type'] })}
           />
           <Select
-            label="Audience"
-            placeholder="All"
+            label={t('visitList.audienceLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={AUDIENCE_LEVELS.map((t) => ({ value: t, label: labelize(t) }))}
+            data={AUDIENCE_LEVELS.map((v) => ({ value: v, label: enumLabel.audienceLevel(v) }))}
             value={filters.audience_level || null}
             onChange={(v) =>
               update({ audience_level: (v ?? '') as VisitFilters['audience_level'] })
             }
           />
+          <Select
+            label={t('visitList.languageLabel')}
+            placeholder={t('common.any')}
+            clearable
+            searchable
+            data={LANGUAGES}
+            value={filters.language || null}
+            onChange={(v) => update({ language: v ?? '' })}
+          />
           <MultiSelect
-            label="Tags"
-            placeholder={filters.tags?.length ? undefined : 'Any'}
+            label={t('visitList.tagsLabel')}
+            placeholder={filters.tags?.length ? undefined : t('common.any')}
             clearable
             searchable
             data={tagOptions}
@@ -185,7 +198,7 @@ export function VisitListPage() {
             w={200}
           />
           <Switch
-            label="Mine only"
+            label={t('visitList.mineOnly')}
             checked={mineOnly}
             onChange={(e) => {
               setMineOnly(e.currentTarget.checked);
@@ -203,22 +216,22 @@ export function VisitListPage() {
             <Table.Tr>
               <Table.Th>
                 <UnstyledButton fw={700} fz="sm" onClick={() => toggleSort('visit_date')}>
-                  Date{sortIndicator('visit_date')}
+                  {t('visitList.colDate')}{sortIndicator('visit_date')}
                 </UnstyledButton>
               </Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Title</Table.Th>
-              <Table.Th>Venue</Table.Th>
-              <Table.Th>Communicator</Table.Th>
-              <Table.Th>Audience</Table.Th>
+              <Table.Th>{t('visitList.colStatus')}</Table.Th>
+              <Table.Th>{t('visitList.colTitle')}</Table.Th>
+              <Table.Th>{t('visitList.colVenue')}</Table.Th>
+              <Table.Th>{t('visitList.colCommunicator')}</Table.Th>
+              <Table.Th>{t('visitList.colAudience')}</Table.Th>
               <Table.Th ta="right">
                 <UnstyledButton fw={700} fz="sm" onClick={() => toggleSort('people_reached')}>
-                  People reached{sortIndicator('people_reached')}
+                  {t('visitList.colPeopleReached')}{sortIndicator('people_reached')}
                 </UnstyledButton>
               </Table.Th>
               <Table.Th>
                 <UnstyledButton fw={700} fz="sm" onClick={() => toggleSort('rating')}>
-                  Rating{sortIndicator('rating')}
+                  {t('visitList.colRating')}{sortIndicator('rating')}
                 </UnstyledButton>
               </Table.Th>
             </Table.Tr>
@@ -237,11 +250,11 @@ export function VisitListPage() {
                 <Table.Td>
                   {isOverdue(visit) ? (
                     <Badge variant="light" color="red">
-                      Overdue
+                      {t('visitList.overdue')}
                     </Badge>
                   ) : (
                     <Badge variant="light" color={visit.status === 'planned' ? 'blue' : 'green'}>
-                      {labelize(visit.status)}
+                      {enumLabel.visitStatus(visit.status)}
                     </Badge>
                   )}
                 </Table.Td>
@@ -251,9 +264,9 @@ export function VisitListPage() {
                   </Anchor>
                   {visit.tags.length > 0 && (
                     <Group gap={4} mt={4}>
-                      {visit.tags.map((t) => (
-                        <Badge key={t} size="xs" variant="light" color="grape">
-                          {t}
+                      {visit.tags.map((tag) => (
+                        <Badge key={tag} size="xs" variant="light" color="grape">
+                          {tag}
                         </Badge>
                       ))}
                     </Group>
@@ -265,7 +278,7 @@ export function VisitListPage() {
                 </Table.Td>
                 <Table.Td>{visit.author.name}</Table.Td>
                 <Table.Td>
-                  <Badge variant="light">{labelize(visit.audience_level)}</Badge>
+                  <Badge variant="light">{enumLabel.audienceLevel(visit.audience_level)}</Badge>
                 </Table.Td>
                 <Table.Td ta="right" className="tabular-nums">
                   {visit.people_reached.toLocaleString()}
@@ -286,9 +299,9 @@ export function VisitListPage() {
                 <Table.Td colSpan={8} p={0}>
                   <EmptyState
                     icon={IconClipboardList}
-                    title="No visits found"
-                    description="No visits match these filters yet. Log your first outreach visit to get started."
-                    actionLabel="Log a visit"
+                    title={t('visitList.emptyTitle')}
+                    description={t('visitList.emptyDescription')}
+                    actionLabel={t('visitList.logVisit')}
                     onAction={() => navigate('/visits/new')}
                   />
                 </Table.Td>
@@ -308,9 +321,9 @@ export function VisitListPage() {
           <Card withBorder p={0}>
             <EmptyState
               icon={IconClipboardList}
-              title="No visits found"
-              description="No visits match these filters yet."
-              actionLabel="Log a visit"
+              title={t('visitList.emptyTitle')}
+              description={t('visitList.emptyDescriptionShort')}
+              actionLabel={t('visitList.logVisit')}
               onAction={() => navigate('/visits/new')}
             />
           </Card>
@@ -319,7 +332,12 @@ export function VisitListPage() {
 
       <Group justify="space-between">
         <Text size="sm" c="dimmed">
-          {data ? `${data.total.toLocaleString()} visit${data.total === 1 ? '' : 's'}` : ''}
+          {data
+            ? t('visitList.visitCount', {
+                count: data.total,
+                formattedCount: data.total.toLocaleString(),
+              })
+            : ''}
         </Text>
         <Pagination
           value={page}
@@ -332,21 +350,25 @@ export function VisitListPage() {
 }
 
 export function VisitStatusBadge({ visit }: { visit: Visit }) {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   if (isOverdue(visit)) {
     return (
       <Badge variant="light" color="red">
-        Overdue
+        {t('visitList.overdue')}
       </Badge>
     );
   }
   return (
     <Badge variant="light" color={visit.status === 'planned' ? 'blue' : 'green'}>
-      {labelize(visit.status)}
+      {enumLabel.visitStatus(visit.status)}
     </Badge>
   );
 }
 
 function VisitCard({ visit, onClick }: { visit: Visit; onClick: () => void }) {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   return (
     <Card withBorder p="md" onClick={onClick} style={{ cursor: 'pointer' }}>
       <Group justify="space-between" wrap="nowrap" align="flex-start">
@@ -367,7 +389,7 @@ function VisitCard({ visit, onClick }: { visit: Visit; onClick: () => void }) {
       </Text>
       <Group justify="space-between" mt="sm" wrap="nowrap">
         <Badge variant="light" size="sm">
-          {labelize(visit.audience_level)}
+          {enumLabel.audienceLevel(visit.audience_level)}
         </Badge>
         <Group gap="md" wrap="nowrap">
           {visit.rating ? (
@@ -376,7 +398,7 @@ function VisitCard({ visit, onClick }: { visit: Visit; onClick: () => void }) {
             </Text>
           ) : null}
           <Text size="sm" c="dimmed" className="tabular-nums">
-            {visit.people_reached.toLocaleString()} reached
+            {visit.people_reached.toLocaleString()} {t('visitList.reachedSuffix')}
           </Text>
         </Group>
       </Group>

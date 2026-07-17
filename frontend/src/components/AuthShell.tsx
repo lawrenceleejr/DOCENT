@@ -5,21 +5,26 @@ import {
   IconMapPin,
 } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { LogoReveal } from './LogoReveal';
-
-const HIGHLIGHTS = [
-  { icon: IconMapPin, text: 'Map every school, college, museum & library you reach' },
-  { icon: IconCalendarEvent, text: 'Plan events and export them to your calendar' },
-  { icon: IconChartHistogram, text: 'Prove your Broad Impact with grant-ready reports' },
-];
 
 /**
  * Two-panel auth layout: a gradient brand hero (left) beside the form (right).
  * Collapses to a single column with a compact hero band on small screens.
  */
 export function AuthShell({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
+  const HIGHLIGHTS = [
+    { icon: IconMapPin, text: t('authShell.highlightMap') },
+    { icon: IconCalendarEvent, text: t('authShell.highlightCalendar') },
+    { icon: IconChartHistogram, text: t('authShell.highlightReports') },
+  ];
   return (
-    <Box className="auth-grid">
+    <Box className="auth-grid" style={{ position: 'relative' }}>
+      <Box pos="absolute" top="1rem" right="1rem" style={{ zIndex: 1 }}>
+        <LanguageSwitcher />
+      </Box>
       {/* Hero panel */}
       <Box
         visibleFrom="sm"
@@ -51,8 +56,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
 
         <Stack gap="lg" style={{ position: 'relative', maxWidth: 460, alignSelf: 'center' }}>
           <Text fz="lg" ta="center" style={{ opacity: 0.9 }}>
-            <b>Reach out.</b> The shared record of your scientific community’s outreach —
-            every classroom visit, lab tour, and public talk, in one place.
+            <b>{t('authShell.taglineBold')}</b> {t('authShell.taglineRest')}
           </Text>
           <List spacing="sm" listStyleType="none">
             {HIGHLIGHTS.map((h) => (
@@ -85,7 +89,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
           </Box>
         </Center>
         <Text size="xs" c="dimmed" ta="center" mt="lg">
-          DOCENT · © 2026 Lawrence Lee · Free software under the{' '}
+          {t('authShell.footerPrefix')}{' '}
           <Anchor
             href="https://www.gnu.org/licenses/gpl-3.0.html"
             target="_blank"

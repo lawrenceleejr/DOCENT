@@ -35,6 +35,7 @@ from app.models import (
     Visit,
     VisitStatus,
 )
+from app.languages import LANGUAGE_SET
 from app.schemas import normalize_links, normalize_tags
 from app.security import hash_password
 
@@ -125,6 +126,7 @@ def export_data(db: Session) -> dict[str, Any]:
                 "host_notes": v.host_notes,
                 "people_reached": v.people_reached,
                 "audience_level": v.audience_level.value,
+                "language": v.language,
                 "duration_minutes": v.duration_minutes,
                 "rating": v.rating,
                 "reflection": v.reflection,
@@ -270,6 +272,7 @@ def import_data(db: Session, payload: dict[str, Any]) -> dict[str, int]:
             host_notes=row.get("host_notes"),
             people_reached=row.get("people_reached", 0),
             audience_level=AudienceLevel(row["audience_level"]),
+            language=row.get("language") if row.get("language") in LANGUAGE_SET else None,
             duration_minutes=row.get("duration_minutes"),
             rating=row.get("rating"),
             reflection=row.get("reflection"),

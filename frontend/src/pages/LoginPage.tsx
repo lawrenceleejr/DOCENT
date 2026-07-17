@@ -14,6 +14,7 @@ import { useForm } from '@mantine/form';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import remarkBreaks from 'remark-breaks';
 import { api, ApiError } from '../api/client';
@@ -23,6 +24,7 @@ import { AuthShell } from '../components/AuthShell';
 import { Logo } from '../components/Logo';
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const { user, login } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +38,8 @@ export function LoginPage() {
   const form = useForm({
     initialValues: { email: '', password: '' },
     validate: {
-      email: (v) => (/^\S+@\S+$/.test(v) ? null : 'Invalid email'),
-      password: (v) => (v.length > 0 ? null : 'Password is required'),
+      email: (v) => (/^\S+@\S+$/.test(v) ? null : t('login.invalidEmail')),
+      password: (v) => (v.length > 0 ? null : t('login.passwordRequired')),
     },
   });
 
@@ -50,7 +52,7 @@ export function LoginPage() {
       await login(values.email, values.password);
       navigate('/');
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Login failed');
+      setError(e instanceof ApiError ? e.message : t('login.loginFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -65,12 +67,12 @@ export function LoginPage() {
               <Logo size={30} />
             </Box>
             <Title order={2} mt="xs">
-              Welcome back
+              {t('login.welcomeBack')}
             </Title>
             <Text c="dimmed" size="sm">
               {config?.site_name
-                ? `Log in to ${config.site_name}.`
-                : 'Log in to your DOCENT account.'}
+                ? t('login.loginToSite', { siteName: config.site_name })
+                : t('login.loginToDefault')}
             </Text>
           </Stack>
           {config?.login_message && (
@@ -88,15 +90,15 @@ export function LoginPage() {
             </Alert>
           )}
           <TextInput
-            label="Email"
-            placeholder="you@university.edu"
+            label={t('login.emailLabel')}
+            placeholder={t('login.emailPlaceholder')}
             type="email"
             autoComplete="username"
             size="md"
             {...form.getInputProps('email')}
           />
           <PasswordInput
-            label="Password"
+            label={t('login.passwordLabel')}
             autoComplete="current-password"
             size="md"
             {...form.getInputProps('password')}
@@ -107,31 +109,32 @@ export function LoginPage() {
             </Text>
           )}
           <Button type="submit" size="md" variant="gradient" loading={submitting}>
-            Log in
+            {t('login.submit')}
           </Button>
           <Text size="sm" c="dimmed">
-            Forgot your password?{' '}
+            {t('login.forgotPassword')}{' '}
             {config?.contact_email ? (
               <>
-                Contact <Anchor href={`mailto:${config.contact_email}`}>{config.contact_email}</Anchor>{' '}
-                for a reset.
+                {t('login.contactPrefix')}{' '}
+                <Anchor href={`mailto:${config.contact_email}`}>{config.contact_email}</Anchor>{' '}
+                {t('login.contactForResetSuffix')}
               </>
             ) : (
-              'Ask your community administrator to reset it.'
+              t('login.askAdminReset')
             )}
           </Text>
           <Text size="sm" c="dimmed">
-            No account yet?{' '}
+            {t('login.noAccountYet')}{' '}
             <Anchor component={Link} to="/register">
-              Register
+              {t('login.registerLink')}
             </Anchor>
           </Text>
           {config?.public_page && (
             <Text size="sm" c="dimmed">
               <Anchor component={Link} to="/impact">
-                View our public impact page
+                {t('login.viewImpactLink')}
               </Anchor>{' '}
-              — no account needed.
+              {t('login.noAccountNeededSuffix')}
             </Text>
           )}
         </Stack>

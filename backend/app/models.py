@@ -209,6 +209,10 @@ class Visit(Base):
     audience_level: Mapped[AudienceLevel] = mapped_column(
         Enum(AudienceLevel, name="audience_level")
     )
+    # Free-ish text, but constrained to app.languages.LANGUAGE_SET at the
+    # Pydantic layer — plain String rather than a Postgres enum so the central
+    # list can grow without an ALTER TYPE migration.
+    language: Mapped[str | None] = mapped_column(String(50))
     duration_minutes: Mapped[int | None] = mapped_column(Integer)
     rating: Mapped[int | None] = mapped_column(Integer)
     reflection: Mapped[str | None] = mapped_column(Text)

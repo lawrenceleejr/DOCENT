@@ -71,6 +71,7 @@ def normalize_links(links: list | None) -> list[dict]:
             break
     return out
 
+from app.languages import LANGUAGE_SET
 from app.models import (
     AudienceLevel,
     EventType,
@@ -79,6 +80,18 @@ from app.models import (
     VenueType,
     VisitStatus,
 )
+
+
+def clean_language(v: str | None) -> str | None:
+    """Trim and validate against the central LANGUAGE_SET; blank -> None."""
+    if v is None:
+        return None
+    v = v.strip()
+    if not v:
+        return None
+    if v not in LANGUAGE_SET:
+        raise ValueError(f"'{v}' is not an allowed language")
+    return v
 
 
 # --- Auth / users ---
@@ -424,6 +437,7 @@ class VisitCreate(BaseModel):
     # Optional so a *planned* event can be scheduled before attendance is known.
     people_reached: int = Field(default=0, ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel
+    language: str | None = None
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)
     reflection: str | None = None
@@ -431,6 +445,11 @@ class VisitCreate(BaseModel):
     additional_presenters: str | None = Field(default=None, max_length=500)
     tags: list[str] = Field(default_factory=list)
     links: list[VisitLink] = Field(default_factory=list)
+
+    @field_validator("language")
+    @classmethod
+    def _clean_language(cls, v: str | None) -> str | None:
+        return clean_language(v)
 
     @field_validator("tags")
     @classmethod
@@ -460,6 +479,7 @@ class VisitUpdate(BaseModel):
     host_notes: str | None = None
     people_reached: int | None = Field(default=None, ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel | None = None
+    language: str | None = None
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)
     reflection: str | None = None
@@ -467,6 +487,11 @@ class VisitUpdate(BaseModel):
     additional_presenters: str | None = Field(default=None, max_length=500)
     tags: list[str] | None = None
     links: list[VisitLink] | None = None
+
+    @field_validator("language")
+    @classmethod
+    def _clean_language(cls, v: str | None) -> str | None:
+        return clean_language(v)
 
     @field_validator("tags")
     @classmethod
@@ -500,6 +525,7 @@ class VisitOut(BaseModel):
     host_notes: str | None
     people_reached: int
     audience_level: AudienceLevel
+    language: str | None
     duration_minutes: int | None
     rating: int | None
     reflection: str | None

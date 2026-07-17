@@ -28,6 +28,7 @@ REPORT_COLUMNS: list[tuple[str, str]] = [
     ("city", "City"),
     ("state", "State"),
     ("audience", "Audience"),
+    ("language", "Language"),
     ("people_reached", "People reached"),
     ("duration_minutes", "Duration (min)"),
     ("presenter", "Presenter"),
@@ -79,6 +80,7 @@ class ReportVisit:
     title: str
     event_type: Any
     audience_level: Any
+    language: str | None
     people_reached: int
     duration_minutes: int | None
     status: Any
@@ -99,6 +101,7 @@ class ReportVisit:
             title=v.title,
             event_type=v.event_type,
             audience_level=v.audience_level,
+            language=v.language,
             people_reached=v.people_reached,
             duration_minutes=v.duration_minutes,
             status=v.status,
@@ -129,6 +132,7 @@ class ReportVisit:
             "state": self.venue_state or "",
             "location": location,
             "audience": _label(self.audience_level),
+            "language": self.language or "",
             "people_reached": self.people_reached,
             "duration_minutes": self.duration_minutes,
             "presenter": self.presenter,

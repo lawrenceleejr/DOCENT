@@ -487,6 +487,8 @@ The suite runs against real Postgres (the stats SQL uses `date_trunc` and native
 - **Visibility** — every signed-in user sees all visits and the shared dashboard; only the visit's author (or an admin) can edit or delete it.
 - **Venues are shared** — the visit form's venue picker searches existing venues first ("Name — City (type)") so the community builds one clean venue list instead of duplicates.
 - **Auth** — JWT in an httpOnly `SameSite=Lax` cookie; the browser and API are same-origin through nginx (prod) / the Vite proxy (dev), so there's no CORS surface.
+- **Localization** — the interface is available in English, Spanish, French, Traditional Chinese, Simplified Chinese, Vietnamese, and Tagalog. Switch languages from the globe icon in the header; your choice is remembered in the browser (no account setting).
+- **Visit language** — record which language a visit happened in, picked from a searchable list of world languages. Filter the visit list by language and see it on each visit's detail page and reports.
 
 ### Architecture
 

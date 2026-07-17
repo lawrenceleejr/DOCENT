@@ -49,6 +49,7 @@ def _filtered_query(
     q: str | None = None,
     status: VisitStatus | None = None,
     tags: list[str] | None = None,
+    language: str | None = None,
 ):
     query = select(Visit).join(Visit.venue)
     if status:
@@ -56,6 +57,8 @@ def _filtered_query(
     if tags:
         # Match a visit that carries ANY of the requested tags.
         query = query.where(Visit.tags.overlap(tags))
+    if language:
+        query = query.where(Visit.language == language)
     if date_from:
         query = query.where(Visit.visit_date >= date_from)
     if date_to:
@@ -118,13 +121,14 @@ def list_visits(
     q: str | None = None,
     status: VisitStatus | None = None,
     tags: str | None = None,
+    language: str | None = None,
     sort: str = "-visit_date",
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=25, ge=1, le=100),
 ):
     query = _filtered_query(
         date_from, date_to, venue_id, venue_type, event_type, audience_level,
-        author_id, q, status, _parse_tags(tags),
+        author_id, q, status, _parse_tags(tags), language,
     )
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
     query = _apply_sort(query, sort).options(
@@ -148,11 +152,12 @@ def export_csv(
     q: str | None = None,
     status: VisitStatus | None = None,
     tags: str | None = None,
+    language: str | None = None,
 ):
     query = _apply_sort(
         _filtered_query(
             date_from, date_to, venue_id, venue_type, event_type, audience_level,
-            author_id, q, status, _parse_tags(tags),
+            author_id, q, status, _parse_tags(tags), language,
         ),
         "-visit_date",
     ).options(joinedload(Visit.author), joinedload(Visit.venue))
@@ -164,11 +169,11 @@ def export_csv(
         writer.writerow(
             [
                 "date", "start_time", "status", "title", "event_type", "audience_level",
-                "people_reached", "duration_minutes", "rating", "venue", "venue_type",
-                "city", "state", "author", "host_name", "host_role", "host_relationship",
-                "host_relationship_detail", "host_email", "host_phone", "host_notes",
-                "follow_up_planned", "additional_presenters", "tags", "coverage",
-                "coverage_links", "description", "reflection",
+                "language", "people_reached", "duration_minutes", "rating", "venue",
+                "venue_type", "city", "state", "author", "host_name", "host_role",
+                "host_relationship", "host_relationship_detail", "host_email",
+                "host_phone", "host_notes", "follow_up_planned", "additional_presenters",
+                "tags", "coverage", "coverage_links", "description", "reflection",
             ]
         )
         for v in visits:
@@ -179,7 +184,8 @@ def export_csv(
                     v.visit_date.isoformat(),
                     v.start_time.strftime("%H:%M") if v.start_time else None,
                     v.status.value, v.title, v.event_type.value,
-                    v.audience_level.value, v.people_reached, v.duration_minutes,
+                    v.audience_level.value, v.language, v.people_reached,
+                    v.duration_minutes,
                     v.rating, v.venue.name, v.venue.venue_type.value, v.venue.city,
                     v.venue.state, v.author.name, v.contact_name, v.host_role,
                     v.host_relationship.value if v.host_relationship else None,
@@ -216,6 +222,7 @@ def calendar_ics(
     q: str | None = None,
     status: VisitStatus | None = VisitStatus.planned,
     tags: str | None = None,
+    language: str | None = None,
     everyone: bool = False,
 ):
     # Default to the current user's planned (upcoming) events; params allow
@@ -226,7 +233,7 @@ def calendar_ics(
     query = _apply_sort(
         _filtered_query(
             date_from, date_to, venue_id, venue_type, event_type, audience_level,
-            author_id, q, status, _parse_tags(tags),
+            author_id, q, status, _parse_tags(tags), language,
         ),
         "visit_date",
     ).options(joinedload(Visit.venue))
