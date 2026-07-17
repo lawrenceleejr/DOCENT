@@ -99,11 +99,19 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Languages this communicator can present in — validated against
+    # app.languages.LANGUAGE_SET, same central list as Visit.language.
+    languages_spoken: Mapped[list[str]] = mapped_column(
+        ARRAY(String), nullable=False, server_default=text("'{}'")
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
 
     visits: Mapped[list["Visit"]] = relationship(back_populates="author")
+    schools: Mapped[list["UserSchool"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class Venue(Base):
@@ -271,6 +279,34 @@ class Connection(Base):
     )
 
     added_by: Mapped[User | None] = relationship()
+
+
+class UserSchool(Base):
+    """A school/institution a communicator personally attended — self-reported
+    on their profile. Adding one also creates (or links) a standing Connection
+    at that venue (relationship_type=alumnus) so the alumni tie shows up in the
+    venue's own contact list, same as any other Connection."""
+
+    __tablename__ = "user_schools"
+    __table_args__ = (UniqueConstraint("user_id", "venue_id", name="uq_user_school"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    venue_id: Mapped[int] = mapped_column(
+        ForeignKey("venues.id", ondelete="CASCADE"), index=True
+    )
+    connection_id: Mapped[int | None] = mapped_column(
+        ForeignKey("connections.id", ondelete="SET NULL")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    user: Mapped[User] = relationship(back_populates="schools")
+    venue: Mapped[Venue] = relationship()
+    connection: Mapped[Connection | None] = relationship()
 
 
 class Setting(Base):

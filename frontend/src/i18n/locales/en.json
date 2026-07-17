@@ -7,7 +7,8 @@
     "yes": "Yes",
     "no": "No",
     "all": "All",
-    "any": "Any"
+    "any": "Any",
+    "translationDisclaimer": "This translation is machine-generated and hasn't been reviewed by a native speaker yet. It may contain errors — volunteers to help review it are very welcome."
   },
   "layout": {
     "home": "DOCENT home",
@@ -27,7 +28,8 @@
       "map": "Map",
       "analysis": "Analysis",
       "reports": "Reports",
-      "admin": "Admin"
+      "admin": "Admin",
+      "directory": "Directory"
     }
   },
   "authShell": {

@@ -17,6 +17,7 @@ PUBLIC_PAGE_KEY = "public_page"
 LOGIN_MESSAGE_KEY = "login_message"
 MAP_CENTER_LAT_KEY = "map_center_lat"
 MAP_CENTER_LON_KEY = "map_center_lon"
+USER_DIRECTORY_KEY = "user_directory_visible"
 
 
 def get_setting(db: Session, key: str) -> str | None:
@@ -72,3 +73,10 @@ def effective_map_center_lat(db: Session) -> float:
 def effective_map_center_lon(db: Session) -> float:
     override = get_setting(db, MAP_CENTER_LON_KEY)
     return float(override) if override is not None else get_settings().map_center_lon
+
+
+def user_directory_visible(db: Session) -> bool:
+    override = get_setting(db, USER_DIRECTORY_KEY)
+    if override is not None:
+        return override == "1"
+    return get_settings().user_directory_visible

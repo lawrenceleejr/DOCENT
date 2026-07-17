@@ -1,11 +1,11 @@
 from datetime import date
 
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 
 from app.deps import CurrentAdmin, CurrentUser, DbSession
-from app.models import Institution, Venue, VenueType, Visit
+from app.models import Institution, UserSchool, Venue, VenueType, Visit
 from app.schemas import (
     VenueCreate,
     VenueDetail,
@@ -127,6 +127,24 @@ def merge_venues(
         )
     db.execute(
         update(Visit).where(Visit.venue_id.in_(from_ids)).values(venue_id=venue_id)
+    )
+    # Reassign "schools attended" too — drop any that would collide with one
+    # the user already has at the target venue (uq_user_school), then move
+    # the rest. Otherwise a merge would silently delete them (venue_id
+    # cascades on delete) instead of preserving them on the surviving venue.
+    already_at_target = {
+        row[0]
+        for row in db.execute(
+            select(UserSchool.user_id).where(UserSchool.venue_id == venue_id)
+        )
+    }
+    db.execute(
+        delete(UserSchool).where(
+            UserSchool.venue_id.in_(from_ids), UserSchool.user_id.in_(already_at_target)
+        )
+    )
+    db.execute(
+        update(UserSchool).where(UserSchool.venue_id.in_(from_ids)).values(venue_id=venue_id)
     )
     for source in sources:
         db.delete(source)

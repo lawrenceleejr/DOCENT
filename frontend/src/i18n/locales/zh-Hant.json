@@ -7,7 +7,8 @@
     "yes": "是",
     "no": "否",
     "all": "全部",
-    "any": "不限"
+    "any": "不限",
+    "translationDisclaimer": "此翻譯為自動生成，尚未經母語人士審閱，可能包含錯誤。歡迎志工協助校對。"
   },
   "layout": {
     "home": "DOCENT 首頁",
@@ -27,7 +28,8 @@
       "map": "地圖",
       "analysis": "分析",
       "reports": "報告",
-      "admin": "管理"
+      "admin": "管理",
+      "directory": "會員名錄"
     }
   },
   "authShell": {

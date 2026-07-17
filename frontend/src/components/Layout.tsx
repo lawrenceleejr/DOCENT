@@ -24,6 +24,7 @@ import type { AuthConfig } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
+import { TranslationDisclaimer } from './TranslationDisclaimer';
 
 function ColorSchemeToggle() {
   const { t } = useTranslation();
@@ -76,7 +77,13 @@ export function Layout({ children }: { children: ReactNode }) {
   });
   const siteName = config?.site_name ?? '';
 
-  const tabs = [...TABS, ...(user?.is_admin ? [{ value: '/admin', label: t('layout.nav.admin') }] : [])];
+  const tabs = [
+    ...TABS,
+    ...(user?.is_admin || config?.user_directory_visible
+      ? [{ value: '/directory', label: t('layout.nav.directory') }]
+      : []),
+    ...(user?.is_admin ? [{ value: '/admin', label: t('layout.nav.admin') }] : []),
+  ];
   const active =
     tabs
       .filter((tab) => tab.value !== '/')
@@ -200,7 +207,10 @@ export function Layout({ children }: { children: ReactNode }) {
         </Group>
       </AppShell.Header>
       <AppShell.Main>
-        <Container size="xl">{children}</Container>
+        <Container size="xl">
+          <TranslationDisclaimer />
+          {children}
+        </Container>
         <Container size="xl" py="lg">
           <Text size="xs" c="dimmed" ta="center">
             {t('layout.footerPrefix', { version: APP_VERSION, year: COPYRIGHT_YEAR })}{' '}

@@ -7,7 +7,8 @@
     "yes": "Oui",
     "no": "Non",
     "all": "Tous",
-    "any": "N'importe lequel"
+    "any": "N'importe lequel",
+    "translationDisclaimer": "Cette traduction est générée automatiquement et n'a pas encore été relue par un locuteur natif. Elle peut contenir des erreurs — les volontaires souhaitant nous aider à la relire sont les bienvenus."
   },
   "layout": {
     "home": "Accueil DOCENT",
@@ -27,7 +28,8 @@
       "map": "Carte",
       "analysis": "Analyse",
       "reports": "Rapports",
-      "admin": "Administration"
+      "admin": "Administration",
+      "directory": "Annuaire"
     }
   },
   "authShell": {

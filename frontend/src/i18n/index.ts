@@ -41,6 +41,10 @@ i18n
       tl: { translation: tl },
     },
     fallbackLng: 'en',
+    // Strip region subtags (en-US -> en, es-MX -> es) so i18n.language always
+    // matches one of our resource codes — otherwise it's the raw browser
+    // locale, which breaks exact-match checks like "is this English?".
+    load: 'languageOnly',
     interpolation: { escapeValue: false },
     detection: {
       // Client-side "remembered" preference wins; otherwise fall back to the
@@ -50,5 +54,12 @@ i18n
       lookupLocalStorage: LANGUAGE_STORAGE_KEY,
     },
   });
+
+/** i18n.language can carry a region subtag (en-US, es-MX, …) straight from
+ * the browser/localStorage even with load: 'languageOnly' — this strips it
+ * down to the bare code our resources/SUPPORTED_LANGUAGES are keyed by. */
+export function baseLanguage(code: string): string {
+  return code.split('-')[0];
+}
 
 export default i18n;

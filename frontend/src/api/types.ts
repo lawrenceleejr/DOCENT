@@ -202,12 +202,31 @@ export interface User {
   affiliation: string | null;
   is_admin: boolean;
   is_active: boolean;
+  languages_spoken: string[];
   created_at: string;
 }
 
 export interface UserBrief {
   id: number;
   name: string;
+}
+
+export interface School {
+  id: number;
+  venue: VenueBrief;
+  created_at: string;
+}
+
+export interface AdminUser extends User {
+  schools: VenueBrief[];
+}
+
+export interface DirectoryUser {
+  id: number;
+  name: string;
+  affiliation: string | null;
+  languages_spoken: string[];
+  schools: VenueBrief[];
 }
 
 export interface Venue {
@@ -500,6 +519,7 @@ export interface AuthConfig {
   login_message: string | null;
   map_center_lat: number;
   map_center_lon: number;
+  user_directory_visible: boolean;
 }
 
 export interface PublicActivity {
@@ -531,6 +551,7 @@ export interface RegistrationSettings {
   login_message: string;
   map_center_lat: number;
   map_center_lon: number;
+  user_directory_visible: boolean;
 }
 
 export interface DbImportResult {

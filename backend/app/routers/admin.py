@@ -8,11 +8,14 @@ from typing import Any
 import httpx
 from fastapi import APIRouter, Body, HTTPException, Query, status
 from fastapi.responses import FileResponse, Response
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import delete, func, or_, select, update
+from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentAdmin, DbSession
-from app.models import Institution, User, Venue, Visit
+from app.models import Institution, User, UserSchool, Venue, Visit
 from app.schemas import (
+    AdminUserList,
+    AdminUserOut,
     AdminUserUpdate,
     BackupItem,
     BackupList,
@@ -27,7 +30,6 @@ from app.schemas import (
     PasswordResetResult,
     RegistrationSettings,
     RegistrationSettingsUpdate,
-    UserList,
     UserMergeRequest,
     UserOut,
 )
@@ -45,6 +47,7 @@ from app.services.settings import (
     PUBLIC_PAGE_KEY,
     SITE_NAME_KEY,
     SITE_URL_KEY,
+    USER_DIRECTORY_KEY,
     effective_contact_email,
     effective_invite_code,
     effective_login_message,
@@ -54,6 +57,7 @@ from app.services.settings import (
     effective_site_url,
     public_page_enabled,
     set_setting,
+    user_directory_visible,
 )
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -62,11 +66,13 @@ MAX_RADIUS_M = 100_000  # 100 km (~62 mi) — keep Overpass queries bounded.
 BACKUP_ROOT = Path(os.environ.get("BACKUP_ROOT", "/backups"))
 
 
-@router.get("/users", response_model=UserList)
+@router.get("/users", response_model=AdminUserList)
 def list_users(
     db: DbSession,
     _admin: CurrentAdmin,
     q: str | None = None,
+    venue_id: int | None = None,
+    language: str | None = None,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=25, ge=1, le=100),
 ):
@@ -74,11 +80,32 @@ def list_users(
     if q:
         pattern = f"%{q.strip()}%"
         query = query.where(or_(User.name.ilike(pattern), User.email.ilike(pattern)))
+    if language:
+        query = query.where(User.languages_spoken.any(language))
+    if venue_id:
+        query = query.where(
+            User.id.in_(select(UserSchool.user_id).where(UserSchool.venue_id == venue_id))
+        )
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
-    users = db.scalars(
+    # Page user IDs first, then eager-load schools for just that page — a
+    # to-many join before LIMIT/OFFSET would paginate over fanned-out rows.
+    page_users = db.scalars(
         query.order_by(User.created_at).offset((page - 1) * page_size).limit(page_size)
     ).all()
-    return UserList(items=users, total=total, page=page, page_size=page_size)
+    users = db.scalars(
+        select(User)
+        .where(User.id.in_([u.id for u in page_users]))
+        .options(joinedload(User.schools).joinedload(UserSchool.venue))
+        .order_by(User.created_at)
+    ).unique().all()
+    items = [
+        AdminUserOut(
+            **UserOut.model_validate(u).model_dump(),
+            schools=[s.venue for s in u.schools],
+        )
+        for u in users
+    ]
+    return AdminUserList(items=items, total=total, page=page, page_size=page_size)
 
 
 @router.patch("/users/{user_id}", response_model=UserOut)
@@ -126,6 +153,7 @@ def _settings_out(db) -> RegistrationSettings:
         login_message=effective_login_message(db),
         map_center_lat=effective_map_center_lat(db),
         map_center_lon=effective_map_center_lon(db),
+        user_directory_visible=user_directory_visible(db),
     )
 
 
@@ -154,6 +182,8 @@ def update_registration_settings(
         set_setting(db, MAP_CENTER_LAT_KEY, str(body.map_center_lat))
     if body.map_center_lon is not None:
         set_setting(db, MAP_CENTER_LON_KEY, str(body.map_center_lon))
+    if body.user_directory_visible is not None:
+        set_setting(db, USER_DIRECTORY_KEY, "1" if body.user_directory_visible else "")
     db.commit()
     return _settings_out(db)
 
@@ -276,6 +306,23 @@ def merge_user(user_id: int, body: UserMergeRequest, admin: CurrentAdmin, db: Db
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     db.execute(update(Visit).where(Visit.author_id == user_id).values(author_id=body.into_id))
     db.execute(update(Venue).where(Venue.created_by_id == user_id).values(created_by_id=body.into_id))
+    # Reassign "schools attended" too, dropping any that would collide with
+    # one the target already has (uq_user_school) — otherwise deleting the
+    # source account would silently lose them.
+    target_venue_ids = {
+        row[0]
+        for row in db.execute(
+            select(UserSchool.venue_id).where(UserSchool.user_id == body.into_id)
+        )
+    }
+    db.execute(
+        delete(UserSchool).where(
+            UserSchool.user_id == user_id, UserSchool.venue_id.in_(target_venue_ids)
+        )
+    )
+    db.execute(
+        update(UserSchool).where(UserSchool.user_id == user_id).values(user_id=body.into_id)
+    )
     db.delete(source)
     db.commit()
     db.refresh(target)

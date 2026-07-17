@@ -11,6 +11,7 @@ import {
   Modal,
   NumberInput,
   Pagination,
+  Select,
   Stack,
   Switch,
   Table,
@@ -34,13 +35,21 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api, ApiError } from '../api/client';
-import type { Paginated, PasswordResetResult, RegistrationSettings, User } from '../api/types';
+import type {
+  AdminUser,
+  Paginated,
+  PasswordResetResult,
+  RegistrationSettings,
+  User,
+} from '../api/types';
+import { LANGUAGES } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { BackupsCard } from '../components/BackupsCard';
 import { InstitutionImportCard } from '../components/InstitutionImportCard';
 import { InstitutionManagerCard } from '../components/InstitutionManagerCard';
 import { SiteSetupCard } from '../components/SiteSetupCard';
 import { DbToolsCard } from '../components/DbToolsCard';
+import { VenueFilterSelect } from '../components/VenueFilterSelect';
 
 const PAGE_SIZE = 25;
 
@@ -57,6 +66,7 @@ function RegistrationCard() {
   const [loginMessage, setLoginMessage] = useState<string | null>(null);
   const [mapLat, setMapLat] = useState<number | string | null>(null);
   const [mapLon, setMapLon] = useState<number | string | null>(null);
+  const [directoryVisible, setDirectoryVisible] = useState<boolean | null>(null);
 
   const codeValue = code ?? data?.invite_code ?? '';
   const emailValue = email ?? data?.contact_email ?? '';
@@ -65,6 +75,7 @@ function RegistrationCard() {
   const loginMessageValue = loginMessage ?? data?.login_message ?? '';
   const mapLatValue = mapLat ?? data?.map_center_lat ?? 0;
   const mapLonValue = mapLon ?? data?.map_center_lon ?? 0;
+  const directoryValue = directoryVisible ?? data?.user_directory_visible ?? false;
 
   const save = useMutation({
     mutationFn: () =>
@@ -76,6 +87,7 @@ function RegistrationCard() {
         login_message: loginMessageValue,
         map_center_lat: Number(mapLatValue),
         map_center_lon: Number(mapLonValue),
+        user_directory_visible: directoryValue,
       }),
     onSuccess: (updated) => {
       queryClient.setQueryData(['admin', 'settings'], updated);
@@ -87,6 +99,7 @@ function RegistrationCard() {
       setLoginMessage(null);
       setMapLat(null);
       setMapLon(null);
+      setDirectoryVisible(null);
       notifications.show({ message: 'Settings saved', color: 'green' });
     },
     onError: (e) => {
@@ -154,6 +167,12 @@ function RegistrationCard() {
           checked={publicValue}
           onChange={(e) => setPublicPage(e.currentTarget.checked)}
         />
+        <Switch
+          label="Member directory"
+          description="Let any signed-in user browse the member directory (schools attended, languages spoken) — not just admins. Admins can always see it."
+          checked={directoryValue}
+          onChange={(e) => setDirectoryVisible(e.currentTarget.checked)}
+        />
         <Textarea
           label="Login page message"
           description="Optional announcement shown on the login page — a welcome note, a maintenance notice, whatever your community needs to see before signing in. Supports basic Markdown (**bold**, *italic*, [links](https://…), lists). Leave blank to show nothing."
@@ -202,7 +221,8 @@ function RegistrationCard() {
               publicPage === null &&
               loginMessage === null &&
               mapLat === null &&
-              mapLon === null
+              mapLon === null &&
+              directoryVisible === null
             }
             onClick={() => save.mutate()}
           >
@@ -359,12 +379,20 @@ export function AdminPage() {
   const [resetOpen, reset] = useDisclosure(false);
   const [mergeSource, setMergeSource] = useState<User | null>(null);
   const [q, setQ] = useState('');
+  const [venueFilter, setVenueFilter] = useState<number | null>(null);
+  const [languageFilter, setLanguageFilter] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
-  const params = { q: q || undefined, page, page_size: PAGE_SIZE };
+  const params = {
+    q: q || undefined,
+    venue_id: venueFilter ?? undefined,
+    language: languageFilter ?? undefined,
+    page,
+    page_size: PAGE_SIZE,
+  };
   const { data } = useQuery({
     queryKey: ['admin', 'users', params],
-    queryFn: () => api.get<Paginated<User>>('/api/admin/users', params),
+    queryFn: () => api.get<Paginated<AdminUser>>('/api/admin/users', params),
   });
 
   const update = useMutation({
@@ -425,17 +453,38 @@ export function AdminPage() {
       <InstitutionImportCard />
       <InstitutionManagerCard />
 
-      <Group justify="space-between" align="flex-end" mt="md">
+      <Group justify="space-between" align="flex-end" mt="md" wrap="wrap">
         <Title order={3}>User management</Title>
-        <TextInput
-          placeholder="Search name or email"
-          value={q}
-          onChange={(e) => {
-            setQ(e.currentTarget.value);
-            setPage(1);
-          }}
-          w={280}
-        />
+        <Group align="flex-end">
+          <TextInput
+            placeholder="Search name or email"
+            value={q}
+            onChange={(e) => {
+              setQ(e.currentTarget.value);
+              setPage(1);
+            }}
+            w={220}
+          />
+          <VenueFilterSelect
+            value={venueFilter}
+            onChange={(v) => {
+              setVenueFilter(v);
+              setPage(1);
+            }}
+          />
+          <Select
+            placeholder="Filter by language"
+            searchable
+            clearable
+            data={LANGUAGES}
+            value={languageFilter}
+            onChange={(v) => {
+              setLanguageFilter(v);
+              setPage(1);
+            }}
+            w={200}
+          />
+        </Group>
       </Group>
 
       <Card withBorder p={0}>
@@ -446,6 +495,8 @@ export function AdminPage() {
                 <Table.Th>Name</Table.Th>
                 <Table.Th>Email</Table.Th>
                 <Table.Th>Affiliation</Table.Th>
+                <Table.Th>Schools</Table.Th>
+                <Table.Th>Languages</Table.Th>
                 <Table.Th>Joined</Table.Th>
                 <Table.Th>Active</Table.Th>
                 <Table.Th>Admin</Table.Th>
@@ -467,6 +518,22 @@ export function AdminPage() {
                     <EmailCell user={user} disabled={false} />
                   </Table.Td>
                   <Table.Td>{user.affiliation ?? '—'}</Table.Td>
+                  <Table.Td>
+                    {user.schools.length > 0 ? (
+                      <Group gap={4}>
+                        {user.schools.map((s) => (
+                          <Badge key={s.id} size="xs" variant="light">
+                            {s.name}
+                          </Badge>
+                        ))}
+                      </Group>
+                    ) : (
+                      '—'
+                    )}
+                  </Table.Td>
+                  <Table.Td>
+                    {user.languages_spoken.length > 0 ? user.languages_spoken.join(', ') : '—'}
+                  </Table.Td>
                   <Table.Td>{new Date(user.created_at).toLocaleDateString()}</Table.Td>
                   <Table.Td>
                     <Switch
@@ -527,7 +594,7 @@ export function AdminPage() {
               ))}
               {(data?.items.length ?? 0) === 0 && (
                 <Table.Tr>
-                  <Table.Td colSpan={7}>
+                  <Table.Td colSpan={9}>
                     <Text c="dimmed" ta="center" py="lg">
                       No users match “{q}”.
                     </Text>

@@ -1,7 +1,10 @@
 import {
+  ActionIcon,
+  Badge,
   Button,
   Card,
   Group,
+  MultiSelect,
   PasswordInput,
   Stack,
   Text,
@@ -9,14 +12,19 @@ import {
   Title,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { api, ApiError } from '../api/client';
-import type { StatsSummary, User } from '../api/types';
+import { LANGUAGES, type School, type StatsSummary, type User } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { VenuePicker } from '../components/VenuePicker';
 
 export function ProfilePage() {
   const { user, refresh } = useAuth();
+  const queryClient = useQueryClient();
+  const [newSchoolId, setNewSchoolId] = useState<number | null>(null);
 
   const { data: myStats } = useQuery({
     queryKey: ['stats', 'mine', user?.id],
@@ -33,9 +41,18 @@ export function ProfilePage() {
     queryKey: ['stats', 'summary'],
     queryFn: () => api.get<StatsSummary>('/api/stats/summary'),
   });
+  const { data: schools = [] } = useQuery({
+    queryKey: ['users', 'me', 'schools'],
+    queryFn: () => api.get<School[]>('/api/users/me/schools'),
+    enabled: !!user,
+  });
 
   const profileForm = useForm({
-    initialValues: { name: user?.name ?? '', affiliation: user?.affiliation ?? '' },
+    initialValues: {
+      name: user?.name ?? '',
+      affiliation: user?.affiliation ?? '',
+      languages_spoken: user?.languages_spoken ?? [],
+    },
     validate: { name: (v) => (v.trim().length > 0 ? null : 'Name is required') },
   });
 
@@ -48,10 +65,11 @@ export function ProfilePage() {
   });
 
   const saveProfile = useMutation({
-    mutationFn: (values: { name: string; affiliation: string }) =>
+    mutationFn: (values: { name: string; affiliation: string; languages_spoken: string[] }) =>
       api.patch<User>('/api/users/me', {
         name: values.name.trim(),
         affiliation: values.affiliation.trim(),
+        languages_spoken: values.languages_spoken,
       }),
     onSuccess: async () => {
       await refresh();
@@ -72,6 +90,29 @@ export function ProfilePage() {
         title: 'Could not change password',
         message: e instanceof ApiError ? e.message : 'Unexpected error',
       });
+    },
+  });
+
+  const addSchool = useMutation({
+    mutationFn: (venueId: number) =>
+      api.post<School>('/api/users/me/schools', { venue_id: venueId }),
+    onSuccess: () => {
+      setNewSchoolId(null);
+      queryClient.invalidateQueries({ queryKey: ['users', 'me', 'schools'] });
+    },
+    onError: (e) => {
+      notifications.show({
+        color: 'red',
+        title: 'Could not add school',
+        message: e instanceof ApiError ? e.message : 'Unexpected error',
+      });
+    },
+  });
+
+  const removeSchool = useMutation({
+    mutationFn: (schoolId: number) => api.delete(`/api/users/me/schools/${schoolId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'me', 'schools'] });
     },
   });
 
@@ -106,6 +147,14 @@ export function ProfilePage() {
             <TextInput label="Email" value={user.email} disabled />
             <TextInput label="Full name" {...profileForm.getInputProps('name')} />
             <TextInput label="Affiliation" {...profileForm.getInputProps('affiliation')} />
+            <MultiSelect
+              label="Languages you can present in"
+              placeholder="Search languages…"
+              searchable
+              clearable
+              data={LANGUAGES}
+              {...profileForm.getInputProps('languages_spoken')}
+            />
             <Group justify="flex-end">
               <Button type="submit" loading={saveProfile.isPending}>
                 Save profile
@@ -113,6 +162,54 @@ export function ProfilePage() {
             </Group>
           </Stack>
         </form>
+      </Card>
+
+      <Card withBorder p="lg">
+        <Stack gap="sm">
+          <div>
+            <Title order={4}>Schools you attended</Title>
+            <Text size="sm" c="dimmed">
+              Adding a school also lists you as an alumnus contact on its page.
+            </Text>
+          </div>
+          {schools.length > 0 && (
+            <Group gap={6}>
+              {schools.map((school) => (
+                <Badge
+                  key={school.id}
+                  variant="light"
+                  size="lg"
+                  rightSection={
+                    <ActionIcon
+                      size="xs"
+                      color="gray"
+                      variant="transparent"
+                      aria-label={`Remove ${school.venue.name}`}
+                      onClick={() => removeSchool.mutate(school.id)}
+                    >
+                      <IconTrash size={12} />
+                    </ActionIcon>
+                  }
+                >
+                  {school.venue.name}
+                  {school.venue.city ? ` — ${school.venue.city}` : ''}
+                </Badge>
+              ))}
+            </Group>
+          )}
+          <Group align="flex-end">
+            <div style={{ flex: 1 }}>
+              <VenuePicker value={newSchoolId} onChange={setNewSchoolId} />
+            </div>
+            <Button
+              disabled={newSchoolId === null}
+              loading={addSchool.isPending}
+              onClick={() => newSchoolId !== null && addSchool.mutate(newSchoolId)}
+            >
+              Add
+            </Button>
+          </Group>
+        </Stack>
       </Card>
 
       <Card withBorder p="lg">

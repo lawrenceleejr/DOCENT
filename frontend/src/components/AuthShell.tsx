@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { LogoReveal } from './LogoReveal';
+import { TranslationDisclaimer } from './TranslationDisclaimer';
 
 /**
  * Two-panel auth layout: a gradient brand hero (left) beside the form (right).
@@ -85,6 +86,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
       <Box style={{ display: 'flex', flexDirection: 'column', padding: '1.5rem' }}>
         <Center style={{ flex: 1 }}>
           <Box w="100%" maw={400}>
+            <TranslationDisclaimer />
             {children}
           </Box>
         </Center>

@@ -94,6 +94,25 @@ def clean_language(v: str | None) -> str | None:
     return v
 
 
+def clean_languages(values: list[str] | None) -> list[str]:
+    """Validate each against LANGUAGE_SET (raises on an unknown one — these
+    come from a fixed picker, not free text) and dedupe, order-preserving."""
+    if not values:
+        return []
+    seen: set[str] = set()
+    out: list[str] = []
+    for raw in values:
+        v = (raw or "").strip()
+        if not v:
+            continue
+        if v not in LANGUAGE_SET:
+            raise ValueError(f"'{v}' is not an allowed language")
+        if v not in seen:
+            seen.add(v)
+            out.append(v)
+    return out
+
+
 # --- Auth / users ---
 
 class RegisterRequest(BaseModel):
@@ -119,6 +138,7 @@ class AuthConfig(BaseModel):
     login_message: str | None
     map_center_lat: float
     map_center_lon: float
+    user_directory_visible: bool
 
 
 class UserOut(BaseModel):
@@ -130,6 +150,7 @@ class UserOut(BaseModel):
     affiliation: str | None
     is_admin: bool
     is_active: bool
+    languages_spoken: list[str]
     created_at: datetime
 
 
@@ -143,8 +164,14 @@ class UserBrief(BaseModel):
 class UserUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     affiliation: str | None = Field(default=None, max_length=255)
+    languages_spoken: list[str] | None = None
     current_password: str | None = None
     new_password: str | None = Field(default=None, min_length=8, max_length=128)
+
+    @field_validator("languages_spoken")
+    @classmethod
+    def _clean_languages_spoken(cls, v: list[str] | None) -> list[str] | None:
+        return None if v is None else clean_languages(v)
 
 
 class AdminUserUpdate(BaseModel):
@@ -153,11 +180,8 @@ class AdminUserUpdate(BaseModel):
     email: EmailStr | None = None
 
 
-class UserList(BaseModel):
-    items: list[UserOut]
-    total: int
-    page: int
-    page_size: int
+class SchoolCreate(BaseModel):
+    venue_id: int
 
 
 class UserMergeRequest(BaseModel):
@@ -245,6 +269,7 @@ class RegistrationSettings(BaseModel):
     login_message: str
     map_center_lat: float
     map_center_lon: float
+    user_directory_visible: bool
 
 
 class RegistrationSettingsUpdate(BaseModel):
@@ -256,6 +281,7 @@ class RegistrationSettingsUpdate(BaseModel):
     login_message: str | None = Field(default=None, max_length=2000)
     map_center_lat: float | None = Field(default=None, ge=-90, le=90)
     map_center_lon: float | None = Field(default=None, ge=-180, le=180)
+    user_directory_visible: bool | None = None
 
 
 
@@ -338,6 +364,42 @@ class VenueBrief(BaseModel):
     name: str
     venue_type: VenueType
     city: str | None
+
+
+class SchoolOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    venue: VenueBrief
+    created_at: datetime
+
+
+class AdminUserOut(UserOut):
+    schools: list[VenueBrief]
+
+
+class AdminUserList(BaseModel):
+    items: list[AdminUserOut]
+    total: int
+    page: int
+    page_size: int
+
+
+class DirectoryUserOut(BaseModel):
+    """Member-directory-safe view of a user — no email, no account flags."""
+
+    id: int
+    name: str
+    affiliation: str | None
+    languages_spoken: list[str]
+    schools: list[VenueBrief]
+
+
+class DirectoryUserList(BaseModel):
+    items: list[DirectoryUserOut]
+    total: int
+    page: int
+    page_size: int
 
 
 class VenueListItem(VenueOut):

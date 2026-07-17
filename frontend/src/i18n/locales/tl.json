@@ -7,7 +7,8 @@
     "yes": "Oo",
     "no": "Hindi",
     "all": "Lahat",
-    "any": "Kahit alin"
+    "any": "Kahit alin",
+    "translationDisclaimer": "Awtomatikong ginawa ang pagsasaling ito at hindi pa nasusuri ng katutubong nagsasalita. Maaaring may mga pagkakamali — malugod naming tinatanggap ang mga boluntaryong makakatulong sa pagsusuri nito."
   },
   "layout": {
     "home": "Home ng DOCENT",
@@ -27,7 +28,8 @@
       "map": "Mapa",
       "analysis": "Analysis",
       "reports": "Mga Ulat",
-      "admin": "Admin"
+      "admin": "Admin",
+      "directory": "Direktoryo"
     }
   },
   "authShell": {

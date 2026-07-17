@@ -489,6 +489,7 @@ The suite runs against real Postgres (the stats SQL uses `date_trunc` and native
 - **Auth** — JWT in an httpOnly `SameSite=Lax` cookie; the browser and API are same-origin through nginx (prod) / the Vite proxy (dev), so there's no CORS surface.
 - **Localization** — the interface is available in English, Spanish, French, Traditional Chinese, Simplified Chinese, Vietnamese, and Tagalog. Switch languages from the globe icon in the header; your choice is remembered in the browser (no account setting).
 - **Visit language** — record which language a visit happened in, picked from a searchable list of world languages. Filter the visit list by language and see it on each visit's detail page and reports.
+- **Member profiles** — list the schools you attended (auto-adds you as an alumnus contact on that venue's page) and the languages you speak, from your Profile page. Admins can filter the user list by school or language on the Admin tab, and can optionally let any signed-in member browse a read-only Directory of everyone's schools and languages.
 
 ### Architecture
 

@@ -7,7 +7,8 @@
     "yes": "Có",
     "no": "Không",
     "all": "Tất cả",
-    "any": "Bất kỳ"
+    "any": "Bất kỳ",
+    "translationDisclaimer": "Bản dịch này được tạo tự động và chưa được người nói tiếng mẹ đẻ kiểm duyệt. Có thể có sai sót — rất hoan nghênh những người tình nguyện giúp rà soát lại."
   },
   "layout": {
     "home": "Trang chủ DOCENT",
@@ -27,7 +28,8 @@
       "map": "Bản đồ",
       "analysis": "Phân tích",
       "reports": "Báo cáo",
-      "admin": "Quản trị"
+      "admin": "Quản trị",
+      "directory": "Danh bạ"
     }
   },
   "authShell": {

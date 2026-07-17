@@ -7,7 +7,8 @@
     "yes": "是",
     "no": "否",
     "all": "全部",
-    "any": "不限"
+    "any": "不限",
+    "translationDisclaimer": "此翻译为自动生成，尚未经母语人士审阅，可能包含错误。欢迎志愿者协助校对。"
   },
   "layout": {
     "home": "DOCENT 首页",
@@ -27,7 +28,8 @@
       "map": "地图",
       "analysis": "数据分析",
       "reports": "报告",
-      "admin": "管理"
+      "admin": "管理",
+      "directory": "会员名录"
     }
   },
   "authShell": {

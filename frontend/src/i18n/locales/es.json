@@ -7,7 +7,8 @@
     "yes": "Sí",
     "no": "No",
     "all": "Todos",
-    "any": "Cualquiera"
+    "any": "Cualquiera",
+    "translationDisclaimer": "Esta traducción se generó automáticamente y aún no ha sido revisada por un hablante nativo. Puede contener errores — los voluntarios que quieran ayudar a revisarla son muy bienvenidos."
   },
   "layout": {
     "home": "Inicio de DOCENT",
@@ -27,7 +28,8 @@
       "map": "Mapa",
       "analysis": "Análisis",
       "reports": "Informes",
-      "admin": "Administración"
+      "admin": "Administración",
+      "directory": "Directorio"
     }
   },
   "authShell": {

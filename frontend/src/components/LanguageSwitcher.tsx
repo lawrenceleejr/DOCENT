@@ -1,11 +1,12 @@
 import { ActionIcon, Menu } from '@mantine/core';
 import { IconLanguage } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { SUPPORTED_LANGUAGES } from '../i18n';
+import { baseLanguage, SUPPORTED_LANGUAGES } from '../i18n';
 
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
-  const current = SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language);
+  const activeCode = baseLanguage(i18n.language);
+  const current = SUPPORTED_LANGUAGES.find((l) => l.code === activeCode);
 
   return (
     <Menu shadow="md" width={180} position="bottom-end">
@@ -24,8 +25,8 @@ export function LanguageSwitcher() {
         {SUPPORTED_LANGUAGES.map((lang) => (
           <Menu.Item
             key={lang.code}
-            fw={i18n.language === lang.code ? 700 : 400}
-            c={i18n.language === lang.code ? 'brand' : undefined}
+            fw={activeCode === lang.code ? 700 : 400}
+            c={activeCode === lang.code ? 'brand' : undefined}
             onClick={() => i18n.changeLanguage(lang.code)}
           >
             {lang.label}

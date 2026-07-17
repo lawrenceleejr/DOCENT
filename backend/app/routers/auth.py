@@ -20,6 +20,7 @@ from app.services.settings import (
     effective_map_center_lon,
     effective_site_name,
     public_page_enabled,
+    user_directory_visible,
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -38,6 +39,7 @@ def auth_config(db: DbSession) -> AuthConfig:
         login_message=effective_login_message(db) or None,
         map_center_lat=effective_map_center_lat(db),
         map_center_lon=effective_map_center_lon(db),
+        user_directory_visible=user_directory_visible(db),
     )
 
 

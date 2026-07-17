@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     # project's original deployment). Admin-editable from the UI.
     map_center_lat: float = 35.86
     map_center_lon: float = -86.36
+    # Whether any signed-in user (not just admins) can browse the member
+    # directory (schools attended, languages spoken). Default off — admins
+    # can always see it regardless. Admin-editable from the UI.
+    user_directory_visible: bool = False
     access_token_days: int = 7
     # "auto" (default): Secure flag follows the real connection (X-Forwarded-Proto
     # / scheme) so login works on plain http AND https. "true"/"false" force it.
