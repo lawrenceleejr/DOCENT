@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { labelize, VENUE_TYPES, type Paginated, type VenueListItem } from '../api/types';
+import { ConnectionFormModal } from '../components/ConnectionFormModal';
 import { EmptyState } from '../components/EmptyState';
 import { VenueFormModal } from '../components/VenuePicker';
 
@@ -31,6 +32,7 @@ export function VenueListPage() {
   const [venueType, setVenueType] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [creating, create] = useDisclosure(false);
+  const [addingConnection, connectionActions] = useDisclosure(false);
 
   const params = {
     q: q || undefined,
@@ -47,9 +49,14 @@ export function VenueListPage() {
     <Stack>
       <Group justify="space-between">
         <Title order={2}>Venues</Title>
-        <Button variant="gradient" onClick={create.open}>
-          Add venue
-        </Button>
+        <Group>
+          <Button variant="default" onClick={connectionActions.open}>
+            Add a connection
+          </Button>
+          <Button variant="gradient" onClick={create.open}>
+            Add venue
+          </Button>
+        </Group>
       </Group>
 
       <Card withBorder p="md">
@@ -148,6 +155,19 @@ export function VenueListPage() {
           queryClient.invalidateQueries({ queryKey: ['venues'] });
           create.close();
           navigate(`/venues/${venue.id}`);
+        }}
+      />
+
+      <ConnectionFormModal
+        opened={addingConnection}
+        onClose={connectionActions.close}
+        onSaved={(connection) => {
+          queryClient.invalidateQueries({ queryKey: ['venues'] });
+          queryClient.invalidateQueries({
+            queryKey: ['connections', { venue_id: String(connection.venue_id) }],
+          });
+          connectionActions.close();
+          navigate(`/venues/${connection.venue_id}`);
         }}
       />
     </Stack>

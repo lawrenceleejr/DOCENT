@@ -119,6 +119,22 @@ export interface VenueDetail extends Venue {
   last_visit_date: string | null;
 }
 
+/** A standing personal-network contact at a venue — independent of any
+ * logged visit (a teacher you know, an alum, a past host you want to track). */
+export interface Connection {
+  id: number;
+  venue_id: number;
+  name: string;
+  role: string | null;
+  relationship_type: HostRelationship | null;
+  relationship_detail: string | null;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  added_by: UserBrief | null;
+  created_at: string;
+}
+
 export interface Visit {
   id: number;
   author: UserBrief;

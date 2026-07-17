@@ -343,6 +343,47 @@ class VenueList(BaseModel):
     page_size: int
 
 
+# --- Connections ---
+# A standing personal-network contact at a venue (a teacher you know, an
+# alum, a past host) — independent of any logged visit.
+
+class ConnectionCreate(BaseModel):
+    venue_id: int
+    name: str = Field(min_length=1, max_length=255)
+    role: str | None = Field(default=None, max_length=255)
+    relationship_type: HostRelationship | None = None
+    relationship_detail: str | None = Field(default=None, max_length=500)
+    email: str | None = Field(default=None, max_length=255)
+    phone: str | None = Field(default=None, max_length=50)
+    notes: str | None = None
+
+
+class ConnectionUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    role: str | None = Field(default=None, max_length=255)
+    relationship_type: HostRelationship | None = None
+    relationship_detail: str | None = Field(default=None, max_length=500)
+    email: str | None = Field(default=None, max_length=255)
+    phone: str | None = Field(default=None, max_length=50)
+    notes: str | None = None
+
+
+class ConnectionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    venue_id: int
+    name: str
+    role: str | None
+    relationship_type: HostRelationship | None
+    relationship_detail: str | None
+    email: str | None
+    phone: str | None
+    notes: str | None
+    added_by: UserBrief | None
+    created_at: datetime
+
+
 # Sanity ceiling for a single outreach event's headcount — catches fat-finger
 # entries (e.g. an extra zero) that would otherwise skew community totals.
 MAX_PEOPLE_REACHED = 100_000

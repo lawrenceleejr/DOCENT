@@ -4,7 +4,7 @@
 from fastapi import FastAPI
 
 from app.config import get_settings
-from app.routers import admin, auth, map, public, reports, stats, users, venues, visits
+from app.routers import admin, auth, connections, map, public, reports, stats, users, venues, visits
 
 INSECURE_SECRET = "dev-secret-do-not-use-in-production"
 
@@ -29,6 +29,7 @@ def _require_real_secret_key() -> None:
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(venues.router)
+app.include_router(connections.router)
 app.include_router(visits.router)
 app.include_router(stats.router)
 app.include_router(admin.router)

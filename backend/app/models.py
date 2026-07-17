@@ -230,6 +230,41 @@ class Visit(Base):
     venue: Mapped[Venue] = relationship(back_populates="visits")
 
 
+class Connection(Base):
+    """A person our organization has contact with at a venue — a past visit
+    host, or someone a communicator knows personally (a teacher, an alum, a
+    family friend) even if no visit has ever been logged there. Distinct from
+    a Visit's host_* fields, which record who hosted that specific visit;
+    a Connection is a standing relationship a communicator maintains."""
+
+    __tablename__ = "connections"
+    __table_args__ = (
+        UniqueConstraint("venue_id", "name", name="uq_connection_venue_name"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    venue_id: Mapped[int] = mapped_column(
+        ForeignKey("venues.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(255))
+    role: Mapped[str | None] = mapped_column(String(255))
+    relationship_type: Mapped[HostRelationship | None] = mapped_column(
+        Enum(HostRelationship, name="host_relationship")
+    )
+    relationship_detail: Mapped[str | None] = mapped_column(String(500))
+    email: Mapped[str | None] = mapped_column(String(255))
+    phone: Mapped[str | None] = mapped_column(String(50))
+    notes: Mapped[str | None] = mapped_column(Text)
+    added_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    added_by: Mapped[User | None] = relationship()
+
+
 class Setting(Base):
     """Runtime key/value settings an admin can change without a redeploy
     (e.g. the registration access code and the contact email)."""
