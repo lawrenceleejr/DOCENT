@@ -343,6 +343,21 @@ class VenueList(BaseModel):
     page_size: int
 
 
+class PlaceSuggestion(BaseModel):
+    """One address/place autocomplete result — prefills a new venue's
+    address fields, never its name or type (a geocoder can't reliably tell
+    a middle school from a museum)."""
+
+    label: str
+    name: str | None
+    address: str | None
+    city: str | None
+    state: str | None
+    country: str | None
+    latitude: float
+    longitude: float
+
+
 # --- Connections ---
 # A standing personal-network contact at a venue (a teacher you know, an
 # alum, a past host) — independent of any logged visit.

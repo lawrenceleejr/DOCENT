@@ -120,6 +120,19 @@ export interface VenueDetail extends Venue {
   last_visit_date: string | null;
 }
 
+/** One address/place autocomplete result from the geocode search — prefills
+ * a new venue's address fields, never its name or type. */
+export interface PlaceSuggestion {
+  label: string;
+  name: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  latitude: number;
+  longitude: number;
+}
+
 /** A standing personal-network contact at a venue — independent of any
  * logged visit (a teacher you know, an alum, a past host you want to track). */
 export interface Connection {

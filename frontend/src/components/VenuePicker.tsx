@@ -1,4 +1,5 @@
 import {
+  Autocomplete,
   Button,
   Group,
   Modal,
@@ -9,6 +10,7 @@ import {
   TextInput,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useDebouncedValue } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
@@ -19,6 +21,7 @@ import {
   VENUE_TYPES,
   type InstitutionDetail,
   type Paginated,
+  type PlaceSuggestion,
   type Venue,
 } from '../api/types';
 
@@ -170,6 +173,21 @@ export function VenueFormModal({
   prefill,
 }: VenueFormModalProps) {
   const editing = venue !== undefined;
+  const [addressQuery, setAddressQuery] = useState('');
+  const [debouncedAddressQuery] = useDebouncedValue(addressQuery, 400);
+
+  const { data: suggestions } = useQuery({
+    queryKey: ['geocode', debouncedAddressQuery],
+    queryFn: () =>
+      api.get<PlaceSuggestion[]>('/api/geocode/search', { q: debouncedAddressQuery }),
+    enabled: debouncedAddressQuery.trim().length >= 2,
+  });
+  const suggestionByLabel = useMemo(() => {
+    const map = new Map<string, PlaceSuggestion>();
+    for (const s of suggestions ?? []) map.set(s.label, s);
+    return map;
+  }, [suggestions]);
+
   const form = useForm({
     initialValues: {
       name: venue?.name ?? prefill?.name ?? initialName,
@@ -231,6 +249,24 @@ export function VenueFormModal({
               {...form.getInputProps('venue_type')}
             />
           </Group>
+          <Autocomplete
+            label="Search for an address"
+            description="Optional — look up a place to prefill the fields below. Never changes the name or type above."
+            placeholder="Start typing an address or place…"
+            data={(suggestions ?? []).map((s) => s.label)}
+            value={addressQuery}
+            onChange={setAddressQuery}
+            onOptionSubmit={(label) => {
+              const s = suggestionByLabel.get(label);
+              if (!s) return;
+              form.setFieldValue('address', s.address ?? form.values.address);
+              form.setFieldValue('city', s.city ?? form.values.city);
+              form.setFieldValue('state', s.state ?? form.values.state);
+              form.setFieldValue('country', s.country ?? form.values.country);
+              form.setFieldValue('latitude', s.latitude);
+              form.setFieldValue('longitude', s.longitude);
+            }}
+          />
           <TextInput label="Street address" {...form.getInputProps('address')} />
           <Group grow>
             <TextInput label="City" {...form.getInputProps('city')} />

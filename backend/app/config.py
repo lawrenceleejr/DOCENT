@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     rate_limit_enabled: bool = True
     overpass_url: str = "https://overpass-api.de/api/interpreter"
     nominatim_url: str = "https://nominatim.openstreetmap.org/search"
+    # Photon (komoot) — free, keyless, OSM-based, built for type-ahead search
+    # (unlike Nominatim's /search, which isn't meant for per-keystroke queries).
+    # Powers the address autocomplete in the new-venue dialog.
+    photon_url: str = "https://photon.komoot.io/api"
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 
