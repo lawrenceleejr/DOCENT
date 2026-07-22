@@ -22,13 +22,31 @@ class Settings(BaseSettings):
     # Whether the unauthenticated read-only /impact page is served. Default off;
     # admins can flip it from the UI (DB value overrides this).
     public_page: bool = False
+    # Optional free-text announcement shown on the login page (e.g. maintenance
+    # notices, a welcome blurb). Empty = nothing shown. Admin-editable from the UI.
+    login_message: str = ""
+    # Where the Map page centers on first load (defaults to Tennessee, this
+    # project's original deployment). Admin-editable from the UI.
+    map_center_lat: float = 35.86
+    map_center_lon: float = -86.36
+    # Whether any signed-in user (not just admins) can browse the member
+    # directory (schools attended, languages spoken). Default off — admins
+    # can always see it regardless. Admin-editable from the UI.
+    user_directory_visible: bool = False
     access_token_days: int = 7
     # "auto" (default): Secure flag follows the real connection (X-Forwarded-Proto
     # / scheme) so login works on plain http AND https. "true"/"false" force it.
     cookie_secure: str = "auto"
     rate_limit_enabled: bool = True
+    # Run the in-process background loop that pulls activities from federation
+    # peers. Disabled in the test suite. Interval/enablement is per-peer (DB).
+    federation_sync_enabled: bool = True
     overpass_url: str = "https://overpass-api.de/api/interpreter"
     nominatim_url: str = "https://nominatim.openstreetmap.org/search"
+    # Photon (komoot) — free, keyless, OSM-based, built for type-ahead search
+    # (unlike Nominatim's /search, which isn't meant for per-keystroke queries).
+    # Powers the address autocomplete in the new-venue dialog.
+    photon_url: str = "https://photon.komoot.io/api"
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

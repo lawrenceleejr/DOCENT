@@ -9,6 +9,7 @@ import {
 } from '@mantine/core';
 import { IconDatabaseExport, IconDownload } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Trans, useTranslation } from 'react-i18next';
 import { api, ApiError, buildQuery } from '../api/client';
 import type { BackupListResponse } from '../api/types';
 
@@ -25,6 +26,7 @@ const TIER_COLOR: Record<string, string> = {
 };
 
 export function BackupsCard() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data } = useQuery({
     queryKey: ['admin', 'backups'],
@@ -45,7 +47,7 @@ export function BackupsCard() {
   return (
     <Card withBorder p="lg">
       <Group justify="space-between" mb="xs">
-        <Title order={3}>Backups</Title>
+        <Title order={3}>{t('backupsCard.title')}</Title>
         <Button
           variant="light"
           leftSection={<IconDatabaseExport size={16} />}
@@ -53,29 +55,34 @@ export function BackupsCard() {
           onClick={() =>
             runNow.mutate(undefined, {
               onError: (e) =>
-                alert(e instanceof ApiError ? e.message : 'Could not request a backup'),
+                alert(e instanceof ApiError ? e.message : t('backupsCard.backupRequestError')),
             })
           }
         >
-          Back up now
+          {t('backupsCard.backUpNowButton')}
         </Button>
       </Group>
       <Text size="sm" c="dimmed" mb="md">
-        Nightly database dumps stored on the server. Last backup:{' '}
-        <b>{lastAt ? lastAt.toLocaleString() : 'none yet'}</b> · {data?.count ?? 0} kept ·{' '}
-        {fmtSize(data?.total_size_bytes ?? 0)}. Download copies and keep them somewhere safe
-        off this machine.
-        {runNow.isSuccess && ' A backup was requested — it appears here within a minute.'}
+        <Trans
+          i18nKey="backupsCard.description"
+          values={{
+            lastBackup: lastAt ? lastAt.toLocaleString() : t('backupsCard.noBackupYet'),
+            count: data?.count ?? 0,
+            size: fmtSize(data?.total_size_bytes ?? 0),
+          }}
+          components={{ bold: <b /> }}
+        />
+        {runNow.isSuccess && ` ${t('backupsCard.backupRequestedNotice')}`}
       </Text>
 
       <Table.ScrollContainer minWidth={480}>
         <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Backup</Table.Th>
-              <Table.Th>Tier</Table.Th>
-              <Table.Th>Taken</Table.Th>
-              <Table.Th ta="right">Size</Table.Th>
+              <Table.Th>{t('backupsCard.tableBackupHeader')}</Table.Th>
+              <Table.Th>{t('backupsCard.tableTierHeader')}</Table.Th>
+              <Table.Th>{t('backupsCard.tableTakenHeader')}</Table.Th>
+              <Table.Th ta="right">{t('backupsCard.tableSizeHeader')}</Table.Th>
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
@@ -104,7 +111,7 @@ export function BackupsCard() {
                     href={`/api/admin/backups/download${buildQuery({ path: b.path })}`}
                     leftSection={<IconDownload size={14} />}
                   >
-                    Download
+                    {t('backupsCard.downloadButton')}
                   </Button>
                 </Table.Td>
               </Table.Tr>
@@ -113,7 +120,7 @@ export function BackupsCard() {
               <Table.Tr>
                 <Table.Td colSpan={5}>
                   <Text c="dimmed" ta="center" py="md">
-                    No backups found yet. One runs automatically each night.
+                    {t('backupsCard.emptyState')}
                   </Text>
                 </Table.Td>
               </Table.Tr>

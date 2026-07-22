@@ -2,7 +2,14 @@
 
 **D**istributed **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker — a self-hosted web app that helps a scientific community **Reach out** (to grade schools, community colleges, museums, libraries, and beyond), keep one shared record of every visit, and turn it into **Broad Impact** documentation for grant reports at the click of a button.
 
-Researchers register accounts and log each visit — venue, date, host, audience, how it went, people reached — and the whole community shares a live **Analysis** dashboard and a coverage **Map**. When it's reporting season, the **Reports** tab exports a grant-ready summary of your collective **Broad Impact** (PDF / CSV / Markdown / JSON) over any date range.
+Communicators register accounts and log each visit — venue, date, host, audience, how it went, people reached — and the whole community shares a live **Analysis** dashboard and a coverage **Map**. When it's reporting season, the **Reports** tab exports a grant-ready summary of your collective **Broad Impact** (PDF / CSV / Markdown / JSON) over any date range.
+
+> ### 🚀 Try it now
+> A public **test instance** is running at **<https://test.docentoutreach.org>** —
+> click around, log a demo visit, explore the map, dashboard, and reports. Log in
+> with **`testuser@utk.edu`** / **`12345678`**, or register your own account with
+> access code **`3dd2b671`**. It's a sandbox: don't put anything real in it, and
+> expect the data to be wiped from time to time.
 
 ### Why self-host? Your data never leaves your institution
 DOCENT runs entirely on **your** server — no third-party cloud, no vendor with a
@@ -403,6 +410,56 @@ Registration**, or via `SITE_NAME` / `PUBLIC_PAGE` in `.env`.
 
 ![Public impact page](docs/screenshots/08-impact.png)
 
+## Federation (show sibling instances' activities)
+
+Communicators often work with more than one outreach group — each running its own
+DOCENT. **Federation** lets an instance display activities pulled from a list of
+**sibling instances**, so an activity logged once anywhere shows up everywhere —
+in the **Visits list**, the **Map**, and the **Analysis** stats — with no
+duplicate data entry. Sibling rows are clearly badged and link back to the
+instance that owns them; to see full detail you follow that link and sign in
+there. What crosses the wire is deliberately minimal: **date, place (+ coords /
+type), the person, event type, people reached, and a deep-link** — never
+descriptions, reflections, ratings, or host contact details.
+
+**Publish your feed** (Admin → Federation): flip **Publish to federation** on and
+copy **Your feed URL**. It looks like
+`https://you.edu/api/federation/activities?token=…` and is reachable with a plain
+`curl`. The token in the URL is the only credential, so share it privately and
+serve over HTTPS; **Rotate token** invalidates a URL you've already handed out
+(you'll need to re-share the new one). Set your instance's **Site URL** (Admin →
+Site address) so the feed's deep-links are absolute. By default the feed carries
+**completed** activities only; flip **Publish planned events** to also share your
+upcoming schedule, so siblings can see planned outreach on their Schedule page.
+
+**Subscribe to siblings** (Admin → Federation → *Sibling instances*): paste a
+sibling's feed URL and hit **Test** to confirm it's reachable (it shows the
+instance name and how many activities are available) before you Add. Pick a sync
+interval (**hourly / daily / weekly**) and Add. DOCENT pulls each due peer on its
+interval (a built-in background job) and caches a limited copy locally; **Sync
+now** forces an immediate pull. The peer table shows each sibling's **last sync**,
+**next sync**, live status, and activity count — a failing peer is retried with
+**exponential backoff** (never more often than its interval, capped at a week) and
+its error count is surfaced on the status badge. Scheduled pulls are **incremental
+and paged** (only rows changed since the last sync, so arbitrarily large peers
+sync cheaply), with a periodic **full reconcile** that also propagates remote
+deletions.
+
+Sibling activities then appear by default across the app, each view with a filter
+to hide them (**Include sibling instances**) or narrow to a single **Source**. On
+the Map, a sibling point that coincides with a place you've already reached
+collapses into the single green "reached" marker. The public `/impact` page has
+its own toggle to count the wider network in its totals — **numbers only, never
+sibling names**.
+
+> Only **completed** visits appear in impact/coverage counting; planned events
+> stay on the Schedule page. Combined stats can double-count a communicator who
+> takes part through more than one instance — the dashboard and impact page note
+> this when siblings are included. Leaderboards, and the audience /
+> host-relationship breakdowns, count your own instance's activities only (the
+> feed doesn't carry those fields). Behind a TLS-inspecting proxy, set
+> `REQUESTS_CA_BUNDLE` for the backend so peer pulls trust your CA.
+
 ## Map & coverage (finding gaps)
 
 The **Map** tab plots your outreach on an OpenStreetMap base layer so you can see
@@ -480,6 +537,9 @@ The suite runs against real Postgres (the stats SQL uses `date_trunc` and native
 - **Visibility** — every signed-in user sees all visits and the shared dashboard; only the visit's author (or an admin) can edit or delete it.
 - **Venues are shared** — the visit form's venue picker searches existing venues first ("Name — City (type)") so the community builds one clean venue list instead of duplicates.
 - **Auth** — JWT in an httpOnly `SameSite=Lax` cookie; the browser and API are same-origin through nginx (prod) / the Vite proxy (dev), so there's no CORS surface.
+- **Localization** — the interface is available in English, Spanish, French, Traditional Chinese, Simplified Chinese, Vietnamese, and Tagalog. Switch languages from the globe icon in the header; your choice is remembered in the browser (no account setting).
+- **Visit language** — record which language a visit happened in, picked from a searchable list of world languages. Filter the visit list by language and see it on each visit's detail page and reports.
+- **Member profiles** — list the schools you attended (auto-adds you as an alumnus contact on that venue's page) and the languages you speak, from your Profile page. Admins can filter the user list by school or language on the Admin tab, and can optionally let any signed-in member browse a read-only Directory of everyone's schools and languages.
 
 ### Architecture
 

@@ -12,10 +12,12 @@ import {
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
-import { COVERAGE_LABELS, isOverdue, labelize, type Visit } from '../api/types';
+import { isOverdue, type Visit } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { useEnumLabel } from '../i18n/enumLabels';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -29,6 +31,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export function VisitDetailPage() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -44,13 +48,13 @@ export function VisitDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['visits'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
-      notifications.show({ message: 'Visit deleted' });
+      notifications.show({ message: t('visitDetail.deleteSuccess') });
       navigate('/');
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not delete visit',
+        title: t('visitDetail.couldNotDelete'),
         message: e instanceof ApiError ? e.message : 'Unexpected error',
       });
     },
@@ -71,7 +75,7 @@ export function VisitDetailPage() {
               size="lg"
               color={isOverdue(visit) ? 'red' : visit.status === 'planned' ? 'blue' : 'green'}
             >
-              {isOverdue(visit) ? 'Overdue' : labelize(visit.status)}
+              {isOverdue(visit) ? t('visitList.overdue') : enumLabel.visitStatus(visit.status)}
             </Badge>
           </Group>
           <Text c="dimmed">
@@ -87,23 +91,23 @@ export function VisitDetailPage() {
           <Group>
             {visit.status === 'planned' && (
               <Button variant="gradient" onClick={() => navigate(`/visits/${visit.id}/edit`)}>
-                Mark as completed
+                {t('visitDetail.markCompleted')}
               </Button>
             )}
             <Button variant="default" onClick={() => navigate(`/visits/${visit.id}/edit`)}>
-              Edit
+              {t('common.edit')}
             </Button>
             <Button
               color="red"
               variant="light"
               loading={remove.isPending}
               onClick={() => {
-                if (window.confirm('Delete this visit? This cannot be undone.')) {
+                if (window.confirm(t('visitDetail.deleteConfirm'))) {
                   remove.mutate();
                 }
               }}
             >
-              Delete
+              {t('common.delete')}
             </Button>
           </Group>
         )}
@@ -112,51 +116,71 @@ export function VisitDetailPage() {
       <Card withBorder p="lg">
         <Stack gap="md">
           <Group grow>
-            <Field label="Communicator">{visit.author.name}</Field>
-            <Field label="Event type">
-              <Badge variant="light">{labelize(visit.event_type)}</Badge>
+            <Field label={t('visitDetail.fieldCommunicator')}>{visit.author.name}</Field>
+            <Field label={t('visitDetail.fieldEventType')}>
+              <Badge variant="light">{enumLabel.eventType(visit.event_type)}</Badge>
             </Field>
-            <Field label="Audience">
-              <Badge variant="light">{labelize(visit.audience_level)}</Badge>
+            <Field label={t('visitDetail.fieldAudience')}>
+              <Badge variant="light">{enumLabel.audienceLevel(visit.audience_level)}</Badge>
             </Field>
+            {visit.language && (
+              <Field label={t('visitDetail.fieldLanguage')}>{visit.language}</Field>
+            )}
           </Group>
           <Group grow>
-            <Field label="People reached">{visit.people_reached.toLocaleString()}</Field>
-            <Field label="Duration">
-              {visit.duration_minutes ? `${visit.duration_minutes} min` : '—'}
+            <Field label={t('visitDetail.fieldPeopleReached')}>
+              {visit.people_reached.toLocaleString()}
             </Field>
-            <Field label="Follow-up planned">{visit.follow_up_planned ? 'Yes' : 'No'}</Field>
+            <Field label={t('visitDetail.fieldDuration')}>
+              {visit.duration_minutes ? `${visit.duration_minutes} ${t('visitDetail.minSuffix')}` : '—'}
+            </Field>
+            <Field label={t('visitDetail.fieldFollowUp')}>
+              {visit.follow_up_planned ? t('common.yes') : t('common.no')}
+            </Field>
           </Group>
           {visit.rating !== null && (
-            <Field label="How it went">
+            <Field label={t('visitDetail.fieldHowItWent')}>
               <Rating value={visit.rating} readOnly />
             </Field>
           )}
-          {visit.description && <Field label="Description">{visit.description}</Field>}
-          {visit.reflection && <Field label="Reflection">{visit.reflection}</Field>}
+          {visit.description && (
+            <Field label={t('visitDetail.fieldDescription')}>{visit.description}</Field>
+          )}
+          {visit.reflection && (
+            <Field label={t('visitDetail.fieldReflection')}>{visit.reflection}</Field>
+          )}
           {visit.additional_presenters && (
-            <Field label="Additional presenters">{visit.additional_presenters}</Field>
+            <Field label={t('visitDetail.fieldAdditionalPresenters')}>
+              {visit.additional_presenters}
+            </Field>
           )}
           {visit.tags.length > 0 && (
-            <Field label="Tags">
+            <Field label={t('visitDetail.fieldTags')}>
               <Group gap={6}>
-                {visit.tags.map((t) => (
-                  <Badge key={t} variant="light" color="grape">
-                    {t}
+                {visit.tags.map((tag) => (
+                  <Badge key={tag} variant="light" color="grape">
+                    {tag}
                   </Badge>
                 ))}
               </Group>
             </Field>
           )}
           {visit.links.length > 0 && (
-            <Field label="Coverage & links">
+            <Field label={t('visitDetail.fieldCoverageLinks')}>
               <Stack gap={6}>
                 {visit.links.map((lk, i) => (
                   <Group key={i} gap={8} wrap="nowrap">
                     <Badge variant="light" color="blue" size="sm" style={{ flexShrink: 0 }}>
-                      {COVERAGE_LABELS[lk.category] ?? lk.category}
+                      {enumLabel.coverageCategory(lk.category)}
                     </Badge>
-                    <Anchor href={lk.url} target="_blank" rel="noreferrer" size="sm" lineClamp={1}>
+                    <Anchor
+                      href={lk.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      size="sm"
+                      lineClamp={1}
+                      style={{ minWidth: 0, flex: 1 }}
+                    >
                       {lk.label || lk.url}
                     </Anchor>
                   </Group>
@@ -172,14 +196,18 @@ export function VisitDetailPage() {
             visit.host_relationship_detail ||
             visit.host_notes) && (
             <>
-              <Divider label="Host" labelPosition="left" />
+              <Divider label={t('visitDetail.hostDivider')} labelPosition="left" />
               <Group grow>
-                {visit.contact_name && <Field label="Name">{visit.contact_name}</Field>}
-                {visit.host_role && <Field label="Role / title">{visit.host_role}</Field>}
+                {visit.contact_name && (
+                  <Field label={t('visitDetail.fieldName')}>{visit.contact_name}</Field>
+                )}
+                {visit.host_role && (
+                  <Field label={t('visitDetail.fieldRole')}>{visit.host_role}</Field>
+                )}
                 {(visit.host_relationship || visit.host_relationship_detail) && (
-                  <Field label="Relationship">
+                  <Field label={t('visitDetail.fieldRelationship')}>
                     {[
-                      visit.host_relationship ? labelize(visit.host_relationship) : null,
+                      visit.host_relationship ? enumLabel.hostRelationship(visit.host_relationship) : null,
                       visit.host_relationship_detail,
                     ]
                       .filter(Boolean)
@@ -190,14 +218,18 @@ export function VisitDetailPage() {
               {(visit.contact_email || visit.contact_phone) && (
                 <Group grow>
                   {visit.contact_email && (
-                    <Field label="Email">
+                    <Field label={t('visitDetail.fieldEmail')}>
                       <Anchor href={`mailto:${visit.contact_email}`}>{visit.contact_email}</Anchor>
                     </Field>
                   )}
-                  {visit.contact_phone && <Field label="Phone">{visit.contact_phone}</Field>}
+                  {visit.contact_phone && (
+                    <Field label={t('visitDetail.fieldPhone')}>{visit.contact_phone}</Field>
+                  )}
                 </Group>
               )}
-              {visit.host_notes && <Field label="Host notes">{visit.host_notes}</Field>}
+              {visit.host_notes && (
+                <Field label={t('visitDetail.fieldHostNotes')}>{visit.host_notes}</Field>
+              )}
             </>
           )}
         </Stack>

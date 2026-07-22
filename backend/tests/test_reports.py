@@ -95,6 +95,25 @@ def test_csv_format(seeded, client):
     assert len(lines) == 3  # header + 2 rows
 
 
+def test_language_column_and_filter(client):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], title="Charla en español", language="Spanish")
+    create_visit(client, venue["id"], title="English talk")
+
+    all_rows = _get(client, format="json", scope="all").json()["rows"]
+    by_title = {r["title"]: r["language"] for r in all_rows}
+    assert by_title["Charla en español"] == "Spanish"
+    assert by_title["English talk"] == ""
+
+    filtered = _get(client, format="json", scope="all", language="Spanish").json()
+    assert filtered["summary"]["total_activities"] == 1
+    assert filtered["rows"][0]["title"] == "Charla en español"
+
+    csv_text = _get(client, format="csv", scope="all").text
+    assert "Language" in csv_text.splitlines()[0]
+
+
 def test_markdown_format(seeded, client):
     resp = _get(client, format="md", scope="all")
     assert resp.status_code == 200

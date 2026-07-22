@@ -3,6 +3,7 @@ import {
   Anchor,
   AppShell,
   Avatar,
+  Box,
   Container,
   Group,
   Menu,
@@ -13,16 +14,20 @@ import {
   useComputedColorScheme,
   useMantineColorScheme,
 } from '@mantine/core';
-import { IconLogout, IconMoon, IconSun, IconUser } from '@tabler/icons-react';
+import { IconLogout, IconMenu2, IconMoon, IconSun, IconUser } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import type { AuthConfig } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
+import { TranslationDisclaimer } from './TranslationDisclaimer';
 
 function ColorSchemeToggle() {
+  const { t } = useTranslation();
   const { setColorScheme } = useMantineColorScheme();
   const computed = useComputedColorScheme('dark', { getInitialValueInEffect: true });
   const isDark = computed === 'dark';
@@ -31,23 +36,14 @@ function ColorSchemeToggle() {
       variant="default"
       size="lg"
       radius="md"
-      aria-label="Toggle color scheme"
-      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label={t('layout.toggleColorScheme')}
+      title={isDark ? t('layout.switchToLight') : t('layout.switchToDark')}
       onClick={() => setColorScheme(isDark ? 'light' : 'dark')}
     >
       {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
     </ActionIcon>
   );
 }
-
-const TABS = [
-  { value: '/', label: 'Visits' },
-  { value: '/schedule', label: 'Schedule' },
-  { value: '/venues', label: 'Venues' },
-  { value: '/map', label: 'Map' },
-  { value: '/analysis', label: 'Analysis' },
-  { value: '/reports', label: 'Reports' },
-];
 
 function initials(name?: string) {
   if (!name) return '?';
@@ -59,9 +55,19 @@ function initials(name?: string) {
 }
 
 export function Layout({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const TABS = [
+    { value: '/', label: t('layout.nav.visits') },
+    { value: '/schedule', label: t('layout.nav.schedule') },
+    { value: '/venues', label: t('layout.nav.venues') },
+    { value: '/map', label: t('layout.nav.map') },
+    { value: '/analysis', label: t('layout.nav.analysis') },
+    { value: '/reports', label: t('layout.nav.reports') },
+  ];
 
   // Instance branding (community name) — public config, cached aggressively.
   const { data: config } = useQuery({
@@ -71,18 +77,24 @@ export function Layout({ children }: { children: ReactNode }) {
   });
   const siteName = config?.site_name ?? '';
 
-  const tabs = [...TABS, ...(user?.is_admin ? [{ value: '/admin', label: 'Admin' }] : [])];
+  const tabs = [
+    ...TABS,
+    ...(user?.is_admin || config?.user_directory_visible
+      ? [{ value: '/directory', label: t('layout.nav.directory') }]
+      : []),
+    ...(user?.is_admin ? [{ value: '/admin', label: t('layout.nav.admin') }] : []),
+  ];
   const active =
     tabs
-      .filter((t) => t.value !== '/')
-      .find((t) => location.pathname.startsWith(t.value))?.value ?? '/';
+      .filter((tab) => tab.value !== '/')
+      .find((tab) => location.pathname.startsWith(tab.value))?.value ?? '/';
 
   // Keep the browser tab title in sync with the section ("Visits · DOCENT").
   useEffect(() => {
     const section =
       location.pathname === '/profile'
-        ? 'Profile'
-        : tabs.find((t) => t.value === active)?.label ?? '';
+        ? t('layout.profile')
+        : tabs.find((tab) => tab.value === active)?.label ?? '';
     document.title = section ? `${section} · DOCENT` : 'DOCENT';
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, active]);
@@ -97,7 +109,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <UnstyledButton
               onClick={() => navigate('/')}
               style={{ flexShrink: 0 }}
-              aria-label="DOCENT home"
+              aria-label={t('layout.home')}
             >
               <Group gap={8} wrap="nowrap">
                 <Logo size={30} ping />
@@ -108,8 +120,10 @@ export function Layout({ children }: { children: ReactNode }) {
                 )}
               </Group>
             </UnstyledButton>
-            {/* Horizontal-scroll the tabs so all nav stays reachable on phones. */}
-            <ScrollArea type="never" style={{ minWidth: 0 }}>
+            {/* Desktop: full tab strip. Below sm a burger menu replaces this
+                (a horizontal-scrolling pill strip was unreadably cramped and
+                mostly-hidden on phone-width screens). */}
+            <ScrollArea type="never" style={{ minWidth: 0 }} visibleFrom="sm">
               <Tabs
                 value={active}
                 onChange={(value) => value && navigate(value)}
@@ -127,10 +141,37 @@ export function Layout({ children }: { children: ReactNode }) {
             </ScrollArea>
           </Group>
           <Group gap="sm" wrap="nowrap">
+            <Box hiddenFrom="sm">
+              <Menu shadow="md" width={200} position="bottom-end">
+                <Menu.Target>
+                  <ActionIcon
+                    variant="default"
+                    size="lg"
+                    radius="md"
+                    aria-label={t('layout.openMenu')}
+                  >
+                    <IconMenu2 size={18} />
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  {tabs.map((tab) => (
+                    <Menu.Item
+                      key={tab.value}
+                      onClick={() => navigate(tab.value)}
+                      fw={active === tab.value ? 700 : 400}
+                      c={active === tab.value ? 'brand' : undefined}
+                    >
+                      {tab.label}
+                    </Menu.Item>
+                  ))}
+                </Menu.Dropdown>
+              </Menu>
+            </Box>
+            <LanguageSwitcher />
             <ColorSchemeToggle />
             <Menu shadow="md" width={220} position="bottom-end">
               <Menu.Target>
-                <UnstyledButton aria-label="Account menu">
+                <UnstyledButton aria-label={t('layout.accountMenu')}>
                   <Group gap="xs" wrap="nowrap">
                     <Avatar color="brand" radius="xl" size={32}>
                       {initials(user?.name)}
@@ -147,7 +188,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   leftSection={<IconUser size={16} />}
                   onClick={() => navigate('/profile')}
                 >
-                  Profile
+                  {t('layout.profile')}
                 </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item
@@ -158,7 +199,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     navigate('/login');
                   }}
                 >
-                  Log out
+                  {t('layout.logout')}
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
@@ -166,10 +207,13 @@ export function Layout({ children }: { children: ReactNode }) {
         </Group>
       </AppShell.Header>
       <AppShell.Main>
-        <Container size="xl">{children}</Container>
+        <Container size="xl">
+          <TranslationDisclaimer />
+          {children}
+        </Container>
         <Container size="xl" py="lg">
           <Text size="xs" c="dimmed" ta="center">
-            DOCENT {APP_VERSION} · © {COPYRIGHT_YEAR} Lawrence Lee · Free software under the{' '}
+            {t('layout.footerPrefix', { version: APP_VERSION, year: COPYRIGHT_YEAR })}{' '}
             <Anchor href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" c="dimmed" underline="always">
               GNU GPL v3
             </Anchor>

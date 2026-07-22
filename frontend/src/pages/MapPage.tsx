@@ -4,6 +4,7 @@ import {
   Checkbox,
   Group,
   SegmentedControl,
+  Select,
   Stack,
   Text,
   Title,
@@ -14,18 +15,27 @@ import { useQuery } from '@tanstack/react-query';
 import { divIcon } from 'leaflet';
 import { useMemo, useReducer, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import {
   INSTITUTION_TYPES,
   institutionVenueType,
-  labelize,
+  type AuthConfig,
+  type FederatedMapPoint,
   type InstitutionPoint,
   type InstitutionType,
   type Venue,
   type VenuePoint,
 } from '../api/types';
-import { COLORS, coveredIcon, gapIcon, venueIcon } from '../components/mapIcons';
+import { FilterCard } from '../components/FilterCard';
+import { COLORS, coveredIcon, dotIcon, gapIcon, venueIcon } from '../components/mapIcons';
+
+// Sibling-instance activities are a separate layer; give them a distinct grape
+// marker so they never read as local covered/gap/venue dots.
+const SIBLING_COLOR = '#ae3ec9';
+const siblingIcon = dotIcon(SIBLING_COLOR);
+import { useEnumLabel } from '../i18n/enumLabels';
 
 interface Bounds {
   south: number;
@@ -86,6 +96,8 @@ function AdaptiveInstitutions({
   institutions: InstitutionPoint[];
   onLog: (inst: InstitutionPoint) => void;
 }) {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const map = useMap();
   const [tick, bump] = useReducer((x) => x + 1, 0);
   // Recompute the grid whenever the view changes (pan/zoom shifts pixel positions).
@@ -122,17 +134,25 @@ function AdaptiveInstitutions({
           key={`i-${inst.id}`}
           position={[inst.latitude, inst.longitude]}
           icon={inst.covered ? coveredIcon : gapIcon}
+          // Reached (green) sits above a coincident sibling marker so an
+          // institution both we and a sibling visited reads as reached.
+          zIndexOffset={inst.covered ? 1000 : 0}
         >
           <Popup>
             <strong>{inst.name}</strong>
             <br />
-            {labelize(inst.institution_type)}
+            {enumLabel.institutionType(inst.institution_type)}
             {inst.city ? ` · ${inst.city}` : ''}
             <br />
             {inst.covered ? (
-              <span>Reached — {inst.visit_count} visit(s)</span>
+              <span>
+                {t('map.popupReached', {
+                  count: inst.visit_count,
+                  formattedCount: inst.visit_count.toLocaleString(),
+                })}
+              </span>
             ) : (
-              <span>No visits yet</span>
+              <span>{t('map.popupNoVisitsYet')}</span>
             )}
             <br />
             <Button
@@ -141,7 +161,7 @@ function AdaptiveInstitutions({
               variant={inst.covered ? 'light' : 'filled'}
               onClick={() => onLog(inst)}
             >
-              Log a visit here
+              {t('map.logVisitHere')}
             </Button>
           </Popup>
         </Marker>
@@ -161,6 +181,8 @@ function AdaptiveInstitutions({
 }
 
 export function MapPage() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const navigate = useNavigate();
   const scheme = useComputedColorScheme('dark');
   // Flat, monochrome CARTO basemap so the colored markers read clearly.
@@ -172,6 +194,16 @@ export function MapPage() {
   const [types, setTypes] = useState<InstitutionType[]>(DEFAULT_TYPES);
   const [statusFilter, setStatusFilter] = useState<'all' | 'gap' | 'covered'>('all');
   const [showVenues, setShowVenues] = useState(true);
+  const [showSiblings, setShowSiblings] = useState(true);
+  const [siblingSource, setSiblingSource] = useState<string | null>(null);
+
+  // Admin-configured starting point (defaults to Tennessee). Shared cache key
+  // with Layout's fetch, so this is already warm by the time the page mounts.
+  const { data: config } = useQuery({
+    queryKey: ['auth', 'config'],
+    queryFn: () => api.get<AuthConfig>('/api/auth/config'),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const rounded = bounds ? roundBounds(bounds) : null;
   const typeParam = types.join(',');
@@ -193,7 +225,32 @@ export function MapPage() {
     enabled: !!rounded && showVenues,
   });
 
+  // Sibling-instance activities: a separate, read-only layer that never affects
+  // the local covered/gap counting above.
+  const { data: federatedAll = [] } = useQuery({
+    queryKey: ['map', 'federated', rounded],
+    queryFn: () => api.get<FederatedMapPoint[]>('/api/map/federated', { ...rounded! }),
+    enabled: !!rounded && showSiblings,
+  });
+
+  // Distinct sibling labels present, for the source Select.
+  const siblingLabels = useMemo(
+    () => Array.from(new Set(federatedAll.map((f) => f.source_label).filter(Boolean))) as string[],
+    [federatedAll],
+  );
+  const federated = useMemo(
+    () => (siblingSource ? federatedAll.filter((f) => f.source_label === siblingSource) : federatedAll),
+    [federatedAll, siblingSource],
+  );
+
   const gapCount = institutions.filter((i) => !i.covered).length;
+
+  const activeFilterCount =
+    (types.length !== DEFAULT_TYPES.length ? 1 : 0) +
+    (statusFilter !== 'all' ? 1 : 0) +
+    (!showVenues ? 1 : 0) +
+    (!showSiblings ? 1 : 0) +
+    (siblingSource ? 1 : 0);
 
   const logVisitHere = async (inst: InstitutionPoint) => {
     try {
@@ -222,8 +279,8 @@ export function MapPage() {
     } catch (e) {
       notifications.show({
         color: 'red',
-        title: 'Could not start a visit',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('map.couldNotStartVisit'),
+        message: e instanceof ApiError ? e.message : t('map.unexpectedError'),
       });
     }
   };
@@ -232,15 +289,23 @@ export function MapPage() {
     <Stack>
       <Group justify="space-between" align="flex-end">
         <div>
-          <Title order={2}>Map</Title>
+          <Title order={2}>{t('map.title')}</Title>
           <Text c="dimmed" size="sm">
-            Spot coverage gaps — {institutions.length.toLocaleString()} institutions in view ·{' '}
-            {gapCount.toLocaleString()} not yet reached
+            {t('map.gapsPrefix')}{' '}
+            {t('map.institutionsInView', {
+              count: institutions.length,
+              formattedCount: institutions.length.toLocaleString(),
+            })}{' '}
+            ·{' '}
+            {t('map.notYetReached', {
+              count: gapCount,
+              formattedCount: gapCount.toLocaleString(),
+            })}
           </Text>
         </div>
       </Group>
 
-      <Card withBorder p="md">
+      <FilterCard activeCount={activeFilterCount}>
         <Group justify="space-between" align="center">
           <Group gap="lg">
             <Checkbox.Group
@@ -248,8 +313,8 @@ export function MapPage() {
               onChange={(v) => setTypes(v as InstitutionType[])}
             >
               <Group gap="sm" align="center">
-                {INSTITUTION_TYPES.map((t) => (
-                  <Checkbox key={t} value={t} label={labelize(t)} />
+                {INSTITUTION_TYPES.map((it) => (
+                  <Checkbox key={it} value={it} label={enumLabel.institutionType(it)} />
                 ))}
                 <Button.Group>
                   <Button
@@ -258,7 +323,7 @@ export function MapPage() {
                     onClick={() => setTypes([...INSTITUTION_TYPES])}
                     disabled={types.length === INSTITUTION_TYPES.length}
                   >
-                    All
+                    {t('common.all')}
                   </Button>
                   <Button
                     size="compact-xs"
@@ -266,7 +331,7 @@ export function MapPage() {
                     onClick={() => setTypes([])}
                     disabled={types.length === 0}
                   >
-                    None
+                    {t('map.none')}
                   </Button>
                 </Button.Group>
               </Group>
@@ -276,71 +341,153 @@ export function MapPage() {
               value={statusFilter}
               onChange={(v) => setStatusFilter(v as typeof statusFilter)}
               data={[
-                { label: 'All', value: 'all' },
-                { label: 'Gaps only', value: 'gap' },
-                { label: 'Reached', value: 'covered' },
+                { label: t('common.all'), value: 'all' },
+                { label: t('map.gapsOnly'), value: 'gap' },
+                { label: t('map.reached'), value: 'covered' },
               ]}
             />
             <Checkbox
-              label="Show my venues"
+              label={t('map.showMyVenues')}
               checked={showVenues}
               onChange={(e) => setShowVenues(e.currentTarget.checked)}
             />
+            <Checkbox
+              label={t('map.showSiblings')}
+              checked={showSiblings}
+              onChange={(e) => setShowSiblings(e.currentTarget.checked)}
+            />
+            {showSiblings && siblingLabels.length > 1 && (
+              <Select
+                size="xs"
+                placeholder={t('map.allSiblings')}
+                clearable
+                data={siblingLabels}
+                value={siblingSource}
+                onChange={setSiblingSource}
+                w={170}
+              />
+            )}
           </Group>
           <Group gap="md">
-            <LegendDot color={COLORS.gap} label="Gap" />
-            <LegendDot color={COLORS.covered} label="Reached" />
-            <LegendDot color={COLORS.venue} label="Venue (no visits yet)" />
+            <LegendDot color={COLORS.gap} label={t('map.legendGap')} />
+            <LegendDot color={COLORS.covered} label={t('map.legendReached')} />
+            <LegendDot color={COLORS.venue} label={t('map.legendVenueNoVisits')} />
+            <LegendDot color={SIBLING_COLOR} label={t('map.legendSibling')} />
           </Group>
         </Group>
-      </Card>
+      </FilterCard>
 
       <Card withBorder p={0} style={{ overflow: 'hidden' }}>
-        <MapContainer
-          center={[35.86, -86.36]} // Tennessee
-          zoom={7}
-          style={{ height: '70vh', width: '100%' }}
-          scrollWheelZoom
-        >
-          <TileLayer
-            key={scheme}
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url={tileUrl}
-            subdomains="abcd"
-          />
-          <BoundsWatcher onChange={setBounds} />
+        {config && (
+          // center is only read on mount — wait for the admin-configured
+          // starting point so the map never flashes at the wrong location.
+          <MapContainer
+            center={[config.map_center_lat, config.map_center_lon]}
+            zoom={7}
+            style={{ height: '70vh', width: '100%' }}
+            scrollWheelZoom
+          >
+            <TileLayer
+              key={scheme}
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              url={tileUrl}
+              subdomains="abcd"
+            />
+            <BoundsWatcher onChange={setBounds} />
 
-          <AdaptiveInstitutions institutions={institutions} onLog={logVisitHere} />
+            <AdaptiveInstitutions institutions={institutions} onLog={logVisitHere} />
 
-          {/* Your venues are drawn as individual dots (never clustered into
-              summary bubbles) so every engagement is always visible. A venue
-              with a completed visit shows green (reached); otherwise blue. */}
-          {showVenues &&
-            venues.map((v) => (
-              <Marker
-                key={`v-${v.id}`}
-                position={[v.latitude, v.longitude]}
-                icon={v.visited || v.visit_count > 0 ? coveredIcon : venueIcon}
-              >
-                <Popup>
-                  <strong>{v.name}</strong>
-                  <br />
-                  {labelize(v.venue_type)}
-                  {v.city ? ` · ${v.city}` : ''}
-                  <br />
-                  {v.visit_count} visit(s)
-                  <br />
-                  <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
-                    Open venue
-                  </Button>
-                </Popup>
-              </Marker>
-            ))}
-        </MapContainer>
+            {/* Your venues are drawn as individual dots (never clustered into
+                summary bubbles) so every engagement is always visible. A venue
+                with a completed visit shows green (reached); otherwise blue. */}
+            {showVenues &&
+              venues.map((v) => (
+                <Marker
+                  key={`v-${v.id}`}
+                  position={[v.latitude, v.longitude]}
+                  icon={v.visited || v.visit_count > 0 ? coveredIcon : venueIcon}
+                  // Visited (green) sits above a coincident sibling marker.
+                  zIndexOffset={v.visited || v.visit_count > 0 ? 1000 : 0}
+                >
+                  <Popup>
+                    <strong>{v.name}</strong>
+                    <br />
+                    {enumLabel.venueType(v.venue_type)}
+                    {v.city ? ` · ${v.city}` : ''}
+                    <br />
+                    {t('map.popupVisitCount', {
+                      count: v.visit_count,
+                      formattedCount: v.visit_count.toLocaleString(),
+                    })}
+                    <br />
+                    <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
+                      {t('map.openVenue')}
+                    </Button>
+                  </Popup>
+                </Marker>
+              ))}
+
+            {/* Sibling-instance activities: a separate, never-clustered layer in
+                a distinct grape marker. Read-only — links out to the primary
+                instance when a permalink is available. */}
+            {showSiblings &&
+              federated.map((f, i) => (
+                <Marker
+                  key={`f-${i}`}
+                  position={[f.latitude, f.longitude]}
+                  icon={siblingIcon}
+                >
+                  <Popup>
+                    <strong>
+                      {f.venue_name ??
+                        (f.venue_type ? enumLabel.venueType(f.venue_type) : t('map.legendSibling'))}
+                    </strong>
+                    {f.source_label && (
+                      <>
+                        <br />
+                        <Text component="span" size="xs" c="dimmed">
+                          {t('map.fromSibling', { name: f.source_label })}
+                        </Text>
+                      </>
+                    )}
+                    {f.person_name && (
+                      <>
+                        <br />
+                        {f.person_name}
+                      </>
+                    )}
+                    <br />
+                    {f.visit_date}
+                    <br />
+                    {t('map.popupReached', {
+                      count: f.people_reached,
+                      formattedCount: f.people_reached.toLocaleString(),
+                    })}
+                    {f.permalink && (
+                      <>
+                        <br />
+                        <Button
+                          size="compact-xs"
+                          mt={6}
+                          variant="light"
+                          component="a"
+                          href={f.permalink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t('map.openOnPrimary')}
+                        </Button>
+                      </>
+                    )}
+                  </Popup>
+                </Marker>
+              ))}
+          </MapContainer>
+        )}
       </Card>
       <Text size="xs" c="dimmed">
-        Institution data © OpenStreetMap contributors. Import more regions with{' '}
-        <code>scripts/import-institutions.sh</code>.
+        {t('map.institutionDataAttribution')}{' '}
+        {t('map.importMoreRegionsPrefix')} <code>scripts/import-institutions.sh</code>.
       </Text>
     </Stack>
   );

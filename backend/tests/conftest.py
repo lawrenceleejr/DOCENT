@@ -20,6 +20,9 @@ get_settings().cookie_secure = False
 # many logins across the suite don't trip it.
 get_settings().secret_key = "test-secret-not-the-insecure-default"
 get_settings().rate_limit_enabled = False
+# Don't spin up the federation sync loop during tests (it would hit the real
+# configured DB on a timer); sync is exercised directly via the service/API.
+get_settings().federation_sync_enabled = False
 # Registration now always requires an access code; give the suite a known one.
 TEST_INVITE_CODE = "test-invite-code"
 get_settings().invite_code = TEST_INVITE_CODE

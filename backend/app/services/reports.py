@@ -28,6 +28,7 @@ REPORT_COLUMNS: list[tuple[str, str]] = [
     ("city", "City"),
     ("state", "State"),
     ("audience", "Audience"),
+    ("language", "Language"),
     ("people_reached", "People reached"),
     ("duration_minutes", "Duration (min)"),
     ("presenter", "Presenter"),
@@ -79,6 +80,7 @@ class ReportVisit:
     title: str
     event_type: Any
     audience_level: Any
+    language: str | None
     people_reached: int
     duration_minutes: int | None
     status: Any
@@ -99,6 +101,7 @@ class ReportVisit:
             title=v.title,
             event_type=v.event_type,
             audience_level=v.audience_level,
+            language=v.language,
             people_reached=v.people_reached,
             duration_minutes=v.duration_minutes,
             status=v.status,
@@ -124,11 +127,14 @@ class ReportVisit:
             "date": self.visit_date.isoformat(),
             "title": self.title,
             "event_type": _label(self.event_type),
+            "event_type_raw": getattr(self.event_type, "value", self.event_type),
             "venue": self.venue_name,
             "city": self.venue_city or "",
             "state": self.venue_state or "",
             "location": location,
             "audience": _label(self.audience_level),
+            "audience_raw": getattr(self.audience_level, "value", self.audience_level),
+            "language": self.language or "",
             "people_reached": self.people_reached,
             "duration_minutes": self.duration_minutes,
             "presenter": self.presenter,
@@ -137,10 +143,12 @@ class ReportVisit:
             "host_role": self.host_role or "",
             "tags": "; ".join(self.tags),
             "coverage": "; ".join(COVERAGE_LABELS[c] for c in self.coverage_categories()),
+            "coverage_categories": self.coverage_categories(),
             "coverage_links": "; ".join(
                 lk.get("url", "") for lk in self.links if lk.get("url")
             ),
             "status": _label(self.status),
+            "status_raw": getattr(self.status, "value", self.status),
         }
 
 

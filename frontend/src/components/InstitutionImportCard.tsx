@@ -13,8 +13,10 @@ import {
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
-import { INSTITUTION_TYPES, labelize } from '../api/types';
+import { INSTITUTION_TYPES } from '../api/types';
+import { useEnumLabel } from '../i18n/enumLabels';
 
 interface ImportResult {
   location: string;
@@ -26,9 +28,11 @@ interface ImportResult {
   total_in_region: number;
 }
 
-const IMPORTABLE = INSTITUTION_TYPES.filter((t) => t !== 'other');
+const IMPORTABLE = INSTITUTION_TYPES.filter((v) => v !== 'other');
 
 export function InstitutionImportCard() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const queryClient = useQueryClient();
 
   const form = useForm({
@@ -39,9 +43,9 @@ export function InstitutionImportCard() {
       types: ['school', 'college', 'museum', 'library'] as string[],
     },
     validate: {
-      location: (v) => (v.trim().length > 0 ? null : 'Enter an address, place, or "lat, lon"'),
-      radius: (v) => (v > 0 ? null : 'Radius must be positive'),
-      types: (v) => (v.length > 0 ? null : 'Pick at least one type'),
+      location: (v) => (v.trim().length > 0 ? null : t('institutionImportCard.locationRequired')),
+      radius: (v) => (v > 0 ? null : t('institutionImportCard.radiusPositive')),
+      types: (v) => (v.length > 0 ? null : t('institutionImportCard.typesRequired')),
     },
   });
 
@@ -59,16 +63,22 @@ export function InstitutionImportCard() {
       queryClient.invalidateQueries({ queryKey: ['institutions'] });
       notifications.show({
         color: 'green',
-        title: 'Import complete',
-        message: `${r.inserted} added, ${r.updated} updated within ${r.radius_km} km of ${r.location}. ${r.total_in_region} total in this area.`,
+        title: t('institutionImportCard.importCompleteTitle'),
+        message: t('institutionImportCard.importCompleteMessage', {
+          inserted: r.inserted,
+          updated: r.updated,
+          radiusKm: r.radius_km,
+          location: r.location,
+          totalInRegion: r.total_in_region,
+        }),
         autoClose: 8000,
       });
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Import failed',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('institutionImportCard.importFailedTitle'),
+        message: e instanceof ApiError ? e.message : t('institutionImportCard.unexpectedError'),
         autoClose: 8000,
       });
     },
@@ -79,20 +89,19 @@ export function InstitutionImportCard() {
       <form onSubmit={form.onSubmit((values) => runImport.mutate(values))}>
         <Stack>
           <div>
-            <Title order={4}>Import institutions near a location</Title>
+            <Title order={4}>{t('institutionImportCard.title')}</Title>
             <Text c="dimmed" size="sm">
-              Pull schools, colleges, museums and libraries from OpenStreetMap within a
-              radius of a place, so they appear on the Map as coverage targets.
+              {t('institutionImportCard.description')}
             </Text>
           </div>
           <TextInput
-            label="Location"
-            placeholder='Address, place name, or "lat, lon" — e.g. University of Tennessee, Knoxville'
+            label={t('institutionImportCard.locationLabel')}
+            placeholder={t('institutionImportCard.locationPlaceholder')}
             {...form.getInputProps('location')}
           />
           <Group align="flex-end">
             <NumberInput
-              label="Radius"
+              label={t('institutionImportCard.radiusLabel')}
               min={1}
               max={200}
               w={120}
@@ -100,28 +109,28 @@ export function InstitutionImportCard() {
             />
             <SegmentedControl
               data={[
-                { label: 'miles', value: 'mi' },
-                { label: 'km', value: 'km' },
+                { label: t('institutionImportCard.unitMiles'), value: 'mi' },
+                { label: t('institutionImportCard.unitKm'), value: 'km' },
               ]}
               {...form.getInputProps('unit')}
             />
             <Text size="xs" c="dimmed" pb={8}>
-              Max 100 km / ~62 mi
+              {t('institutionImportCard.maxRadiusHint')}
             </Text>
           </Group>
-          <Checkbox.Group label="Types" {...form.getInputProps('types')}>
+          <Checkbox.Group label={t('institutionImportCard.typesLabel')} {...form.getInputProps('types')}>
             <Group gap="md" mt={4}>
-              {IMPORTABLE.map((t) => (
-                <Checkbox key={t} value={t} label={labelize(t)} />
+              {IMPORTABLE.map((v) => (
+                <Checkbox key={v} value={v} label={enumLabel.institutionType(v)} />
               ))}
             </Group>
           </Checkbox.Group>
           <Group justify="space-between" align="center">
             <Text size="xs" c="dimmed">
-              Large radii can take up to a minute (it queries OpenStreetMap live).
+              {t('institutionImportCard.largeRadiusHint')}
             </Text>
             <Button type="submit" loading={runImport.isPending}>
-              Import
+              {t('institutionImportCard.importButton')}
             </Button>
           </Group>
         </Stack>

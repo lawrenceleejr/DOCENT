@@ -29,6 +29,7 @@ export const HOST_RELATIONSHIPS = [
   'counselor',
   'alumnus',
   'former_student',
+  'former_teacher',
   'collaborator',
   'community_partner',
   'family_friend',
@@ -66,6 +67,127 @@ export const AUDIENCE_LEVELS = [
 ] as const;
 export type AudienceLevel = (typeof AUDIENCE_LEVELS)[number];
 
+// Central list of allowed Visit.language values — must match
+// backend/app/languages.py exactly (same strings, same order).
+export const LANGUAGES = [
+  'Afrikaans',
+  'Albanian',
+  'Amharic',
+  'Arabic',
+  'Armenian',
+  'American Sign Language',
+  'Azerbaijani',
+  'Basque',
+  'Belarusian',
+  'Bengali',
+  'Bosnian',
+  'Bulgarian',
+  'Burmese',
+  'Cantonese',
+  'Catalan',
+  'Cebuano',
+  'Chichewa',
+  'Corsican',
+  'Croatian',
+  'Czech',
+  'Danish',
+  'Dutch',
+  'English',
+  'Esperanto',
+  'Estonian',
+  'Filipino',
+  'Finnish',
+  'French',
+  'Frisian',
+  'Galician',
+  'Georgian',
+  'German',
+  'Greek',
+  'Gujarati',
+  'Haitian Creole',
+  'Hausa',
+  'Hawaiian',
+  'Hebrew',
+  'Hindi',
+  'Hmong',
+  'Hungarian',
+  'Icelandic',
+  'Igbo',
+  'Indonesian',
+  'Irish',
+  'Italian',
+  'Japanese',
+  'Javanese',
+  'Kannada',
+  'Kazakh',
+  'Khmer',
+  'Kinyarwanda',
+  'Korean',
+  'Kurdish',
+  'Kyrgyz',
+  'Lao',
+  'Latin',
+  'Latvian',
+  'Lithuanian',
+  'Luxembourgish',
+  'Macedonian',
+  'Malagasy',
+  'Malay',
+  'Malayalam',
+  'Maltese',
+  'Mandarin Chinese',
+  'Maori',
+  'Marathi',
+  'Mongolian',
+  'Nepali',
+  'Norwegian',
+  'Odia',
+  'Pashto',
+  'Persian (Farsi)',
+  'Polish',
+  'Portuguese',
+  'Punjabi',
+  'Romanian',
+  'Russian',
+  'Samoan',
+  'Scots Gaelic',
+  'Serbian',
+  'Sesotho',
+  'Shona',
+  'Sindhi',
+  'Sinhala',
+  'Slovak',
+  'Slovenian',
+  'Somali',
+  'Spanish',
+  'Sundanese',
+  'Swahili',
+  'Swedish',
+  'Tagalog',
+  'Tajik',
+  'Tamil',
+  'Tatar',
+  'Telugu',
+  'Thai',
+  'Tigrinya',
+  'Tongan',
+  'Turkish',
+  'Turkmen',
+  'Ukrainian',
+  'Urdu',
+  'Uyghur',
+  'Uzbek',
+  'Vietnamese',
+  'Welsh',
+  'Xhosa',
+  'Yiddish',
+  'Yoruba',
+  'Zulu',
+  'Chinese (Traditional)',
+  'Chinese (Simplified)',
+  'Other',
+] as const;
+
 export function labelize(value: string): string {
   return value
     .split('_')
@@ -78,14 +200,35 @@ export interface User {
   email: string;
   name: string;
   affiliation: string | null;
+  position: string | null;
   is_admin: boolean;
   is_active: boolean;
+  languages_spoken: string[];
   created_at: string;
 }
 
 export interface UserBrief {
   id: number;
   name: string;
+}
+
+export interface School {
+  id: number;
+  venue: VenueBrief;
+  created_at: string;
+}
+
+export interface AdminUser extends User {
+  schools: VenueBrief[];
+}
+
+export interface DirectoryUser {
+  id: number;
+  name: string;
+  affiliation: string | null;
+  position: string | null;
+  languages_spoken: string[];
+  schools: VenueBrief[];
 }
 
 export interface Venue {
@@ -119,6 +262,35 @@ export interface VenueDetail extends Venue {
   last_visit_date: string | null;
 }
 
+/** One address/place autocomplete result from the geocode search — prefills
+ * a new venue's address fields, never its name or type. */
+export interface PlaceSuggestion {
+  label: string;
+  name: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+/** A standing personal-network contact at a venue — independent of any
+ * logged visit (a teacher you know, an alum, a past host you want to track). */
+export interface Connection {
+  id: number;
+  venue_id: number;
+  name: string;
+  role: string | null;
+  relationship_type: HostRelationship | null;
+  relationship_detail: string | null;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  added_by: UserBrief | null;
+  created_at: string;
+}
+
 export interface Visit {
   id: number;
   author: UserBrief;
@@ -138,6 +310,7 @@ export interface Visit {
   host_notes: string | null;
   people_reached: number;
   audience_level: AudienceLevel;
+  language: string | null;
   duration_minutes: number | null;
   rating: number | null;
   reflection: string | null;
@@ -147,6 +320,27 @@ export interface Visit {
   links: CoverageLink[];
   created_at: string;
   updated_at: string;
+}
+
+/** A visit-list row — either a local visit or an activity pulled from a sibling
+ * instance. Federated rows have `source` = the peer label, `id` null, an
+ * `external_url` deep-link, and only feed-safe fields populated. */
+export interface ActivityListItem {
+  source: string;
+  id: number | null;
+  external_url: string | null;
+  visit_date: string;
+  start_time: string | null;
+  status: VisitStatus | null;
+  title: string | null;
+  event_type: EventType | null;
+  audience_level: AudienceLevel | null;
+  language: string | null;
+  people_reached: number;
+  rating: number | null;
+  tags: string[];
+  author: UserBrief | null;
+  venue: VenueBrief | null;
 }
 
 export const COVERAGE_CATEGORIES = ['press', 'social_media', 'video', 'blog', 'other'] as const;
@@ -311,11 +505,13 @@ export interface ReportRow {
   date: string;
   title: string;
   event_type: string;
+  event_type_raw: string;
   venue: string;
   city: string;
   state: string;
   location: string;
   audience: string;
+  audience_raw: string;
   people_reached: number;
   duration_minutes: number | null;
   presenter: string;
@@ -324,8 +520,10 @@ export interface ReportRow {
   host_role: string;
   tags: string;
   coverage: string;
+  coverage_categories: string[];
   coverage_links: string;
   status: string;
+  status_raw: string;
 }
 
 export interface ActivityReport {
@@ -345,6 +543,49 @@ export interface AuthConfig {
   contact_email: string | null;
   site_name: string | null;
   public_page: boolean;
+  login_message: string | null;
+  map_center_lat: number;
+  map_center_lon: number;
+  user_directory_visible: boolean;
+}
+
+export const FEDERATION_INTERVALS = ['hour', 'day', 'week'] as const;
+export type FederationInterval = (typeof FEDERATION_INTERVALS)[number];
+
+export interface FederationPeer {
+  id: number;
+  label: string | null;
+  feed_url: string; // token masked
+  interval: FederationInterval;
+  enabled: boolean;
+  last_synced_at: string | null;
+  last_status: string | null;
+  last_error: string | null;
+  activity_count: number;
+  next_sync_at: string | null;
+  consecutive_failures: number;
+  created_at: string;
+}
+
+/** Result of the admin "Test feed URL" preview before adding a peer. */
+export interface FederationPeerPreview {
+  ok: boolean;
+  instance_name: string | null;
+  instance_url: string | null;
+  activity_count: number;
+  error: string | null;
+}
+
+export interface FederatedMapPoint {
+  latitude: number;
+  longitude: number;
+  venue_name: string | null;
+  venue_type: string | null;
+  person_name: string | null;
+  visit_date: string;
+  people_reached: number;
+  permalink: string | null;
+  source_label: string | null;
 }
 
 export interface PublicActivity {
@@ -373,6 +614,13 @@ export interface RegistrationSettings {
   site_url: string;
   site_name: string;
   public_page: boolean;
+  login_message: string;
+  map_center_lat: number;
+  map_center_lon: number;
+  user_directory_visible: boolean;
+  federation_publish: boolean;
+  federation_publish_planned: boolean;
+  federation_feed_url: string;
 }
 
 export interface DbImportResult {
