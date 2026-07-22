@@ -4,6 +4,8 @@ An admin can change these from the UI without editing `.env` or redeploying.
 The DB value wins when a row exists (even if empty — e.g. clearing the invite
 code closes registration); otherwise we fall back to the env-configured value.
 """
+import secrets
+
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
@@ -18,6 +20,8 @@ LOGIN_MESSAGE_KEY = "login_message"
 MAP_CENTER_LAT_KEY = "map_center_lat"
 MAP_CENTER_LON_KEY = "map_center_lon"
 USER_DIRECTORY_KEY = "user_directory_visible"
+FEDERATION_PUBLISH_KEY = "federation_publish"
+FEDERATION_TOKEN_KEY = "federation_token"
 
 
 def get_setting(db: Session, key: str) -> str | None:
@@ -80,3 +84,31 @@ def user_directory_visible(db: Session) -> bool:
     if override is not None:
         return override == "1"
     return get_settings().user_directory_visible
+
+
+def federation_publish_enabled(db: Session) -> bool:
+    """Whether this instance serves its activities feed to sibling instances."""
+    return get_setting(db, FEDERATION_PUBLISH_KEY) == "1"
+
+
+def get_federation_token(db: Session) -> str | None:
+    """The token that must appear in the feed URL (pure read; None if unset)."""
+    return get_setting(db, FEDERATION_TOKEN_KEY) or None
+
+
+def ensure_federation_token(db: Session) -> str:
+    """Return the existing token, generating (and staging) one if missing so an
+    admin can copy a working URL. The caller is responsible for committing."""
+    token = get_federation_token(db)
+    if not token:
+        token = secrets.token_urlsafe(24)
+        set_setting(db, FEDERATION_TOKEN_KEY, token)
+    return token
+
+
+def rotate_federation_token(db: Session) -> str:
+    """Replace the federation token — invalidates any feed URL already handed
+    out to siblings, who must be given the new URL. The caller commits."""
+    token = secrets.token_urlsafe(24)
+    set_setting(db, FEDERATION_TOKEN_KEY, token)
+    return token

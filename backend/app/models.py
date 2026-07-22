@@ -72,6 +72,14 @@ class VisitStatus(str, enum.Enum):
     completed = "completed"
 
 
+class FederationInterval(str, enum.Enum):
+    """How often to pull activities from a sibling DOCENT instance."""
+
+    hour = "hour"
+    day = "day"
+    week = "week"
+
+
 class HostRelationship(str, enum.Enum):
     teacher_faculty = "teacher_faculty"
     administrator = "administrator"
@@ -321,3 +329,67 @@ class Setting(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class FederationPeer(Base):
+    """A sibling DOCENT instance whose activities this instance pulls in.
+
+    `feed_url` is the full URL an admin pasted, INCLUDING the sibling's
+    federation token (e.g. https://sib.edu/api/federation/activities?token=...).
+    """
+
+    __tablename__ = "federation_peers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    label: Mapped[str | None] = mapped_column(String(255))
+    feed_url: Mapped[str] = mapped_column(Text)
+    interval: Mapped[FederationInterval] = mapped_column(
+        Enum(FederationInterval, name="federation_interval"),
+        server_default=FederationInterval.day.value,
+    )
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
+    last_synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_status: Mapped[str | None] = mapped_column(String(16))  # "ok" | "error"
+    last_error: Mapped[str | None] = mapped_column(Text)
+    activity_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    activities: Mapped[list["FederatedActivity"]] = relationship(
+        back_populates="peer", cascade="all, delete-orphan"
+    )
+
+
+class FederatedActivity(Base):
+    """A locally-cached, limited-field copy of an activity pulled from a peer.
+
+    Deliberately narrow: date, place (+coords/type), the person, event type,
+    people reached, and a deep-link back to the peer. NO private fields
+    (descriptions, reflections, ratings, host contact details, notes)."""
+
+    __tablename__ = "federated_activities"
+    __table_args__ = (
+        UniqueConstraint("peer_id", "remote_id", name="uq_federated_peer_remote"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    peer_id: Mapped[int] = mapped_column(
+        ForeignKey("federation_peers.id", ondelete="CASCADE"), index=True
+    )
+    remote_id: Mapped[int] = mapped_column(Integer)  # the source visit's id
+    visit_date: Mapped[date] = mapped_column(Date, index=True)
+    venue_name: Mapped[str | None] = mapped_column(String(255))
+    venue_city: Mapped[str | None] = mapped_column(String(255))
+    latitude: Mapped[float | None] = mapped_column(Float)
+    longitude: Mapped[float | None] = mapped_column(Float)
+    venue_type: Mapped[str | None] = mapped_column(String(50))  # raw enum value
+    event_type: Mapped[str | None] = mapped_column(String(50))  # raw enum value
+    person_name: Mapped[str | None] = mapped_column(String(255))
+    people_reached: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    permalink: Mapped[str | None] = mapped_column(Text)
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    peer: Mapped[FederationPeer] = relationship(back_populates="activities")
