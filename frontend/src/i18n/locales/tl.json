@@ -123,7 +123,10 @@
     "emptyDescriptionShort": "Walang pagbisitang tumutugma sa mga filter na ito.",
     "reachedSuffix": "naabot",
     "visitCount_one": "{{formattedCount}} pagbisita",
-    "visitCount_other": "{{formattedCount}} pagbisita"
+    "visitCount_other": "{{formattedCount}} pagbisita",
+    "includeSiblings": "Isama ang mga sibling instance",
+    "siblingBadge": "Mula sa isang sibling instance",
+    "siblingActivity": "Aktibidad"
   },
   "visitForm": {
     "editTitle": "I-edit ang pagbisita",
@@ -516,7 +519,9 @@
     "topVenues": "Nangungunang Venue",
     "communicatorLeaderboard": "Leaderboard ng Communicator",
     "colVenue": "Venue",
-    "colCommunicator": "Communicator"
+    "colCommunicator": "Communicator",
+    "includeSiblings": "Isama ang mga sibling instance",
+    "localOnlyNote": "Binibilang lang ng mga leaderboard at breakdown ng audience/relasyon ang mga aktibidad ng instance na ito."
   },
   "impact": {
     "unavailableTitle": "Hindi available ang page na ito",
@@ -536,7 +541,9 @@
     "noCompletedEvents": "Walang natapos na event pa.",
     "recentActivityHeading": "Kamakailang Aktibidad",
     "poweredByPrefix": "Pinapatakbo ng",
-    "poweredBySuffix": "· libreng software sa ilalim ng GNU GPL v3"
+    "poweredBySuffix": "· libreng software sa ilalim ng GNU GPL v3",
+    "includeSiblings": "Isama ang mga sibling instance",
+    "includingSiblings": "Kasama sa mga numero ang mga aktibidad sa aming mga sibling instance."
   },
   "map": {
     "title": "Mapa",
@@ -562,7 +569,11 @@
     "couldNotStartVisit": "Hindi nasimulan ang pagbisita",
     "unexpectedError": "Hindi inaasahang error",
     "institutionDataAttribution": "Datos ng institusyon © OpenStreetMap contributors.",
-    "importMoreRegionsPrefix": "Mag-import ng mas maraming rehiyon gamit ang"
+    "importMoreRegionsPrefix": "Mag-import ng mas maraming rehiyon gamit ang",
+    "showSiblings": "Mga aktibidad ng sibling",
+    "legendSibling": "Aktibidad ng sibling",
+    "fromSibling": "Mula kay {{name}}",
+    "openOnPrimary": "Buksan sa primary instance"
   },
   "profile": {
     "title": "Profile",
@@ -788,5 +799,49 @@
     "noVisits": "Walang pagbisitang naitala sa venue na ito pa",
     "connectionUpdated": "Na-update ang connection",
     "connectionAdded": "Naidagdag ang connection"
+  },
+  "federationCard": {
+    "title": "Federation",
+    "description": "Ibahagi ang activity feed ng instance na ito sa mga sibling instance, at hilahin ang kanilang mga aktibidad papasok sa iyong pinagsamang mga view.",
+    "publishSectionTitle": "Paglalathala (feed ng instance na ito)",
+    "publishToggle": "Ilathala sa federation",
+    "publishToggleDescription": "Ihain ang activity feed ng instance na ito para makapag-subscribe dito ang mga sibling instance.",
+    "feedUrlLabel": "Ang iyong feed URL",
+    "feedUrlHelp": "Ibigay ang URL na ito sa mga sibling instance para mahila nila ang iyong mga aktibidad. May lihim na token ito, kaya ibahagi ito nang pribado at sa pamamagitan lang ng HTTPS.",
+    "copy": "Kopyahin",
+    "copied": "Kinopya",
+    "rotateToken": "I-rotate ang token",
+    "rotateWarning": "Kapag ni-rotate ang token, mawawalan ng bisa ang anumang feed URL na naibahagi mo na. Kakailanganin ng mga sibling ang bagong URL para magpatuloy ang pag-sync. Ituloy?",
+    "tokenRotated": "Na-rotate ang feed token. Ibahagi ulit ang bagong URL sa iyong mga sibling.",
+    "setSiteUrlHint": "Naka-on ang paglalathala, pero hindi pa absolute ang iyong feed URL. Itakda ang Site URL ng instance na ito sa mga setting ng site-address para makakuha ang mga sibling ng kumpleto at nalilinkang URL.",
+    "peersSectionTitle": "Mga sibling instance (mga feed na hinihila natin)",
+    "peersSectionDescription": "Mag-subscribe sa mga feed ng sibling instance. Isinasama ang kanilang mga aktibidad sa iyong mapa at stats.",
+    "addPeer": "Idagdag",
+    "feedUrlPlaceholder": "https://sibling.example.edu/api/federation/activities?token=...",
+    "addFeedUrlLabel": "Feed URL ng sibling",
+    "intervalLabel": "Mag-sync tuwing",
+    "interval_hour": "Oras",
+    "interval_day": "Araw",
+    "interval_week": "Linggo",
+    "colLabel": "Instance",
+    "colInterval": "Interval",
+    "colEnabled": "Enabled",
+    "colLastSynced": "Huling na-sync",
+    "colStatus": "Status",
+    "colActivities": "Mga Aktibidad",
+    "colActions": "Mga Aksyon",
+    "never": "Hindi kailanman",
+    "statusOk": "OK",
+    "statusError": "Error",
+    "syncNow": "Mag-sync ngayon",
+    "syncAll": "I-sync lahat ngayon",
+    "remove": "Alisin",
+    "confirmRemove": "Alisin ang sibling instance na \"{{label}}\"? Hindi na lalabas sa iyong pinagsamang mga view ang mga aktibidad na hinila mula rito.",
+    "noPeers": "Wala pang sibling instance.",
+    "added": "Naidagdag ang sibling instance.",
+    "removed": "Naalis ang sibling instance.",
+    "synced": "Tapos na ang pag-sync.",
+    "saved": "Na-save.",
+    "couldNotSave": "Hindi na-save"
   }
 }

@@ -123,7 +123,10 @@
     "emptyDescriptionShort": "目前没有符合筛选条件的到访记录。",
     "reachedSuffix": "人触达",
     "visitCount_one": "{{formattedCount}} 次到访",
-    "visitCount_other": "{{formattedCount}} 次到访"
+    "visitCount_other": "{{formattedCount}} 次到访",
+    "includeSiblings": "包含姊妹实例",
+    "siblingBadge": "来自姊妹实例",
+    "siblingActivity": "活动"
   },
   "visitForm": {
     "editTitle": "编辑到访记录",
@@ -516,7 +519,9 @@
     "topVenues": "热门场地",
     "communicatorLeaderboard": "推广人排行榜",
     "colVenue": "场地",
-    "colCommunicator": "推广人"
+    "colCommunicator": "推广人",
+    "includeSiblings": "包含姊妹实例",
+    "localOnlyNote": "排行榜以及受众/关系细分仅统计本实例的活动。"
   },
   "impact": {
     "unavailableTitle": "此页面不可用",
@@ -536,7 +541,9 @@
     "noCompletedEvents": "暂无已完成的活动。",
     "recentActivityHeading": "近期动态",
     "poweredByPrefix": "技术支持：",
-    "poweredBySuffix": "· 依据 GNU GPL v3 许可发布的自由软件"
+    "poweredBySuffix": "· 依据 GNU GPL v3 许可发布的自由软件",
+    "includeSiblings": "包含姊妹实例",
+    "includingSiblings": "数据包含我们各姊妹实例的活动。"
   },
   "map": {
     "title": "地图",
@@ -562,7 +569,11 @@
     "couldNotStartVisit": "无法开始记录到访",
     "unexpectedError": "意外错误",
     "institutionDataAttribution": "机构数据 © OpenStreetMap 贡献者。",
-    "importMoreRegionsPrefix": "使用以下方式导入更多区域："
+    "importMoreRegionsPrefix": "使用以下方式导入更多区域：",
+    "showSiblings": "姊妹实例活动",
+    "legendSibling": "姊妹实例活动",
+    "fromSibling": "来自 {{name}}",
+    "openOnPrimary": "在主实例上打开"
   },
   "profile": {
     "title": "个人资料",
@@ -788,5 +799,49 @@
     "noVisits": "该场地暂无到访记录",
     "connectionUpdated": "联系人已更新",
     "connectionAdded": "联系人已添加"
+  },
+  "federationCard": {
+    "title": "联合",
+    "description": "与姊妹实例共享本实例的活动动态，并将它们的活动汇入您的合并视图。",
+    "publishSectionTitle": "发布（本实例的动态）",
+    "publishToggle": "发布到联合",
+    "publishToggleDescription": "提供本实例的活动动态，供姊妹实例订阅。",
+    "feedUrlLabel": "您的动态 URL",
+    "feedUrlHelp": "将此 URL 交给姊妹实例，它们即可拉取您的活动。其中包含机密令牌，请仅通过 HTTPS 私下分享。",
+    "copy": "复制",
+    "copied": "已复制",
+    "rotateToken": "轮换令牌",
+    "rotateWarning": "轮换令牌会使您已分享的所有动态 URL 失效。姊妹实例需要使用新的 URL 才能继续同步。是否继续？",
+    "tokenRotated": "动态令牌已轮换。请将新的 URL 重新分享给您的姊妹实例。",
+    "setSiteUrlHint": "发布已开启，但您的动态 URL 尚不是绝对地址。请在站点地址设置中设置本实例的站点 URL，以便姊妹实例获得完整、可点击的 URL。",
+    "peersSectionTitle": "姊妹实例（我们拉取的动态来源）",
+    "peersSectionDescription": "订阅姊妹实例的动态。它们的活动会合并到您的地图与统计中。",
+    "addPeer": "添加",
+    "feedUrlPlaceholder": "https://sibling.example.edu/api/federation/activities?token=...",
+    "addFeedUrlLabel": "姊妹实例动态 URL",
+    "intervalLabel": "同步频率",
+    "interval_hour": "小时",
+    "interval_day": "天",
+    "interval_week": "周",
+    "colLabel": "实例",
+    "colInterval": "间隔",
+    "colEnabled": "已启用",
+    "colLastSynced": "上次同步",
+    "colStatus": "状态",
+    "colActivities": "活动",
+    "colActions": "操作",
+    "never": "从未",
+    "statusOk": "正常",
+    "statusError": "错误",
+    "syncNow": "立即同步",
+    "syncAll": "立即全部同步",
+    "remove": "移除",
+    "confirmRemove": "移除姊妹实例“{{label}}”？从中拉取的活动将不再显示在您的合并视图中。",
+    "noPeers": "尚无姊妹实例。",
+    "added": "姊妹实例已添加。",
+    "removed": "姊妹实例已移除。",
+    "synced": "同步完成。",
+    "saved": "已保存。",
+    "couldNotSave": "无法保存"
   }
 }

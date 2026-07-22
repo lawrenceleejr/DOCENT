@@ -9,6 +9,7 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Switch,
   Text,
   Table,
   Title,
@@ -260,6 +261,7 @@ export function DashboardPage() {
   const [eventType, setEventType] = useState<string | null>(null);
   const [audience, setAudience] = useState<string | null>(null);
   const [tags, setTags] = useState<string[]>([]);
+  const [includeSiblings, setIncludeSiblings] = useState(true);
 
   const { data: tagOptions = [] } = useQuery({
     queryKey: ['visits', 'tags'],
@@ -277,7 +279,9 @@ export function DashboardPage() {
     [dates, venueType, eventType, audience, tags],
   );
   const activeFilterCount =
-    [venueType, eventType, audience].filter(Boolean).length + (tags.length > 0 ? 1 : 0);
+    [venueType, eventType, audience].filter(Boolean).length +
+    (tags.length > 0 ? 1 : 0) +
+    (includeSiblings ? 0 : 1);
   const hasFilters = activeFilterCount > 0;
   const clearFilters = () => {
     setVenueType(null);
@@ -287,17 +291,29 @@ export function DashboardPage() {
   };
 
   const { data: summary } = useQuery({
-    queryKey: ['stats', 'summary', filters],
-    queryFn: () => api.get<StatsSummary>('/api/stats/summary', filters),
+    queryKey: ['stats', 'summary', filters, includeSiblings],
+    queryFn: () =>
+      api.get<StatsSummary>('/api/stats/summary', {
+        ...filters,
+        include_federated: includeSiblings,
+      }),
   });
   const { data: timeseries } = useQuery({
-    queryKey: ['stats', 'timeseries', filters],
-    queryFn: () => api.get<TimeseriesPoint[]>('/api/stats/timeseries', filters),
+    queryKey: ['stats', 'timeseries', filters, includeSiblings],
+    queryFn: () =>
+      api.get<TimeseriesPoint[]>('/api/stats/timeseries', {
+        ...filters,
+        include_federated: includeSiblings,
+      }),
   });
   const { data: byVenueType } = useQuery({
-    queryKey: ['stats', 'breakdown', 'venue_type', filters],
+    queryKey: ['stats', 'breakdown', 'venue_type', filters, includeSiblings],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'venue_type', ...filters }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', {
+        by: 'venue_type',
+        ...filters,
+        include_federated: includeSiblings,
+      }),
   });
   const { data: byAudience } = useQuery({
     queryKey: ['stats', 'breakdown', 'audience_level', filters],
@@ -389,6 +405,12 @@ export function DashboardPage() {
             value={tags}
             onChange={setTags}
             w={220}
+          />
+          <Switch
+            label={t('dashboard.includeSiblings')}
+            checked={includeSiblings}
+            onChange={(event) => setIncludeSiblings(event.currentTarget.checked)}
+            mb={6}
           />
           {hasFilters && (
             <Button variant="subtle" onClick={clearFilters}>
@@ -493,6 +515,9 @@ export function DashboardPage() {
       <Title order={3} mt="sm">
         {t('dashboard.leadersHeading')}
       </Title>
+      <Text c="dimmed" size="xs">
+        {t('dashboard.localOnlyNote')}
+      </Text>
       <Grid>
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Card withBorder p="md">

@@ -50,6 +50,7 @@ import { InstitutionImportCard } from '../components/InstitutionImportCard';
 import { InstitutionManagerCard } from '../components/InstitutionManagerCard';
 import { SiteSetupCard } from '../components/SiteSetupCard';
 import { DbToolsCard } from '../components/DbToolsCard';
+import { FederationCard } from '../components/FederationCard';
 import { VenueFilterSelect } from '../components/VenueFilterSelect';
 
 const PAGE_SIZE = 25;
@@ -452,6 +453,7 @@ export function AdminPage() {
       <RegistrationCard />
       <SiteSetupCard />
       <DbToolsCard />
+      <FederationCard />
       <BackupsCard />
       <InstitutionImportCard />
       <InstitutionManagerCard />

@@ -123,7 +123,10 @@
     "emptyDescriptionShort": "Chưa có lượt ghé thăm nào phù hợp với các bộ lọc này.",
     "reachedSuffix": "đã tiếp cận",
     "visitCount_one": "{{formattedCount}} lượt ghé thăm",
-    "visitCount_other": "{{formattedCount}} lượt ghé thăm"
+    "visitCount_other": "{{formattedCount}} lượt ghé thăm",
+    "includeSiblings": "Bao gồm các phiên bản đồng cấp",
+    "siblingBadge": "Từ một phiên bản đồng cấp",
+    "siblingActivity": "Hoạt động"
   },
   "visitForm": {
     "editTitle": "Sửa lượt ghé thăm",
@@ -516,7 +519,9 @@
     "topVenues": "Địa điểm nổi bật",
     "communicatorLeaderboard": "Bảng xếp hạng người kết nối",
     "colVenue": "Địa điểm",
-    "colCommunicator": "Người kết nối"
+    "colCommunicator": "Người kết nối",
+    "includeSiblings": "Bao gồm các phiên bản đồng cấp",
+    "localOnlyNote": "Bảng xếp hạng và phân loại theo đối tượng/quan hệ chỉ tính các hoạt động của phiên bản này."
   },
   "impact": {
     "unavailableTitle": "Trang này không khả dụng",
@@ -536,7 +541,9 @@
     "noCompletedEvents": "Chưa có sự kiện nào hoàn thành.",
     "recentActivityHeading": "Hoạt động gần đây",
     "poweredByPrefix": "Được xây dựng bằng",
-    "poweredBySuffix": "· phần mềm miễn phí theo GNU GPL v3"
+    "poweredBySuffix": "· phần mềm miễn phí theo GNU GPL v3",
+    "includeSiblings": "Bao gồm các phiên bản đồng cấp",
+    "includingSiblings": "Các con số bao gồm hoạt động trên khắp các phiên bản đồng cấp của chúng tôi."
   },
   "map": {
     "title": "Bản đồ",
@@ -562,7 +569,11 @@
     "couldNotStartVisit": "Không thể bắt đầu lượt ghé thăm",
     "unexpectedError": "Lỗi không mong muốn",
     "institutionDataAttribution": "Dữ liệu tổ chức © những người đóng góp cho OpenStreetMap.",
-    "importMoreRegionsPrefix": "Nhập thêm khu vực khác bằng"
+    "importMoreRegionsPrefix": "Nhập thêm khu vực khác bằng",
+    "showSiblings": "Hoạt động của phiên bản đồng cấp",
+    "legendSibling": "Hoạt động phiên bản đồng cấp",
+    "fromSibling": "Từ {{name}}",
+    "openOnPrimary": "Mở trên phiên bản chính"
   },
   "profile": {
     "title": "Hồ sơ",
@@ -788,5 +799,49 @@
     "noVisits": "Chưa có lượt ghé thăm nào được ghi nhận tại địa điểm này",
     "connectionUpdated": "Đã cập nhật liên hệ",
     "connectionAdded": "Đã thêm liên hệ"
+  },
+  "federationCard": {
+    "title": "Liên kết phiên bản",
+    "description": "Chia sẻ nguồn cấp hoạt động của phiên bản này với các phiên bản đồng cấp, và kéo hoạt động của họ vào các chế độ xem hợp nhất của bạn.",
+    "publishSectionTitle": "Xuất bản (nguồn cấp của phiên bản này)",
+    "publishToggle": "Xuất bản lên mạng lưới liên kết",
+    "publishToggleDescription": "Phục vụ nguồn cấp hoạt động của phiên bản này để các phiên bản đồng cấp có thể đăng ký.",
+    "feedUrlLabel": "URL nguồn cấp của bạn",
+    "feedUrlHelp": "Đưa URL này cho các phiên bản đồng cấp để họ có thể kéo hoạt động của bạn. URL chứa một mã token bí mật, vì vậy hãy chia sẻ riêng tư và chỉ qua HTTPS.",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép",
+    "rotateToken": "Tạo lại mã token",
+    "rotateWarning": "Việc tạo lại mã token sẽ làm mất hiệu lực mọi URL nguồn cấp bạn đã chia sẻ. Các phiên bản đồng cấp sẽ cần URL mới để tiếp tục đồng bộ. Tiếp tục?",
+    "tokenRotated": "Đã tạo lại mã token nguồn cấp. Hãy chia sẻ lại URL mới với các phiên bản đồng cấp của bạn.",
+    "setSiteUrlHint": "Đã bật xuất bản, nhưng URL nguồn cấp của bạn chưa phải là URL tuyệt đối. Hãy đặt URL Trang web của phiên bản này trong phần cài đặt địa chỉ trang web để các phiên bản đồng cấp nhận được URL đầy đủ, có thể liên kết.",
+    "peersSectionTitle": "Các phiên bản đồng cấp (nguồn cấp chúng ta kéo về)",
+    "peersSectionDescription": "Đăng ký nguồn cấp của các phiên bản đồng cấp. Hoạt động của họ được hợp nhất vào bản đồ và số liệu thống kê của bạn.",
+    "addPeer": "Thêm",
+    "feedUrlPlaceholder": "https://sibling.example.edu/api/federation/activities?token=...",
+    "addFeedUrlLabel": "URL nguồn cấp của phiên bản đồng cấp",
+    "intervalLabel": "Đồng bộ mỗi",
+    "interval_hour": "Giờ",
+    "interval_day": "Ngày",
+    "interval_week": "Tuần",
+    "colLabel": "Phiên bản",
+    "colInterval": "Chu kỳ",
+    "colEnabled": "Đã bật",
+    "colLastSynced": "Đồng bộ lần cuối",
+    "colStatus": "Trạng thái",
+    "colActivities": "Hoạt động",
+    "colActions": "Hành động",
+    "never": "Chưa bao giờ",
+    "statusOk": "OK",
+    "statusError": "Lỗi",
+    "syncNow": "Đồng bộ ngay",
+    "syncAll": "Đồng bộ tất cả ngay",
+    "remove": "Xóa",
+    "confirmRemove": "Xóa phiên bản đồng cấp \"{{label}}\"? Các hoạt động đã kéo về từ phiên bản này sẽ không còn xuất hiện trong các chế độ xem hợp nhất của bạn.",
+    "noPeers": "Chưa có phiên bản đồng cấp nào.",
+    "added": "Đã thêm phiên bản đồng cấp.",
+    "removed": "Đã xóa phiên bản đồng cấp.",
+    "synced": "Đồng bộ hoàn tất.",
+    "saved": "Đã lưu.",
+    "couldNotSave": "Không thể lưu"
   }
 }

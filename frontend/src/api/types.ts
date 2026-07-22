@@ -322,6 +322,27 @@ export interface Visit {
   updated_at: string;
 }
 
+/** A visit-list row — either a local visit or an activity pulled from a sibling
+ * instance. Federated rows have `source` = the peer label, `id` null, an
+ * `external_url` deep-link, and only feed-safe fields populated. */
+export interface ActivityListItem {
+  source: string;
+  id: number | null;
+  external_url: string | null;
+  visit_date: string;
+  start_time: string | null;
+  status: VisitStatus | null;
+  title: string | null;
+  event_type: EventType | null;
+  audience_level: AudienceLevel | null;
+  language: string | null;
+  people_reached: number;
+  rating: number | null;
+  tags: string[];
+  author: UserBrief | null;
+  venue: VenueBrief | null;
+}
+
 export const COVERAGE_CATEGORIES = ['press', 'social_media', 'video', 'blog', 'other'] as const;
 export type CoverageCategory = (typeof COVERAGE_CATEGORIES)[number];
 export const COVERAGE_LABELS: Record<string, string> = {
@@ -528,6 +549,34 @@ export interface AuthConfig {
   user_directory_visible: boolean;
 }
 
+export const FEDERATION_INTERVALS = ['hour', 'day', 'week'] as const;
+export type FederationInterval = (typeof FEDERATION_INTERVALS)[number];
+
+export interface FederationPeer {
+  id: number;
+  label: string | null;
+  feed_url: string; // token masked
+  interval: FederationInterval;
+  enabled: boolean;
+  last_synced_at: string | null;
+  last_status: string | null;
+  last_error: string | null;
+  activity_count: number;
+  created_at: string;
+}
+
+export interface FederatedMapPoint {
+  latitude: number;
+  longitude: number;
+  venue_name: string | null;
+  venue_type: string | null;
+  person_name: string | null;
+  visit_date: string;
+  people_reached: number;
+  permalink: string | null;
+  source_label: string | null;
+}
+
 export interface PublicActivity {
   visit_date: string;
   title: string;
@@ -558,6 +607,8 @@ export interface RegistrationSettings {
   map_center_lat: number;
   map_center_lon: number;
   user_directory_visible: boolean;
+  federation_publish: boolean;
+  federation_feed_url: string;
 }
 
 export interface DbImportResult {

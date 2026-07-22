@@ -123,7 +123,10 @@
     "emptyDescriptionShort": "Aucune visite ne correspond à ces filtres pour l'instant.",
     "reachedSuffix": "rejointes",
     "visitCount_one": "{{formattedCount}} visite",
-    "visitCount_other": "{{formattedCount}} visites"
+    "visitCount_other": "{{formattedCount}} visites",
+    "includeSiblings": "Inclure les instances sœurs",
+    "siblingBadge": "D'une instance sœur",
+    "siblingActivity": "Activité"
   },
   "visitForm": {
     "editTitle": "Modifier la visite",
@@ -516,7 +519,9 @@
     "topVenues": "Meilleurs lieux",
     "communicatorLeaderboard": "Classement des communicateurs",
     "colVenue": "Lieu",
-    "colCommunicator": "Communicateur"
+    "colCommunicator": "Communicateur",
+    "includeSiblings": "Inclure les instances sœurs",
+    "localOnlyNote": "Les classements et les répartitions par public/relation ne comptent que les activités de cette instance."
   },
   "impact": {
     "unavailableTitle": "Cette page n'est pas disponible",
@@ -536,7 +541,9 @@
     "noCompletedEvents": "Aucune activité terminée pour l'instant.",
     "recentActivityHeading": "Activité récente",
     "poweredByPrefix": "Propulsé par",
-    "poweredBySuffix": "· logiciel libre sous la GNU GPL v3"
+    "poweredBySuffix": "· logiciel libre sous la GNU GPL v3",
+    "includeSiblings": "Inclure les instances sœurs",
+    "includingSiblings": "Les chiffres incluent les activités de nos instances sœurs."
   },
   "map": {
     "title": "Carte",
@@ -562,7 +569,11 @@
     "couldNotStartVisit": "Impossible de démarrer une visite",
     "unexpectedError": "Erreur inattendue",
     "institutionDataAttribution": "Données des institutions © contributeurs d'OpenStreetMap.",
-    "importMoreRegionsPrefix": "Importer davantage de régions avec"
+    "importMoreRegionsPrefix": "Importer davantage de régions avec",
+    "showSiblings": "Activités des instances sœurs",
+    "legendSibling": "Activité d'une instance sœur",
+    "fromSibling": "De {{name}}",
+    "openOnPrimary": "Ouvrir sur l'instance principale"
   },
   "profile": {
     "title": "Profil",
@@ -788,5 +799,49 @@
     "noVisits": "Aucune visite enregistrée à ce lieu pour l'instant",
     "connectionUpdated": "Contact mis à jour",
     "connectionAdded": "Contact ajouté"
+  },
+  "federationCard": {
+    "title": "Fédération",
+    "description": "Partagez le fil d'activité de cette instance avec les instances sœurs, et intégrez leurs activités à vos vues fusionnées.",
+    "publishSectionTitle": "Publication (le fil de cette instance)",
+    "publishToggle": "Publier vers la fédération",
+    "publishToggleDescription": "Diffusez le fil d'activité de cette instance afin que les instances sœurs puissent s'y abonner.",
+    "feedUrlLabel": "URL de votre fil",
+    "feedUrlHelp": "Transmettez cette URL aux instances sœurs pour qu'elles puissent intégrer vos activités. Elle contient un jeton secret : partagez-la en privé et uniquement via HTTPS.",
+    "copy": "Copier",
+    "copied": "Copié",
+    "rotateToken": "Renouveler le jeton",
+    "rotateWarning": "Renouveler le jeton invalide toute URL de fil déjà partagée. Les instances sœurs auront besoin de la nouvelle URL pour continuer à se synchroniser. Continuer?",
+    "tokenRotated": "Jeton du fil renouvelé. Partagez de nouveau la nouvelle URL avec vos instances sœurs.",
+    "setSiteUrlHint": "La publication est activée, mais l'URL de votre fil n'est pas encore absolue. Définissez l'adresse du site de cette instance dans les paramètres d'adresse du site afin que les instances sœurs obtiennent une URL complète et cliquable.",
+    "peersSectionTitle": "Instances sœurs (fils dont nous récupérons les données)",
+    "peersSectionDescription": "Abonnez-vous aux fils des instances sœurs. Leurs activités sont fusionnées dans votre carte et vos statistiques.",
+    "addPeer": "Ajouter",
+    "feedUrlPlaceholder": "https://soeur.exemple.edu/api/federation/activities?token=...",
+    "addFeedUrlLabel": "URL du fil de l'instance sœur",
+    "intervalLabel": "Synchroniser toutes les",
+    "interval_hour": "Heure",
+    "interval_day": "Jour",
+    "interval_week": "Semaine",
+    "colLabel": "Instance",
+    "colInterval": "Intervalle",
+    "colEnabled": "Activée",
+    "colLastSynced": "Dernière synchro",
+    "colStatus": "Statut",
+    "colActivities": "Activités",
+    "colActions": "Actions",
+    "never": "Jamais",
+    "statusOk": "OK",
+    "statusError": "Erreur",
+    "syncNow": "Synchroniser maintenant",
+    "syncAll": "Tout synchroniser maintenant",
+    "remove": "Retirer",
+    "confirmRemove": "Retirer l'instance sœur « {{label}} »? Les activités récupérées auprès d'elle n'apparaîtront plus dans vos vues fusionnées.",
+    "noPeers": "Aucune instance sœur pour l'instant.",
+    "added": "Instance sœur ajoutée.",
+    "removed": "Instance sœur retirée.",
+    "synced": "Synchronisation terminée.",
+    "saved": "Enregistré.",
+    "couldNotSave": "Impossible d'enregistrer"
   }
 }

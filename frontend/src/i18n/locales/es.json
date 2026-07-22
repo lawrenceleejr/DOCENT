@@ -123,7 +123,10 @@
     "emptyDescriptionShort": "Ninguna visita coincide con estos filtros todavía.",
     "reachedSuffix": "alcanzadas",
     "visitCount_one": "{{formattedCount}} visita",
-    "visitCount_other": "{{formattedCount}} visitas"
+    "visitCount_other": "{{formattedCount}} visitas",
+    "includeSiblings": "Incluir instancias hermanas",
+    "siblingBadge": "De una instancia hermana",
+    "siblingActivity": "Actividad"
   },
   "visitForm": {
     "editTitle": "Editar visita",
@@ -516,7 +519,9 @@
     "topVenues": "Sedes principales",
     "communicatorLeaderboard": "Tabla de comunicadores destacados",
     "colVenue": "Sede",
-    "colCommunicator": "Comunicador"
+    "colCommunicator": "Comunicador",
+    "includeSiblings": "Incluir instancias hermanas",
+    "localOnlyNote": "Las tablas de clasificación y los desgloses por público y relación cuentan únicamente las actividades de esta instancia."
   },
   "impact": {
     "unavailableTitle": "Esta página no está disponible",
@@ -536,7 +541,9 @@
     "noCompletedEvents": "Todavía no hay eventos completados.",
     "recentActivityHeading": "Actividad reciente",
     "poweredByPrefix": "Desarrollado con",
-    "poweredBySuffix": "· software libre bajo la GNU GPL v3"
+    "poweredBySuffix": "· software libre bajo la GNU GPL v3",
+    "includeSiblings": "Incluir instancias hermanas",
+    "includingSiblings": "Las cifras incluyen actividades de nuestras instancias hermanas."
   },
   "map": {
     "title": "Mapa",
@@ -562,7 +569,11 @@
     "couldNotStartVisit": "No se pudo iniciar una visita",
     "unexpectedError": "Error inesperado",
     "institutionDataAttribution": "Datos de instituciones © colaboradores de OpenStreetMap.",
-    "importMoreRegionsPrefix": "Importa más regiones con"
+    "importMoreRegionsPrefix": "Importa más regiones con",
+    "showSiblings": "Actividades de instancias hermanas",
+    "legendSibling": "Actividad de instancia hermana",
+    "fromSibling": "De {{name}}",
+    "openOnPrimary": "Abrir en la instancia principal"
   },
   "profile": {
     "title": "Perfil",
@@ -788,5 +799,49 @@
     "noVisits": "Todavía no se registraron visitas en esta sede",
     "connectionUpdated": "Contacto actualizado",
     "connectionAdded": "Contacto agregado"
+  },
+  "federationCard": {
+    "title": "Federación",
+    "description": "Comparte el feed de actividad de esta instancia con instancias hermanas y trae sus actividades a tus vistas combinadas.",
+    "publishSectionTitle": "Publicación (el feed de esta instancia)",
+    "publishToggle": "Publicar en la federación",
+    "publishToggleDescription": "Sirve el feed de actividad de esta instancia para que las instancias hermanas puedan suscribirse a él.",
+    "feedUrlLabel": "La URL de tu feed",
+    "feedUrlHelp": "Entrega esta URL a las instancias hermanas para que puedan traer tus actividades. Contiene un token secreto, así que compártela de forma privada y solo por HTTPS.",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "rotateToken": "Rotar token",
+    "rotateWarning": "Al rotar el token, cualquier URL de feed que ya hayas compartido deja de ser válida. Las instancias hermanas necesitarán la nueva URL para seguir sincronizando. ¿Continuar?",
+    "tokenRotated": "Token del feed rotado. Vuelve a compartir la nueva URL con tus instancias hermanas.",
+    "setSiteUrlHint": "La publicación está activada, pero la URL de tu feed aún no es absoluta. Establece la Dirección del sitio de esta instancia en la configuración de dirección del sitio para que las instancias hermanas reciban una URL completa y enlazable.",
+    "peersSectionTitle": "Instancias hermanas (feeds de los que traemos datos)",
+    "peersSectionDescription": "Suscríbete a los feeds de instancias hermanas. Sus actividades se combinan en tu mapa y tus análisis.",
+    "addPeer": "Agregar",
+    "feedUrlPlaceholder": "https://hermana.example.edu/api/federation/activities?token=...",
+    "addFeedUrlLabel": "URL del feed de la instancia hermana",
+    "intervalLabel": "Sincronizar cada",
+    "interval_hour": "Hora",
+    "interval_day": "Día",
+    "interval_week": "Semana",
+    "colLabel": "Instancia",
+    "colInterval": "Intervalo",
+    "colEnabled": "Habilitada",
+    "colLastSynced": "Última sincronización",
+    "colStatus": "Estado",
+    "colActivities": "Actividades",
+    "colActions": "Acciones",
+    "never": "Nunca",
+    "statusOk": "OK",
+    "statusError": "Error",
+    "syncNow": "Sincronizar ahora",
+    "syncAll": "Sincronizar todo ahora",
+    "remove": "Quitar",
+    "confirmRemove": "¿Quitar la instancia hermana \"{{label}}\"? Las actividades traídas de ella dejarán de aparecer en tus vistas combinadas.",
+    "noPeers": "Todavía no hay instancias hermanas.",
+    "added": "Instancia hermana agregada.",
+    "removed": "Instancia hermana eliminada.",
+    "synced": "Sincronización completa.",
+    "saved": "Guardado.",
+    "couldNotSave": "No se pudo guardar"
   }
 }

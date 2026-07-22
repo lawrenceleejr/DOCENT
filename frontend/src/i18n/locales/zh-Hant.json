@@ -123,7 +123,10 @@
     "emptyDescriptionShort": "目前沒有符合篩選條件的到訪紀錄。",
     "reachedSuffix": "人觸及",
     "visitCount_one": "{{formattedCount}} 次到訪",
-    "visitCount_other": "{{formattedCount}} 次到訪"
+    "visitCount_other": "{{formattedCount}} 次到訪",
+    "includeSiblings": "包含姊妹站台",
+    "siblingBadge": "來自姊妹站台",
+    "siblingActivity": "活動"
   },
   "visitForm": {
     "editTitle": "編輯到訪紀錄",
@@ -516,7 +519,9 @@
     "topVenues": "熱門場地",
     "communicatorLeaderboard": "推廣人員排行榜",
     "colVenue": "場地",
-    "colCommunicator": "推廣人員"
+    "colCommunicator": "推廣人員",
+    "includeSiblings": "包含姊妹站台",
+    "localOnlyNote": "排行榜與對象／關係細項僅計入本站台的活動。"
   },
   "impact": {
     "unavailableTitle": "此頁面目前無法使用",
@@ -536,7 +541,9 @@
     "noCompletedEvents": "目前尚無已完成的活動。",
     "recentActivityHeading": "近期活動",
     "poweredByPrefix": "技術支援：",
-    "poweredBySuffix": "· 自由軟體，採用 GNU GPL v3 授權條款"
+    "poweredBySuffix": "· 自由軟體，採用 GNU GPL v3 授權條款",
+    "includeSiblings": "包含姊妹站台",
+    "includingSiblings": "數字包含我們各姊妹站台的活動。"
   },
   "map": {
     "title": "地圖",
@@ -562,7 +569,11 @@
     "couldNotStartVisit": "無法建立到訪紀錄",
     "unexpectedError": "發生未預期的錯誤",
     "institutionDataAttribution": "機構資料 © OpenStreetMap 貢獻者。",
-    "importMoreRegionsPrefix": "使用以下功能匯入更多地區："
+    "importMoreRegionsPrefix": "使用以下功能匯入更多地區：",
+    "showSiblings": "姊妹站台活動",
+    "legendSibling": "姊妹站台活動",
+    "fromSibling": "來自 {{name}}",
+    "openOnPrimary": "在主要站台上開啟"
   },
   "profile": {
     "title": "個人資料",
@@ -788,5 +799,49 @@
     "noVisits": "此場地尚無到訪紀錄",
     "connectionUpdated": "聯絡人已更新",
     "connectionAdded": "聯絡人已新增"
+  },
+  "federationCard": {
+    "title": "聯播網",
+    "description": "與姊妹站台分享本站台的活動動態消息，並將它們的活動匯入您的合併檢視中。",
+    "publishSectionTitle": "發布（本站台的動態消息）",
+    "publishToggle": "發布至聯播網",
+    "publishToggleDescription": "提供本站台的活動動態消息，讓姊妹站台得以訂閱。",
+    "feedUrlLabel": "您的動態消息 URL",
+    "feedUrlHelp": "將此 URL 提供給姊妹站台，讓它們可以拉取您的活動。其中包含一個祕密權杖，因此請私下分享，且僅透過 HTTPS 傳遞。",
+    "copy": "複製",
+    "copied": "已複製",
+    "rotateToken": "輪換權杖",
+    "rotateWarning": "輪換權杖會使您已分享的所有動態消息 URL 失效。姊妹站台需要新的 URL 才能繼續同步。要繼續嗎？",
+    "tokenRotated": "動態消息權杖已輪換。請將新的 URL 重新分享給您的姊妹站台。",
+    "setSiteUrlHint": "發布功能已開啟，但您的動態消息 URL 尚非絕對網址。請在網站位址設定中設定本站台的網站網址，讓姊妹站台取得完整且可連結的 URL。",
+    "peersSectionTitle": "姊妹站台（我們拉取的動態消息）",
+    "peersSectionDescription": "訂閱姊妹站台的動態消息。它們的活動會合併到您的地圖與統計數據中。",
+    "addPeer": "新增",
+    "feedUrlPlaceholder": "https://sibling.example.edu/api/federation/activities?token=...",
+    "addFeedUrlLabel": "姊妹站台動態消息 URL",
+    "intervalLabel": "同步頻率",
+    "interval_hour": "小時",
+    "interval_day": "天",
+    "interval_week": "週",
+    "colLabel": "站台",
+    "colInterval": "間隔",
+    "colEnabled": "啟用",
+    "colLastSynced": "上次同步",
+    "colStatus": "狀態",
+    "colActivities": "活動",
+    "colActions": "操作",
+    "never": "從未",
+    "statusOk": "正常",
+    "statusError": "錯誤",
+    "syncNow": "立即同步",
+    "syncAll": "全部立即同步",
+    "remove": "移除",
+    "confirmRemove": "要移除姊妹站台「{{label}}」嗎？從其拉取的活動將不再顯示於您的合併檢視中。",
+    "noPeers": "尚無姊妹站台。",
+    "added": "已新增姊妹站台。",
+    "removed": "已移除姊妹站台。",
+    "synced": "同步完成。",
+    "saved": "已儲存。",
+    "couldNotSave": "無法儲存"
   }
 }

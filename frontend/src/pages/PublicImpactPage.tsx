@@ -8,6 +8,7 @@ import {
   Loader,
   SimpleGrid,
   Stack,
+  Switch,
   Table,
   Text,
   Title,
@@ -15,7 +16,7 @@ import {
 } from '@mantine/core';
 import { IconCalendarStats, IconMapPin, IconUserBolt, IconUsers } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
@@ -111,10 +112,12 @@ export function PublicImpactPage() {
   const enumLabel = useEnumLabel();
   const scheme = useComputedColorScheme('dark');
   const viz = scheme === 'dark' ? VIZ_DARK : VIZ_LIGHT;
+  const [includeSiblings, setIncludeSiblings] = useState(false);
 
   const { data, error, isLoading } = useQuery({
-    queryKey: ['public', 'impact'],
-    queryFn: () => api.get<PublicImpact>('/api/public/impact'),
+    queryKey: ['public', 'impact', includeSiblings],
+    queryFn: () =>
+      api.get<PublicImpact>('/api/public/impact', { include_federated: includeSiblings }),
     retry: false,
   });
 
@@ -164,10 +167,24 @@ export function PublicImpactPage() {
               </Text>
             </div>
           </Group>
-          <Anchor component={Link} to="/login" size="sm" c="dimmed">
-            {t('impact.signInLink')}
-          </Anchor>
+          <Group gap="md">
+            <Switch
+              size="sm"
+              checked={includeSiblings}
+              onChange={(event) => setIncludeSiblings(event.currentTarget.checked)}
+              label={t('impact.includeSiblings')}
+            />
+            <Anchor component={Link} to="/login" size="sm" c="dimmed">
+              {t('impact.signInLink')}
+            </Anchor>
+          </Group>
         </Group>
+
+        {includeSiblings && (
+          <Text size="xs" c="dimmed">
+            {t('impact.includingSiblings')}
+          </Text>
+        )}
 
         <SimpleGrid cols={{ base: 2, sm: 4 }}>
           <StatTile

@@ -17,7 +17,7 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { IconClipboardList } from '@tabler/icons-react';
+import { IconClipboardList, IconExternalLink } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -33,6 +33,7 @@ import {
   LANGUAGES,
   VENUE_TYPES,
   VISIT_STATUSES,
+  type ActivityListItem,
   type Paginated,
   type Visit,
 } from '../api/types';
@@ -51,6 +52,7 @@ export function VisitListPage() {
   const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [mineOnly, setMineOnly] = useState(false);
+  const [showSiblings, setShowSiblings] = useState(true);
   const [sort, setSort] = useState('-visit_date');
   const [page, setPage] = useState(1);
 
@@ -59,6 +61,7 @@ export function VisitListPage() {
     q: q || undefined,
     status: statusFilter ?? undefined,
     author_id: mineOnly ? user?.id : undefined,
+    include_federated: showSiblings,
     sort,
     page,
     page_size: PAGE_SIZE,
@@ -66,7 +69,7 @@ export function VisitListPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['visits', params],
-    queryFn: () => api.get<Paginated<Visit>>('/api/visits', params),
+    queryFn: () => api.get<Paginated<ActivityListItem>>('/api/visits', params),
   });
 
   const { data: tagOptions = [] } = useQuery({
@@ -97,7 +100,8 @@ export function VisitListPage() {
     [q, statusFilter, filters.date_from, filters.date_to, filters.venue_type,
       filters.event_type, filters.audience_level, filters.language].filter(Boolean).length +
     ((filters.tags?.length ?? 0) > 0 ? 1 : 0) +
-    (mineOnly ? 1 : 0);
+    (mineOnly ? 1 : 0) +
+    (!showSiblings ? 1 : 0);
 
   return (
     <Stack>
@@ -206,6 +210,15 @@ export function VisitListPage() {
             }}
             pb={8}
           />
+          <Switch
+            label={t('visitList.includeSiblings')}
+            checked={showSiblings}
+            onChange={(e) => {
+              setShowSiblings(e.currentTarget.checked);
+              setPage(1);
+            }}
+            pb={8}
+          />
         </Group>
       </FilterCard>
 
@@ -237,34 +250,57 @@ export function VisitListPage() {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {(data?.items ?? []).map((visit) => (
+            {(data?.items ?? []).map((it) => {
+              const isLocal = it.source === 'local';
+              return (
               <Table.Tr
-                key={visit.id}
-                style={{ cursor: 'pointer' }}
-                onClick={() => navigate(`/visits/${visit.id}`)}
+                key={`${it.source}-${it.id ?? it.external_url}`}
+                style={{ cursor: it.id != null ? 'pointer' : 'default' }}
+                onClick={it.id != null ? () => navigate(`/visits/${it.id}`) : undefined}
               >
                 <Table.Td>
-                  {visit.visit_date}
-                  {visit.start_time ? ` ${visit.start_time.slice(0, 5)}` : ''}
+                  {it.visit_date}
+                  {it.start_time ? ` ${it.start_time.slice(0, 5)}` : ''}
                 </Table.Td>
                 <Table.Td>
-                  {isOverdue(visit) ? (
+                  {!isLocal ? (
+                    <Badge
+                      variant="outline"
+                      color="grape"
+                      title={t('visitList.siblingBadge')}
+                      aria-label={t('visitList.siblingBadge')}
+                    >
+                      {it.source}
+                    </Badge>
+                  ) : it.status && isOverdue({ status: it.status, visit_date: it.visit_date }) ? (
                     <Badge variant="light" color="red">
                       {t('visitList.overdue')}
                     </Badge>
                   ) : (
-                    <Badge variant="light" color={visit.status === 'planned' ? 'blue' : 'green'}>
-                      {enumLabel.visitStatus(visit.status)}
+                    <Badge variant="light" color={it.status === 'planned' ? 'blue' : 'green'}>
+                      {enumLabel.visitStatus(it.status ?? '')}
                     </Badge>
                   )}
                 </Table.Td>
                 <Table.Td>
-                  <Anchor component={Link} to={`/visits/${visit.id}`} onClick={(e) => e.stopPropagation()}>
-                    {visit.title}
-                  </Anchor>
-                  {visit.tags.length > 0 && (
+                  {isLocal ? (
+                    <Anchor component={Link} to={`/visits/${it.id}`} onClick={(e) => e.stopPropagation()}>
+                      {it.title}
+                    </Anchor>
+                  ) : (
+                    <Anchor
+                      href={it.external_url ?? undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {it.event_type ? enumLabel.eventType(it.event_type) : t('visitList.siblingActivity')}
+                      <IconExternalLink size={14} style={{ marginLeft: 4, verticalAlign: 'text-bottom' }} />
+                    </Anchor>
+                  )}
+                  {it.tags.length > 0 && (
                     <Group gap={4} mt={4}>
-                      {visit.tags.map((tag) => (
+                      {it.tags.map((tag) => (
                         <Badge key={tag} size="xs" variant="light" color="grape">
                           {tag}
                         </Badge>
@@ -273,27 +309,32 @@ export function VisitListPage() {
                   )}
                 </Table.Td>
                 <Table.Td>
-                  {visit.venue.name}
-                  {visit.venue.city ? `, ${visit.venue.city}` : ''}
+                  {it.venue?.name}
+                  {it.venue?.city ? `, ${it.venue.city}` : ''}
                 </Table.Td>
-                <Table.Td>{visit.author.name}</Table.Td>
+                <Table.Td>{it.author?.name ?? '—'}</Table.Td>
                 <Table.Td>
-                  <Badge variant="light">{enumLabel.audienceLevel(visit.audience_level)}</Badge>
+                  {it.audience_level ? (
+                    <Badge variant="light">{enumLabel.audienceLevel(it.audience_level)}</Badge>
+                  ) : (
+                    '—'
+                  )}
                 </Table.Td>
                 <Table.Td ta="right" className="tabular-nums">
-                  {visit.people_reached.toLocaleString()}
+                  {it.people_reached.toLocaleString()}
                 </Table.Td>
                 <Table.Td>
-                  {visit.rating ? (
+                  {it.rating ? (
                     <Text span c="yellow.5">
-                      {'★'.repeat(visit.rating)}
+                      {'★'.repeat(it.rating)}
                     </Text>
                   ) : (
                     '—'
                   )}
                 </Table.Td>
               </Table.Tr>
-            ))}
+              );
+            })}
             {!isLoading && (data?.items.length ?? 0) === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={8} p={0}>
@@ -314,8 +355,12 @@ export function VisitListPage() {
 
       {/* Mobile: stacked cards instead of a horizontally-scrolled table. */}
       <Stack hiddenFrom="sm" gap="sm">
-        {(data?.items ?? []).map((visit) => (
-          <VisitCard key={visit.id} visit={visit} onClick={() => navigate(`/visits/${visit.id}`)} />
+        {(data?.items ?? []).map((it) => (
+          <VisitCard
+            key={`${it.source}-${it.id ?? it.external_url}`}
+            item={it}
+            onClick={it.id != null ? () => navigate(`/visits/${it.id}`) : undefined}
+          />
         ))}
         {!isLoading && (data?.items.length ?? 0) === 0 && (
           <Card withBorder p={0}>
@@ -366,39 +411,77 @@ export function VisitStatusBadge({ visit }: { visit: Visit }) {
   );
 }
 
-function VisitCard({ visit, onClick }: { visit: Visit; onClick: () => void }) {
+function VisitCard({ item, onClick }: { item: ActivityListItem; onClick?: () => void }) {
   const { t } = useTranslation();
   const enumLabel = useEnumLabel();
+  const isLocal = item.source === 'local';
   return (
-    <Card withBorder p="md" onClick={onClick} style={{ cursor: 'pointer' }}>
+    <Card
+      withBorder
+      p="md"
+      onClick={onClick}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+    >
       <Group justify="space-between" wrap="nowrap" align="flex-start">
-        <Text fw={600} lineClamp={2} style={{ minWidth: 0 }}>
-          {visit.title}
-        </Text>
+        {isLocal ? (
+          <Text fw={600} lineClamp={2} style={{ minWidth: 0 }}>
+            {item.title}
+          </Text>
+        ) : (
+          <Anchor
+            fw={600}
+            lineClamp={2}
+            style={{ minWidth: 0 }}
+            href={item.external_url ?? undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {item.event_type ? enumLabel.eventType(item.event_type) : t('visitList.siblingActivity')}
+            <IconExternalLink size={14} style={{ marginLeft: 4, verticalAlign: 'text-bottom' }} />
+          </Anchor>
+        )}
         <Box style={{ flexShrink: 0 }}>
-          <VisitStatusBadge visit={visit} />
+          {isLocal && item.status ? (
+            <VisitStatusBadge
+              visit={{ status: item.status, visit_date: item.visit_date } as Visit}
+            />
+          ) : (
+            <Badge
+              variant="outline"
+              color="grape"
+              title={t('visitList.siblingBadge')}
+              aria-label={t('visitList.siblingBadge')}
+            >
+              {item.source}
+            </Badge>
+          )}
         </Box>
       </Group>
       <Text size="sm" c="dimmed" mt={4}>
-        {visit.visit_date}
-        {visit.start_time ? ` · ${visit.start_time.slice(0, 5)}` : ''}
+        {item.visit_date}
+        {item.start_time ? ` · ${item.start_time.slice(0, 5)}` : ''}
       </Text>
       <Text size="sm" mt={2}>
-        {visit.venue.name}
-        {visit.venue.city ? `, ${visit.venue.city}` : ''}
+        {item.venue?.name}
+        {item.venue?.city ? `, ${item.venue.city}` : ''}
       </Text>
       <Group justify="space-between" mt="sm" wrap="nowrap">
-        <Badge variant="light" size="sm">
-          {enumLabel.audienceLevel(visit.audience_level)}
-        </Badge>
+        {item.audience_level ? (
+          <Badge variant="light" size="sm">
+            {enumLabel.audienceLevel(item.audience_level)}
+          </Badge>
+        ) : (
+          <span />
+        )}
         <Group gap="md" wrap="nowrap">
-          {visit.rating ? (
+          {item.rating ? (
             <Text span size="sm" c="yellow.5">
-              {'★'.repeat(visit.rating)}
+              {'★'.repeat(item.rating)}
             </Text>
           ) : null}
           <Text size="sm" c="dimmed" className="tabular-nums">
-            {visit.people_reached.toLocaleString()} {t('visitList.reachedSuffix')}
+            {item.people_reached.toLocaleString()} {t('visitList.reachedSuffix')}
           </Text>
         </Group>
       </Group>

@@ -21,13 +21,19 @@ import {
   INSTITUTION_TYPES,
   institutionVenueType,
   type AuthConfig,
+  type FederatedMapPoint,
   type InstitutionPoint,
   type InstitutionType,
   type Venue,
   type VenuePoint,
 } from '../api/types';
 import { FilterCard } from '../components/FilterCard';
-import { COLORS, coveredIcon, gapIcon, venueIcon } from '../components/mapIcons';
+import { COLORS, coveredIcon, dotIcon, gapIcon, venueIcon } from '../components/mapIcons';
+
+// Sibling-instance activities are a separate layer; give them a distinct grape
+// marker so they never read as local covered/gap/venue dots.
+const SIBLING_COLOR = '#ae3ec9';
+const siblingIcon = dotIcon(SIBLING_COLOR);
 import { useEnumLabel } from '../i18n/enumLabels';
 
 interface Bounds {
@@ -184,6 +190,7 @@ export function MapPage() {
   const [types, setTypes] = useState<InstitutionType[]>(DEFAULT_TYPES);
   const [statusFilter, setStatusFilter] = useState<'all' | 'gap' | 'covered'>('all');
   const [showVenues, setShowVenues] = useState(true);
+  const [showSiblings, setShowSiblings] = useState(true);
 
   // Admin-configured starting point (defaults to Tennessee). Shared cache key
   // with Layout's fetch, so this is already warm by the time the page mounts.
@@ -213,12 +220,21 @@ export function MapPage() {
     enabled: !!rounded && showVenues,
   });
 
+  // Sibling-instance activities: a separate, read-only layer that never affects
+  // the local covered/gap counting above.
+  const { data: federated = [] } = useQuery({
+    queryKey: ['map', 'federated', rounded],
+    queryFn: () => api.get<FederatedMapPoint[]>('/api/map/federated', { ...rounded! }),
+    enabled: !!rounded && showSiblings,
+  });
+
   const gapCount = institutions.filter((i) => !i.covered).length;
 
   const activeFilterCount =
     (types.length !== DEFAULT_TYPES.length ? 1 : 0) +
     (statusFilter !== 'all' ? 1 : 0) +
-    (!showVenues ? 1 : 0);
+    (!showVenues ? 1 : 0) +
+    (!showSiblings ? 1 : 0);
 
   const logVisitHere = async (inst: InstitutionPoint) => {
     try {
@@ -319,11 +335,17 @@ export function MapPage() {
               checked={showVenues}
               onChange={(e) => setShowVenues(e.currentTarget.checked)}
             />
+            <Checkbox
+              label={t('map.showSiblings')}
+              checked={showSiblings}
+              onChange={(e) => setShowSiblings(e.currentTarget.checked)}
+            />
           </Group>
           <Group gap="md">
             <LegendDot color={COLORS.gap} label={t('map.legendGap')} />
             <LegendDot color={COLORS.covered} label={t('map.legendReached')} />
             <LegendDot color={COLORS.venue} label={t('map.legendVenueNoVisits')} />
+            <LegendDot color={SIBLING_COLOR} label={t('map.legendSibling')} />
           </Group>
         </Group>
       </FilterCard>
@@ -372,6 +394,62 @@ export function MapPage() {
                     <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
                       {t('map.openVenue')}
                     </Button>
+                  </Popup>
+                </Marker>
+              ))}
+
+            {/* Sibling-instance activities: a separate, never-clustered layer in
+                a distinct grape marker. Read-only — links out to the primary
+                instance when a permalink is available. */}
+            {showSiblings &&
+              federated.map((f, i) => (
+                <Marker
+                  key={`f-${i}`}
+                  position={[f.latitude, f.longitude]}
+                  icon={siblingIcon}
+                >
+                  <Popup>
+                    <strong>
+                      {f.venue_name ??
+                        (f.venue_type ? enumLabel.venueType(f.venue_type) : t('map.legendSibling'))}
+                    </strong>
+                    {f.source_label && (
+                      <>
+                        <br />
+                        <Text component="span" size="xs" c="dimmed">
+                          {t('map.fromSibling', { name: f.source_label })}
+                        </Text>
+                      </>
+                    )}
+                    {f.person_name && (
+                      <>
+                        <br />
+                        {f.person_name}
+                      </>
+                    )}
+                    <br />
+                    {f.visit_date}
+                    <br />
+                    {t('map.popupReached', {
+                      count: f.people_reached,
+                      formattedCount: f.people_reached.toLocaleString(),
+                    })}
+                    {f.permalink && (
+                      <>
+                        <br />
+                        <Button
+                          size="compact-xs"
+                          mt={6}
+                          variant="light"
+                          component="a"
+                          href={f.permalink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t('map.openOnPrimary')}
+                        </Button>
+                      </>
+                    )}
                   </Popup>
                 </Marker>
               ))}

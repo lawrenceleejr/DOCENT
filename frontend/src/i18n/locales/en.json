@@ -123,7 +123,10 @@
     "emptyDescriptionShort": "No visits match these filters yet.",
     "reachedSuffix": "reached",
     "visitCount_one": "{{formattedCount}} visit",
-    "visitCount_other": "{{formattedCount}} visits"
+    "visitCount_other": "{{formattedCount}} visits",
+    "includeSiblings": "Include sibling instances",
+    "siblingBadge": "From a sibling instance",
+    "siblingActivity": "Activity"
   },
   "visitForm": {
     "editTitle": "Edit visit",
@@ -516,7 +519,9 @@
     "topVenues": "Top venues",
     "communicatorLeaderboard": "Communicator leaderboard",
     "colVenue": "Venue",
-    "colCommunicator": "Communicator"
+    "colCommunicator": "Communicator",
+    "includeSiblings": "Include sibling instances",
+    "localOnlyNote": "Leaderboards and audience/relationship breakdowns count this instance's activities only."
   },
   "impact": {
     "unavailableTitle": "This page isn’t available",
@@ -536,7 +541,9 @@
     "noCompletedEvents": "No completed events yet.",
     "recentActivityHeading": "Recent activity",
     "poweredByPrefix": "Powered by",
-    "poweredBySuffix": "· free software under the GNU GPL v3"
+    "poweredBySuffix": "· free software under the GNU GPL v3",
+    "includeSiblings": "Include sibling instances",
+    "includingSiblings": "Numbers include activities across our sibling instances."
   },
   "map": {
     "title": "Map",
@@ -562,7 +569,11 @@
     "couldNotStartVisit": "Could not start a visit",
     "unexpectedError": "Unexpected error",
     "institutionDataAttribution": "Institution data © OpenStreetMap contributors.",
-    "importMoreRegionsPrefix": "Import more regions with"
+    "importMoreRegionsPrefix": "Import more regions with",
+    "showSiblings": "Sibling activities",
+    "legendSibling": "Sibling activity",
+    "fromSibling": "From {{name}}",
+    "openOnPrimary": "Open on the primary instance"
   },
   "profile": {
     "title": "Profile",
@@ -788,5 +799,49 @@
     "noVisits": "No visits recorded at this venue yet",
     "connectionUpdated": "Connection updated",
     "connectionAdded": "Connection added"
+  },
+  "federationCard": {
+    "title": "Federation",
+    "description": "Share this instance's activity feed with sibling instances, and pull their activities into your merged views.",
+    "publishSectionTitle": "Publishing (this instance's feed)",
+    "publishToggle": "Publish to federation",
+    "publishToggleDescription": "Serve this instance's activity feed so sibling instances can subscribe to it.",
+    "feedUrlLabel": "Your feed URL",
+    "feedUrlHelp": "Hand this URL to sibling instances so they can pull your activities. It contains a secret token, so share it privately and only over HTTPS.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "rotateToken": "Rotate token",
+    "rotateWarning": "Rotating the token invalidates any feed URL you've already shared. Siblings will need the new URL to keep syncing. Continue?",
+    "tokenRotated": "Feed token rotated. Re-share the new URL with your siblings.",
+    "setSiteUrlHint": "Publishing is on, but your feed URL isn't absolute yet. Set this instance's Site URL in the site-address settings so siblings get a complete, linkable URL.",
+    "peersSectionTitle": "Sibling instances (feeds we pull from)",
+    "peersSectionDescription": "Subscribe to sibling instances' feeds. Their activities are merged into your map and stats.",
+    "addPeer": "Add",
+    "feedUrlPlaceholder": "https://sibling.example.edu/api/federation/activities?token=...",
+    "addFeedUrlLabel": "Sibling feed URL",
+    "intervalLabel": "Sync every",
+    "interval_hour": "Hour",
+    "interval_day": "Day",
+    "interval_week": "Week",
+    "colLabel": "Instance",
+    "colInterval": "Interval",
+    "colEnabled": "Enabled",
+    "colLastSynced": "Last synced",
+    "colStatus": "Status",
+    "colActivities": "Activities",
+    "colActions": "Actions",
+    "never": "Never",
+    "statusOk": "OK",
+    "statusError": "Error",
+    "syncNow": "Sync now",
+    "syncAll": "Sync all now",
+    "remove": "Remove",
+    "confirmRemove": "Remove sibling instance \"{{label}}\"? Activities pulled from it will no longer appear in your merged views.",
+    "noPeers": "No sibling instances yet.",
+    "added": "Sibling instance added.",
+    "removed": "Sibling instance removed.",
+    "synced": "Sync complete.",
+    "saved": "Saved.",
+    "couldNotSave": "Could not save"
   }
 }
