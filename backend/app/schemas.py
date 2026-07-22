@@ -75,6 +75,7 @@ from app.languages import LANGUAGE_SET
 from app.models import (
     AudienceLevel,
     EventType,
+    FederationInterval,
     HostRelationship,
     InstitutionType,
     VenueType,
@@ -273,6 +274,10 @@ class RegistrationSettings(BaseModel):
     map_center_lat: float
     map_center_lon: float
     user_directory_visible: bool
+    # Federation publishing: whether this instance serves its activities feed,
+    # and the full feed URL (incl. token) an admin hands to sibling instances.
+    federation_publish: bool
+    federation_feed_url: str
 
 
 class RegistrationSettingsUpdate(BaseModel):
@@ -285,6 +290,7 @@ class RegistrationSettingsUpdate(BaseModel):
     map_center_lat: float | None = Field(default=None, ge=-90, le=90)
     map_center_lon: float | None = Field(default=None, ge=-180, le=180)
     user_directory_visible: bool | None = None
+    federation_publish: bool | None = None
 
 
 
@@ -603,8 +609,33 @@ class VisitOut(BaseModel):
     updated_at: datetime
 
 
+class ActivityListItem(BaseModel):
+    """A visit-list row that can be either a local visit or an activity pulled
+    from a sibling instance. Local rows fill every field; federated rows carry
+    only feed-safe fields (the rest are None / rendered as "—") plus an
+    `external_url` deep-link back to the primary instance. `venue`/`author` are
+    kept nested (matching the local visit shape) — for federated rows they are
+    synthetic (id 0, only name/city/type populated)."""
+
+    source: str  # "local" | the peer's label
+    id: int | None  # local visit id (None for federated)
+    external_url: str | None  # federated permalink (None for local)
+    visit_date: date
+    start_time: time | None = None
+    status: VisitStatus | None = None
+    title: str | None = None
+    event_type: EventType | None = None
+    audience_level: AudienceLevel | None = None
+    language: str | None = None
+    people_reached: int
+    rating: int | None = None
+    tags: list[str] = []
+    author: UserBrief | None = None
+    venue: VenueBrief | None = None
+
+
 class VisitList(BaseModel):
-    items: list[VisitOut]
+    items: list[ActivityListItem]
     total: int
     page: int
     page_size: int
@@ -709,3 +740,73 @@ class VenuePoint(BaseModel):
     visit_count: int
     visited: bool
     institution_id: int | None
+
+
+# --- Federation ---
+
+class FederatedActivityOut(BaseModel):
+    """A single limited-field activity in the feed this instance publishes to
+    siblings. Never carries private fields (description, reflection, rating,
+    host contact details, notes)."""
+
+    remote_id: int  # this instance's own visit id (stable per-instance key)
+    visit_date: date
+    venue_name: str | None
+    venue_city: str | None
+    latitude: float | None
+    longitude: float | None
+    venue_type: str | None  # raw enum value
+    event_type: str | None  # raw enum value
+    person_name: str | None
+    people_reached: int
+    permalink: str | None
+
+
+class FederationFeed(BaseModel):
+    """Envelope for the published feed — instance identity + activities."""
+
+    instance_name: str | None
+    instance_url: str | None
+    generated_at: datetime
+    activities: list[FederatedActivityOut]
+
+
+class FederationPeerOut(BaseModel):
+    """Admin view of a registered sibling. `feed_url` has its token masked."""
+
+    id: int
+    label: str | None
+    feed_url: str  # token masked for display
+    interval: FederationInterval
+    enabled: bool
+    last_synced_at: datetime | None
+    last_status: str | None
+    last_error: str | None
+    activity_count: int
+    created_at: datetime
+
+
+class FederationPeerCreate(BaseModel):
+    feed_url: str = Field(min_length=1, max_length=2000)
+    interval: FederationInterval = FederationInterval.day
+
+
+class FederationPeerUpdate(BaseModel):
+    label: str | None = Field(default=None, max_length=255)
+    interval: FederationInterval | None = None
+    enabled: bool | None = None
+
+
+class FederatedMapPoint(BaseModel):
+    """A sibling activity rendered as its own map layer (never affects local
+    coverage/gap counting)."""
+
+    latitude: float
+    longitude: float
+    venue_name: str | None
+    venue_type: str | None
+    person_name: str | None
+    visit_date: date
+    people_reached: int
+    permalink: str | None
+    source_label: str | None

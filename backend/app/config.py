@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     # / scheme) so login works on plain http AND https. "true"/"false" force it.
     cookie_secure: str = "auto"
     rate_limit_enabled: bool = True
+    # Run the in-process background loop that pulls activities from federation
+    # peers. Disabled in the test suite. Interval/enablement is per-peer (DB).
+    federation_sync_enabled: bool = True
     overpass_url: str = "https://overpass-api.de/api/interpreter"
     nominatim_url: str = "https://nominatim.openstreetmap.org/search"
     # Photon (komoot) — free, keyless, OSM-based, built for type-ahead search

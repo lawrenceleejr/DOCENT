@@ -1,6 +1,8 @@
 # DOCENT — Distributed Outreach & Community Engagement Network Tracker
 # Copyright (C) 2026 Lawrence Lee
 # Licensed under the GNU General Public License v3.0 or later. See LICENSE.
+import asyncio
+
 from fastapi import FastAPI
 
 from app.config import get_settings
@@ -8,6 +10,7 @@ from app.routers import (
     admin,
     auth,
     connections,
+    federation,
     geocode,
     map,
     public,
@@ -38,6 +41,16 @@ def _require_real_secret_key() -> None:
             "value in .env (openssl rand -hex 32 gives a good 64-char key)."
         )
 
+
+@app.on_event("startup")
+async def _start_federation_scheduler() -> None:
+    # Pull activities from sibling instances on their configured intervals.
+    # Disabled under tests; a single background task guarded by an advisory lock.
+    if get_settings().federation_sync_enabled:
+        from app.scheduler import federation_sync_loop
+
+        asyncio.create_task(federation_sync_loop())
+
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(venues.router)
@@ -49,6 +62,7 @@ app.include_router(admin.router)
 app.include_router(map.router)
 app.include_router(reports.router)
 app.include_router(public.router)
+app.include_router(federation.router)
 
 
 @app.get("/api/health")

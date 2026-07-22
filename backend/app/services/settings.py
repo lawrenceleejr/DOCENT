@@ -112,3 +112,16 @@ def rotate_federation_token(db: Session) -> str:
     token = secrets.token_urlsafe(24)
     set_setting(db, FEDERATION_TOKEN_KEY, token)
     return token
+
+
+def federation_feed_url(db: Session) -> str:
+    """The full, token-bearing feed URL an admin copies for siblings — empty
+    until publishing is enabled. If the instance's site URL isn't set, the
+    result is host-relative (the admin still needs to set the site URL)."""
+    if not federation_publish_enabled(db):
+        return ""
+    token = get_federation_token(db)
+    if not token:
+        return ""
+    base = (effective_site_url(db) or "").rstrip("/")
+    return f"{base}/api/federation/activities?token={token}"
