@@ -757,6 +757,7 @@ class FederatedActivityOut(BaseModel):
     longitude: float | None
     venue_type: str | None  # raw enum value
     event_type: str | None  # raw enum value
+    audience_level: str | None  # raw enum value
     person_name: str | None
     people_reached: int
     permalink: str | None

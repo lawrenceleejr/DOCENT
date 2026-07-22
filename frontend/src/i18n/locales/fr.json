@@ -521,7 +521,7 @@
     "colVenue": "Lieu",
     "colCommunicator": "Communicateur",
     "includeSiblings": "Inclure les instances sœurs",
-    "localOnlyNote": "Les classements et les répartitions par public/relation ne comptent que les activités de cette instance."
+    "localOnlyNote": "Les classements et la répartition par relation avec l'hôte ne comptent que les activités de cette instance."
   },
   "impact": {
     "unavailableTitle": "Cette page n'est pas disponible",

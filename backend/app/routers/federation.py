@@ -69,6 +69,7 @@ def federation_feed(
             longitude=v.venue.longitude if v.venue else None,
             venue_type=v.venue.venue_type.value if v.venue else None,
             event_type=v.event_type.value if v.event_type else None,
+            audience_level=v.audience_level.value if v.audience_level else None,
             person_name=v.author.name if v.author else None,
             people_reached=v.people_reached,
             permalink=f"{base}/visits/{v.id}",

@@ -521,7 +521,7 @@
     "colVenue": "Địa điểm",
     "colCommunicator": "Người kết nối",
     "includeSiblings": "Bao gồm các phiên bản đồng cấp",
-    "localOnlyNote": "Bảng xếp hạng và phân loại theo đối tượng/quan hệ chỉ tính các hoạt động của phiên bản này."
+    "localOnlyNote": "Bảng xếp hạng và phân loại theo quan hệ với người tiếp đón chỉ tính các hoạt động của phiên bản này."
   },
   "impact": {
     "unavailableTitle": "Trang này không khả dụng",

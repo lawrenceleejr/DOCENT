@@ -385,6 +385,7 @@ class FederatedActivity(Base):
     longitude: Mapped[float | None] = mapped_column(Float)
     venue_type: Mapped[str | None] = mapped_column(String(50))  # raw enum value
     event_type: Mapped[str | None] = mapped_column(String(50))  # raw enum value
+    audience_level: Mapped[str | None] = mapped_column(String(50))  # raw enum value
     person_name: Mapped[str | None] = mapped_column(String(255))
     people_reached: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     permalink: Mapped[str | None] = mapped_column(Text)

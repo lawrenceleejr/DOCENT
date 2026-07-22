@@ -521,7 +521,7 @@
     "colVenue": "Sede",
     "colCommunicator": "Comunicador",
     "includeSiblings": "Incluir instancias hermanas",
-    "localOnlyNote": "Las tablas de clasificación y los desgloses por público y relación cuentan únicamente las actividades de esta instancia."
+    "localOnlyNote": "Las tablas de clasificación y el desglose por relación con el anfitrión cuentan únicamente las actividades de esta instancia."
   },
   "impact": {
     "unavailableTitle": "Esta página no está disponible",

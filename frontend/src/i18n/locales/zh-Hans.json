@@ -521,7 +521,7 @@
     "colVenue": "场地",
     "colCommunicator": "推广人",
     "includeSiblings": "包含姊妹实例",
-    "localOnlyNote": "排行榜以及受众/关系细分仅统计本实例的活动。"
+    "localOnlyNote": "排行榜和按接待方关系细分仅统计本实例的活动。"
   },
   "impact": {
     "unavailableTitle": "此页面不可用",

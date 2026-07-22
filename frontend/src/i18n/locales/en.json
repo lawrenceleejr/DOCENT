@@ -521,7 +521,7 @@
     "colVenue": "Venue",
     "colCommunicator": "Communicator",
     "includeSiblings": "Include sibling instances",
-    "localOnlyNote": "Leaderboards and audience/relationship breakdowns count this instance's activities only."
+    "localOnlyNote": "Leaderboards and the host-relationship breakdown count this instance's activities only."
   },
   "impact": {
     "unavailableTitle": "This page isn’t available",

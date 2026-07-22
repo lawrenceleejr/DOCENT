@@ -244,14 +244,20 @@ def breakdown(
         .order_by(func.count(Visit.id).desc())
     ).all()
     buckets: dict[str, list[int]] = {r[0].value: [r[1], r[2]] for r in rows}
-    # Only venue_type / event_type breakdowns can include federated rows — the
-    # feed carries no audience_level or host_relationship.
-    if by in (BreakdownBy.venue_type, BreakdownBy.event_type):
+    # venue_type / event_type / audience_level breakdowns can include federated
+    # rows (the feed carries those); host_relationship stays local-only.
+    _FED_KEY = {
+        BreakdownBy.venue_type: "venue_type",
+        BreakdownBy.event_type: "event_type",
+        BreakdownBy.audience_level: "audience_level",
+    }
+    if by in _FED_KEY:
+        attr = _FED_KEY[by]
         for a in _federated_rows(
             db, include_federated=include_federated, date_from=date_from, date_to=date_to,
             venue_type=venue_type, event_type=event_type, audience_level=audience_level, tags=tags,
         ):
-            raw = a.venue_type if by is BreakdownBy.venue_type else a.event_type
+            raw = getattr(a, attr)
             if not raw:
                 continue
             b = buckets.setdefault(raw, [0, 0])

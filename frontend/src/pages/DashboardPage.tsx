@@ -316,14 +316,24 @@ export function DashboardPage() {
       }),
   });
   const { data: byAudience } = useQuery({
-    queryKey: ['stats', 'breakdown', 'audience_level', filters],
+    queryKey: ['stats', 'breakdown', 'audience_level', filters, includeSiblings],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'audience_level', ...filters }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', {
+        by: 'audience_level',
+        ...filters,
+        include_federated: includeSiblings,
+      }),
   });
   const { data: byRelationship } = useQuery({
+    // host_relationship stays local-only — the federation feed carries no
+    // host-relationship data.
     queryKey: ['stats', 'breakdown', 'host_relationship', filters],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'host_relationship', ...filters }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', {
+        by: 'host_relationship',
+        ...filters,
+        include_federated: false,
+      }),
   });
   const { data: topVenues } = useQuery({
     queryKey: ['stats', 'top-venues', filters],

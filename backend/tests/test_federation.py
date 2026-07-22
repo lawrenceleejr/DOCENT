@@ -14,6 +14,7 @@ def _seed_peer_with_activity(
     visit_date="2026-05-20",
     venue_type="high_school",
     event_type="workshop",
+    audience_level="high_school",
     people=15,
     lat=40.0,
     lon=-80.0,
@@ -39,6 +40,7 @@ def _seed_peer_with_activity(
             longitude=lon,
             venue_type=venue_type,
             event_type=event_type,
+            audience_level=audience_level,
             person_name="Remote Person",
             people_reached=people,
             permalink="https://sib.example.edu/visits/1",
@@ -131,6 +133,7 @@ def test_feed_exposes_only_completed_limited_fields(client, make_client):
     assert row["person_name"] == "Test User"
     assert row["event_type"] == "classroom_visit"
     assert row["venue_type"] == "elementary_school"
+    assert row["audience_level"] == "elementary"
     assert row["people_reached"] == 40
     assert row["latitude"] == 35.9
     assert row["permalink"] == f"https://primary.example.edu/visits/{row['remote_id']}"
@@ -283,6 +286,7 @@ def test_list_merges_federated(client, db):
     assert fed_row["external_url"] == "https://sib.example.edu/visits/1"
     assert fed_row["id"] is None
     assert fed_row["venue"]["name"] == "Sib School"
+    assert fed_row["audience_level"] == "high_school"  # audience crosses the feed
 
     excluded = client.get("/api/visits", params={"include_federated": False}).json()
     assert all(it["source"] == "local" for it in excluded["items"])
@@ -303,6 +307,29 @@ def test_stats_summary_includes_federated(client, db):
     excl = client.get("/api/stats/summary", params={"include_federated": False}).json()
     assert incl["total_visits"] == excl["total_visits"] + 1
     assert incl["total_people_reached"] == excl["total_people_reached"] + 15
+
+
+def test_stats_audience_breakdown_includes_federated(client, db):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], audience_level="elementary", people_reached=30)
+    _seed_peer_with_activity(db, audience_level="high_school", people=15)
+
+    incl = {
+        r["key"]: r
+        for r in client.get(
+            "/api/stats/breakdown", params={"by": "audience_level"}
+        ).json()
+    }
+    assert "high_school" in incl  # sibling audience folds in
+    excl = {
+        r["key"]
+        for r in client.get(
+            "/api/stats/breakdown",
+            params={"by": "audience_level", "include_federated": False},
+        ).json()
+    }
+    assert "high_school" not in excl  # toggled off → local only
 
 
 def test_map_federated_layer(client, db):

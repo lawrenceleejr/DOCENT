@@ -82,6 +82,7 @@ def _coerce_row(raw: dict[str, Any]) -> dict[str, Any] | None:
         "longitude": raw.get("longitude"),
         "venue_type": raw.get("venue_type"),
         "event_type": raw.get("event_type"),
+        "audience_level": raw.get("audience_level"),
         "person_name": raw.get("person_name"),
         "people_reached": raw.get("people_reached") or 0,
         "permalink": raw.get("permalink"),

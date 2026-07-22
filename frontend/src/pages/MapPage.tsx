@@ -133,6 +133,9 @@ function AdaptiveInstitutions({
           key={`i-${inst.id}`}
           position={[inst.latitude, inst.longitude]}
           icon={inst.covered ? coveredIcon : gapIcon}
+          // Reached (green) sits above a coincident sibling marker so an
+          // institution both we and a sibling visited reads as reached.
+          zIndexOffset={inst.covered ? 1000 : 0}
         >
           <Popup>
             <strong>{inst.name}</strong>
@@ -379,6 +382,8 @@ export function MapPage() {
                   key={`v-${v.id}`}
                   position={[v.latitude, v.longitude]}
                   icon={v.visited || v.visit_count > 0 ? coveredIcon : venueIcon}
+                  // Visited (green) sits above a coincident sibling marker.
+                  zIndexOffset={v.visited || v.visit_count > 0 ? 1000 : 0}
                 >
                   <Popup>
                     <strong>{v.name}</strong>

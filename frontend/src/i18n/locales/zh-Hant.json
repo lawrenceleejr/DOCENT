@@ -521,7 +521,7 @@
     "colVenue": "場地",
     "colCommunicator": "推廣人員",
     "includeSiblings": "包含姊妹站台",
-    "localOnlyNote": "排行榜與對象／關係細項僅計入本站台的活動。"
+    "localOnlyNote": "排行榜與接待人關係細項僅計入本站台的活動。"
   },
   "impact": {
     "unavailableTitle": "此頁面目前無法使用",

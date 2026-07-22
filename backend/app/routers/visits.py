@@ -60,6 +60,10 @@ def _federated_item(a: FederatedActivity, label: str | None) -> ActivityListItem
     except ValueError:
         event = None
     try:
+        audience = AudienceLevel(a.audience_level) if a.audience_level else None
+    except ValueError:
+        audience = None
+    try:
         vtype = VenueType(a.venue_type) if a.venue_type else VenueType.other
     except ValueError:
         vtype = VenueType.other
@@ -74,7 +78,7 @@ def _federated_item(a: FederatedActivity, label: str | None) -> ActivityListItem
         status=None,
         title=None,
         event_type=event,
-        audience_level=None,
+        audience_level=audience,
         people_reached=a.people_reached,
         rating=None,
         tags=[],

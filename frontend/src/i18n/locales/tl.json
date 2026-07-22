@@ -521,7 +521,7 @@
     "colVenue": "Venue",
     "colCommunicator": "Communicator",
     "includeSiblings": "Isama ang mga sibling instance",
-    "localOnlyNote": "Binibilang lang ng mga leaderboard at breakdown ng audience/relasyon ang mga aktibidad ng instance na ito."
+    "localOnlyNote": "Binibilang lang ng mga leaderboard at ng breakdown ng relasyon sa host ang mga aktibidad ng instance na ito."
   },
   "impact": {
     "unavailableTitle": "Hindi available ang page na ito",
