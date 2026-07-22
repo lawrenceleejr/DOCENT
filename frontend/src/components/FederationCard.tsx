@@ -7,6 +7,7 @@ import {
   CopyButton,
   Divider,
   Group,
+  Modal,
   Select,
   Stack,
   Switch,
@@ -16,8 +17,9 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconInfoCircle, IconRefresh, IconTrash } from '@tabler/icons-react';
+import { IconAlertTriangle, IconInfoCircle, IconRefresh, IconTrash } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -45,6 +47,7 @@ export function FederationCard() {
 
   const [feedUrl, setFeedUrl] = useState('');
   const [interval, setInterval] = useState<FederationInterval>('day');
+  const [rotateModalOpen, { open: openRotate, close: closeRotate }] = useDisclosure(false);
 
   const intervalOptions = FEDERATION_INTERVALS.map((v) => ({
     value: v,
@@ -86,9 +89,13 @@ export function FederationCard() {
     onSuccess: (updated) => {
       queryClient.setQueryData(['admin', 'settings'], updated);
       queryClient.invalidateQueries({ queryKey: ['auth', 'config'] });
+      closeRotate();
       notifications.show({ color: 'green', message: t('federationCard.tokenRotated') });
     },
-    onError: showError,
+    onError: (e) => {
+      closeRotate();
+      showError(e);
+    },
   });
 
   // --- Section 2: peers ---
@@ -215,18 +222,39 @@ export function FederationCard() {
               variant="outline"
               color="red"
               leftSection={<IconRefresh size={16} />}
-              loading={rotate.isPending}
-              onClick={() => {
-                if (window.confirm(t('federationCard.rotateWarning'))) {
-                  rotate.mutate();
-                }
-              }}
+              onClick={openRotate}
             >
               {t('federationCard.rotateToken')}
             </Button>
           </Group>
         )}
       </Stack>
+
+      <Modal
+        opened={rotateModalOpen}
+        onClose={closeRotate}
+        title={
+          <Group gap="xs">
+            <IconAlertTriangle size={20} color="var(--mantine-color-red-6)" />
+            <Text fw={700}>{t('federationCard.rotateModalTitle')}</Text>
+          </Group>
+        }
+        centered
+      >
+        <Stack>
+          <Alert color="red" variant="light" icon={<IconAlertTriangle size={16} />}>
+            {t('federationCard.rotateModalBody')}
+          </Alert>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={closeRotate} disabled={rotate.isPending}>
+              {t('federationCard.rotateCancel')}
+            </Button>
+            <Button color="red" loading={rotate.isPending} onClick={() => rotate.mutate()}>
+              {t('federationCard.rotateConfirm')}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
 
       <Divider my="lg" />
 

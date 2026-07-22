@@ -811,7 +811,6 @@
     "copy": "复制",
     "copied": "已复制",
     "rotateToken": "轮换令牌",
-    "rotateWarning": "轮换令牌会使您已分享的所有动态 URL 失效。姊妹实例需要使用新的 URL 才能继续同步。是否继续？",
     "tokenRotated": "动态令牌已轮换。请将新的 URL 重新分享给您的姊妹实例。",
     "setSiteUrlHint": "发布已开启，但您的动态 URL 尚不是绝对地址。请在站点地址设置中设置本实例的站点 URL，以便姊妹实例获得完整、可点击的 URL。",
     "peersSectionTitle": "姊妹实例（我们拉取的动态来源）",
@@ -842,6 +841,10 @@
     "removed": "姊妹实例已移除。",
     "synced": "同步完成。",
     "saved": "已保存。",
-    "couldNotSave": "无法保存"
+    "couldNotSave": "无法保存",
+    "rotateModalTitle": "要轮换联合令牌吗？",
+    "rotateModalBody": "此操作会立即使您当前的动态 URL 失效。所有读取您数据的姊妹实例都会停止同步并中断，直到您将新的 URL 发送给它们并更新其设置为止。仅在当前令牌可能已泄露时才执行此操作——此操作无法撤销。",
+    "rotateConfirm": "是的，轮换令牌",
+    "rotateCancel": "取消"
   }
 }

@@ -811,7 +811,6 @@
     "copy": "Kopyahin",
     "copied": "Kinopya",
     "rotateToken": "I-rotate ang token",
-    "rotateWarning": "Kapag ni-rotate ang token, mawawalan ng bisa ang anumang feed URL na naibahagi mo na. Kakailanganin ng mga sibling ang bagong URL para magpatuloy ang pag-sync. Ituloy?",
     "tokenRotated": "Na-rotate ang feed token. Ibahagi ulit ang bagong URL sa iyong mga sibling.",
     "setSiteUrlHint": "Naka-on ang paglalathala, pero hindi pa absolute ang iyong feed URL. Itakda ang Site URL ng instance na ito sa mga setting ng site-address para makakuha ang mga sibling ng kumpleto at nalilinkang URL.",
     "peersSectionTitle": "Mga sibling instance (mga feed na hinihila natin)",
@@ -842,6 +841,10 @@
     "removed": "Naalis ang sibling instance.",
     "synced": "Tapos na ang pag-sync.",
     "saved": "Na-save.",
-    "couldNotSave": "Hindi na-save"
+    "couldNotSave": "Hindi na-save",
+    "rotateModalTitle": "I-rotate ang federation token?",
+    "rotateModalBody": "Agad nitong mawawalan ng bisa ang iyong kasalukuyang feed URL. Titigil sa pag-sync at masisira ang bawat sibling instance na nagbabasa ng iyong data hanggang maipadala mo sa kanila ang bagong URL at ma-update nila ang kanilang setup. Gawin lang ito kung maaaring na-expose ang kasalukuyang token — hindi ito maaaring bawiin.",
+    "rotateConfirm": "Oo, i-rotate ang token",
+    "rotateCancel": "Kanselahin"
   }
 }

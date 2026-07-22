@@ -811,7 +811,6 @@
     "copy": "Copy",
     "copied": "Copied",
     "rotateToken": "Rotate token",
-    "rotateWarning": "Rotating the token invalidates any feed URL you've already shared. Siblings will need the new URL to keep syncing. Continue?",
     "tokenRotated": "Feed token rotated. Re-share the new URL with your siblings.",
     "setSiteUrlHint": "Publishing is on, but your feed URL isn't absolute yet. Set this instance's Site URL in the site-address settings so siblings get a complete, linkable URL.",
     "peersSectionTitle": "Sibling instances (feeds we pull from)",
@@ -842,6 +841,10 @@
     "removed": "Sibling instance removed.",
     "synced": "Sync complete.",
     "saved": "Saved.",
-    "couldNotSave": "Could not save"
+    "couldNotSave": "Could not save",
+    "rotateModalTitle": "Rotate the federation token?",
+    "rotateModalBody": "This immediately invalidates your current feed URL. Every sibling instance that reads your data will stop syncing and break until you send them the new URL and they update their setup. Only do this if the current token may have been exposed — it can't be undone.",
+    "rotateConfirm": "Yes, rotate the token",
+    "rotateCancel": "Cancel"
   }
 }

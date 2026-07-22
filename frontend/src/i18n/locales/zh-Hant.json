@@ -811,7 +811,6 @@
     "copy": "複製",
     "copied": "已複製",
     "rotateToken": "輪換權杖",
-    "rotateWarning": "輪換權杖會使您已分享的所有動態消息 URL 失效。姊妹站台需要新的 URL 才能繼續同步。要繼續嗎？",
     "tokenRotated": "動態消息權杖已輪換。請將新的 URL 重新分享給您的姊妹站台。",
     "setSiteUrlHint": "發布功能已開啟，但您的動態消息 URL 尚非絕對網址。請在網站位址設定中設定本站台的網站網址，讓姊妹站台取得完整且可連結的 URL。",
     "peersSectionTitle": "姊妹站台（我們拉取的動態消息）",
@@ -842,6 +841,10 @@
     "removed": "已移除姊妹站台。",
     "synced": "同步完成。",
     "saved": "已儲存。",
-    "couldNotSave": "無法儲存"
+    "couldNotSave": "無法儲存",
+    "rotateModalTitle": "要輪換聯播網權杖嗎？",
+    "rotateModalBody": "此操作會立即使您目前的動態消息 URL 失效。所有讀取您資料的姊妹站台都會停止同步並中斷，直到您將新的 URL 傳送給它們並更新其設定為止。僅在目前的權杖可能已外洩時才執行此操作——此動作無法復原。",
+    "rotateConfirm": "是的，輪換權杖",
+    "rotateCancel": "取消"
   }
 }

@@ -811,7 +811,6 @@
     "copy": "Sao chép",
     "copied": "Đã sao chép",
     "rotateToken": "Tạo lại mã token",
-    "rotateWarning": "Việc tạo lại mã token sẽ làm mất hiệu lực mọi URL nguồn cấp bạn đã chia sẻ. Các phiên bản đồng cấp sẽ cần URL mới để tiếp tục đồng bộ. Tiếp tục?",
     "tokenRotated": "Đã tạo lại mã token nguồn cấp. Hãy chia sẻ lại URL mới với các phiên bản đồng cấp của bạn.",
     "setSiteUrlHint": "Đã bật xuất bản, nhưng URL nguồn cấp của bạn chưa phải là URL tuyệt đối. Hãy đặt URL Trang web của phiên bản này trong phần cài đặt địa chỉ trang web để các phiên bản đồng cấp nhận được URL đầy đủ, có thể liên kết.",
     "peersSectionTitle": "Các phiên bản đồng cấp (nguồn cấp chúng ta kéo về)",
@@ -842,6 +841,10 @@
     "removed": "Đã xóa phiên bản đồng cấp.",
     "synced": "Đồng bộ hoàn tất.",
     "saved": "Đã lưu.",
-    "couldNotSave": "Không thể lưu"
+    "couldNotSave": "Không thể lưu",
+    "rotateModalTitle": "Tạo lại mã token liên kết?",
+    "rotateModalBody": "Thao tác này sẽ ngay lập tức làm mất hiệu lực URL nguồn cấp hiện tại của bạn. Mọi phiên bản đồng cấp đang đọc dữ liệu của bạn sẽ ngừng đồng bộ và gặp lỗi cho đến khi bạn gửi URL mới cho họ và họ cập nhật thiết lập. Chỉ làm điều này nếu mã token hiện tại có thể đã bị lộ — không thể hoàn tác.",
+    "rotateConfirm": "Có, tạo lại mã token",
+    "rotateCancel": "Hủy"
   }
 }

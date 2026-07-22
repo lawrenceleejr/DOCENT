@@ -811,7 +811,6 @@
     "copy": "Copier",
     "copied": "Copié",
     "rotateToken": "Renouveler le jeton",
-    "rotateWarning": "Renouveler le jeton invalide toute URL de fil déjà partagée. Les instances sœurs auront besoin de la nouvelle URL pour continuer à se synchroniser. Continuer?",
     "tokenRotated": "Jeton du fil renouvelé. Partagez de nouveau la nouvelle URL avec vos instances sœurs.",
     "setSiteUrlHint": "La publication est activée, mais l'URL de votre fil n'est pas encore absolue. Définissez l'adresse du site de cette instance dans les paramètres d'adresse du site afin que les instances sœurs obtiennent une URL complète et cliquable.",
     "peersSectionTitle": "Instances sœurs (fils dont nous récupérons les données)",
@@ -842,6 +841,10 @@
     "removed": "Instance sœur retirée.",
     "synced": "Synchronisation terminée.",
     "saved": "Enregistré.",
-    "couldNotSave": "Impossible d'enregistrer"
+    "couldNotSave": "Impossible d'enregistrer",
+    "rotateModalTitle": "Renouveler le jeton de fédération?",
+    "rotateModalBody": "Cela invalide immédiatement l'URL de votre fil actuelle. Toutes les instances sœurs qui lisent vos données cesseront de se synchroniser et seront interrompues jusqu'à ce que vous leur envoyiez la nouvelle URL et qu'elles mettent à jour leur configuration. Ne faites cela que si le jeton actuel a pu être exposé : c'est irréversible.",
+    "rotateConfirm": "Oui, renouveler le jeton",
+    "rotateCancel": "Annuler"
   }
 }

@@ -811,7 +811,6 @@
     "copy": "Copiar",
     "copied": "Copiado",
     "rotateToken": "Rotar token",
-    "rotateWarning": "Al rotar el token, cualquier URL de feed que ya hayas compartido deja de ser válida. Las instancias hermanas necesitarán la nueva URL para seguir sincronizando. ¿Continuar?",
     "tokenRotated": "Token del feed rotado. Vuelve a compartir la nueva URL con tus instancias hermanas.",
     "setSiteUrlHint": "La publicación está activada, pero la URL de tu feed aún no es absoluta. Establece la Dirección del sitio de esta instancia en la configuración de dirección del sitio para que las instancias hermanas reciban una URL completa y enlazable.",
     "peersSectionTitle": "Instancias hermanas (feeds de los que traemos datos)",
@@ -842,6 +841,10 @@
     "removed": "Instancia hermana eliminada.",
     "synced": "Sincronización completa.",
     "saved": "Guardado.",
-    "couldNotSave": "No se pudo guardar"
+    "couldNotSave": "No se pudo guardar",
+    "rotateModalTitle": "¿Rotar el token de federación?",
+    "rotateModalBody": "Esto invalida de inmediato la URL de tu feed actual. Todas las instancias hermanas que leen tus datos dejarán de sincronizar y se romperán hasta que les envíes la nueva URL y actualicen su configuración. Hazlo solo si el token actual pudo haber quedado expuesto: no se puede deshacer.",
+    "rotateConfirm": "Sí, rotar el token",
+    "rotateCancel": "Cancelar"
   }
 }

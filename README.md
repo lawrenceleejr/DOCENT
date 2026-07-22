@@ -410,6 +410,39 @@ Registration**, or via `SITE_NAME` / `PUBLIC_PAGE` in `.env`.
 
 ![Public impact page](docs/screenshots/08-impact.png)
 
+## Federation (show sibling instances' activities)
+
+Communicators often work with more than one outreach group — each running its own
+DOCENT. **Federation** lets an instance display activities pulled from a list of
+**sibling instances**, so an activity logged once anywhere shows up everywhere —
+in the **Visits list**, the **Map**, and the **Analysis** stats — with no
+duplicate data entry. Sibling rows are clearly badged and link back to the
+instance that owns them; to see full detail you follow that link and sign in
+there. What crosses the wire is deliberately minimal: **date, place (+ coords /
+type), the person, event type, people reached, and a deep-link** — never
+descriptions, reflections, ratings, or host contact details.
+
+**Publish your feed** (Admin → Federation): flip **Publish to federation** on and
+copy **Your feed URL**. It looks like
+`https://you.edu/api/federation/activities?token=…` and is reachable with a plain
+`curl`. The token in the URL is the only credential, so share it privately and
+serve over HTTPS; **Rotate token** invalidates a URL you've already handed out
+(you'll need to re-share the new one). Set your instance's **Site URL** (Admin →
+Site address) so the feed's deep-links are absolute.
+
+**Subscribe to siblings** (Admin → Federation → *Sibling instances*): paste a
+sibling's feed URL, pick a sync interval (**hourly / daily / weekly**), and Add.
+DOCENT pulls each due peer on its interval (a built-in background job) and caches
+a limited copy locally; **Sync now** forces an immediate pull. Sibling activities
+then appear by default across the app, each view with a filter to hide them
+(**Include sibling instances**). The public `/impact` page has its own toggle to
+count the wider network in its totals — **numbers only, never sibling names**.
+
+> Only **completed** visits are ever published or shown. Leaderboards, and the
+> audience / host-relationship breakdowns, count your own instance's activities
+> only (the feed doesn't carry those fields). Behind a TLS-inspecting proxy, set
+> `REQUESTS_CA_BUNDLE` for the backend so peer pulls trust your CA.
+
 ## Map & coverage (finding gaps)
 
 The **Map** tab plots your outreach on an OpenStreetMap base layer so you can see
