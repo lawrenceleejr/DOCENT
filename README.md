@@ -428,19 +428,36 @@ copy **Your feed URL**. It looks like
 `curl`. The token in the URL is the only credential, so share it privately and
 serve over HTTPS; **Rotate token** invalidates a URL you've already handed out
 (you'll need to re-share the new one). Set your instance's **Site URL** (Admin →
-Site address) so the feed's deep-links are absolute.
+Site address) so the feed's deep-links are absolute. By default the feed carries
+**completed** activities only; flip **Publish planned events** to also share your
+upcoming schedule, so siblings can see planned outreach on their Schedule page.
 
 **Subscribe to siblings** (Admin → Federation → *Sibling instances*): paste a
-sibling's feed URL, pick a sync interval (**hourly / daily / weekly**), and Add.
-DOCENT pulls each due peer on its interval (a built-in background job) and caches
-a limited copy locally; **Sync now** forces an immediate pull. Sibling activities
-then appear by default across the app, each view with a filter to hide them
-(**Include sibling instances**). The public `/impact` page has its own toggle to
-count the wider network in its totals — **numbers only, never sibling names**.
+sibling's feed URL and hit **Test** to confirm it's reachable (it shows the
+instance name and how many activities are available) before you Add. Pick a sync
+interval (**hourly / daily / weekly**) and Add. DOCENT pulls each due peer on its
+interval (a built-in background job) and caches a limited copy locally; **Sync
+now** forces an immediate pull. The peer table shows each sibling's **last sync**,
+**next sync**, live status, and activity count — a failing peer is retried with
+**exponential backoff** (never more often than its interval, capped at a week) and
+its error count is surfaced on the status badge. Scheduled pulls are **incremental
+and paged** (only rows changed since the last sync, so arbitrarily large peers
+sync cheaply), with a periodic **full reconcile** that also propagates remote
+deletions.
 
-> Only **completed** visits are ever published or shown. Leaderboards, and the
-> audience / host-relationship breakdowns, count your own instance's activities
-> only (the feed doesn't carry those fields). Behind a TLS-inspecting proxy, set
+Sibling activities then appear by default across the app, each view with a filter
+to hide them (**Include sibling instances**) or narrow to a single **Source**. On
+the Map, a sibling point that coincides with a place you've already reached
+collapses into the single green "reached" marker. The public `/impact` page has
+its own toggle to count the wider network in its totals — **numbers only, never
+sibling names**.
+
+> Only **completed** visits appear in impact/coverage counting; planned events
+> stay on the Schedule page. Combined stats can double-count a communicator who
+> takes part through more than one instance — the dashboard and impact page note
+> this when siblings are included. Leaderboards, and the audience /
+> host-relationship breakdowns, count your own instance's activities only (the
+> feed doesn't carry those fields). Behind a TLS-inspecting proxy, set
 > `REQUESTS_CA_BUNDLE` for the backend so peer pulls trust your CA.
 
 ## Map & coverage (finding gaps)

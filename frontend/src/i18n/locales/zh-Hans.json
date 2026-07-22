@@ -126,7 +126,8 @@
     "visitCount_other": "{{formattedCount}} 次到访",
     "includeSiblings": "包含姊妹实例",
     "siblingBadge": "来自姊妹实例",
-    "siblingActivity": "活动"
+    "siblingActivity": "活动",
+    "sourceLabel": "来源"
   },
   "visitForm": {
     "editTitle": "编辑到访记录",
@@ -521,7 +522,8 @@
     "colVenue": "场地",
     "colCommunicator": "推广人",
     "includeSiblings": "包含姊妹实例",
-    "localOnlyNote": "排行榜和按接待方关系细分仅统计本实例的活动。"
+    "localOnlyNote": "排行榜和按接待方关系细分仅统计本实例的活动。",
+    "federatedCaveat": "如果传播者通过多个同盟实例参与，合计总数可能会将其重复计算。"
   },
   "impact": {
     "unavailableTitle": "此页面不可用",
@@ -543,7 +545,7 @@
     "poweredByPrefix": "技术支持：",
     "poweredBySuffix": "· 依据 GNU GPL v3 许可发布的自由软件",
     "includeSiblings": "包含姊妹实例",
-    "includingSiblings": "数据包含我们各姊妹实例的活动。"
+    "includingSiblings": "数据涵盖我们各同盟实例的活动，可能存在重叠。"
   },
   "map": {
     "title": "地图",
@@ -573,7 +575,8 @@
     "showSiblings": "姊妹实例活动",
     "legendSibling": "姊妹实例活动",
     "fromSibling": "来自 {{name}}",
-    "openOnPrimary": "在主实例上打开"
+    "openOnPrimary": "在主实例上打开",
+    "allSiblings": "所有同盟实例"
   },
   "profile": {
     "title": "个人资料",
@@ -845,6 +848,16 @@
     "rotateModalTitle": "要轮换联合令牌吗？",
     "rotateModalBody": "此操作会立即使您当前的动态 URL 失效。所有读取您数据的姊妹实例都会停止同步并中断，直到您将新的 URL 发送给它们并更新其设置为止。仅在当前令牌可能已泄露时才执行此操作——此操作无法撤销。",
     "rotateConfirm": "是的，轮换令牌",
-    "rotateCancel": "取消"
+    "rotateCancel": "取消",
+    "publishPlannedToggle": "发布计划活动",
+    "publishPlannedDescription": "同时分享即将举行的（计划中）活动，让同盟实例可以查看你的日程。默认关闭。",
+    "testFeed": "测试",
+    "previewOk": "已连接 {{name}} — 有 {{formattedCount}} 项活动可用。",
+    "previewError": "无法连接信息流：{{error}}",
+    "unknownInstance": "此实例",
+    "colNextSync": "下次同步",
+    "paused": "已暂停",
+    "soon": "即将进行",
+    "statusErrorCount": "错误 ×{{count}}"
   }
 }

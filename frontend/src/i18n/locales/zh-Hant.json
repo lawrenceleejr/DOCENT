@@ -126,7 +126,8 @@
     "visitCount_other": "{{formattedCount}} 次到訪",
     "includeSiblings": "包含姊妹站台",
     "siblingBadge": "來自姊妹站台",
-    "siblingActivity": "活動"
+    "siblingActivity": "活動",
+    "sourceLabel": "來源"
   },
   "visitForm": {
     "editTitle": "編輯到訪紀錄",
@@ -521,7 +522,8 @@
     "colVenue": "場地",
     "colCommunicator": "推廣人員",
     "includeSiblings": "包含姊妹站台",
-    "localOnlyNote": "排行榜與接待人關係細項僅計入本站台的活動。"
+    "localOnlyNote": "排行榜與接待人關係細項僅計入本站台的活動。",
+    "federatedCaveat": "若傳播者透過多個夥伴站台參與，合併總計可能會重複計算同一位傳播者。"
   },
   "impact": {
     "unavailableTitle": "此頁面目前無法使用",
@@ -543,7 +545,7 @@
     "poweredByPrefix": "技術支援：",
     "poweredBySuffix": "· 自由軟體，採用 GNU GPL v3 授權條款",
     "includeSiblings": "包含姊妹站台",
-    "includingSiblings": "數字包含我們各姊妹站台的活動。"
+    "includingSiblings": "數字涵蓋我們各夥伴站台的活動，內容可能有所重疊。"
   },
   "map": {
     "title": "地圖",
@@ -573,7 +575,8 @@
     "showSiblings": "姊妹站台活動",
     "legendSibling": "姊妹站台活動",
     "fromSibling": "來自 {{name}}",
-    "openOnPrimary": "在主要站台上開啟"
+    "openOnPrimary": "在主要站台上開啟",
+    "allSiblings": "所有夥伴站台"
   },
   "profile": {
     "title": "個人資料",
@@ -845,6 +848,16 @@
     "rotateModalTitle": "要輪換聯播網權杖嗎？",
     "rotateModalBody": "此操作會立即使您目前的動態消息 URL 失效。所有讀取您資料的姊妹站台都會停止同步並中斷，直到您將新的 URL 傳送給它們並更新其設定為止。僅在目前的權杖可能已外洩時才執行此操作——此動作無法復原。",
     "rotateConfirm": "是的，輪換權杖",
-    "rotateCancel": "取消"
+    "rotateCancel": "取消",
+    "publishPlannedToggle": "發布計畫中的活動",
+    "publishPlannedDescription": "同時分享即將舉行（計畫中）的活動，讓夥伴站台可以查看你的排程。預設為關閉。",
+    "testFeed": "測試",
+    "previewOk": "已連上 {{name}} — 有 {{formattedCount}} 筆活動可供取用。",
+    "previewError": "無法連上動態消息來源：{{error}}",
+    "unknownInstance": "此站台",
+    "colNextSync": "下次同步",
+    "paused": "已暫停",
+    "soon": "即將",
+    "statusErrorCount": "錯誤 ×{{count}}"
   }
 }

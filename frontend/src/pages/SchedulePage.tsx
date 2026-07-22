@@ -13,7 +13,7 @@ import {
   Title,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { IconCalendarPlus } from '@tabler/icons-react';
+import { IconCalendarPlus, IconExternalLink } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,8 +24,8 @@ import {
   EVENT_TYPES,
   isOverdue,
   VENUE_TYPES,
+  type ActivityListItem,
   type Paginated,
-  type Visit,
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { EmptyState } from '../components/EmptyState';
@@ -41,6 +41,7 @@ export function SchedulePage() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<VisitFilters>({});
   const [mineOnly, setMineOnly] = useState(false);
+  const [showSiblings, setShowSiblings] = useState(true);
 
   const update = (patch: Partial<VisitFilters>) => setFilters((f) => ({ ...f, ...patch }));
 
@@ -48,12 +49,15 @@ export function SchedulePage() {
     ...filterParams(filters),
     status: 'planned',
     author_id: mineOnly ? user?.id : undefined,
+    // Siblings that opt into publishing planned events appear here too; the
+    // mine-only scope keeps them out (the feed can't satisfy an author filter).
+    include_federated: showSiblings && !mineOnly,
     sort: 'visit_date', // soonest first
     page_size: 100,
   };
   const { data, isLoading } = useQuery({
     queryKey: ['visits', 'schedule', params],
-    queryFn: () => api.get<Paginated<Visit>>('/api/visits', params),
+    queryFn: () => api.get<Paginated<ActivityListItem>>('/api/visits', params),
     enabled: !!user,
   });
 
@@ -154,6 +158,14 @@ export function SchedulePage() {
             onChange={(e) => setMineOnly(e.currentTarget.checked)}
             pb={8}
           />
+          {!mineOnly && (
+            <Switch
+              label={t('visitList.includeSiblings')}
+              checked={showSiblings}
+              onChange={(e) => setShowSiblings(e.currentTarget.checked)}
+              pb={8}
+            />
+          )}
         </Group>
       </FilterCard>
 
@@ -172,45 +184,70 @@ export function SchedulePage() {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {(data?.items ?? []).map((visit) => (
-              <Table.Tr key={visit.id}>
+            {(data?.items ?? []).map((it) => {
+              const isLocal = it.source === 'local';
+              return (
+              <Table.Tr key={`${it.source}-${it.id ?? it.external_url}`}>
                 <Table.Td>
                   <Group gap="xs" wrap="nowrap">
-                    {visit.visit_date}
-                    {isOverdue(visit) && (
-                      <Badge variant="light" color="red" size="sm">
-                        {t('schedule.overdue')}
+                    {it.visit_date}
+                    {isLocal &&
+                      it.status &&
+                      isOverdue({ status: it.status, visit_date: it.visit_date }) && (
+                        <Badge variant="light" color="red" size="sm">
+                          {t('schedule.overdue')}
+                        </Badge>
+                      )}
+                    {!isLocal && (
+                      <Badge variant="outline" color="grape" size="sm">
+                        {it.source}
                       </Badge>
                     )}
                   </Group>
                 </Table.Td>
-                <Table.Td>{visit.start_time ? visit.start_time.slice(0, 5) : '—'}</Table.Td>
+                <Table.Td>{it.start_time ? it.start_time.slice(0, 5) : '—'}</Table.Td>
                 <Table.Td>
-                  <Anchor component={Link} to={`/visits/${visit.id}`}>
-                    {visit.title}
-                  </Anchor>
+                  {isLocal ? (
+                    <Anchor component={Link} to={`/visits/${it.id}`}>
+                      {it.title}
+                    </Anchor>
+                  ) : (
+                    <Anchor
+                      href={it.external_url ?? undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {it.event_type ? enumLabel.eventType(it.event_type) : t('visitList.siblingActivity')}
+                      <IconExternalLink size={14} style={{ marginLeft: 4, verticalAlign: 'text-bottom' }} />
+                    </Anchor>
+                  )}
                 </Table.Td>
                 <Table.Td>
-                  {visit.venue.name}
-                  {visit.venue.city ? `, ${visit.venue.city}` : ''}
+                  {it.venue?.name}
+                  {it.venue?.city ? `, ${it.venue.city}` : ''}
                 </Table.Td>
-                <Table.Td>{visit.author.name}</Table.Td>
+                <Table.Td>{it.author?.name ?? '—'}</Table.Td>
                 <Table.Td>
-                  <Badge variant="light">{enumLabel.audienceLevel(visit.audience_level)}</Badge>
+                  {it.audience_level ? (
+                    <Badge variant="light">{enumLabel.audienceLevel(it.audience_level)}</Badge>
+                  ) : (
+                    '—'
+                  )}
                 </Table.Td>
                 <Table.Td ta="right">
-                  {(visit.author.id === user?.id || user?.is_admin) && (
+                  {isLocal && (it.author?.id === user?.id || user?.is_admin) && (
                     <Button
                       size="compact-sm"
                       variant="light"
-                      onClick={() => navigate(`/visits/${visit.id}/edit`)}
+                      onClick={() => navigate(`/visits/${it.id}/edit`)}
                     >
                       {t('schedule.markDone')}
                     </Button>
                   )}
                 </Table.Td>
               </Table.Tr>
-            ))}
+              );
+            })}
             {!isLoading && (data?.items.length ?? 0) === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={7} p={0}>

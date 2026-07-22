@@ -126,7 +126,8 @@
     "visitCount_other": "{{formattedCount}} visits",
     "includeSiblings": "Include sibling instances",
     "siblingBadge": "From a sibling instance",
-    "siblingActivity": "Activity"
+    "siblingActivity": "Activity",
+    "sourceLabel": "Source"
   },
   "visitForm": {
     "editTitle": "Edit visit",
@@ -521,7 +522,8 @@
     "colVenue": "Venue",
     "colCommunicator": "Communicator",
     "includeSiblings": "Include sibling instances",
-    "localOnlyNote": "Leaderboards and the host-relationship breakdown count this instance's activities only."
+    "localOnlyNote": "Leaderboards and the host-relationship breakdown count this instance's activities only.",
+    "federatedCaveat": "Combined totals may count a communicator more than once if they take part through multiple sibling instances."
   },
   "impact": {
     "unavailableTitle": "This page isn’t available",
@@ -543,7 +545,7 @@
     "poweredByPrefix": "Powered by",
     "poweredBySuffix": "· free software under the GNU GPL v3",
     "includeSiblings": "Include sibling instances",
-    "includingSiblings": "Numbers include activities across our sibling instances."
+    "includingSiblings": "Numbers include activities across our sibling instances, which may overlap."
   },
   "map": {
     "title": "Map",
@@ -573,7 +575,8 @@
     "showSiblings": "Sibling activities",
     "legendSibling": "Sibling activity",
     "fromSibling": "From {{name}}",
-    "openOnPrimary": "Open on the primary instance"
+    "openOnPrimary": "Open on the primary instance",
+    "allSiblings": "All siblings"
   },
   "profile": {
     "title": "Profile",
@@ -845,6 +848,16 @@
     "rotateModalTitle": "Rotate the federation token?",
     "rotateModalBody": "This immediately invalidates your current feed URL. Every sibling instance that reads your data will stop syncing and break until you send them the new URL and they update their setup. Only do this if the current token may have been exposed — it can't be undone.",
     "rotateConfirm": "Yes, rotate the token",
-    "rotateCancel": "Cancel"
+    "rotateCancel": "Cancel",
+    "publishPlannedToggle": "Publish planned events",
+    "publishPlannedDescription": "Also share upcoming (planned) events, so siblings can see your schedule. Off by default.",
+    "testFeed": "Test",
+    "previewOk": "Reached {{name}} — {{formattedCount}} activities available.",
+    "previewError": "Could not reach feed: {{error}}",
+    "unknownInstance": "this instance",
+    "colNextSync": "Next sync",
+    "paused": "Paused",
+    "soon": "Soon",
+    "statusErrorCount": "Error ×{{count}}"
   }
 }

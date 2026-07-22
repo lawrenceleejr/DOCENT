@@ -430,6 +430,12 @@ export function DashboardPage() {
         </Group>
       </FilterCard>
 
+      {includeSiblings && (
+        <Text size="xs" c="dimmed">
+          {t('dashboard.federatedCaveat')}
+        </Text>
+      )}
+
       <SimpleGrid cols={{ base: 1, xs: 2, md: 5 }}>
         <StatTile
           label={t('dashboard.statVisits')}

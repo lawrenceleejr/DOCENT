@@ -1,4 +1,5 @@
 import enum
+import uuid
 from datetime import date, datetime, time
 
 from sqlalchemy import (
@@ -196,6 +197,12 @@ class Visit(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # Globally-unique, stable identifier used as the federation dedup key so a
+    # peer resetting/re-importing its DB (which reuses integer ids) can't collide
+    # with cached rows on subscribers.
+    uid: Mapped[str] = mapped_column(
+        String(36), unique=True, index=True, default=lambda: str(uuid.uuid4())
+    )
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     venue_id: Mapped[int] = mapped_column(ForeignKey("venues.id"), index=True)
     # planned = a scheduled future event; completed = an outreach that happened.
@@ -352,6 +359,14 @@ class FederationPeer(Base):
     last_status: Mapped[str | None] = mapped_column(String(16))  # "ok" | "error"
     last_error: Mapped[str | None] = mapped_column(Text)
     activity_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    # Sync bookkeeping: consecutive_failures drives exponential backoff;
+    # last_updated_at is the incremental high-water mark; last_full_synced_at
+    # gates the periodic full reconcile that catches remote deletions.
+    consecutive_failures: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("0")
+    )
+    last_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_full_synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -370,14 +385,18 @@ class FederatedActivity(Base):
 
     __tablename__ = "federated_activities"
     __table_args__ = (
-        UniqueConstraint("peer_id", "remote_id", name="uq_federated_peer_remote"),
+        UniqueConstraint("peer_id", "remote_uid", name="uq_federated_peer_uid"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     peer_id: Mapped[int] = mapped_column(
         ForeignKey("federation_peers.id", ondelete="CASCADE"), index=True
     )
-    remote_id: Mapped[int] = mapped_column(Integer)  # the source visit's id
+    remote_uid: Mapped[str] = mapped_column(String(36))  # the source visit's uid (dedup key)
+    remote_id: Mapped[int] = mapped_column(Integer)  # the source visit's id (for the permalink)
+    status: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default="completed"
+    )  # "completed" | "planned"
     visit_date: Mapped[date] = mapped_column(Date, index=True)
     venue_name: Mapped[str | None] = mapped_column(String(255))
     venue_city: Mapped[str | None] = mapped_column(String(255))

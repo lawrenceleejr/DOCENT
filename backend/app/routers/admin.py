@@ -31,6 +31,7 @@ from app.schemas import (
     DbImportResult,
     FederationPeerCreate,
     FederationPeerOut,
+    FederationPeerPreview,
     FederationPeerUpdate,
     InstitutionAdminItem,
     InstitutionAdminList,
@@ -54,6 +55,7 @@ from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
 from app.services.settings import (
     CONTACT_EMAIL_KEY,
     FEDERATION_PUBLISH_KEY,
+    FEDERATION_PUBLISH_PLANNED_KEY,
     INVITE_CODE_KEY,
     LOGIN_MESSAGE_KEY,
     MAP_CENTER_LAT_KEY,
@@ -72,6 +74,7 @@ from app.services.settings import (
     ensure_federation_token,
     federation_feed_url,
     federation_publish_enabled,
+    federation_publish_planned_enabled,
     public_page_enabled,
     rotate_federation_token,
     set_setting,
@@ -173,6 +176,7 @@ def _settings_out(db) -> RegistrationSettings:
         map_center_lon=effective_map_center_lon(db),
         user_directory_visible=user_directory_visible(db),
         federation_publish=federation_publish_enabled(db),
+        federation_publish_planned=federation_publish_planned_enabled(db),
         federation_feed_url=federation_feed_url(db),
     )
 
@@ -210,6 +214,10 @@ def update_registration_settings(
         # can immediately copy a working feed URL.
         if body.federation_publish:
             ensure_federation_token(db)
+    if body.federation_publish_planned is not None:
+        set_setting(
+            db, FEDERATION_PUBLISH_PLANNED_KEY, "1" if body.federation_publish_planned else ""
+        )
     db.commit()
     return _settings_out(db)
 
@@ -238,8 +246,10 @@ def _peer_out(peer: FederationPeer) -> FederationPeerOut:
         interval=peer.interval,
         enabled=peer.enabled,
         last_synced_at=peer.last_synced_at,
+        next_sync_at=fed.next_sync_at(peer),
         last_status=peer.last_status,
         last_error=peer.last_error,
+        consecutive_failures=peer.consecutive_failures,
         activity_count=peer.activity_count,
         created_at=peer.created_at,
     )
@@ -258,6 +268,25 @@ def list_federation_peers(db: DbSession, _admin: CurrentAdmin):
     return [_peer_out(p) for p in peers]
 
 
+@router.post("/federation/peers/preview", response_model=FederationPeerPreview)
+def preview_federation_peer(body: FederationPeerCreate, _admin: CurrentAdmin):
+    """Probe a feed URL before adding it — validates the token and shows what
+    the peer publishes, without creating anything."""
+    url = body.feed_url.strip()
+    if not (url.startswith("http://") or url.startswith("https://")):
+        return FederationPeerPreview(ok=False, error="URL must start with http:// or https://")
+    try:
+        envelope = fed.fetch_peer(url)
+    except Exception as exc:  # noqa: BLE001 — report the failure to the admin
+        return FederationPeerPreview(ok=False, error=str(exc)[:500])
+    return FederationPeerPreview(
+        ok=True,
+        instance_name=envelope.get("instance_name"),
+        instance_url=envelope.get("instance_url"),
+        activity_count=len(envelope.get("activities") or []),
+    )
+
+
 @router.post("/federation/peers", response_model=FederationPeerOut, status_code=201)
 def add_federation_peer(body: FederationPeerCreate, _admin: CurrentAdmin, db: DbSession):
     url = body.feed_url.strip()
@@ -270,7 +299,7 @@ def add_federation_peer(body: FederationPeerCreate, _admin: CurrentAdmin, db: Db
     db.add(peer)
     db.commit()
     db.refresh(peer)
-    fed.sync_peer(db, peer)  # best-effort first pull; records status on the peer
+    fed.sync_peer(db, peer, force_full=True)  # first pull: full reconcile
     db.refresh(peer)
     return _peer_out(peer)
 
@@ -303,7 +332,7 @@ def delete_federation_peer(peer_id: int, _admin: CurrentAdmin, db: DbSession):
 @router.post("/federation/peers/{peer_id}/sync", response_model=FederationPeerOut)
 def sync_federation_peer(peer_id: int, _admin: CurrentAdmin, db: DbSession):
     peer = _get_peer_or_404(peer_id, db)
-    fed.sync_peer(db, peer)
+    fed.sync_peer(db, peer, force_full=True)
     db.refresh(peer)
     return _peer_out(peer)
 
@@ -312,7 +341,7 @@ def sync_federation_peer(peer_id: int, _admin: CurrentAdmin, db: DbSession):
 def sync_all_federation_peers(_admin: CurrentAdmin, db: DbSession):
     peers = db.scalars(select(FederationPeer)).all()
     for peer in peers:
-        fed.sync_peer(db, peer)
+        fed.sync_peer(db, peer, force_full=True)
     refreshed = db.scalars(select(FederationPeer).order_by(FederationPeer.created_at)).all()
     return [_peer_out(p) for p in refreshed]
 

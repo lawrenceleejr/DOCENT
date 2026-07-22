@@ -126,7 +126,8 @@
     "visitCount_other": "{{formattedCount}} visitas",
     "includeSiblings": "Incluir instancias hermanas",
     "siblingBadge": "De una instancia hermana",
-    "siblingActivity": "Actividad"
+    "siblingActivity": "Actividad",
+    "sourceLabel": "Fuente"
   },
   "visitForm": {
     "editTitle": "Editar visita",
@@ -521,7 +522,8 @@
     "colVenue": "Sede",
     "colCommunicator": "Comunicador",
     "includeSiblings": "Incluir instancias hermanas",
-    "localOnlyNote": "Las tablas de clasificación y el desglose por relación con el anfitrión cuentan únicamente las actividades de esta instancia."
+    "localOnlyNote": "Las tablas de clasificación y el desglose por relación con el anfitrión cuentan únicamente las actividades de esta instancia.",
+    "federatedCaveat": "Los totales combinados pueden contar a un comunicador más de una vez si participa a través de varias instancias hermanas."
   },
   "impact": {
     "unavailableTitle": "Esta página no está disponible",
@@ -543,7 +545,7 @@
     "poweredByPrefix": "Desarrollado con",
     "poweredBySuffix": "· software libre bajo la GNU GPL v3",
     "includeSiblings": "Incluir instancias hermanas",
-    "includingSiblings": "Las cifras incluyen actividades de nuestras instancias hermanas."
+    "includingSiblings": "Las cifras incluyen actividades de nuestras instancias hermanas, que pueden solaparse."
   },
   "map": {
     "title": "Mapa",
@@ -573,7 +575,8 @@
     "showSiblings": "Actividades de instancias hermanas",
     "legendSibling": "Actividad de instancia hermana",
     "fromSibling": "De {{name}}",
-    "openOnPrimary": "Abrir en la instancia principal"
+    "openOnPrimary": "Abrir en la instancia principal",
+    "allSiblings": "Todas las instancias hermanas"
   },
   "profile": {
     "title": "Perfil",
@@ -845,6 +848,16 @@
     "rotateModalTitle": "¿Rotar el token de federación?",
     "rotateModalBody": "Esto invalida de inmediato la URL de tu feed actual. Todas las instancias hermanas que leen tus datos dejarán de sincronizar y se romperán hasta que les envíes la nueva URL y actualicen su configuración. Hazlo solo si el token actual pudo haber quedado expuesto: no se puede deshacer.",
     "rotateConfirm": "Sí, rotar el token",
-    "rotateCancel": "Cancelar"
+    "rotateCancel": "Cancelar",
+    "publishPlannedToggle": "Publicar eventos planificados",
+    "publishPlannedDescription": "Comparte también los próximos eventos (planificados) para que las instancias hermanas puedan ver tu calendario. Desactivado de forma predeterminada.",
+    "testFeed": "Probar",
+    "previewOk": "Se conectó con {{name}}: {{formattedCount}} actividades disponibles.",
+    "previewError": "No se pudo acceder al feed: {{error}}",
+    "unknownInstance": "esta instancia",
+    "colNextSync": "Próxima sincronización",
+    "paused": "En pausa",
+    "soon": "Pronto",
+    "statusErrorCount": "Errores ×{{count}}"
   }
 }

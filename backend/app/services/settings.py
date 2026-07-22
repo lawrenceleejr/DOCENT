@@ -21,6 +21,7 @@ MAP_CENTER_LAT_KEY = "map_center_lat"
 MAP_CENTER_LON_KEY = "map_center_lon"
 USER_DIRECTORY_KEY = "user_directory_visible"
 FEDERATION_PUBLISH_KEY = "federation_publish"
+FEDERATION_PUBLISH_PLANNED_KEY = "federation_publish_planned"
 FEDERATION_TOKEN_KEY = "federation_token"
 
 
@@ -89,6 +90,12 @@ def user_directory_visible(db: Session) -> bool:
 def federation_publish_enabled(db: Session) -> bool:
     """Whether this instance serves its activities feed to sibling instances."""
     return get_setting(db, FEDERATION_PUBLISH_KEY) == "1"
+
+
+def federation_publish_planned_enabled(db: Session) -> bool:
+    """Whether the feed also includes planned (upcoming) events so siblings can
+    see them on their Schedule. Off by default — planned events are tentative."""
+    return get_setting(db, FEDERATION_PUBLISH_PLANNED_KEY) == "1"
 
 
 def get_federation_token(db: Session) -> str | None:

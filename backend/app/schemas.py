@@ -275,8 +275,10 @@ class RegistrationSettings(BaseModel):
     map_center_lon: float
     user_directory_visible: bool
     # Federation publishing: whether this instance serves its activities feed,
-    # and the full feed URL (incl. token) an admin hands to sibling instances.
+    # whether it also shares planned (upcoming) events, and the full feed URL
+    # (incl. token) an admin hands to sibling instances.
     federation_publish: bool
+    federation_publish_planned: bool
     federation_feed_url: str
 
 
@@ -291,6 +293,7 @@ class RegistrationSettingsUpdate(BaseModel):
     map_center_lon: float | None = Field(default=None, ge=-180, le=180)
     user_directory_visible: bool | None = None
     federation_publish: bool | None = None
+    federation_publish_planned: bool | None = None
 
 
 
@@ -641,6 +644,13 @@ class VisitList(BaseModel):
     page_size: int
 
 
+class ActivitySource(BaseModel):
+    """A selectable source for the list/map source filter: the local instance or
+    one enabled peer. `value` is "local" or the peer id as a string."""
+    value: str
+    label: str
+
+
 # --- Stats ---
 
 class StatsSummary(BaseModel):
@@ -749,7 +759,9 @@ class FederatedActivityOut(BaseModel):
     siblings. Never carries private fields (description, reflection, rating,
     host contact details, notes)."""
 
-    remote_id: int  # this instance's own visit id (stable per-instance key)
+    uid: str  # globally-unique, stable dedup key
+    remote_id: int  # this instance's own visit id (used to build the permalink)
+    status: str  # "completed" | "planned"
     visit_date: date
     venue_name: str | None
     venue_city: str | None
@@ -766,6 +778,7 @@ class FederatedActivityOut(BaseModel):
 class FederationFeed(BaseModel):
     """Envelope for the published feed — instance identity + activities."""
 
+    feed_version: int
     instance_name: str | None
     instance_url: str | None
     generated_at: datetime
@@ -781,10 +794,22 @@ class FederationPeerOut(BaseModel):
     interval: FederationInterval
     enabled: bool
     last_synced_at: datetime | None
+    next_sync_at: datetime | None
     last_status: str | None
     last_error: str | None
+    consecutive_failures: int
     activity_count: int
     created_at: datetime
+
+
+class FederationPeerPreview(BaseModel):
+    """Result of a "test this URL" probe before adding a peer."""
+
+    ok: bool
+    instance_name: str | None = None
+    instance_url: str | None = None
+    activity_count: int | None = None
+    error: str | None = None
 
 
 class FederationPeerCreate(BaseModel):

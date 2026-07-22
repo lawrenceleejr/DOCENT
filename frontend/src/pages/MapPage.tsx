@@ -4,6 +4,7 @@ import {
   Checkbox,
   Group,
   SegmentedControl,
+  Select,
   Stack,
   Text,
   Title,
@@ -194,6 +195,7 @@ export function MapPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'gap' | 'covered'>('all');
   const [showVenues, setShowVenues] = useState(true);
   const [showSiblings, setShowSiblings] = useState(true);
+  const [siblingSource, setSiblingSource] = useState<string | null>(null);
 
   // Admin-configured starting point (defaults to Tennessee). Shared cache key
   // with Layout's fetch, so this is already warm by the time the page mounts.
@@ -225,11 +227,21 @@ export function MapPage() {
 
   // Sibling-instance activities: a separate, read-only layer that never affects
   // the local covered/gap counting above.
-  const { data: federated = [] } = useQuery({
+  const { data: federatedAll = [] } = useQuery({
     queryKey: ['map', 'federated', rounded],
     queryFn: () => api.get<FederatedMapPoint[]>('/api/map/federated', { ...rounded! }),
     enabled: !!rounded && showSiblings,
   });
+
+  // Distinct sibling labels present, for the source Select.
+  const siblingLabels = useMemo(
+    () => Array.from(new Set(federatedAll.map((f) => f.source_label).filter(Boolean))) as string[],
+    [federatedAll],
+  );
+  const federated = useMemo(
+    () => (siblingSource ? federatedAll.filter((f) => f.source_label === siblingSource) : federatedAll),
+    [federatedAll, siblingSource],
+  );
 
   const gapCount = institutions.filter((i) => !i.covered).length;
 
@@ -237,7 +249,8 @@ export function MapPage() {
     (types.length !== DEFAULT_TYPES.length ? 1 : 0) +
     (statusFilter !== 'all' ? 1 : 0) +
     (!showVenues ? 1 : 0) +
-    (!showSiblings ? 1 : 0);
+    (!showSiblings ? 1 : 0) +
+    (siblingSource ? 1 : 0);
 
   const logVisitHere = async (inst: InstitutionPoint) => {
     try {
@@ -343,6 +356,17 @@ export function MapPage() {
               checked={showSiblings}
               onChange={(e) => setShowSiblings(e.currentTarget.checked)}
             />
+            {showSiblings && siblingLabels.length > 1 && (
+              <Select
+                size="xs"
+                placeholder={t('map.allSiblings')}
+                clearable
+                data={siblingLabels}
+                value={siblingSource}
+                onChange={setSiblingSource}
+                w={170}
+              />
+            )}
           </Group>
           <Group gap="md">
             <LegendDot color={COLORS.gap} label={t('map.legendGap')} />

@@ -562,7 +562,18 @@ export interface FederationPeer {
   last_status: string | null;
   last_error: string | null;
   activity_count: number;
+  next_sync_at: string | null;
+  consecutive_failures: number;
   created_at: string;
+}
+
+/** Result of the admin "Test feed URL" preview before adding a peer. */
+export interface FederationPeerPreview {
+  ok: boolean;
+  instance_name: string | null;
+  instance_url: string | null;
+  activity_count: number;
+  error: string | null;
 }
 
 export interface FederatedMapPoint {
@@ -608,6 +619,7 @@ export interface RegistrationSettings {
   map_center_lon: number;
   user_directory_visible: boolean;
   federation_publish: boolean;
+  federation_publish_planned: boolean;
   federation_feed_url: string;
 }
 

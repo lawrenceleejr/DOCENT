@@ -126,7 +126,8 @@
     "visitCount_other": "{{formattedCount}} pagbisita",
     "includeSiblings": "Isama ang mga sibling instance",
     "siblingBadge": "Mula sa isang sibling instance",
-    "siblingActivity": "Aktibidad"
+    "siblingActivity": "Aktibidad",
+    "sourceLabel": "Pinagmulan"
   },
   "visitForm": {
     "editTitle": "I-edit ang pagbisita",
@@ -521,7 +522,8 @@
     "colVenue": "Venue",
     "colCommunicator": "Communicator",
     "includeSiblings": "Isama ang mga sibling instance",
-    "localOnlyNote": "Binibilang lang ng mga leaderboard at ng breakdown ng relasyon sa host ang mga aktibidad ng instance na ito."
+    "localOnlyNote": "Binibilang lang ng mga leaderboard at ng breakdown ng relasyon sa host ang mga aktibidad ng instance na ito.",
+    "federatedCaveat": "Maaaring mabilang nang higit sa isang beses ang isang komunikador sa pinagsamang kabuuan kung sumasali sila sa pamamagitan ng maraming kapwa instance."
   },
   "impact": {
     "unavailableTitle": "Hindi available ang page na ito",
@@ -543,7 +545,7 @@
     "poweredByPrefix": "Pinapatakbo ng",
     "poweredBySuffix": "· libreng software sa ilalim ng GNU GPL v3",
     "includeSiblings": "Isama ang mga sibling instance",
-    "includingSiblings": "Kasama sa mga numero ang mga aktibidad sa aming mga sibling instance."
+    "includingSiblings": "Kasama sa mga bilang ang mga aktibidad sa aming mga kapwa instance, na maaaring magkasanib."
   },
   "map": {
     "title": "Mapa",
@@ -573,7 +575,8 @@
     "showSiblings": "Mga aktibidad ng sibling",
     "legendSibling": "Aktibidad ng sibling",
     "fromSibling": "Mula kay {{name}}",
-    "openOnPrimary": "Buksan sa primary instance"
+    "openOnPrimary": "Buksan sa primary instance",
+    "allSiblings": "Lahat ng kapwa instance"
   },
   "profile": {
     "title": "Profile",
@@ -845,6 +848,16 @@
     "rotateModalTitle": "I-rotate ang federation token?",
     "rotateModalBody": "Agad nitong mawawalan ng bisa ang iyong kasalukuyang feed URL. Titigil sa pag-sync at masisira ang bawat sibling instance na nagbabasa ng iyong data hanggang maipadala mo sa kanila ang bagong URL at ma-update nila ang kanilang setup. Gawin lang ito kung maaaring na-expose ang kasalukuyang token — hindi ito maaaring bawiin.",
     "rotateConfirm": "Oo, i-rotate ang token",
-    "rotateCancel": "Kanselahin"
+    "rotateCancel": "Kanselahin",
+    "publishPlannedToggle": "I-publish ang mga nakaplanong kaganapan",
+    "publishPlannedDescription": "Ibahagi rin ang mga paparating (nakaplanong) kaganapan, para makita ng mga kapwa instance ang iyong iskedyul. Naka-off bilang default.",
+    "testFeed": "Subukan",
+    "previewOk": "Naabot ang {{name}} — {{formattedCount}} aktibidad ang available.",
+    "previewError": "Hindi maabot ang feed: {{error}}",
+    "unknownInstance": "ang instance na ito",
+    "colNextSync": "Susunod na sync",
+    "paused": "Naka-pause",
+    "soon": "Malapit na",
+    "statusErrorCount": "Error ×{{count}}"
   }
 }

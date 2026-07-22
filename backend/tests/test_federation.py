@@ -15,6 +15,7 @@ def _seed_peer_with_activity(
     venue_type="high_school",
     event_type="workshop",
     audience_level="high_school",
+    status="completed",
     people=15,
     lat=40.0,
     lon=-80.0,
@@ -32,7 +33,9 @@ def _seed_peer_with_activity(
     db.add(
         FederatedActivity(
             peer_id=peer.id,
+            remote_uid="sib-uid-1",
             remote_id=1,
+            status=status,
             visit_date=date.fromisoformat(visit_date),
             venue_name="Sib School",
             venue_city="Elsewhere",
@@ -50,21 +53,26 @@ def _seed_peer_with_activity(
     return peer
 
 SAMPLE_ENVELOPE = {
+    "feed_version": 1,
     "instance_name": "Sibling Lab",
     "instance_url": "https://sib.example.edu",
-    "generated_at": "2026-07-01T00:00:00Z",
+    "generated_at": "2026-07-01T00:00:00+00:00",
     "activities": [
         {
-            "remote_id": 1, "visit_date": "2026-05-01", "venue_name": "Sib School",
+            "uid": "uid-1", "remote_id": 1, "status": "completed",
+            "visit_date": "2026-05-01", "venue_name": "Sib School",
             "venue_city": "Elsewhere", "latitude": 40.0, "longitude": -80.0,
             "venue_type": "high_school", "event_type": "workshop",
+            "audience_level": "high_school",
             "person_name": "Remote Person", "people_reached": 22,
             "permalink": "https://sib.example.edu/visits/1",
         },
         {
-            "remote_id": 2, "visit_date": "2026-06-01", "venue_name": "Sib Museum",
+            "uid": "uid-2", "remote_id": 2, "status": "completed",
+            "visit_date": "2026-06-01", "venue_name": "Sib Museum",
             "venue_city": "Elsewhere", "latitude": 41.0, "longitude": -81.0,
             "venue_type": "museum", "event_type": "lab_tour",
+            "audience_level": "general_public",
             "person_name": "Remote Person", "people_reached": 10,
             "permalink": "https://sib.example.edu/visits/2",
         },
@@ -180,8 +188,8 @@ def test_sync_peer_upserts_prunes_dedups(db, monkeypatch):
     db.commit()
     db.refresh(peer)
 
-    monkeypatch.setattr(fed, "fetch_peer", lambda url: SAMPLE_ENVELOPE)
-    fed.sync_peer(db, peer)
+    monkeypatch.setattr(fed, "fetch_peer", lambda url, **kwargs: SAMPLE_ENVELOPE)
+    fed.sync_peer(db, peer, force_full=True)
 
     rows = db.scalars(
         select(FederatedActivity).where(FederatedActivity.peer_id == peer.id)
@@ -197,15 +205,16 @@ def test_sync_peer_upserts_prunes_dedups(db, monkeypatch):
         "activities": [
             {**SAMPLE_ENVELOPE["activities"][0], "people_reached": 99},
             {
-                "remote_id": 3, "visit_date": "2026-06-15", "venue_name": "New",
+                "uid": "uid-3", "remote_id": 3, "status": "completed",
+                "visit_date": "2026-06-15", "venue_name": "New",
                 "venue_city": "X", "latitude": 1.0, "longitude": 2.0,
                 "venue_type": "library", "event_type": "other", "person_name": "P",
                 "people_reached": 5, "permalink": "https://sib.example.edu/visits/3",
             },
         ],
     }
-    monkeypatch.setattr(fed, "fetch_peer", lambda url: envelope2)
-    fed.sync_peer(db, peer)
+    monkeypatch.setattr(fed, "fetch_peer", lambda url, **kwargs: envelope2)
+    fed.sync_peer(db, peer, force_full=True)
 
     rows = {
         r.remote_id: r
@@ -217,13 +226,125 @@ def test_sync_peer_upserts_prunes_dedups(db, monkeypatch):
     assert rows[1].people_reached == 99  # updated in place
 
 
+def test_fetch_page_preserves_token_query():
+    """The paged fetch must MERGE its params into the feed URL, keeping the
+    token already in the query string (httpx's params= would drop it → 403)."""
+    from datetime import datetime, timezone
+
+    url = fed._with_params(
+        "https://sib.example.edu/api/federation/activities?token=SECRET",
+        {"status": "all", "limit": 1000, "offset": 0},
+    )
+    assert "token=SECRET" in url
+    assert "status=all" in url and "offset=0" in url
+
+    # updated_since is appended alongside, token still intact.
+    since = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    url2 = fed._with_params(
+        "https://sib.example.edu/feed?token=abc",
+        {"updated_since": since.isoformat()},
+    )
+    assert "token=abc" in url2 and "updated_since=" in url2
+
+
+def test_backoff_delay_grows_with_failures():
+    peer = FederationPeer(
+        feed_url="x", interval=FederationInterval.hour, enabled=True
+    )
+    peer.consecutive_failures = 0
+    assert fed.effective_delay(peer) == timedelta(hours=1)
+    peer.consecutive_failures = 1
+    assert fed.effective_delay(peer) == timedelta(hours=2)
+    peer.consecutive_failures = 3
+    assert fed.effective_delay(peer) == timedelta(hours=8)
+    # Doubling is clamped at 2**6 (six failures worth).
+    peer.consecutive_failures = 99
+    assert fed.effective_delay(peer) == timedelta(hours=64)
+    # And a slow-interval peer's backoff is capped at BACKOFF_CAP.
+    weekly = FederationPeer(feed_url="x", interval=FederationInterval.week, enabled=True)
+    weekly.consecutive_failures = 6  # 64 weeks, well past the cap
+    assert fed.effective_delay(weekly) == fed.BACKOFF_CAP
+
+
+def test_incremental_sync_does_not_prune(db, monkeypatch):
+    """A non-full (incremental) sync keeps rows the delta didn't mention."""
+    peer = FederationPeer(
+        feed_url="https://sib.example.edu/api/federation/activities?token=t",
+        interval=FederationInterval.day,
+    )
+    db.add(peer)
+    db.commit()
+    db.refresh(peer)
+
+    monkeypatch.setattr(fed, "fetch_peer", lambda url, **kwargs: SAMPLE_ENVELOPE)
+    fed.sync_peer(db, peer, force_full=True)
+    assert peer.activity_count == 2
+    assert peer.last_full_synced_at is not None
+    assert peer.last_updated_at is not None  # high-water mark advanced
+
+    # An incremental delta carrying only uid-1 (updated) must NOT prune uid-2.
+    delta = {
+        **SAMPLE_ENVELOPE,
+        "generated_at": "2026-07-02T00:00:00+00:00",
+        "activities": [{**SAMPLE_ENVELOPE["activities"][0], "people_reached": 77}],
+    }
+    captured = {}
+
+    def fake_fetch(url, *, updated_since=None):
+        captured["updated_since"] = updated_since
+        return delta
+
+    monkeypatch.setattr(fed, "fetch_peer", fake_fetch)
+    # now is close to last_full_synced_at, so this stays incremental (no force).
+    fed.sync_peer(db, peer)
+
+    assert captured["updated_since"] is not None  # passed the cursor along
+    rows = {
+        r.remote_id: r
+        for r in db.scalars(
+            select(FederatedActivity).where(FederatedActivity.peer_id == peer.id)
+        ).all()
+    }
+    assert set(rows) == {1, 2}  # uid-2 survived the incremental sync
+    assert rows[1].people_reached == 77  # uid-1 updated in place
+
+
+def test_full_reconcile_after_interval_prunes(db, monkeypatch):
+    """Once FULL_RECONCILE_INTERVAL passes, a plain sync goes full and prunes."""
+    peer = FederationPeer(
+        feed_url="https://sib.example.edu/api/federation/activities?token=t",
+        interval=FederationInterval.day,
+    )
+    db.add(peer)
+    db.commit()
+    db.refresh(peer)
+
+    t0 = datetime(2026, 7, 1, tzinfo=timezone.utc)
+    monkeypatch.setattr(fed, "fetch_peer", lambda url, **kwargs: SAMPLE_ENVELOPE)
+    fed.sync_peer(db, peer, now=t0, force_full=True)
+    assert peer.activity_count == 2
+
+    # A day+ later, an unforced sync should reconcile fully and prune uid-2.
+    only_one = {
+        **SAMPLE_ENVELOPE,
+        "activities": [SAMPLE_ENVELOPE["activities"][0]],
+    }
+    monkeypatch.setattr(fed, "fetch_peer", lambda url, **kwargs: only_one)
+    fed.sync_peer(db, peer, now=t0 + timedelta(days=1, minutes=1))
+
+    rows = db.scalars(
+        select(FederatedActivity).where(FederatedActivity.peer_id == peer.id)
+    ).all()
+    assert {r.remote_id for r in rows} == {1}  # uid-2 pruned by full reconcile
+
+
 def test_sync_peer_records_error(db, monkeypatch):
     peer = FederationPeer(feed_url="https://down.example.edu/feed", interval=FederationInterval.day)
     db.add(peer)
     db.commit()
     db.refresh(peer)
 
-    def boom(url):
+    def boom(url, **kwargs):
         raise RuntimeError("connection refused")
 
     monkeypatch.setattr(fed, "fetch_peer", boom)
@@ -231,13 +352,16 @@ def test_sync_peer_records_error(db, monkeypatch):
     assert peer.last_status == "error"
     assert "connection refused" in peer.last_error
     assert peer.last_synced_at is not None
+    assert peer.consecutive_failures == 1
+    fed.sync_peer(db, peer)  # a second failure backs off further
+    assert peer.consecutive_failures == 2
 
 
 # --- Consuming side: admin peer management ---
 
 def test_admin_peer_crud(client, monkeypatch):
     register(client)
-    monkeypatch.setattr(fed, "fetch_peer", lambda url: SAMPLE_ENVELOPE)
+    monkeypatch.setattr(fed, "fetch_peer", lambda url, **kwargs: SAMPLE_ENVELOPE)
 
     r = client.post(
         "/api/admin/federation/peers",
@@ -295,6 +419,36 @@ def test_list_merges_federated(client, db):
     me = client.get("/api/auth/me").json()
     mine = client.get("/api/visits", params={"author_id": me["id"]}).json()
     assert all(it["source"] == "local" for it in mine["items"])
+
+
+def test_list_sources_lists_local_and_peers(client, db):
+    register(client)
+    # No peers yet → only the local source.
+    assert client.get("/api/visits/sources").json() == [
+        {"value": "local", "label": "Local"}
+    ]
+    peer = _seed_peer_with_activity(db, label="Sibling Lab")
+    peer.activity_count = 1
+    db.commit()
+    sources = client.get("/api/visits/sources").json()
+    assert {"value": "local", "label": "Local"} in sources
+    assert {"value": str(peer.id), "label": "Sibling Lab"} in sources
+
+
+def test_list_filter_by_source(client, db):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], title="Local one")
+    peer = _seed_peer_with_activity(db)
+
+    # source=local → only local rows.
+    local_only = client.get("/api/visits", params={"source": "local"}).json()
+    assert all(it["source"] == "local" for it in local_only["items"])
+
+    # source=<peer id> → only that peer's rows.
+    peer_only = client.get("/api/visits", params={"source": str(peer.id)}).json()
+    assert peer_only["items"]
+    assert all(it["source"] == "Sibling Lab" for it in peer_only["items"])
 
 
 def test_stats_summary_includes_federated(client, db):

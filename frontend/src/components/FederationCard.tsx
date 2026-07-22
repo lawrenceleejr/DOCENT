@@ -28,6 +28,7 @@ import {
   FEDERATION_INTERVALS,
   type FederationInterval,
   type FederationPeer,
+  type FederationPeerPreview,
   type RegistrationSettings,
 } from '../api/types';
 
@@ -48,6 +49,7 @@ export function FederationCard() {
   const [feedUrl, setFeedUrl] = useState('');
   const [interval, setInterval] = useState<FederationInterval>('day');
   const [rotateModalOpen, { open: openRotate, close: closeRotate }] = useDisclosure(false);
+  const [preview, setPreview] = useState<FederationPeerPreview | null>(null);
 
   const intervalOptions = FEDERATION_INTERVALS.map((v) => ({
     value: v,
@@ -83,6 +85,18 @@ export function FederationCard() {
     onError: showError,
   });
 
+  const setPublishPlanned = useMutation({
+    mutationFn: (value: boolean) =>
+      api.patch<RegistrationSettings>('/api/admin/settings', {
+        federation_publish_planned: value,
+      }),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['admin', 'settings'], updated);
+      notifications.show({ color: 'green', message: t('federationCard.saved') });
+    },
+    onError: showError,
+  });
+
   const rotate = useMutation({
     mutationFn: () =>
       api.post<RegistrationSettings>('/api/admin/federation/rotate-token'),
@@ -100,6 +114,16 @@ export function FederationCard() {
 
   // --- Section 2: peers ---
 
+  const testFeed = useMutation({
+    mutationFn: () =>
+      api.post<FederationPeerPreview>('/api/admin/federation/peers/preview', {
+        feed_url: feedUrl.trim(),
+        interval,
+      }),
+    onSuccess: (result) => setPreview(result),
+    onError: showError,
+  });
+
   const add = useMutation({
     mutationFn: () =>
       api.post<FederationPeer>('/api/admin/federation/peers', {
@@ -109,6 +133,7 @@ export function FederationCard() {
     onSuccess: () => {
       setFeedUrl('');
       setInterval('day');
+      setPreview(null);
       invalidatePeers();
       invalidateMerged();
       notifications.show({ color: 'green', message: t('federationCard.added') });
@@ -217,6 +242,16 @@ export function FederationCard() {
         )}
 
         {publishing && (
+          <Switch
+            label={t('federationCard.publishPlannedToggle')}
+            description={t('federationCard.publishPlannedDescription')}
+            checked={settings?.federation_publish_planned ?? false}
+            disabled={setPublishPlanned.isPending}
+            onChange={(e) => setPublishPlanned.mutate(e.currentTarget.checked)}
+          />
+        )}
+
+        {publishing && (
           <Group>
             <Button
               variant="outline"
@@ -276,12 +311,15 @@ export function FederationCard() {
         {t('federationCard.peersSectionDescription')}
       </Text>
 
-      <Group align="flex-end" mb="lg" wrap="nowrap">
+      <Group align="flex-end" mb="xs" wrap="nowrap">
         <TextInput
           label={t('federationCard.addFeedUrlLabel')}
           placeholder={t('federationCard.feedUrlPlaceholder')}
           value={feedUrl}
-          onChange={(e) => setFeedUrl(e.currentTarget.value)}
+          onChange={(e) => {
+            setFeedUrl(e.currentTarget.value);
+            setPreview(null);
+          }}
           style={{ flex: 1 }}
         />
         <Select
@@ -293,6 +331,14 @@ export function FederationCard() {
           allowDeselect={false}
         />
         <Button
+          variant="default"
+          loading={testFeed.isPending}
+          disabled={feedUrl.trim().length === 0}
+          onClick={() => testFeed.mutate()}
+        >
+          {t('federationCard.testFeed')}
+        </Button>
+        <Button
           variant="gradient"
           loading={add.isPending}
           disabled={feedUrl.trim().length === 0}
@@ -302,6 +348,23 @@ export function FederationCard() {
         </Button>
       </Group>
 
+      {preview && (
+        <Alert
+          mb="lg"
+          variant="light"
+          color={preview.ok ? 'green' : 'red'}
+          icon={preview.ok ? <IconInfoCircle size={16} /> : <IconAlertTriangle size={16} />}
+        >
+          {preview.ok
+            ? t('federationCard.previewOk', {
+                name: preview.instance_name || preview.instance_url || t('federationCard.unknownInstance'),
+                count: preview.activity_count,
+                formattedCount: preview.activity_count.toLocaleString(),
+              })
+            : t('federationCard.previewError', { error: preview.error ?? '' })}
+        </Alert>
+      )}
+
       <Table.ScrollContainer minWidth={720}>
         <Table highlightOnHover>
           <Table.Thead>
@@ -310,6 +373,7 @@ export function FederationCard() {
               <Table.Th>{t('federationCard.colInterval')}</Table.Th>
               <Table.Th>{t('federationCard.colEnabled')}</Table.Th>
               <Table.Th>{t('federationCard.colLastSynced')}</Table.Th>
+              <Table.Th>{t('federationCard.colNextSync')}</Table.Th>
               <Table.Th>{t('federationCard.colStatus')}</Table.Th>
               <Table.Th>{t('federationCard.colActivities')}</Table.Th>
               <Table.Th>{t('federationCard.colActions')}</Table.Th>
@@ -351,10 +415,21 @@ export function FederationCard() {
                   </Text>
                 </Table.Td>
                 <Table.Td>
+                  <Text size="sm" c="dimmed">
+                    {!peer.enabled
+                      ? t('federationCard.paused')
+                      : peer.next_sync_at
+                        ? new Date(peer.next_sync_at).toLocaleString()
+                        : t('federationCard.soon')}
+                  </Text>
+                </Table.Td>
+                <Table.Td>
                   {peer.last_status === 'error' ? (
                     <Tooltip label={peer.last_error ?? ''} disabled={!peer.last_error} multiline maw={280}>
                       <Badge color="red" variant="light">
-                        {t('federationCard.statusError')}
+                        {peer.consecutive_failures > 1
+                          ? t('federationCard.statusErrorCount', { count: peer.consecutive_failures })
+                          : t('federationCard.statusError')}
                       </Badge>
                     </Tooltip>
                   ) : peer.last_status ? (
@@ -405,7 +480,7 @@ export function FederationCard() {
             ))}
             {(peers?.length ?? 0) === 0 && (
               <Table.Tr>
-                <Table.Td colSpan={7}>
+                <Table.Td colSpan={8}>
                   <Text c="dimmed" ta="center" py="md">
                     {t('federationCard.noPeers')}
                   </Text>

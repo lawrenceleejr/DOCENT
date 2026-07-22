@@ -126,7 +126,8 @@
     "visitCount_other": "{{formattedCount}} lượt ghé thăm",
     "includeSiblings": "Bao gồm các phiên bản đồng cấp",
     "siblingBadge": "Từ một phiên bản đồng cấp",
-    "siblingActivity": "Hoạt động"
+    "siblingActivity": "Hoạt động",
+    "sourceLabel": "Nguồn"
   },
   "visitForm": {
     "editTitle": "Sửa lượt ghé thăm",
@@ -521,7 +522,8 @@
     "colVenue": "Địa điểm",
     "colCommunicator": "Người kết nối",
     "includeSiblings": "Bao gồm các phiên bản đồng cấp",
-    "localOnlyNote": "Bảng xếp hạng và phân loại theo quan hệ với người tiếp đón chỉ tính các hoạt động của phiên bản này."
+    "localOnlyNote": "Bảng xếp hạng và phân loại theo quan hệ với người tiếp đón chỉ tính các hoạt động của phiên bản này.",
+    "federatedCaveat": "Tổng số tổng hợp có thể tính một người truyền thông nhiều lần nếu họ tham gia qua nhiều phiên bản liên kết."
   },
   "impact": {
     "unavailableTitle": "Trang này không khả dụng",
@@ -543,7 +545,7 @@
     "poweredByPrefix": "Được xây dựng bằng",
     "poweredBySuffix": "· phần mềm miễn phí theo GNU GPL v3",
     "includeSiblings": "Bao gồm các phiên bản đồng cấp",
-    "includingSiblings": "Các con số bao gồm hoạt động trên khắp các phiên bản đồng cấp của chúng tôi."
+    "includingSiblings": "Số liệu bao gồm các hoạt động trên các phiên bản liên kết của chúng tôi, có thể trùng lặp."
   },
   "map": {
     "title": "Bản đồ",
@@ -573,7 +575,8 @@
     "showSiblings": "Hoạt động của phiên bản đồng cấp",
     "legendSibling": "Hoạt động phiên bản đồng cấp",
     "fromSibling": "Từ {{name}}",
-    "openOnPrimary": "Mở trên phiên bản chính"
+    "openOnPrimary": "Mở trên phiên bản chính",
+    "allSiblings": "Tất cả phiên bản liên kết"
   },
   "profile": {
     "title": "Hồ sơ",
@@ -845,6 +848,16 @@
     "rotateModalTitle": "Tạo lại mã token liên kết?",
     "rotateModalBody": "Thao tác này sẽ ngay lập tức làm mất hiệu lực URL nguồn cấp hiện tại của bạn. Mọi phiên bản đồng cấp đang đọc dữ liệu của bạn sẽ ngừng đồng bộ và gặp lỗi cho đến khi bạn gửi URL mới cho họ và họ cập nhật thiết lập. Chỉ làm điều này nếu mã token hiện tại có thể đã bị lộ — không thể hoàn tác.",
     "rotateConfirm": "Có, tạo lại mã token",
-    "rotateCancel": "Hủy"
+    "rotateCancel": "Hủy",
+    "publishPlannedToggle": "Công bố sự kiện dự kiến",
+    "publishPlannedDescription": "Đồng thời chia sẻ các sự kiện sắp tới (dự kiến) để các phiên bản liên kết có thể xem lịch trình của bạn. Mặc định tắt.",
+    "testFeed": "Kiểm tra",
+    "previewOk": "Đã kết nối {{name}} — có {{formattedCount}} hoạt động.",
+    "previewError": "Không thể kết nối nguồn cấp: {{error}}",
+    "unknownInstance": "phiên bản này",
+    "colNextSync": "Lần đồng bộ tiếp theo",
+    "paused": "Đã tạm dừng",
+    "soon": "Sắp tới",
+    "statusErrorCount": "Lỗi ×{{count}}"
   }
 }

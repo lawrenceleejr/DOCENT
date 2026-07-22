@@ -18,8 +18,10 @@ from app.models import (
     VisitStatus,
 )
 from app.models import FederatedActivity
+from app.models import FederationPeer
 from app.schemas import (
     ActivityListItem,
+    ActivitySource,
     UserBrief,
     VenueBrief,
     VisitCreate,
@@ -200,6 +202,7 @@ def list_visits(
     tags: str | None = None,
     language: str | None = None,
     include_federated: bool = True,
+    source: str | None = None,  # "local" | a peer id | None (merged)
     sort: str = "-visit_date",
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=25, ge=1, le=100),
@@ -209,21 +212,37 @@ def list_visits(
         author_id, q, status, _parse_tags(tags), language,
     )
 
+    source_local = source == "local"
+    source_peer_id: int | None = None
+    if source and source != "local":
+        try:
+            source_peer_id = int(source)
+        except ValueError:
+            source_peer_id = None
+
     # Sibling activities only join in when every active filter is one the
     # limited feed can satisfy — otherwise a federated row would wrongly ignore
     # (e.g.) an author/keyword/audience/tag filter it has no data for.
-    federated_eligible = (
-        include_federated
-        and author_id is None
+    federated_ok_filters = (
+        author_id is None
         and venue_id is None
         and not q
         and not _parse_tags(tags)
         and not language
         and audience_level is None
-        and status != VisitStatus.planned
     )
+    want_federated = (
+        (not source_local)
+        and federated_ok_filters
+        and (include_federated or source_peer_id is not None)
+    )
+    want_local = source_peer_id is None
+    # Federated rows are cached by status; the list mirrors the requested status
+    # (planned for the Schedule view, completed otherwise).
+    federated_status = "planned" if status == VisitStatus.planned else "completed"
 
-    if not federated_eligible:
+    if want_local and not want_federated:
+        # Fast SQL-paginated local-only path.
         total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
         paged = _apply_sort(query, sort).options(
             joinedload(Visit.author), joinedload(Visit.venue)
@@ -236,20 +255,26 @@ def list_visits(
             page_size=page_size,
         )
 
-    # Merged path: pull the full filtered local set + matching federated rows,
-    # combine, sort, and paginate in Python (community-scale volumes).
-    local = db.scalars(
-        query.options(joinedload(Visit.author), joinedload(Visit.venue))
-    ).all()
-    items = [_local_item(v) for v in local]
-    for activity, label in federated_query(
-        db,
-        date_from=date_from,
-        date_to=date_to,
-        venue_type=venue_type.value if venue_type else None,
-        event_type=event_type.value if event_type else None,
-    ):
-        items.append(_federated_item(activity, label))
+    # Merged / peer-only path: combine, sort, and paginate in Python
+    # (community-scale volumes).
+    items: list[ActivityListItem] = []
+    if want_local:
+        local = db.scalars(
+            query.options(joinedload(Visit.author), joinedload(Visit.venue))
+        ).all()
+        items = [_local_item(v) for v in local]
+    if want_federated:
+        for activity, label in federated_query(
+            db,
+            status=federated_status,
+            date_from=date_from,
+            date_to=date_to,
+            venue_type=venue_type.value if venue_type else None,
+            event_type=event_type.value if event_type else None,
+        ):
+            if source_peer_id is not None and activity.peer_id != source_peer_id:
+                continue
+            items.append(_federated_item(activity, label))
 
     field = sort.lstrip("-")
     items.sort(key=lambda it: _sort_key(it, field), reverse=sort.startswith("-"))
@@ -261,6 +286,23 @@ def list_visits(
         page=page,
         page_size=page_size,
     )
+
+
+@router.get("/sources", response_model=list[ActivitySource])
+def list_sources(db: DbSession, _user: CurrentUser):
+    """Selectable sources for the source filter: the local instance plus each
+    enabled peer that has cached activities."""
+    sources = [ActivitySource(value="local", label="Local")]
+    peers = db.scalars(
+        select(FederationPeer)
+        .where(FederationPeer.enabled.is_(True), FederationPeer.activity_count > 0)
+        .order_by(FederationPeer.label)
+    ).all()
+    for peer in peers:
+        sources.append(
+            ActivitySource(value=str(peer.id), label=peer.label or f"Peer {peer.id}")
+        )
+    return sources
 
 
 @router.get("/export.csv")

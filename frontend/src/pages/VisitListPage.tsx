@@ -53,6 +53,7 @@ export function VisitListPage() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [mineOnly, setMineOnly] = useState(false);
   const [showSiblings, setShowSiblings] = useState(true);
+  const [sourceFilter, setSourceFilter] = useState<string | null>(null);
   const [sort, setSort] = useState('-visit_date');
   const [page, setPage] = useState(1);
 
@@ -62,6 +63,7 @@ export function VisitListPage() {
     status: statusFilter ?? undefined,
     author_id: mineOnly ? user?.id : undefined,
     include_federated: showSiblings,
+    source: sourceFilter ?? undefined,
     sort,
     page,
     page_size: PAGE_SIZE,
@@ -70,6 +72,11 @@ export function VisitListPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['visits', params],
     queryFn: () => api.get<Paginated<ActivityListItem>>('/api/visits', params),
+  });
+
+  const { data: sourceOptions = [] } = useQuery({
+    queryKey: ['visits', 'sources'],
+    queryFn: () => api.get<{ value: string; label: string }[]>('/api/visits/sources'),
   });
 
   const { data: tagOptions = [] } = useQuery({
@@ -101,7 +108,8 @@ export function VisitListPage() {
       filters.event_type, filters.audience_level, filters.language].filter(Boolean).length +
     ((filters.tags?.length ?? 0) > 0 ? 1 : 0) +
     (mineOnly ? 1 : 0) +
-    (!showSiblings ? 1 : 0);
+    (sourceFilter ? 1 : 0) +
+    (!sourceFilter && !showSiblings ? 1 : 0);
 
   return (
     <Stack>
@@ -201,6 +209,20 @@ export function VisitListPage() {
             onChange={(v) => update({ tags: v })}
             w={200}
           />
+          {sourceOptions.length > 1 && (
+            <Select
+              label={t('visitList.sourceLabel')}
+              placeholder={t('common.all')}
+              clearable
+              data={sourceOptions}
+              value={sourceFilter}
+              onChange={(v) => {
+                setSourceFilter(v);
+                setPage(1);
+              }}
+              w={180}
+            />
+          )}
           <Switch
             label={t('visitList.mineOnly')}
             checked={mineOnly}
@@ -210,15 +232,17 @@ export function VisitListPage() {
             }}
             pb={8}
           />
-          <Switch
-            label={t('visitList.includeSiblings')}
-            checked={showSiblings}
-            onChange={(e) => {
-              setShowSiblings(e.currentTarget.checked);
-              setPage(1);
-            }}
-            pb={8}
-          />
+          {sourceOptions.length > 1 && !sourceFilter && (
+            <Switch
+              label={t('visitList.includeSiblings')}
+              checked={showSiblings}
+              onChange={(e) => {
+                setShowSiblings(e.currentTarget.checked);
+                setPage(1);
+              }}
+              pb={8}
+            />
+          )}
         </Group>
       </FilterCard>
 

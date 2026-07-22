@@ -126,7 +126,8 @@
     "visitCount_other": "{{formattedCount}} visites",
     "includeSiblings": "Inclure les instances sœurs",
     "siblingBadge": "D'une instance sœur",
-    "siblingActivity": "Activité"
+    "siblingActivity": "Activité",
+    "sourceLabel": "Source"
   },
   "visitForm": {
     "editTitle": "Modifier la visite",
@@ -521,7 +522,8 @@
     "colVenue": "Lieu",
     "colCommunicator": "Communicateur",
     "includeSiblings": "Inclure les instances sœurs",
-    "localOnlyNote": "Les classements et la répartition par relation avec l'hôte ne comptent que les activités de cette instance."
+    "localOnlyNote": "Les classements et la répartition par relation avec l'hôte ne comptent que les activités de cette instance.",
+    "federatedCaveat": "Les totaux combinés peuvent compter un communicateur plusieurs fois s'il participe via plusieurs instances sœurs."
   },
   "impact": {
     "unavailableTitle": "Cette page n'est pas disponible",
@@ -543,7 +545,7 @@
     "poweredByPrefix": "Propulsé par",
     "poweredBySuffix": "· logiciel libre sous la GNU GPL v3",
     "includeSiblings": "Inclure les instances sœurs",
-    "includingSiblings": "Les chiffres incluent les activités de nos instances sœurs."
+    "includingSiblings": "Les chiffres incluent les activités de nos instances sœurs, qui peuvent se recouper."
   },
   "map": {
     "title": "Carte",
@@ -573,7 +575,8 @@
     "showSiblings": "Activités des instances sœurs",
     "legendSibling": "Activité d'une instance sœur",
     "fromSibling": "De {{name}}",
-    "openOnPrimary": "Ouvrir sur l'instance principale"
+    "openOnPrimary": "Ouvrir sur l'instance principale",
+    "allSiblings": "Toutes les instances sœurs"
   },
   "profile": {
     "title": "Profil",
@@ -845,6 +848,16 @@
     "rotateModalTitle": "Renouveler le jeton de fédération?",
     "rotateModalBody": "Cela invalide immédiatement l'URL de votre fil actuelle. Toutes les instances sœurs qui lisent vos données cesseront de se synchroniser et seront interrompues jusqu'à ce que vous leur envoyiez la nouvelle URL et qu'elles mettent à jour leur configuration. Ne faites cela que si le jeton actuel a pu être exposé : c'est irréversible.",
     "rotateConfirm": "Oui, renouveler le jeton",
-    "rotateCancel": "Annuler"
+    "rotateCancel": "Annuler",
+    "publishPlannedToggle": "Publier les événements planifiés",
+    "publishPlannedDescription": "Partager aussi les événements à venir (planifiés) afin que les instances sœurs puissent voir votre calendrier. Désactivé par défaut.",
+    "testFeed": "Tester",
+    "previewOk": "Connexion à {{name}} réussie — {{formattedCount}} activités disponibles.",
+    "previewError": "Impossible d'accéder au flux : {{error}}",
+    "unknownInstance": "cette instance",
+    "colNextSync": "Prochaine synchronisation",
+    "paused": "En pause",
+    "soon": "Bientôt",
+    "statusErrorCount": "Erreur ×{{count}}"
   }
 }
