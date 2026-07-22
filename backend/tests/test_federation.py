@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from urllib.parse import parse_qs, urlparse
 
 from sqlalchemy import select
@@ -6,6 +6,46 @@ from sqlalchemy import select
 from app.models import FederatedActivity, FederationInterval, FederationPeer
 from app.services import federation as fed
 from tests.conftest import create_venue, create_visit, register
+
+
+def _seed_peer_with_activity(
+    db,
+    *,
+    visit_date="2026-05-20",
+    venue_type="high_school",
+    event_type="workshop",
+    people=15,
+    lat=40.0,
+    lon=-80.0,
+    label="Sibling Lab",
+):
+    peer = FederationPeer(
+        feed_url="https://sib.example.edu/api/federation/activities?token=t",
+        interval=FederationInterval.day,
+        label=label,
+        enabled=True,
+    )
+    db.add(peer)
+    db.commit()
+    db.refresh(peer)
+    db.add(
+        FederatedActivity(
+            peer_id=peer.id,
+            remote_id=1,
+            visit_date=date.fromisoformat(visit_date),
+            venue_name="Sib School",
+            venue_city="Elsewhere",
+            latitude=lat,
+            longitude=lon,
+            venue_type=venue_type,
+            event_type=event_type,
+            person_name="Remote Person",
+            people_reached=people,
+            permalink="https://sib.example.edu/visits/1",
+        )
+    )
+    db.commit()
+    return peer
 
 SAMPLE_ENVELOPE = {
     "instance_name": "Sibling Lab",
@@ -225,3 +265,67 @@ def test_add_peer_rejects_bad_url(client):
     register(client)
     r = client.post("/api/admin/federation/peers", json={"feed_url": "not-a-url"})
     assert r.status_code == 400
+
+
+# --- Merge into list / map / stats / public ---
+
+def test_list_merges_federated(client, db):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], title="Local one")
+    _seed_peer_with_activity(db)
+
+    data = client.get("/api/visits").json()
+    sources = {it["source"] for it in data["items"]}
+    assert "local" in sources and "Sibling Lab" in sources
+
+    fed_row = next(it for it in data["items"] if it["source"] == "Sibling Lab")
+    assert fed_row["external_url"] == "https://sib.example.edu/visits/1"
+    assert fed_row["id"] is None
+    assert fed_row["venue"]["name"] == "Sib School"
+
+    excluded = client.get("/api/visits", params={"include_federated": False}).json()
+    assert all(it["source"] == "local" for it in excluded["items"])
+
+    # A filter the feed can't satisfy (mine-only / author) drops federated rows.
+    me = client.get("/api/auth/me").json()
+    mine = client.get("/api/visits", params={"author_id": me["id"]}).json()
+    assert all(it["source"] == "local" for it in mine["items"])
+
+
+def test_stats_summary_includes_federated(client, db):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], people_reached=30)
+    _seed_peer_with_activity(db, people=15)
+
+    incl = client.get("/api/stats/summary").json()
+    excl = client.get("/api/stats/summary", params={"include_federated": False}).json()
+    assert incl["total_visits"] == excl["total_visits"] + 1
+    assert incl["total_people_reached"] == excl["total_people_reached"] + 15
+
+
+def test_map_federated_layer(client, db):
+    register(client)
+    _seed_peer_with_activity(db, lat=40.0, lon=-80.0)
+    pts = client.get("/api/map/federated").json()
+    assert len(pts) == 1
+    assert pts[0]["source_label"] == "Sibling Lab"
+    assert pts[0]["permalink"] == "https://sib.example.edu/visits/1"
+
+
+def test_public_impact_federated_toggle(client, db, make_client):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], people_reached=40)
+    client.patch("/api/admin/settings", json={"public_page": True})
+    _seed_peer_with_activity(db, people=15)
+
+    anon = make_client()
+    base = anon.get("/api/public/impact").json()
+    withfed = anon.get("/api/public/impact", params={"include_federated": True}).json()
+    assert base["total_visits"] == 1  # own instance only by default
+    assert withfed["total_visits"] == 2  # + 1 sibling activity
+    assert withfed["total_people_reached"] == base["total_people_reached"] + 15
+    # Sibling names never leak into the public recent list.
+    assert all("Remote Person" not in str(r) for r in withfed["recent"])

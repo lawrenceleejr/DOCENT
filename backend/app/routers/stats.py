@@ -24,6 +24,7 @@ from app.schemas import (
     VenueBrief,
     normalize_tags,
 )
+from app.services.federation import federated_query
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
 
@@ -39,6 +40,39 @@ def _parse_tags(tags: str | None) -> list[str] | None:
     if not tags:
         return None
     return normalize_tags(tags.split(",")) or None
+
+
+def _half_year_period(d) -> str:
+    """Match the SQL half-year bucket label, e.g. "2026 H1"."""
+    return f"{d.year} H{1 if d.month <= 6 else 2}"
+
+
+def _federated_rows(
+    db,
+    *,
+    include_federated: bool,
+    date_from,
+    date_to,
+    venue_type,
+    event_type,
+    audience_level,
+    tags,
+):
+    """Cached federated activities matching the filters — but only when every
+    active filter is one the limited feed can satisfy (the feed has no
+    audience/tags data, so those filters exclude federated rows entirely)."""
+    if not include_federated or audience_level is not None or _parse_tags(tags):
+        return []
+    return [
+        a
+        for a, _label in federated_query(
+            db,
+            date_from=date_from,
+            date_to=date_to,
+            venue_type=venue_type.value if venue_type else None,
+            event_type=event_type.value if event_type else None,
+        )
+    ]
 
 
 def _apply_filters(
@@ -81,6 +115,7 @@ def summary(
     event_type: EventType | None = None,
     audience_level: AudienceLevel | None = None,
     tags: str | None = None,
+    include_federated: bool = True,
 ):
     row = db.execute(
         _apply_filters(
@@ -99,11 +134,25 @@ def summary(
             tags=tags,
         )
     ).one()
+    total_visits, total_people, distinct_venues, active_communicators = (
+        row[0], row[1], row[2], row[3]
+    )
+    # Add sibling activities (different instances → their venues/people don't
+    # overlap ours). Rating stays local-only (the feed carries no ratings).
+    fed_rows = _federated_rows(
+        db, include_federated=include_federated, date_from=date_from, date_to=date_to,
+        venue_type=venue_type, event_type=event_type, audience_level=audience_level, tags=tags,
+    )
+    if fed_rows:
+        total_visits += len(fed_rows)
+        total_people += sum(a.people_reached for a in fed_rows)
+        distinct_venues += len({(a.venue_name, a.venue_city) for a in fed_rows})
+        active_communicators += len({a.person_name for a in fed_rows if a.person_name})
     return StatsSummary(
-        total_visits=row[0],
-        total_people_reached=row[1],
-        distinct_venues=row[2],
-        active_communicators=row[3],
+        total_visits=total_visits,
+        total_people_reached=total_people,
+        distinct_venues=distinct_venues,
+        active_communicators=active_communicators,
         avg_rating=round(float(row[4]), 2) if row[4] is not None else None,
     )
 
@@ -118,6 +167,7 @@ def timeseries(
     event_type: EventType | None = None,
     audience_level: AudienceLevel | None = None,
     tags: str | None = None,
+    include_federated: bool = True,
 ):
     # Bucket by half-year (H1 = Jan–Jun, H2 = Jul–Dec) → labels like "2026 H1".
     half = cast(func.floor((func.extract("month", Visit.visit_date) - 1) / 6) + 1, Integer)
@@ -139,8 +189,17 @@ def timeseries(
         .group_by("period")
         .order_by("period")
     ).all()
+    buckets: dict[str, list[int]] = {r[0]: [r[1], r[2]] for r in rows}
+    for a in _federated_rows(
+        db, include_federated=include_federated, date_from=date_from, date_to=date_to,
+        venue_type=venue_type, event_type=event_type, audience_level=audience_level, tags=tags,
+    ):
+        b = buckets.setdefault(_half_year_period(a.visit_date), [0, 0])
+        b[0] += 1
+        b[1] += a.people_reached
     return [
-        TimeseriesPoint(period=r[0], visits=r[1], people_reached=r[2]) for r in rows
+        TimeseriesPoint(period=p, visits=v, people_reached=pr)
+        for p, (v, pr) in sorted(buckets.items())
     ]
 
 
@@ -155,6 +214,7 @@ def breakdown(
     event_type: EventType | None = None,
     audience_level: AudienceLevel | None = None,
     tags: str | None = None,
+    include_federated: bool = True,
 ):
     columns = {
         BreakdownBy.venue_type: Venue.venue_type,
@@ -183,7 +243,24 @@ def breakdown(
         .group_by(key)
         .order_by(func.count(Visit.id).desc())
     ).all()
-    return [BreakdownRow(key=r[0].value, visits=r[1], people_reached=r[2]) for r in rows]
+    buckets: dict[str, list[int]] = {r[0].value: [r[1], r[2]] for r in rows}
+    # Only venue_type / event_type breakdowns can include federated rows — the
+    # feed carries no audience_level or host_relationship.
+    if by in (BreakdownBy.venue_type, BreakdownBy.event_type):
+        for a in _federated_rows(
+            db, include_federated=include_federated, date_from=date_from, date_to=date_to,
+            venue_type=venue_type, event_type=event_type, audience_level=audience_level, tags=tags,
+        ):
+            raw = a.venue_type if by is BreakdownBy.venue_type else a.event_type
+            if not raw:
+                continue
+            b = buckets.setdefault(raw, [0, 0])
+            b[0] += 1
+            b[1] += a.people_reached
+    return [
+        BreakdownRow(key=k, visits=v, people_reached=pr)
+        for k, (v, pr) in sorted(buckets.items(), key=lambda kv: kv[1][0], reverse=True)
+    ]
 
 
 @router.get("/top-venues", response_model=list[TopVenueRow])

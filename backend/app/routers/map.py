@@ -4,8 +4,21 @@ from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import func, select
 
 from app.deps import CurrentUser, DbSession
-from app.models import Institution, InstitutionType, Venue, Visit, VisitStatus
-from app.schemas import InstitutionDetail, InstitutionPoint, VenuePoint
+from app.models import (
+    FederatedActivity,
+    FederationPeer,
+    Institution,
+    InstitutionType,
+    Venue,
+    Visit,
+    VisitStatus,
+)
+from app.schemas import (
+    FederatedMapPoint,
+    InstitutionDetail,
+    InstitutionPoint,
+    VenuePoint,
+)
 
 router = APIRouter(prefix="/api", tags=["map"])
 
@@ -119,6 +132,47 @@ def map_venues(
             institution_id=venue.institution_id,
         )
         for venue, count, visited_flag in rows
+    ]
+
+
+@router.get("/map/federated", response_model=list[FederatedMapPoint])
+def map_federated(
+    db: DbSession,
+    _user: CurrentUser,
+    south: float | None = None,
+    north: float | None = None,
+    west: float | None = None,
+    east: float | None = None,
+):
+    """Sibling activities with coordinates, as their own map layer. These never
+    affect local covered/gap counting — they're other instances' venues."""
+    query = (
+        select(FederatedActivity, FederationPeer.label)
+        .join(FederationPeer, FederatedActivity.peer_id == FederationPeer.id)
+        .where(
+            FederationPeer.enabled.is_(True),
+            FederatedActivity.latitude.isnot(None),
+            FederatedActivity.longitude.isnot(None),
+        )
+        .limit(MAX_POINTS)
+    )
+    query = _bbox(
+        query, FederatedActivity.latitude, FederatedActivity.longitude, south, north, west, east
+    )
+    rows = db.execute(query).all()
+    return [
+        FederatedMapPoint(
+            latitude=a.latitude,
+            longitude=a.longitude,
+            venue_name=a.venue_name,
+            venue_type=a.venue_type,
+            person_name=a.person_name,
+            visit_date=a.visit_date,
+            people_reached=a.people_reached,
+            permalink=a.permalink,
+            source_label=label,
+        )
+        for a, label in rows
     ]
 
 
