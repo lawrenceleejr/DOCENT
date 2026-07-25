@@ -25,6 +25,21 @@ export function FilterCard({
 
   return (
     <Card withBorder p="md">
+      {!isMobile && (
+        // A titled header so the filter fields read as filters, not as a
+        // "new event" form (issue #7). Mobile already gets this via the toggle.
+        <Group gap={6} wrap="nowrap" mb="sm">
+          <IconFilter size={16} />
+          <Text fw={600} size="sm">
+            {t('common.filters')}
+          </Text>
+          {activeCount > 0 && (
+            <Badge size="sm" variant="filled" circle>
+              {activeCount}
+            </Badge>
+          )}
+        </Group>
+      )}
       {isMobile && (
         <UnstyledButton onClick={toggle} w="100%" mb={opened ? 'sm' : 0}>
           <Group justify="space-between" wrap="nowrap">

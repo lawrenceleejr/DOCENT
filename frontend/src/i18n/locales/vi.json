@@ -43,7 +43,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · Phần mềm miễn phí theo"
   },
   "login": {
-    "welcomeBack": "Chào mừng bạn trở lại",
+    "welcome": "Chào mừng",
     "loginToSite": "Đăng nhập vào {{siteName}}.",
     "loginToDefault": "Đăng nhập vào tài khoản DOCENT của bạn.",
     "emailLabel": "Email",
@@ -549,16 +549,16 @@
   },
   "map": {
     "title": "Bản đồ",
-    "gapsPrefix": "Phát hiện khoảng trống trong phạm vi tiếp cận —",
+    "gapsPrefix": "Xem phạm vi tiếp cận của bạn —",
     "institutionsInView_one": "{{formattedCount}} tổ chức trong khung nhìn",
     "institutionsInView_other": "{{formattedCount}} tổ chức trong khung nhìn",
     "notYetReached_one": "{{formattedCount}} chưa được tiếp cận",
     "notYetReached_other": "{{formattedCount}} chưa được tiếp cận",
     "none": "Không có",
-    "gapsOnly": "Chỉ khoảng trống",
+    "gapsOnly": "Chưa đến",
     "reached": "Đã tiếp cận",
     "showMyVenues": "Hiển thị địa điểm của tôi",
-    "legendGap": "Khoảng trống",
+    "legendGap": "Chưa đến",
     "legendReached": "Đã tiếp cận",
     "legendVenueNoVisits": "Địa điểm (chưa có lượt ghé thăm)",
     "popupReached_one": "Đã tiếp cận — {{formattedCount}} lượt ghé thăm",
@@ -682,7 +682,9 @@
     "overdue": "Quá hạn",
     "markDone": "Đánh dấu hoàn thành",
     "emptyTitle": "Không có gì được lên kế hoạch",
-    "emptyDescription": "Không có sự kiện đã lên kế hoạch sắp tới nào khớp với các bộ lọc này. Hãy lên kế hoạch một sự kiện và nó sẽ xuất hiện ở đây — sẵn sàng để xuất vào lịch của bạn."
+    "emptyDescription": "Không có sự kiện đã lên kế hoạch sắp tới nào khớp với các bộ lọc này. Hãy lên kế hoạch một sự kiện và nó sẽ xuất hiện ở đây — sẵn sàng để xuất vào lịch của bạn.",
+    "addToCalendarTooltip": "Xuất các sự kiện đang hiển thị theo bộ lọc hiện tại của bạn.",
+    "addToCalendarEmpty": "Chưa có sự kiện nào để xuất."
   },
   "venuePicker": {
     "venueLabel": "Địa điểm",
@@ -711,7 +713,8 @@
     "validation": {
       "nameRequired": "Cần nhập tên",
       "typeRequired": "Cần chọn loại"
-    }
+    },
+    "mapHint": "Bạn cũng có thể chọn địa điểm từ Bản đồ — mở Bản đồ và chọn “Ghi lại một lần đến đây.”"
   },
   "connectionForm": {
     "editTitle": "Sửa liên hệ",

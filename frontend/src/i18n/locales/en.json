@@ -43,7 +43,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · Free software under the"
   },
   "login": {
-    "welcomeBack": "Welcome back",
+    "welcome": "Welcome",
     "loginToSite": "Log in to {{siteName}}.",
     "loginToDefault": "Log in to your DOCENT account.",
     "emailLabel": "Email",
@@ -549,16 +549,16 @@
   },
   "map": {
     "title": "Map",
-    "gapsPrefix": "Spot coverage gaps —",
+    "gapsPrefix": "See your coverage —",
     "institutionsInView_one": "{{formattedCount}} institution in view",
     "institutionsInView_other": "{{formattedCount}} institutions in view",
     "notYetReached_one": "{{formattedCount}} not yet reached",
     "notYetReached_other": "{{formattedCount}} not yet reached",
     "none": "None",
-    "gapsOnly": "Gaps only",
+    "gapsOnly": "Not yet visited",
     "reached": "Reached",
     "showMyVenues": "Show my venues",
-    "legendGap": "Gap",
+    "legendGap": "Not yet visited",
     "legendReached": "Reached",
     "legendVenueNoVisits": "Venue (no visits yet)",
     "popupReached_one": "Reached — {{formattedCount}} visit",
@@ -682,7 +682,9 @@
     "overdue": "Overdue",
     "markDone": "Mark done",
     "emptyTitle": "Nothing scheduled",
-    "emptyDescription": "No upcoming planned events match these filters. Schedule one and it will appear here — ready to export to your calendar."
+    "emptyDescription": "No upcoming planned events match these filters. Schedule one and it will appear here — ready to export to your calendar.",
+    "addToCalendarTooltip": "Exports the events shown here, matching your current filters.",
+    "addToCalendarEmpty": "No events to export yet."
   },
   "venuePicker": {
     "venueLabel": "Venue",
@@ -711,7 +713,8 @@
     "validation": {
       "nameRequired": "Name is required",
       "typeRequired": "Type is required"
-    }
+    },
+    "mapHint": "You can also pick a venue from the Map — open it and choose “Log a visit here.”"
   },
   "connectionForm": {
     "editTitle": "Edit connection",

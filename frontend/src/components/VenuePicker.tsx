@@ -108,6 +108,7 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
     <>
       <Select
         label={t('venuePicker.venueLabel')}
+        description={t('venuePicker.mapHint')}
         placeholder={t('venuePicker.searchPlaceholder')}
         searchable
         clearable

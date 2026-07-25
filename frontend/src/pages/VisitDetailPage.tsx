@@ -88,7 +88,9 @@ export function VisitDetailPage() {
           </Text>
         </div>
         {canEdit && (
-          <Group>
+          // ml="auto" keeps the actions right-aligned even when the header
+          // wraps on narrow screens (issue #17).
+          <Group ml="auto">
             {visit.status === 'planned' && (
               <Button variant="gradient" onClick={() => navigate(`/visits/${visit.id}/edit`)}>
                 {t('visitDetail.markCompleted')}

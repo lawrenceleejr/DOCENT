@@ -43,7 +43,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · Logiciel libre sous la"
   },
   "login": {
-    "welcomeBack": "Content de vous revoir",
+    "welcome": "Bienvenue",
     "loginToSite": "Connectez-vous à {{siteName}}.",
     "loginToDefault": "Connectez-vous à votre compte DOCENT.",
     "emailLabel": "Courriel",
@@ -549,16 +549,16 @@
   },
   "map": {
     "title": "Carte",
-    "gapsPrefix": "Repérer les lacunes de couverture —",
+    "gapsPrefix": "Consultez votre couverture —",
     "institutionsInView_one": "{{formattedCount}} institution visible",
     "institutionsInView_other": "{{formattedCount}} institutions visibles",
     "notYetReached_one": "{{formattedCount}} pas encore rejointe",
     "notYetReached_other": "{{formattedCount}} pas encore rejointes",
     "none": "Aucun",
-    "gapsOnly": "Lacunes seulement",
+    "gapsOnly": "Pas encore visités",
     "reached": "Rejoint",
     "showMyVenues": "Afficher mes lieux",
-    "legendGap": "Lacune",
+    "legendGap": "Pas encore visités",
     "legendReached": "Rejoint",
     "legendVenueNoVisits": "Lieu (aucune visite encore)",
     "popupReached_one": "Rejoint — {{formattedCount}} visite",
@@ -682,7 +682,9 @@
     "overdue": "En retard",
     "markDone": "Marquer comme terminée",
     "emptyTitle": "Rien de prévu",
-    "emptyDescription": "Aucune activité planifiée à venir ne correspond à ces filtres. Planifiez-en une et elle apparaîtra ici — prête à exporter vers votre calendrier."
+    "emptyDescription": "Aucune activité planifiée à venir ne correspond à ces filtres. Planifiez-en une et elle apparaîtra ici — prête à exporter vers votre calendrier.",
+    "addToCalendarTooltip": "Exporte les événements affichés ici, selon vos filtres actuels.",
+    "addToCalendarEmpty": "Aucun événement à exporter pour l’instant."
   },
   "venuePicker": {
     "venueLabel": "Lieu",
@@ -711,7 +713,8 @@
     "validation": {
       "nameRequired": "Le nom est requis",
       "typeRequired": "Le type est requis"
-    }
+    },
+    "mapHint": "Vous pouvez aussi choisir un lieu depuis la Carte : ouvrez-la et sélectionnez « Enregistrer une visite ici »."
   },
   "connectionForm": {
     "editTitle": "Modifier le contact",

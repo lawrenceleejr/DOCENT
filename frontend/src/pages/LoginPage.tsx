@@ -67,7 +67,7 @@ export function LoginPage() {
               <Logo size={30} />
             </Box>
             <Title order={2} mt="xs">
-              {t('login.welcomeBack')}
+              {t('login.welcome')}
             </Title>
             <Text c="dimmed" size="sm">
               {config?.site_name

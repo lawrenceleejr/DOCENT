@@ -43,7 +43,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · Software libre bajo la"
   },
   "login": {
-    "welcomeBack": "Bienvenido de nuevo",
+    "welcome": "Te damos la bienvenida",
     "loginToSite": "Inicia sesión en {{siteName}}.",
     "loginToDefault": "Inicia sesión en tu cuenta de DOCENT.",
     "emailLabel": "Correo electrónico",
@@ -549,16 +549,16 @@
   },
   "map": {
     "title": "Mapa",
-    "gapsPrefix": "Detecta vacíos de cobertura —",
+    "gapsPrefix": "Consulta tu cobertura —",
     "institutionsInView_one": "{{formattedCount}} institución en vista",
     "institutionsInView_other": "{{formattedCount}} instituciones en vista",
     "notYetReached_one": "{{formattedCount}} sin alcanzar todavía",
     "notYetReached_other": "{{formattedCount}} sin alcanzar todavía",
     "none": "Ninguno",
-    "gapsOnly": "Solo vacíos",
+    "gapsOnly": "Aún no visitados",
     "reached": "Alcanzadas",
     "showMyVenues": "Mostrar mis sedes",
-    "legendGap": "Vacío",
+    "legendGap": "Aún no visitados",
     "legendReached": "Alcanzada",
     "legendVenueNoVisits": "Sede (sin visitas todavía)",
     "popupReached_one": "Alcanzada — {{formattedCount}} visita",
@@ -682,7 +682,9 @@
     "overdue": "Vencida",
     "markDone": "Marcar como hecho",
     "emptyTitle": "Nada programado",
-    "emptyDescription": "Ningún próximo evento planeado coincide con estos filtros. Programa uno y aparecerá aquí — listo para exportar a tu calendario."
+    "emptyDescription": "Ningún próximo evento planeado coincide con estos filtros. Programa uno y aparecerá aquí — listo para exportar a tu calendario.",
+    "addToCalendarTooltip": "Exporta los eventos que se muestran aquí, según tus filtros actuales.",
+    "addToCalendarEmpty": "Aún no hay eventos para exportar."
   },
   "venuePicker": {
     "venueLabel": "Sede",
@@ -711,7 +713,8 @@
     "validation": {
       "nameRequired": "El nombre es obligatorio",
       "typeRequired": "El tipo es obligatorio"
-    }
+    },
+    "mapHint": "También puedes elegir un lugar desde el Mapa: ábrelo y selecciona «Registrar una visita aquí»."
   },
   "connectionForm": {
     "editTitle": "Editar contacto",

@@ -43,7 +43,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · 依据以下许可发布的自由软件"
   },
   "login": {
-    "welcomeBack": "欢迎回来",
+    "welcome": "欢迎",
     "loginToSite": "登录 {{siteName}}。",
     "loginToDefault": "登录您的 DOCENT 账户。",
     "emailLabel": "电子邮箱",
@@ -549,16 +549,16 @@
   },
   "map": {
     "title": "地图",
-    "gapsPrefix": "发现覆盖空白——",
+    "gapsPrefix": "查看你的覆盖范围——",
     "institutionsInView_one": "视野中有 {{formattedCount}} 个机构",
     "institutionsInView_other": "视野中有 {{formattedCount}} 个机构",
     "notYetReached_one": "{{formattedCount}} 个尚未触达",
     "notYetReached_other": "{{formattedCount}} 个尚未触达",
     "none": "无",
-    "gapsOnly": "仅显示空白",
+    "gapsOnly": "尚未访问",
     "reached": "已触达",
     "showMyVenues": "仅显示我的场地",
-    "legendGap": "空白",
+    "legendGap": "尚未访问",
     "legendReached": "已触达",
     "legendVenueNoVisits": "场地（尚无到访记录）",
     "popupReached_one": "已触达 — {{formattedCount}} 次到访",
@@ -682,7 +682,9 @@
     "overdue": "已逾期",
     "markDone": "标记为完成",
     "emptyTitle": "暂无安排",
-    "emptyDescription": "没有符合筛选条件的即将进行的计划活动。安排一场活动后，它会出现在这里，随时可以导出到您的日历。"
+    "emptyDescription": "没有符合筛选条件的即将进行的计划活动。安排一场活动后，它会出现在这里，随时可以导出到您的日历。",
+    "addToCalendarTooltip": "导出当前按筛选条件显示的活动。",
+    "addToCalendarEmpty": "暂时没有可导出的活动。"
   },
   "venuePicker": {
     "venueLabel": "场地",
@@ -711,7 +713,8 @@
     "validation": {
       "nameRequired": "请输入名称",
       "typeRequired": "请选择类型"
-    }
+    },
+    "mapHint": "你也可以从地图选择场所——打开地图并选择“在此记录一次访问”。"
   },
   "connectionForm": {
     "editTitle": "编辑联系人",

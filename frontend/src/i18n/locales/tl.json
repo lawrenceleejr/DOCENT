@@ -43,7 +43,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · Libreng software sa ilalim ng"
   },
   "login": {
-    "welcomeBack": "Maligayang pagbabalik",
+    "welcome": "Maligayang pagdating",
     "loginToSite": "Mag-log in sa {{siteName}}.",
     "loginToDefault": "Mag-log in sa iyong DOCENT account.",
     "emailLabel": "Email",
@@ -549,16 +549,16 @@
   },
   "map": {
     "title": "Mapa",
-    "gapsPrefix": "Tukuyin ang mga coverage gap —",
+    "gapsPrefix": "Tingnan ang iyong saklaw —",
     "institutionsInView_one": "{{formattedCount}} institusyon na nakikita",
     "institutionsInView_other": "{{formattedCount}} institusyon na nakikita",
     "notYetReached_one": "{{formattedCount}} hindi pa naabot",
     "notYetReached_other": "{{formattedCount}} hindi pa naabot",
     "none": "Wala",
-    "gapsOnly": "Gaps lang",
+    "gapsOnly": "Hindi pa napupuntahan",
     "reached": "Naabot",
     "showMyVenues": "Ipakita ang mga venue ko",
-    "legendGap": "Gap",
+    "legendGap": "Hindi pa napupuntahan",
     "legendReached": "Naabot",
     "legendVenueNoVisits": "Venue (walang pagbisita pa)",
     "popupReached_one": "Naabot — {{formattedCount}} pagbisita",
@@ -682,7 +682,9 @@
     "overdue": "Lampas na sa deadline",
     "markDone": "Markahan bilang tapos",
     "emptyTitle": "Walang naka-iskedyul",
-    "emptyDescription": "Walang darating na naka-planong event na tumutugma sa mga filter na ito. Mag-iskedyul ng isa at lalabas ito rito — handa na para i-export sa inyong kalendaryo."
+    "emptyDescription": "Walang darating na naka-planong event na tumutugma sa mga filter na ito. Mag-iskedyul ng isa at lalabas ito rito — handa na para i-export sa inyong kalendaryo.",
+    "addToCalendarTooltip": "I-export ang mga eventong ipinapakita rito, ayon sa iyong mga filter.",
+    "addToCalendarEmpty": "Wala pang eventong maie-export."
   },
   "venuePicker": {
     "venueLabel": "Venue",
@@ -711,7 +713,8 @@
     "validation": {
       "nameRequired": "Kinakailangan ang pangalan",
       "typeRequired": "Kinakailangan ang uri"
-    }
+    },
+    "mapHint": "Puwede mo ring piliin ang lugar mula sa Mapa — buksan ito at piliin ang “Mag-log ng bisita rito.”"
   },
   "connectionForm": {
     "editTitle": "I-edit ang connection",

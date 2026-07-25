@@ -11,6 +11,7 @@ import {
   Table,
   Text,
   Title,
+  Tooltip,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { IconCalendarPlus, IconExternalLink } from '@tabler/icons-react';
@@ -66,7 +67,10 @@ export function SchedulePage() {
     queryFn: () => api.get<string[]>('/api/visits/tags'),
   });
 
-  // The .ics export mirrors what's on screen (scope + filters).
+  // The .ics export mirrors what's on screen (scope + filters). Siblings are
+  // never in the file (they live on other instances), so the local rows are
+  // what determines whether there's anything to export at all (issue #25).
+  const exportableCount = (data?.items ?? []).filter((it) => it.source === 'local').length;
   const icsHref = `/api/visits/calendar.ics${buildQuery({
     ...filterParams(filters),
     status: 'planned',
@@ -89,9 +93,23 @@ export function SchedulePage() {
           </Text>
         </div>
         <Group>
-          <Button component="a" href={icsHref} variant="default">
-            {t('schedule.addToCalendar')}
-          </Button>
+          <Tooltip
+            label={
+              exportableCount === 0
+                ? t('schedule.addToCalendarEmpty')
+                : t('schedule.addToCalendarTooltip')
+            }
+          >
+            <Button
+              component="a"
+              href={exportableCount === 0 ? undefined : icsHref}
+              variant="default"
+              disabled={exportableCount === 0}
+              leftSection={<IconCalendarPlus size={16} />}
+            >
+              {t('schedule.addToCalendar')}
+            </Button>
+          </Tooltip>
           <Button variant="gradient" onClick={() => navigate('/visits/new?status=planned')}>
             {t('schedule.scheduleEvent')}
           </Button>
