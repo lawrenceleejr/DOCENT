@@ -309,7 +309,7 @@ export function DashboardPage() {
   const enumLabel = useEnumLabel();
   const scheme = useComputedColorScheme('dark');
   const viz = scheme === 'dark' ? VIZ_DARK : VIZ_LIGHT;
-  const [range, setRange] = useState<RangeKey>('5y');
+  const [range, setRange] = useState<RangeKey>('all');
   const dates = useMemo(() => rangeToDates(range), [range]);
 
   // Dashboard-wide filters, applied to every stat below.

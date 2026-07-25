@@ -14,7 +14,7 @@ from sqlalchemy import Integer, cast, func, select
 from app.deps import DbSession
 from app.models import Venue, Visit, VisitStatus
 from app.schemas import BreakdownRow, PublicActivity, PublicImpact, TimeseriesPoint
-from app.services.federation import federated_query
+from app.services.federation import federated_query, has_enabled_peers
 from app.services.settings import effective_site_name, public_page_enabled
 
 router = APIRouter(prefix="/api/public", tags=["public"])
@@ -103,6 +103,7 @@ def public_impact(db: DbSession, include_federated: bool = False) -> PublicImpac
 
     return PublicImpact(
         site_name=effective_site_name(db) or None,
+        has_siblings=has_enabled_peers(db),
         total_visits=total_visits,
         total_people_reached=total_people,
         distinct_venues=distinct_venues,

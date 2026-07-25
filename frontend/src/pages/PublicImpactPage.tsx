@@ -168,12 +168,14 @@ export function PublicImpactPage() {
             </div>
           </Group>
           <Group gap="md">
-            <Switch
-              size="sm"
-              checked={includeSiblings}
-              onChange={(event) => setIncludeSiblings(event.currentTarget.checked)}
-              label={t('impact.includeSiblings')}
-            />
+            {data?.has_siblings && (
+              <Switch
+                size="sm"
+                checked={includeSiblings}
+                onChange={(event) => setIncludeSiblings(event.currentTarget.checked)}
+                label={t('impact.includeSiblings')}
+              />
+            )}
             <Anchor component={Link} to="/login" size="sm" c="dimmed">
               {t('impact.signInLink')}
             </Anchor>

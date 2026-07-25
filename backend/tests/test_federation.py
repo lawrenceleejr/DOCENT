@@ -510,6 +510,16 @@ def test_public_impact_federated_toggle(client, db, make_client):
     assert withfed["total_people_reached"] == base["total_people_reached"] + 15
     # Sibling names never leak into the public recent list.
     assert all("Remote Person" not in str(r) for r in withfed["recent"])
+    # An enabled peer exists, so the public page advertises the sibling toggle (#25).
+    assert base["has_siblings"] is True
+
+
+def test_public_impact_has_siblings_false_without_peers(client, make_client):
+    """With no enabled peers the public page hides the sibling toggle (#25)."""
+    register(client)
+    client.patch("/api/admin/settings", json={"public_page": True})
+    anon = make_client()
+    assert anon.get("/api/public/impact").json()["has_siblings"] is False
 
 
 def test_feed_contributors_carry_orcids(client, make_client):

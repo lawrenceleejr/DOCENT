@@ -15,6 +15,9 @@ export const EVENT_TYPES = [
   'classroom_visit',
   'science_fair',
   'public_lecture',
+  'colloquium',
+  'seminar',
+  'conference',
   'lab_tour',
   'career_day',
   'demo_booth',
@@ -667,6 +670,7 @@ export interface PublicActivity {
 
 export interface PublicImpact {
   site_name: string | null;
+  has_siblings: boolean;
   total_visits: number;
   total_people_reached: number;
   distinct_venues: number;

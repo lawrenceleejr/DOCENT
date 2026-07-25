@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import func, select
 
 from app.deps import CurrentUser, DbSession
-from app.models import FederationPeer, LoginEvent, User
+from app.models import LoginEvent, User
+from app.services.federation import has_enabled_peers
 from app.ratelimit import login_rate_limit, register_rate_limit
 from app.schemas import AuthConfig, LoginRequest, RegisterRequest, UserOut
 from app.security import (
@@ -46,13 +47,7 @@ def auth_config(db: DbSession) -> AuthConfig:
         banner_message=effective_banner_message(db) or None,
         banner_level=effective_banner_level(db),
         user_directory_visible=user_directory_visible(db),
-        has_siblings=bool(
-            db.scalar(
-                select(func.count())
-                .select_from(FederationPeer)
-                .where(FederationPeer.enabled.is_(True))
-            )
-        ),
+        has_siblings=has_enabled_peers(db),
     )
 
 

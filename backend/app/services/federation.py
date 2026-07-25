@@ -273,6 +273,18 @@ def next_sync_at(peer: FederationPeer) -> datetime | None:
     return last + effective_delay(peer)
 
 
+def has_enabled_peers(db: Session) -> bool:
+    """True when at least one enabled sibling peer exists — used to hide the
+    sibling controls on instances that have none (#6, #25)."""
+    return bool(
+        db.scalar(
+            select(func.count())
+            .select_from(FederationPeer)
+            .where(FederationPeer.enabled.is_(True))
+        )
+    )
+
+
 def federated_query(
     db: Session,
     *,

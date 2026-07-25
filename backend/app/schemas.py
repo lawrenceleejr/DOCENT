@@ -842,6 +842,9 @@ class PublicActivity(BaseModel):
 
 class PublicImpact(BaseModel):
     site_name: str | None
+    # Whether this instance pulls from any sibling community, so the public page
+    # only shows the sibling toggle when it does (#25).
+    has_siblings: bool = False
     total_visits: int
     total_people_reached: int
     distinct_venues: int
