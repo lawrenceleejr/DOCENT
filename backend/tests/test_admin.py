@@ -264,6 +264,62 @@ def test_backups_endpoints_and_traversal_guard(client, make_client):
     assert other.get("/api/admin/backups").status_code == 403
 
 
+def test_restore_from_existing_backup_queues_sentinel(client, make_client, tmp_path, monkeypatch):
+    """Restoring a server-side backup requires the typed confirmation and drops a
+    sentinel the backup sidecar polls; traversal and non-admins are refused (#29)."""
+    monkeypatch.setattr("app.routers.admin.BACKUP_ROOT", tmp_path)
+    (tmp_path / "daily").mkdir()
+    (tmp_path / "daily" / "docent-2026-07-25.dump").write_bytes(b"PGDMP\x00archive")
+    register(client, email="admin@example.com")
+
+    # Wrong confirmation → refused, no sentinel written.
+    r = client.post("/api/admin/backups/restore",
+                    data={"confirm": "please", "path": "daily/docent-2026-07-25.dump"})
+    assert r.status_code == 400
+    assert not (tmp_path / ".restore-request").exists()
+
+    # Correct confirmation → queued, sentinel + status written.
+    r = client.post("/api/admin/backups/restore",
+                    data={"confirm": "RESTORE", "path": "daily/docent-2026-07-25.dump"})
+    assert r.status_code == 202, r.text
+    assert r.json()["state"] == "queued"
+    assert (tmp_path / ".restore-request").read_text().strip() == "daily/docent-2026-07-25.dump"
+    status = client.get("/api/admin/backups/restore-status").json()
+    assert status["state"] == "queued" and status["backup"] == "daily/docent-2026-07-25.dump"
+
+    # Path traversal is refused.
+    assert client.post("/api/admin/backups/restore",
+                       data={"confirm": "RESTORE", "path": "../secrets.dump"}).status_code == 404
+    # Non-admins can't restore.
+    other = make_client()
+    register(other, email="pleb@example.com")
+    assert other.post("/api/admin/backups/restore",
+                      data={"confirm": "RESTORE", "path": "daily/docent-2026-07-25.dump"}).status_code == 403
+
+
+def test_restore_from_upload_validates_and_stages(client, tmp_path, monkeypatch):
+    """An uploaded .dump is magic-checked, staged under uploads/, and queued (#29)."""
+    monkeypatch.setattr("app.routers.admin.BACKUP_ROOT", tmp_path)
+    register(client, email="admin@example.com")
+
+    # Not a pg_dump archive → rejected before touching anything.
+    r = client.post("/api/admin/backups/restore", data={"confirm": "RESTORE"},
+                    files={"file": ("evil.dump", b"rm -rf /", "application/octet-stream")})
+    assert r.status_code == 400
+
+    # A valid-looking archive is staged and queued.
+    r = client.post("/api/admin/backups/restore", data={"confirm": "RESTORE"},
+                    files={"file": ("mine.dump", b"PGDMP\x00archive-bytes", "application/octet-stream")})
+    assert r.status_code == 202, r.text
+    rel = r.json()["backup"]
+    assert rel.startswith("uploads/") and rel.endswith(".dump")
+    assert (tmp_path / rel).read_bytes().startswith(b"PGDMP")
+    assert (tmp_path / ".restore-request").read_text().strip() == rel
+
+    # Neither a path nor a file → 400.
+    assert client.post("/api/admin/backups/restore", data={"confirm": "RESTORE"}).status_code == 400
+
+
 def test_login_history_records_and_lists(client):
     register(client, email="admin@example.com", password="password123")  # admin
     # Explicit logins are what get recorded (the auto-login on register is not).

@@ -726,3 +726,10 @@ export interface BackupListResponse {
   total_size_bytes: number;
   last_backup_at: string | null;
 }
+
+export interface RestoreStatus {
+  state: 'idle' | 'queued' | 'running' | 'success' | 'failed';
+  detail: string | null;
+  backup: string | null;
+  at: string | null;
+}

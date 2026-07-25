@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-from fastapi import APIRouter, Body, HTTPException, Query, status
+from fastapi import APIRouter, Body, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse, Response
 from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.orm import joinedload
@@ -30,6 +30,7 @@ from app.schemas import (
     BackupItem,
     BackupList,
     DbImportResult,
+    RestoreStatus,
     FederationPeerCreate,
     FederationPeerOut,
     FederationPeerPreview,
@@ -743,4 +744,118 @@ def download_backup(_admin: CurrentAdmin, path: str = Query(min_length=1)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Backup not found")
     return FileResponse(
         target, filename=target.name, media_type="application/octet-stream"
+    )
+
+
+def _restore_status_file() -> Path:
+    return BACKUP_ROOT / ".restore-status"
+
+
+def _write_restore_status(
+    state: str, *, backup: str | None = None, detail: str | None = None
+) -> None:
+    lines = [
+        f"state={state}",
+        f"at={datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}",
+    ]
+    if backup:
+        lines.append(f"backup={backup}")
+    if detail:
+        lines.append(f"detail={detail}")
+    _restore_status_file().write_text("\n".join(lines) + "\n")
+
+
+@router.post(
+    "/backups/restore",
+    status_code=status.HTTP_202_ACCEPTED,
+    response_model=RestoreStatus,
+)
+async def restore_backup(
+    _admin: CurrentAdmin,
+    confirm: str = Form(...),
+    path: str | None = Form(default=None),
+    file: UploadFile | None = File(default=None),
+):
+    """Restore the database from a server-side backup or an uploaded .dump (#29).
+
+    Destructive — it overwrites all current data — so it requires typing RESTORE
+    to confirm, and the backup sidecar takes a fresh pre-restore backup first so
+    a mistaken restore is always recoverable. The pg_restore itself runs in the
+    sidecar (which ships the Postgres tools); here we only stage the file and
+    drop the sentinel it polls for."""
+    if not BACKUP_ROOT.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Backups volume is not mounted on the backend.",
+        )
+    if confirm.strip().upper() != "RESTORE":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Type RESTORE to confirm — this overwrites all current data.",
+        )
+
+    has_upload = file is not None and bool((file.filename or "").strip())
+    has_path = bool(path and path.strip())
+    if has_upload == has_path:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Choose either an existing backup or an uploaded .dump file.",
+        )
+
+    root = BACKUP_ROOT.resolve()
+    if has_upload:
+        # pg_dump custom-format archives start with the magic bytes "PGDMP";
+        # reject anything else before it ever reaches pg_restore.
+        head = await file.read(5)
+        if head != b"PGDMP":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="That file isn't a DOCENT backup (expected a .dump archive).",
+            )
+        uploads = BACKUP_ROOT / "uploads"
+        uploads.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        target = uploads / f"upload-{stamp}.dump"
+        with target.open("wb") as out:
+            out.write(head)
+            while chunk := await file.read(1024 * 1024):
+                out.write(chunk)
+        rel = str(target.relative_to(root))
+    else:
+        target = (root / path).resolve()
+        # Same path-traversal guard as the download endpoint.
+        if root not in target.parents or target.suffix != ".dump" or not target.is_file():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Backup not found"
+            )
+        rel = str(target.relative_to(root))
+
+    detail = "Waiting for the backup service to start."
+    _write_restore_status("queued", backup=rel, detail=detail)
+    (BACKUP_ROOT / ".restore-request").write_text(rel + "\n")
+    return RestoreStatus(state="queued", backup=rel, detail=detail)
+
+
+@router.get("/backups/restore-status", response_model=RestoreStatus)
+def restore_backup_status(_admin: CurrentAdmin):
+    """Progress of the most recent restore, written by the backup sidecar (#29)."""
+    path = _restore_status_file()
+    if not path.exists():
+        return RestoreStatus(state="idle")
+    data: dict[str, str] = {}
+    for line in path.read_text().splitlines():
+        if "=" in line:
+            key, value = line.split("=", 1)
+            data[key.strip()] = value.strip()
+    at = None
+    if data.get("at"):
+        try:
+            at = datetime.fromisoformat(data["at"].replace("Z", "+00:00"))
+        except ValueError:
+            at = None
+    return RestoreStatus(
+        state=data.get("state") or "idle",
+        detail=data.get("detail") or None,
+        backup=data.get("backup") or None,
+        at=at,
     )

@@ -348,6 +348,16 @@ class BackupList(BaseModel):
     last_backup_at: datetime | None
 
 
+class RestoreStatus(BaseModel):
+    """Progress of a database restore performed by the backup sidecar (#29)."""
+
+    # idle | queued | running | success | failed
+    state: str
+    detail: str | None = None
+    backup: str | None = None
+    at: datetime | None = None
+
+
 class DbImportResult(BaseModel):
     users_created: int
     institutions_created: int

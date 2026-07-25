@@ -328,7 +328,25 @@
     "tableTakenHeader": "生成时间",
     "tableSizeHeader": "大小",
     "downloadButton": "下载",
-    "emptyState": "尚未找到任何备份。系统会在每晚自动生成一份。"
+    "emptyState": "尚未找到任何备份。系统会在每晚自动生成一份。",
+    "restoreButton": "还原",
+    "restoreUploadButton": "还原上传的文件",
+    "chooseFileButton": "选择 .dump 文件",
+    "restoreModalTitle": "还原数据库",
+    "restoreWarning": "这将用备份内容覆盖当前所有数据。自该备份以来的所有更改都将丢失。",
+    "restoreFromBackup": "从 {{path}} 还原？",
+    "restoreFromUpload": "从上传的文件 {{name}} 还原？",
+    "restoreSafetyNote": "会先创建一份还原前备份，因此可以撤销此操作。",
+    "typeToConfirm": "输入 {{word}} 以确认",
+    "confirmRestoreButton": "立即还原",
+    "reloadApp": "重新加载应用",
+    "restoreError": "无法开始还原。",
+    "restoreState": {
+      "queued": "还原已排队",
+      "running": "还原进行中",
+      "success": "还原完成",
+      "failed": "还原失败"
+    }
   },
   "dbToolsCard": {
     "title": "导出与导入数据",

@@ -328,7 +328,25 @@
     "tableTakenHeader": "Kinuha",
     "tableSizeHeader": "Laki",
     "downloadButton": "I-download",
-    "emptyState": "Walang backup na nahanap pa. Awtomatikong tumatakbo ang isa gabi-gabi."
+    "emptyState": "Walang backup na nahanap pa. Awtomatikong tumatakbo ang isa gabi-gabi.",
+    "restoreButton": "I-restore",
+    "restoreUploadButton": "I-restore ang na-upload na file",
+    "chooseFileButton": "Pumili ng .dump file",
+    "restoreModalTitle": "I-restore ang database",
+    "restoreWarning": "Papalitan nito ang LAHAT ng kasalukuyang data ng nilalaman ng backup. Mawawala ang anumang pagbabagong ginawa mula noong backup na iyon.",
+    "restoreFromBackup": "I-restore mula sa {{path}}?",
+    "restoreFromUpload": "I-restore mula sa na-upload na file na {{name}}?",
+    "restoreSafetyNote": "Kukuha muna ng bagong pre-restore backup, kaya maaari itong i-undo.",
+    "typeToConfirm": "I-type ang {{word}} para kumpirmahin",
+    "confirmRestoreButton": "I-restore ngayon",
+    "reloadApp": "I-reload ang app",
+    "restoreError": "Hindi masimulan ang pag-restore.",
+    "restoreState": {
+      "queued": "Nakapila ang pag-restore",
+      "running": "Isinasagawa ang pag-restore",
+      "success": "Kumpleto na ang pag-restore",
+      "failed": "Nabigo ang pag-restore"
+    }
   },
   "dbToolsCard": {
     "title": "I-export at i-import ang datos",

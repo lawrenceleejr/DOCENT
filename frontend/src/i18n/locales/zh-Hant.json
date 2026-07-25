@@ -328,7 +328,25 @@
     "tableTakenHeader": "建立時間",
     "tableSizeHeader": "大小",
     "downloadButton": "下載",
-    "emptyState": "目前尚無備份。系統每晚會自動執行一次備份。"
+    "emptyState": "目前尚無備份。系統每晚會自動執行一次備份。",
+    "restoreButton": "還原",
+    "restoreUploadButton": "還原上傳的檔案",
+    "chooseFileButton": "選擇 .dump 檔案",
+    "restoreModalTitle": "還原資料庫",
+    "restoreWarning": "這會以備份內容覆寫目前所有資料。自該備份以來的所有變更都將遺失。",
+    "restoreFromBackup": "從 {{path}} 還原？",
+    "restoreFromUpload": "從上傳的檔案 {{name}} 還原？",
+    "restoreSafetyNote": "會先建立一份還原前備份，因此可以復原此操作。",
+    "typeToConfirm": "輸入 {{word}} 以確認",
+    "confirmRestoreButton": "立即還原",
+    "reloadApp": "重新載入應用程式",
+    "restoreError": "無法開始還原。",
+    "restoreState": {
+      "queued": "還原已排入佇列",
+      "running": "還原進行中",
+      "success": "還原完成",
+      "failed": "還原失敗"
+    }
   },
   "dbToolsCard": {
     "title": "匯出與匯入資料",

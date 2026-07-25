@@ -328,7 +328,25 @@
     "tableTakenHeader": "Thực hiện",
     "tableSizeHeader": "Kích thước",
     "downloadButton": "Tải xuống",
-    "emptyState": "Chưa có bản sao lưu nào. Một bản sẽ được tạo tự động mỗi đêm."
+    "emptyState": "Chưa có bản sao lưu nào. Một bản sẽ được tạo tự động mỗi đêm.",
+    "restoreButton": "Khôi phục",
+    "restoreUploadButton": "Khôi phục tệp đã tải lên",
+    "chooseFileButton": "Chọn tệp .dump",
+    "restoreModalTitle": "Khôi phục cơ sở dữ liệu",
+    "restoreWarning": "Thao tác này ghi đè TẤT CẢ dữ liệu hiện tại bằng nội dung của bản sao lưu. Mọi thay đổi kể từ bản sao lưu đó sẽ bị mất.",
+    "restoreFromBackup": "Khôi phục từ {{path}}?",
+    "restoreFromUpload": "Khôi phục từ tệp đã tải lên {{name}}?",
+    "restoreSafetyNote": "Một bản sao lưu trước khi khôi phục sẽ được tạo trước, nên có thể hoàn tác việc này.",
+    "typeToConfirm": "Nhập {{word}} để xác nhận",
+    "confirmRestoreButton": "Khôi phục ngay",
+    "reloadApp": "Tải lại ứng dụng",
+    "restoreError": "Không thể bắt đầu khôi phục.",
+    "restoreState": {
+      "queued": "Đã xếp hàng khôi phục",
+      "running": "Đang khôi phục",
+      "success": "Khôi phục hoàn tất",
+      "failed": "Khôi phục thất bại"
+    }
   },
   "dbToolsCard": {
     "title": "Xuất & nhập dữ liệu",

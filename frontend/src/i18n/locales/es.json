@@ -328,7 +328,25 @@
     "tableTakenHeader": "Realizada",
     "tableSizeHeader": "Tamaño",
     "downloadButton": "Descargar",
-    "emptyState": "Todavía no se encontraron copias de seguridad. Una se ejecuta automáticamente cada noche."
+    "emptyState": "Todavía no se encontraron copias de seguridad. Una se ejecuta automáticamente cada noche.",
+    "restoreButton": "Restaurar",
+    "restoreUploadButton": "Restaurar archivo subido",
+    "chooseFileButton": "Elegir archivo .dump",
+    "restoreModalTitle": "Restaurar base de datos",
+    "restoreWarning": "Esto sobrescribe TODOS los datos actuales con el contenido de la copia de seguridad. Se perderán los cambios realizados desde entonces.",
+    "restoreFromBackup": "¿Restaurar desde {{path}}?",
+    "restoreFromUpload": "¿Restaurar desde el archivo subido {{name}}?",
+    "restoreSafetyNote": "Primero se toma una copia de seguridad previa a la restauración, para poder deshacerlo.",
+    "typeToConfirm": "Escribe {{word}} para confirmar",
+    "confirmRestoreButton": "Restaurar ahora",
+    "reloadApp": "Recargar la aplicación",
+    "restoreError": "No se pudo iniciar la restauración.",
+    "restoreState": {
+      "queued": "Restauración en cola",
+      "running": "Restauración en curso",
+      "success": "Restauración completada",
+      "failed": "La restauración falló"
+    }
   },
   "dbToolsCard": {
     "title": "Exportar e importar datos",

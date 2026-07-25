@@ -328,7 +328,25 @@
     "tableTakenHeader": "Taken",
     "tableSizeHeader": "Size",
     "downloadButton": "Download",
-    "emptyState": "No backups found yet. One runs automatically each night."
+    "emptyState": "No backups found yet. One runs automatically each night.",
+    "restoreButton": "Restore",
+    "restoreUploadButton": "Restore uploaded file",
+    "chooseFileButton": "Choose .dump file",
+    "restoreModalTitle": "Restore database",
+    "restoreWarning": "This overwrites ALL current data with the backup's contents. Any changes made since that backup will be lost.",
+    "restoreFromBackup": "Restore from {{path}}?",
+    "restoreFromUpload": "Restore from the uploaded file {{name}}?",
+    "restoreSafetyNote": "A fresh pre-restore backup is taken first, so this can be undone.",
+    "typeToConfirm": "Type {{word}} to confirm",
+    "confirmRestoreButton": "Restore now",
+    "reloadApp": "Reload the app",
+    "restoreError": "The restore couldn't be started.",
+    "restoreState": {
+      "queued": "Restore queued",
+      "running": "Restore in progress",
+      "success": "Restore complete",
+      "failed": "Restore failed"
+    }
   },
   "dbToolsCard": {
     "title": "Export & import data",
