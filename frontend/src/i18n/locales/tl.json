@@ -648,7 +648,17 @@
     },
     "orcidLabel": "ORCID iD",
     "orcidDescription": "I-link ang iyong researcher identity. Sumasama ito sa federated na aktibidad para ma-kredito ng mga partner community ang tamang tao.",
-    "orcidLinkedPrefix": "Naka-link:"
+    "orcidLinkedPrefix": "Naka-link:",
+    "affiliationPlaceholder": "University of Tennessee (opsyonal)",
+    "rolesLabel": "Iba pang mga tungkulin",
+    "rolesDescription": "Iba pang mga tungkuling ginagampanan mo, sa loob o labas ng iyong institusyon.",
+    "rolesEmpty": "Wala pang karagdagang tungkulin.",
+    "roleTitleLabel": "Tungkulin",
+    "roleTitlePlaceholder": "hal. Miyembro ng lupon",
+    "roleOrgLabel": "Organisasyon",
+    "roleOrgPlaceholder": "hal. City Science Museum (opsyonal)",
+    "addRole": "Magdagdag ng tungkulin",
+    "removeRole": "Alisin ang tungkulin"
   },
   "directory": {
     "title": "Direktoryo",

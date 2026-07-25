@@ -648,7 +648,17 @@
     },
     "orcidLabel": "identifiant ORCID",
     "orcidDescription": "Reliez votre identité de chercheur. Elle accompagne l'activité fédérée afin que les communautés partenaires créditent les bonnes personnes.",
-    "orcidLinkedPrefix": "Lié :"
+    "orcidLinkedPrefix": "Lié :",
+    "affiliationPlaceholder": "Université du Tennessee (facultatif)",
+    "rolesLabel": "Autres rôles",
+    "rolesDescription": "Autres rôles que vous occupez, au sein ou en dehors de votre institution.",
+    "rolesEmpty": "Aucun autre rôle pour le moment.",
+    "roleTitleLabel": "Rôle",
+    "roleTitlePlaceholder": "p. ex. Membre du conseil",
+    "roleOrgLabel": "Organisation",
+    "roleOrgPlaceholder": "p. ex. Musée des sciences de la ville (facultatif)",
+    "addRole": "Ajouter un rôle",
+    "removeRole": "Supprimer le rôle"
   },
   "directory": {
     "title": "Annuaire",

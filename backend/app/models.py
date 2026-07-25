@@ -117,6 +117,11 @@ class User(Base):
     languages_spoken: Mapped[list[str]] = mapped_column(
         ARRAY(String), nullable=False, server_default=text("'{}'")
     )
+    # Additional roles the person holds beyond their primary position, inside or
+    # outside their institution (#22). Each entry is {title, organization}.
+    roles: Mapped[list[dict]] = mapped_column(
+        JSONB, nullable=False, server_default=text("'[]'")
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

@@ -648,7 +648,17 @@
     },
     "orcidLabel": "ORCID iD",
     "orcidDescription": "Vincula tu identidad de investigador. Viaja con la actividad federada para que las comunidades asociadas atribuyan el crédito a las personas correctas.",
-    "orcidLinkedPrefix": "Vinculado:"
+    "orcidLinkedPrefix": "Vinculado:",
+    "affiliationPlaceholder": "Universidad de Tennessee (opcional)",
+    "rolesLabel": "Otros cargos",
+    "rolesDescription": "Otros cargos que ocupas, dentro o fuera de tu institución.",
+    "rolesEmpty": "Aún no hay cargos adicionales.",
+    "roleTitleLabel": "Cargo",
+    "roleTitlePlaceholder": "p. ej., Miembro de la junta",
+    "roleOrgLabel": "Organización",
+    "roleOrgPlaceholder": "p. ej., Museo de Ciencias de la Ciudad (opcional)",
+    "addRole": "Agregar cargo",
+    "removeRole": "Eliminar cargo"
   },
   "directory": {
     "title": "Directorio",

@@ -34,6 +34,9 @@ def update_me(body: UserUpdate, user: CurrentUser, db: DbSession):
         user.orcid = body.orcid
     if body.languages_spoken is not None:
         user.languages_spoken = body.languages_spoken
+    # Present-in-request (even as []) means "set it", so all roles can be cleared.
+    if body.roles is not None:
+        user.roles = [r.model_dump() for r in body.roles]
 
     if body.new_password is not None:
         if not body.current_password or not verify_password(
@@ -188,6 +191,7 @@ def user_directory(
             position=u.position,
             orcid=u.orcid,
             languages_spoken=u.languages_spoken,
+            roles=u.roles,
             schools=[s.venue for s in u.schools],
         )
         for u in users
@@ -226,6 +230,7 @@ def user_profile(user_id: int, user: CurrentUser, db: DbSession):
         position=target.position,
         orcid=target.orcid,
         languages_spoken=target.languages_spoken,
+        roles=target.roles,
         schools=[s.venue for s in target.schools],
         total_visits=len(visits),
         total_people_reached=sum(v.people_reached for v in visits),

@@ -648,7 +648,17 @@
     },
     "orcidLabel": "ORCID iD",
     "orcidDescription": "Liên kết danh tính nhà nghiên cứu của bạn. Nó đi kèm với hoạt động liên kết để các cộng đồng đối tác ghi nhận đúng người.",
-    "orcidLinkedPrefix": "Đã liên kết:"
+    "orcidLinkedPrefix": "Đã liên kết:",
+    "affiliationPlaceholder": "Đại học Tennessee (không bắt buộc)",
+    "rolesLabel": "Vai trò khác",
+    "rolesDescription": "Các vai trò khác bạn đảm nhận, trong hoặc ngoài tổ chức của bạn.",
+    "rolesEmpty": "Chưa có vai trò bổ sung nào.",
+    "roleTitleLabel": "Vai trò",
+    "roleTitlePlaceholder": "ví dụ: Thành viên hội đồng",
+    "roleOrgLabel": "Tổ chức",
+    "roleOrgPlaceholder": "ví dụ: Bảo tàng Khoa học Thành phố (không bắt buộc)",
+    "addRole": "Thêm vai trò",
+    "removeRole": "Xóa vai trò"
   },
   "directory": {
     "title": "Danh bạ",

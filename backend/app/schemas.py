@@ -191,6 +191,16 @@ class LoginHistory(BaseModel):
     daily: list[LoginHistoryDay]
 
 
+class UserRole(BaseModel):
+    """One additional role a communicator holds, inside or outside their primary
+    institution (#22). The primary position/affiliation stay the headline role."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    title: str = Field(min_length=1, max_length=120)
+    organization: str | None = Field(default=None, max_length=255)
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -203,6 +213,7 @@ class UserOut(BaseModel):
     is_admin: bool
     is_active: bool
     languages_spoken: list[str]
+    roles: list[UserRole] = []
     created_at: datetime
 
 
@@ -230,6 +241,7 @@ class UserUpdate(BaseModel):
     position: str | None = Field(default=None, max_length=255)
     orcid: str | None = Field(default=None, max_length=64)
     languages_spoken: list[str] | None = None
+    roles: list[UserRole] | None = None
     current_password: str | None = None
     new_password: str | None = Field(default=None, min_length=8, max_length=128)
 
@@ -237,6 +249,20 @@ class UserUpdate(BaseModel):
     @classmethod
     def _clean_languages_spoken(cls, v: list[str] | None) -> list[str] | None:
         return None if v is None else clean_languages(v)
+
+    @field_validator("roles")
+    @classmethod
+    def _clean_roles(cls, v: list[UserRole] | None) -> list[UserRole] | None:
+        if v is None:
+            return None
+        cleaned: list[UserRole] = []
+        for role in v:
+            title = role.title.strip()
+            if not title:
+                continue  # drop blank rows the editor may submit
+            org = (role.organization or "").strip() or None
+            cleaned.append(UserRole(title=title, organization=org))
+        return cleaned[:25]  # a sane cap; nobody holds 25 roles
 
     @field_validator("orcid")
     @classmethod
@@ -478,6 +504,7 @@ class DirectoryUserOut(BaseModel):
     position: str | None
     orcid: str | None
     languages_spoken: list[str]
+    roles: list[UserRole] = []
     schools: list[VenueBrief]
 
 
@@ -505,6 +532,7 @@ class UserProfileOut(BaseModel):
     position: str | None
     orcid: str | None
     languages_spoken: list[str]
+    roles: list[UserRole] = []
     schools: list[VenueBrief]
     total_visits: int
     total_people_reached: int

@@ -195,6 +195,11 @@ export function labelize(value: string): string {
     .join(' ');
 }
 
+export interface UserRole {
+  title: string;
+  organization: string | null;
+}
+
 export interface User {
   id: number;
   email: string;
@@ -205,6 +210,7 @@ export interface User {
   is_admin: boolean;
   is_active: boolean;
   languages_spoken: string[];
+  roles: UserRole[];
   created_at: string;
 }
 
@@ -242,6 +248,7 @@ export interface UserProfile {
   position: string | null;
   orcid: string | null;
   languages_spoken: string[];
+  roles: UserRole[];
   schools: VenueBrief[];
   total_visits: number;
   total_people_reached: number;
@@ -255,6 +262,7 @@ export interface DirectoryUser {
   position: string | null;
   orcid: string | null;
   languages_spoken: string[];
+  roles: UserRole[];
   schools: VenueBrief[];
 }
 

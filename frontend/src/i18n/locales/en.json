@@ -648,7 +648,17 @@
     },
     "orcidLabel": "ORCID iD",
     "orcidDescription": "Link your researcher identity. It travels with federated activity so partner communities can credit the right people.",
-    "orcidLinkedPrefix": "Linked:"
+    "orcidLinkedPrefix": "Linked:",
+    "affiliationPlaceholder": "University of Tennessee (optional)",
+    "rolesLabel": "Other roles",
+    "rolesDescription": "Other roles you hold, inside or outside your institution.",
+    "rolesEmpty": "No additional roles yet.",
+    "roleTitleLabel": "Role",
+    "roleTitlePlaceholder": "e.g. Board member",
+    "roleOrgLabel": "Organization",
+    "roleOrgPlaceholder": "e.g. City Science Museum (optional)",
+    "addRole": "Add role",
+    "removeRole": "Remove role"
   },
   "directory": {
     "title": "Directory",

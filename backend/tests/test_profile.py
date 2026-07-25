@@ -244,3 +244,46 @@ def test_user_profile_view(client, make_client):
     assert other.get(f"/api/users/{ada_id}/profile").status_code == 200
 
     assert client.get("/api/users/99999/profile").status_code == 404
+
+
+def test_profile_roles_roundtrip_and_clean(client, make_client):
+    """Additional roles round-trip through the profile; blank rows and stray
+    whitespace are cleaned, and they show on the member-directory profile (#22)."""
+    register(client, email="admin@example.com", name="Admin")  # admin
+    client.patch("/api/admin/settings", json={"user_directory_visible": True})
+
+    ada = make_client()
+    ada_id = register(
+        ada, email="ada@example.com", name="Ada",
+        position="Professor", affiliation="UTK Physics",
+    ).json()["id"]
+
+    r = ada.patch("/api/users/me", json={"roles": [
+        {"title": "  Board Member  ", "organization": "  City Science Museum "},
+        {"title": "Mentor", "organization": ""},
+        {"title": "   ", "organization": "dropped — blank title"},
+    ]})
+    assert r.status_code == 200, r.text
+    roles = r.json()["roles"]
+    assert roles == [
+        {"title": "Board Member", "organization": "City Science Museum"},
+        {"title": "Mentor", "organization": None},
+    ]
+    # Persisted, and visible on the member-directory profile view.
+    assert ada.get("/api/auth/me").json()["roles"] == roles
+    assert client.get(f"/api/users/{ada_id}/profile").json()["roles"] == roles
+    # Sending an empty list clears them.
+    assert ada.patch("/api/users/me", json={"roles": []}).json()["roles"] == []
+
+
+def test_meta_positions_and_institutions(client):
+    """The autocomplete reference endpoints are public and merge a curated base
+    list with values already in use (#22)."""
+    assert "Professor" in client.get("/api/meta/positions").json()  # curated base
+
+    register(
+        client, email="pat@example.com", name="Pat",
+        position="Planetarium Director", affiliation="Blue Ridge Observatory",
+    )
+    assert "Planetarium Director" in client.get("/api/meta/positions").json()
+    assert "Blue Ridge Observatory" in client.get("/api/meta/institutions").json()

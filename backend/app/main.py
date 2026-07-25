@@ -13,6 +13,7 @@ from app.routers import (
     federation,
     geocode,
     map,
+    meta,
     public,
     reports,
     stats,
@@ -63,6 +64,7 @@ app.include_router(map.router)
 app.include_router(reports.router)
 app.include_router(public.router)
 app.include_router(federation.router)
+app.include_router(meta.router)
 
 
 @app.get("/api/health")

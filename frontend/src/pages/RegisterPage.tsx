@@ -1,6 +1,7 @@
 import {
   Alert,
   Anchor,
+  Autocomplete,
   Box,
   Button,
   PasswordInput,
@@ -15,6 +16,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
+import { useInstitutionOptions, usePositionOptions } from '../api/meta';
 import type { AuthConfig } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { AuthShell } from '../components/AuthShell';
@@ -42,6 +44,8 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const positionOptions = usePositionOptions();
+  const institutionOptions = useInstitutionOptions();
 
   const { data: config } = useQuery({
     queryKey: ['auth', 'config'],
@@ -150,14 +154,16 @@ export function RegisterPage() {
             autoComplete="new-password"
             {...form.getInputProps('password')}
           />
-          <TextInput
+          <Autocomplete
             label={t('register.affiliationLabel')}
             placeholder={t('register.affiliationPlaceholder')}
+            data={institutionOptions}
             {...form.getInputProps('affiliation')}
           />
-          <TextInput
+          <Autocomplete
             label={t('register.positionLabel')}
             placeholder={t('register.positionPlaceholder')}
+            data={positionOptions}
             {...form.getInputProps('position')}
           />
           <TextInput

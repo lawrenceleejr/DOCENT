@@ -36,6 +36,16 @@ export function ProfileViewPage() {
             <OrcidLink orcid={profile.orcid} />
           </Text>
         )}
+        {profile.roles.length > 0 && (
+          <Group gap={6} mt={8}>
+            {profile.roles.map((role, i) => (
+              <Badge key={i} variant="light" color="gray" size="lg">
+                {role.title}
+                {role.organization ? ` · ${role.organization}` : ''}
+              </Badge>
+            ))}
+          </Group>
+        )}
       </div>
 
       <SimpleGrid cols={{ base: 2 }} maw={360}>

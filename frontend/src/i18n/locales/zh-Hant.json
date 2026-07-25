@@ -648,7 +648,17 @@
     },
     "orcidLabel": "ORCID iD",
     "orcidDescription": "連結你的研究者身分。它會隨聯邦活動一起傳遞，讓夥伴社群能正確標註貢獻者。",
-    "orcidLinkedPrefix": "已連結："
+    "orcidLinkedPrefix": "已連結：",
+    "affiliationPlaceholder": "田納西大學（選填）",
+    "rolesLabel": "其他角色",
+    "rolesDescription": "您在機構內外擔任的其他角色。",
+    "rolesEmpty": "尚無其他角色。",
+    "roleTitleLabel": "角色",
+    "roleTitlePlaceholder": "例如：理事會成員",
+    "roleOrgLabel": "組織",
+    "roleOrgPlaceholder": "例如：城市科學博物館（選填）",
+    "addRole": "新增角色",
+    "removeRole": "移除角色"
   },
   "directory": {
     "title": "會員名錄",
