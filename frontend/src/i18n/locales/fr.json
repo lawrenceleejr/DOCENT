@@ -62,7 +62,8 @@
     "viewImpactLink": "Consultez notre page d'impact public",
     "noAccountNeededSuffix": "— aucun compte requis.",
     "invalidEmail": "Courriel invalide",
-    "passwordRequired": "Le mot de passe est requis"
+    "passwordRequired": "Le mot de passe est requis",
+    "welcomeBack": "Content de vous revoir"
   },
   "register": {
     "createAccount": "Créez votre compte",
@@ -211,7 +212,9 @@
     "coPresentersLabel": "Co-présentateurs avec un compte",
     "coPresentersDescription": "Reliez des collègues ayant un compte ici, afin qu'ils soient crédités et que leurs ORCID accompagnent l'activité fédérée.",
     "coPresentersPlaceholder": "Rechercher des personnes par nom…",
-    "coPresentersNothing": "Aucune personne correspondante"
+    "coPresentersNothing": "Aucune personne correspondante",
+    "mapHintText": "Vous pouvez aussi créer un événement depuis la",
+    "mapHintLink": "carte"
   },
   "visitDetail": {
     "markCompleted": "Marquer comme terminée",
@@ -695,7 +698,7 @@
   "schedule": {
     "title": "Calendrier",
     "subtitle": "Activités planifiées à venir dans toute la communauté. Marquez-en une comme terminée pour consigner l'assistance.",
-    "addToCalendar": "Ajouter au calendrier (.ics)",
+    "addToCalendar": "Exporter les événements vers le calendrier (.ics)",
     "scheduleEvent": "Planifier une activité",
     "fromLabel": "Du",
     "toLabel": "Au",

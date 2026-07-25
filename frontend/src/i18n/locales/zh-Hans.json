@@ -62,7 +62,8 @@
     "viewImpactLink": "查看我们的公开影响力页面",
     "noAccountNeededSuffix": "——无需账户即可查看。",
     "invalidEmail": "电子邮箱格式无效",
-    "passwordRequired": "请输入密码"
+    "passwordRequired": "请输入密码",
+    "welcomeBack": "欢迎回来"
   },
   "register": {
     "createAccount": "创建您的账户",
@@ -211,7 +212,9 @@
     "coPresentersLabel": "具账号的协同讲者",
     "coPresentersDescription": "关联在此拥有账号的同事，让他们获得标注，且其 ORCID 会随联邦活动一起传递。",
     "coPresentersPlaceholder": "以姓名搜索人员…",
-    "coPresentersNothing": "没有匹配的人员"
+    "coPresentersNothing": "没有匹配的人员",
+    "mapHintText": "你也可以从地图开始创建活动：",
+    "mapHintLink": "地图"
   },
   "visitDetail": {
     "markCompleted": "标记为已完成",
@@ -695,7 +698,7 @@
   "schedule": {
     "title": "日程安排",
     "subtitle": "社区内即将进行的计划活动。将活动标记为完成即可记录参与情况。",
-    "addToCalendar": "添加到日历（.ics）",
+    "addToCalendar": "导出活动到日历（.ics）",
     "scheduleEvent": "安排一场活动",
     "fromLabel": "起始日期",
     "toLabel": "结束日期",

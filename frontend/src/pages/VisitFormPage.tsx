@@ -19,17 +19,24 @@ import {
   Textarea,
   TextInput,
   Title,
+  Tooltip,
   UnstyledButton,
 } from '@mantine/core';
 import { DateInput, TimeInput } from '@mantine/dates';
-import { IconChevronDown, IconChevronRight, IconPlus, IconTrash } from '@tabler/icons-react';
+import {
+  IconChevronDown,
+  IconChevronRight,
+  IconCircleOff,
+  IconPlus,
+  IconTrash,
+} from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import {
   AUDIENCE_LEVELS,
@@ -294,6 +301,16 @@ export function VisitFormPage() {
         })}
       >
         <Stack>
+          {!editing && (
+            // Point people at the map as an alternative way to start an event (#8).
+            <Text size="sm" c="dimmed">
+              {t('visitForm.mapHintText')}{' '}
+              <Anchor component={Link} to="/map">
+                {t('visitForm.mapHintLink')}
+              </Anchor>
+              .
+            </Text>
+          )}
           <Fieldset legend={t('visitForm.statusVenueLegend')} radius="md">
             <Stack>
               <Input.Wrapper label={t('visitForm.statusLabel')}>
@@ -379,16 +396,16 @@ export function VisitFormPage() {
               data={LANGUAGES}
               {...form.getInputProps('language')}
             />
+            <CoPresenterPicker
+              value={form.values.co_presenter_user_ids}
+              onChange={(ids) => form.setFieldValue('co_presenter_user_ids', ids)}
+              initialUsers={existing?.co_presenters}
+            />
             <TextInput
               label={t('visitForm.additionalPresentersLabel')}
               placeholder={t('visitForm.additionalPresentersPlaceholder')}
               description={isPlanned ? undefined : t('visitForm.additionalPresentersDescription')}
               {...form.getInputProps('additional_presenters')}
-            />
-            <CoPresenterPicker
-              value={form.values.co_presenter_user_ids}
-              onChange={(ids) => form.setFieldValue('co_presenter_user_ids', ids)}
-              initialUsers={existing?.co_presenters}
             />
             <TagsInput
               label={t('visitForm.tagsLabel')}
@@ -459,16 +476,17 @@ export function VisitFormPage() {
                   <Rating size="lg" {...form.getInputProps('rating')} />
                   {form.values.rating > 0 && (
                     // A star rating can't be un-clicked, so offer an explicit
-                    // way back to "no rating" (#10).
-                    <Anchor
-                      component="button"
-                      type="button"
-                      size="sm"
-                      c="dimmed"
-                      onClick={() => form.setFieldValue('rating', 0)}
-                    >
-                      {t('common.clear')}
-                    </Anchor>
+                    // "no rating" reset via a slashed-circle icon (#10).
+                    <Tooltip label={t('common.clear')}>
+                      <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        aria-label={t('common.clear')}
+                        onClick={() => form.setFieldValue('rating', 0)}
+                      >
+                        <IconCircleOff size={18} />
+                      </ActionIcon>
+                    </Tooltip>
                   )}
                 </Group>
               </Input.Wrapper>

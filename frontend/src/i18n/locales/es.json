@@ -62,7 +62,8 @@
     "viewImpactLink": "Ver nuestra página pública de impacto",
     "noAccountNeededSuffix": "— no se necesita cuenta.",
     "invalidEmail": "Correo electrónico no válido",
-    "passwordRequired": "La contraseña es obligatoria"
+    "passwordRequired": "La contraseña es obligatoria",
+    "welcomeBack": "Bienvenido de nuevo"
   },
   "register": {
     "createAccount": "Crea tu cuenta",
@@ -211,7 +212,9 @@
     "coPresentersLabel": "Copresentadores con cuenta",
     "coPresentersDescription": "Vincula a colegas que tengan una cuenta aquí, para que reciban crédito y sus ORCID viajen con la actividad federada.",
     "coPresentersPlaceholder": "Buscar personas por nombre…",
-    "coPresentersNothing": "No hay personas coincidentes"
+    "coPresentersNothing": "No hay personas coincidentes",
+    "mapHintText": "También puedes iniciar un evento desde el",
+    "mapHintLink": "mapa"
   },
   "visitDetail": {
     "markCompleted": "Marcar como completada",
@@ -695,7 +698,7 @@
   "schedule": {
     "title": "Agenda",
     "subtitle": "Próximos eventos planeados en toda la comunidad. Marca uno como hecho para registrar la asistencia.",
-    "addToCalendar": "Agregar al calendario (.ics)",
+    "addToCalendar": "Exportar eventos al calendario (.ics)",
     "scheduleEvent": "Programar un evento",
     "fromLabel": "Desde",
     "toLabel": "Hasta",

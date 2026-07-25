@@ -38,7 +38,6 @@ const EDUCATIONAL_VENUE_TYPES = new Set([
   'community_college',
   'university',
 ]);
-const EDUCATIONAL_INSTITUTION_TYPES = new Set(['school', 'college', 'university']);
 
 interface VenuePickerProps {
   value: number | null;
@@ -87,15 +86,17 @@ export function VenuePicker({ value, onChange, error, educationalOnly }: VenuePi
       label: `${v.name}${v.city ? ` — ${v.city}` : ''} (${enumLabel.venueType(v.venue_type)})`,
     }));
 
-    // Catalog entries whose name doesn't already match an existing venue option.
+    // The "schools you attended" picker lists only venues already in the
+    // database (plus the create option) — no OSM-catalog suggestions (#15).
     const existingNames = new Set([...byId.values()].map((v) => v.name.toLowerCase()));
-    const catalogOpts = (institutions ?? [])
-      .filter((i) => !educationalOnly || EDUCATIONAL_INSTITUTION_TYPES.has(i.institution_type))
-      .filter((i) => !existingNames.has(i.name.toLowerCase()))
-      .map((i) => ({
-        value: `${CATALOG_PREFIX}${i.id}`,
-        label: `＋ ${i.name}${i.city ? ` — ${i.city}` : ''} (${enumLabel.institutionType(i.institution_type)}) · ${t('venuePicker.fromCatalog')}`,
-      }));
+    const catalogOpts = educationalOnly
+      ? []
+      : (institutions ?? [])
+          .filter((i) => !existingNames.has(i.name.toLowerCase()))
+          .map((i) => ({
+            value: `${CATALOG_PREFIX}${i.id}`,
+            label: `＋ ${i.name}${i.city ? ` — ${i.city}` : ''} (${enumLabel.institutionType(i.institution_type)}) · ${t('venuePicker.fromCatalog')}`,
+          }));
 
     return [
       ...venueOpts,
@@ -125,7 +126,6 @@ export function VenuePicker({ value, onChange, error, educationalOnly }: VenuePi
     <>
       <Select
         label={t('venuePicker.venueLabel')}
-        description={educationalOnly ? undefined : t('venuePicker.mapHint')}
         placeholder={t('venuePicker.searchPlaceholder')}
         searchable
         clearable

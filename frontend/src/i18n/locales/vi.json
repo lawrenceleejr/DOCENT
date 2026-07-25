@@ -62,7 +62,8 @@
     "viewImpactLink": "Xem trang tác động công khai của chúng tôi",
     "noAccountNeededSuffix": "— không cần tài khoản.",
     "invalidEmail": "Email không hợp lệ",
-    "passwordRequired": "Vui lòng nhập mật khẩu"
+    "passwordRequired": "Vui lòng nhập mật khẩu",
+    "welcomeBack": "Chào mừng bạn trở lại"
   },
   "register": {
     "createAccount": "Tạo tài khoản của bạn",
@@ -211,7 +212,9 @@
     "coPresentersLabel": "Đồng thuyết trình có tài khoản",
     "coPresentersDescription": "Liên kết đồng nghiệp có tài khoản tại đây để họ được ghi nhận và ORCID của họ đi kèm hoạt động liên kết.",
     "coPresentersPlaceholder": "Tìm người theo tên…",
-    "coPresentersNothing": "Không có người phù hợp"
+    "coPresentersNothing": "Không có người phù hợp",
+    "mapHintText": "Bạn cũng có thể bắt đầu một sự kiện từ",
+    "mapHintLink": "bản đồ"
   },
   "visitDetail": {
     "markCompleted": "Đánh dấu là đã hoàn thành",
@@ -695,7 +698,7 @@
   "schedule": {
     "title": "Lịch trình",
     "subtitle": "Các sự kiện đã lên kế hoạch sắp tới trong toàn cộng đồng. Đánh dấu hoàn thành để ghi nhận số người tham dự.",
-    "addToCalendar": "Thêm vào lịch (.ics)",
+    "addToCalendar": "Xuất sự kiện ra lịch (.ics)",
     "scheduleEvent": "Lên kế hoạch sự kiện",
     "fromLabel": "Từ",
     "toLabel": "Đến",

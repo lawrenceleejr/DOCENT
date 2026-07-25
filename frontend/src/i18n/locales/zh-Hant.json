@@ -62,7 +62,8 @@
     "viewImpactLink": "查看我們的公開影響力頁面",
     "noAccountNeededSuffix": "——不需要帳戶。",
     "invalidEmail": "電子郵件格式不正確",
-    "passwordRequired": "請輸入密碼"
+    "passwordRequired": "請輸入密碼",
+    "welcomeBack": "歡迎回來"
   },
   "register": {
     "createAccount": "建立您的帳戶",
@@ -211,7 +212,9 @@
     "coPresentersLabel": "具帳號的協同講者",
     "coPresentersDescription": "連結在此擁有帳號的同事，讓他們獲得標註，且其 ORCID 會隨聯邦活動一起傳遞。",
     "coPresentersPlaceholder": "以姓名搜尋人員…",
-    "coPresentersNothing": "沒有符合的人員"
+    "coPresentersNothing": "沒有符合的人員",
+    "mapHintText": "你也可以從地圖開始建立活動：",
+    "mapHintLink": "地圖"
   },
   "visitDetail": {
     "markCompleted": "標記為已完成",
@@ -695,7 +698,7 @@
   "schedule": {
     "title": "行程",
     "subtitle": "社群中即將舉行的已排定活動。標記完成即可記錄出席情況。",
-    "addToCalendar": "加入日曆（.ics）",
+    "addToCalendar": "匯出活動至日曆（.ics）",
     "scheduleEvent": "安排活動",
     "fromLabel": "自",
     "toLabel": "至",

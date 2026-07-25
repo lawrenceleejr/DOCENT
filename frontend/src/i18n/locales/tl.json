@@ -62,7 +62,8 @@
     "viewImpactLink": "Tingnan ang aming pampublikong impact page",
     "noAccountNeededSuffix": "— hindi kailangan ng account.",
     "invalidEmail": "Hindi valid ang email",
-    "passwordRequired": "Kinakailangan ang password"
+    "passwordRequired": "Kinakailangan ang password",
+    "welcomeBack": "Maligayang pagbabalik"
   },
   "register": {
     "createAccount": "Gumawa ng iyong account",
@@ -211,7 +212,9 @@
     "coPresentersLabel": "Mga co-presenter na may account",
     "coPresentersDescription": "I-link ang mga kasamahang may account dito para ma-kredito sila at sumama ang kanilang ORCID sa federated na aktibidad.",
     "coPresentersPlaceholder": "Maghanap ng tao ayon sa pangalan…",
-    "coPresentersNothing": "Walang tumugmang tao"
+    "coPresentersNothing": "Walang tumugmang tao",
+    "mapHintText": "Puwede ka ring magsimula ng event mula sa",
+    "mapHintLink": "mapa"
   },
   "visitDetail": {
     "markCompleted": "Markahan bilang natapos",
@@ -695,7 +698,7 @@
   "schedule": {
     "title": "Iskedyul",
     "subtitle": "Mga darating na naka-planong event sa buong komunidad. Markahan ang isa bilang tapos para itala ang attendance.",
-    "addToCalendar": "Idagdag sa kalendaryo (.ics)",
+    "addToCalendar": "I-export ang mga Event sa Kalendaryo (.ics)",
     "scheduleEvent": "Mag-iskedyul ng event",
     "fromLabel": "Mula",
     "toLabel": "Hanggang",

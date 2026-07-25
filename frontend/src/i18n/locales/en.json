@@ -62,7 +62,8 @@
     "viewImpactLink": "View our public impact page",
     "noAccountNeededSuffix": "— no account needed.",
     "invalidEmail": "Invalid email",
-    "passwordRequired": "Password is required"
+    "passwordRequired": "Password is required",
+    "welcomeBack": "Welcome back"
   },
   "register": {
     "createAccount": "Create your account",
@@ -211,7 +212,9 @@
     "coPresentersLabel": "Co-presenters with accounts",
     "coPresentersDescription": "Link colleagues who have an account here, so they're credited and their ORCIDs travel with federated activity.",
     "coPresentersPlaceholder": "Search people by name…",
-    "coPresentersNothing": "No matching people"
+    "coPresentersNothing": "No matching people",
+    "mapHintText": "You can also start an event from the",
+    "mapHintLink": "map"
   },
   "visitDetail": {
     "markCompleted": "Mark as completed",
@@ -695,7 +698,7 @@
   "schedule": {
     "title": "Schedule",
     "subtitle": "Upcoming planned events across the community. Mark one done to record attendance.",
-    "addToCalendar": "Add to calendar (.ics)",
+    "addToCalendar": "Export Events to Calendar (.ics)",
     "scheduleEvent": "Schedule an event",
     "fromLabel": "From",
     "toLabel": "To",
