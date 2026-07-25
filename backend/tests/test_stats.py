@@ -124,3 +124,56 @@ def test_stats_filters(client):
     # audience filter feeds breakdown too
     b = client.get("/api/stats/breakdown", params={"by": "venue_type", "audience_level": "high_school"}).json()
     assert len(b) == 1 and b[0]["key"] == "high_school"
+
+
+def test_stats_multiselect_filters(client):
+    """Each category filter accepts several values at once, OR-ed together (#13);
+    a single value still works, and unknown values in the list are ignored."""
+    from tests.conftest import create_venue, create_visit, register
+
+    register(client)
+    school = create_venue(client, name="MS School", venue_type="high_school", city="Nashville")
+    museum = create_venue(client, name="MS Museum", venue_type="museum", city="Nashville")
+    library = create_venue(client, name="MS Library", venue_type="library", city="Nashville")
+    create_visit(client, school["id"], title="A", people_reached=10,
+                 event_type="classroom_visit", audience_level="high_school")
+    create_visit(client, museum["id"], title="B", people_reached=20,
+                 event_type="lab_tour", audience_level="general_public")
+    create_visit(client, library["id"], title="C", people_reached=30,
+                 event_type="public_lecture", audience_level="educators")
+
+    s = client.get("/api/stats/summary", params={"venue_type": "museum"}).json()
+    assert s["total_visits"] == 1 and s["total_people_reached"] == 20
+    s = client.get("/api/stats/summary", params={"venue_type": "museum,library"}).json()
+    assert s["total_visits"] == 2 and s["total_people_reached"] == 50
+    s = client.get("/api/stats/summary", params={"event_type": "classroom_visit,public_lecture"}).json()
+    assert s["total_visits"] == 2 and s["total_people_reached"] == 40
+    s = client.get("/api/stats/summary", params={"audience_level": "high_school,general_public"}).json()
+    assert s["total_visits"] == 2 and s["total_people_reached"] == 30
+    # Unknown values are dropped; the valid one still filters.
+    s = client.get("/api/stats/summary", params={"venue_type": "museum,bogus"}).json()
+    assert s["total_visits"] == 1
+
+    # The multi-select feeds the breakdowns too.
+    b = client.get("/api/stats/breakdown",
+                   params={"by": "venue_type", "venue_type": "museum,library"}).json()
+    assert {r["key"] for r in b} == {"museum", "library"}
+
+
+def test_stats_people_search(client):
+    """The analysis people search matches the communicator (author), the host,
+    and free-text additional presenters (#13)."""
+    from tests.conftest import create_venue, create_visit, register
+
+    register(client, name="Ada Author")
+    venue = create_venue(client, name="PS Venue")
+    create_visit(client, venue["id"], title="Talk", people_reached=15,
+                 contact_name="Bruno Host", additional_presenters="Carla Copresenter")
+    create_visit(client, venue["id"], title="Other", people_reached=5)
+
+    # Both visits share the same author.
+    assert client.get("/api/stats/summary", params={"q": "Ada"}).json()["total_visits"] == 2
+    # Host and additional-presenter names only match the first visit.
+    assert client.get("/api/stats/summary", params={"q": "bruno"}).json()["total_visits"] == 1
+    assert client.get("/api/stats/summary", params={"q": "Carla"}).json()["total_visits"] == 1
+    assert client.get("/api/stats/summary", params={"q": "Nobody"}).json()["total_visits"] == 0

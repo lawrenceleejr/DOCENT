@@ -108,7 +108,7 @@
     "exportCsv": "Exporter en CSV",
     "logVisit": "Consigner une visite",
     "searchLabel": "Rechercher",
-    "searchPlaceholder": "Titre ou notes",
+    "searchPlaceholder": "Titre, personnes ou notes",
     "statusLabel": "Statut",
     "fromLabel": "Du",
     "toLabel": "Au",
@@ -559,7 +559,10 @@
     "federatedCaveat": "Les totaux combinés peuvent compter un communicateur plusieurs fois s'il participe via plusieurs communautés sœurs.",
     "completedVisits": "Réalisées",
     "plannedVisits": "Planifiées",
-    "plannedCaption": "Continu : réalisées · Pointillé : planifiées"
+    "plannedCaption": "Continu : réalisées · Pointillé : planifiées",
+    "peopleSearchLabel": "Rechercher des personnes",
+    "peopleSearchPlaceholder": "Nom du communicant ou de l’hôte",
+    "siblingFilterCaveat": "Les entrées des communautés sœurs comportent des détails limités : l’audience, les étiquettes et les noms des hôtes ne sont pas partagés, de sorte que ces filtres et la recherche de personnes ne s’appliquent que partiellement."
   },
   "impact": {
     "unavailableTitle": "Cette page n'est pas disponible",

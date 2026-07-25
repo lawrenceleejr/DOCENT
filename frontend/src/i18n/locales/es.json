@@ -108,7 +108,7 @@
     "exportCsv": "Exportar CSV",
     "logVisit": "Registrar una visita",
     "searchLabel": "Buscar",
-    "searchPlaceholder": "Título o notas",
+    "searchPlaceholder": "Título, personas o notas",
     "statusLabel": "Estado",
     "fromLabel": "Desde",
     "toLabel": "Hasta",
@@ -559,7 +559,10 @@
     "federatedCaveat": "Los totales combinados pueden contar a un comunicador más de una vez si participa a través de varias comunidades hermanas.",
     "completedVisits": "Completadas",
     "plannedVisits": "Programadas",
-    "plannedCaption": "Continua: registradas · Discontinua: programadas"
+    "plannedCaption": "Continua: registradas · Discontinua: programadas",
+    "peopleSearchLabel": "Buscar personas",
+    "peopleSearchPlaceholder": "Nombre del comunicador o anfitrión",
+    "siblingFilterCaveat": "Las entradas de las comunidades hermanas tienen detalles limitados: no se comparten la audiencia, las etiquetas ni los nombres de los anfitriones, por lo que esos filtros y la búsqueda de personas solo se aplican en parte."
   },
   "impact": {
     "unavailableTitle": "Esta página no está disponible",

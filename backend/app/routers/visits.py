@@ -153,12 +153,18 @@ def _filtered_query(
     if author_id:
         query = query.where(Visit.author_id == author_id)
     if q:
-        pattern = f"%{q}%"
+        # The search box also matches the people involved — the communicator
+        # (author), the host, and free-text additional presenters — not just the
+        # title/notes, so "find events by person" works from here (#13).
+        pattern = f"%{q.strip()}%"
         query = query.where(
             or_(
                 Visit.title.ilike(pattern),
                 Visit.description.ilike(pattern),
                 Visit.reflection.ilike(pattern),
+                Visit.author.has(User.name.ilike(pattern)),
+                Visit.contact_name.ilike(pattern),
+                Visit.additional_presenters.ilike(pattern),
             )
         )
     return query

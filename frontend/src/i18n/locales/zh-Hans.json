@@ -108,7 +108,7 @@
     "exportCsv": "导出 CSV",
     "logVisit": "记录一次到访",
     "searchLabel": "搜索",
-    "searchPlaceholder": "标题或备注",
+    "searchPlaceholder": "标题、人员或备注",
     "statusLabel": "状态",
     "fromLabel": "起始日期",
     "toLabel": "结束日期",
@@ -559,7 +559,10 @@
     "federatedCaveat": "如果传播者通过多个同盟社区参与，合计总数可能会将其重复计算。",
     "completedVisits": "已完成",
     "plannedVisits": "已排期",
-    "plannedCaption": "实线：已记录 · 虚线：已排期"
+    "plannedCaption": "实线：已记录 · 虚线：已排期",
+    "peopleSearchLabel": "搜索人员",
+    "peopleSearchPlaceholder": "沟通者或主办人姓名",
+    "siblingFilterCaveat": "姊妹社区的条目所含细节有限——不会共享受众、标签和主办人姓名，因此这些筛选条件与人员搜索仅部分适用。"
   },
   "impact": {
     "unavailableTitle": "此页面不可用",

@@ -422,3 +422,19 @@ def test_user_search_for_co_presenters(client, make_client):
     assert [u["name"] for u in res] == ["Ben Okafor"]
     # Excludes the searcher themselves.
     assert client.get("/api/users/search", params={"q": "alvarez"}).json() == []
+
+
+def test_visit_search_matches_people(client):
+    """The visits search box also matches the people involved — the communicator
+    (author), the host, and free-text additional presenters — not just the
+    title/notes (#13)."""
+    register(client, name="Dana Communicator")
+    venue = create_venue(client)
+    create_visit(
+        client, venue["id"], title="Plain title",
+        contact_name="Hank Host", additional_presenters="Iris Presenter",
+    )
+    assert client.get("/api/visits", params={"q": "dana"}).json()["total"] == 1
+    assert client.get("/api/visits", params={"q": "Hank"}).json()["total"] == 1
+    assert client.get("/api/visits", params={"q": "Iris"}).json()["total"] == 1
+    assert client.get("/api/visits", params={"q": "nobody-here"}).json()["total"] == 0

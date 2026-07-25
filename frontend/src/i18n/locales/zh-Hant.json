@@ -108,7 +108,7 @@
     "exportCsv": "匯出 CSV",
     "logVisit": "記錄到訪",
     "searchLabel": "搜尋",
-    "searchPlaceholder": "標題或備註",
+    "searchPlaceholder": "標題、人員或備註",
     "statusLabel": "狀態",
     "fromLabel": "自",
     "toLabel": "至",
@@ -559,7 +559,10 @@
     "federatedCaveat": "若傳播者透過多個夥伴社群參與，合併總計可能會重複計算同一位傳播者。",
     "completedVisits": "已完成",
     "plannedVisits": "已排程",
-    "plannedCaption": "實線：已記錄 · 虛線：已排程"
+    "plannedCaption": "實線：已記錄 · 虛線：已排程",
+    "peopleSearchLabel": "搜尋人員",
+    "peopleSearchPlaceholder": "溝通者或主辦人姓名",
+    "siblingFilterCaveat": "姊妹社群的項目所含細節有限——不會共享受眾、標籤與主辦人姓名，因此這些篩選條件與人員搜尋僅部分適用。"
   },
   "impact": {
     "unavailableTitle": "此頁面目前無法使用",

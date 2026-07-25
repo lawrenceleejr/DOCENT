@@ -108,7 +108,7 @@
     "exportCsv": "Xuất CSV",
     "logVisit": "Ghi nhận lượt ghé thăm",
     "searchLabel": "Tìm kiếm",
-    "searchPlaceholder": "Tiêu đề hoặc ghi chú",
+    "searchPlaceholder": "Tiêu đề, người hoặc ghi chú",
     "statusLabel": "Trạng thái",
     "fromLabel": "Từ ngày",
     "toLabel": "Đến ngày",
@@ -559,7 +559,10 @@
     "federatedCaveat": "Tổng số tổng hợp có thể tính một người truyền thông nhiều lần nếu họ tham gia qua nhiều cộng đồng liên kết.",
     "completedVisits": "Đã hoàn thành",
     "plannedVisits": "Đã lên lịch",
-    "plannedCaption": "Nét liền: đã ghi nhận · Nét đứt: đã lên lịch"
+    "plannedCaption": "Nét liền: đã ghi nhận · Nét đứt: đã lên lịch",
+    "peopleSearchLabel": "Tìm người",
+    "peopleSearchPlaceholder": "Tên người truyền đạt hoặc người tổ chức",
+    "siblingFilterCaveat": "Các mục từ cộng đồng anh em chỉ mang thông tin hạn chế — đối tượng, thẻ và tên người tổ chức không được chia sẻ, nên các bộ lọc đó và tìm kiếm theo người chỉ áp dụng một phần."
   },
   "impact": {
     "unavailableTitle": "Trang này không khả dụng",

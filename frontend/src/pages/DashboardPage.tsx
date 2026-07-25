@@ -6,18 +6,23 @@ import {
   Group,
   MultiSelect,
   SegmentedControl,
-  Select,
   SimpleGrid,
   Stack,
   Switch,
   Text,
+  TextInput,
+  ThemeIcon,
   Table,
   Title,
+  Tooltip as HelpTooltip,
   useComputedColorScheme,
 } from '@mantine/core';
+import { useDebouncedValue } from '@mantine/hooks';
 import {
   IconCalendarStats,
+  IconInfoCircle,
   IconMapPin,
+  IconSearch,
   IconStar,
   IconUserBolt,
   IconUsers,
@@ -308,10 +313,15 @@ export function DashboardPage() {
   const dates = useMemo(() => rangeToDates(range), [range]);
 
   // Dashboard-wide filters, applied to every stat below.
-  const [venueType, setVenueType] = useState<string | null>(null);
-  const [eventType, setEventType] = useState<string | null>(null);
-  const [audience, setAudience] = useState<string | null>(null);
+  // Each category filter takes several values at once now (#13).
+  const [venueTypes, setVenueTypes] = useState<string[]>([]);
+  const [eventTypes, setEventTypes] = useState<string[]>([]);
+  const [audiences, setAudiences] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  // Free-text people search (communicator / host / additional presenters),
+  // debounced so a keystroke doesn't refire every stat query (#13).
+  const [peopleQuery, setPeopleQuery] = useState('');
+  const [debouncedPeople] = useDebouncedValue(peopleQuery, 300);
   const [includeSiblings, setIncludeSiblings] = useState(true);
 
   // Federation controls only make sense when this instance pulls from peers;
@@ -332,23 +342,30 @@ export function DashboardPage() {
   const filters = useMemo(
     () => ({
       ...dates,
-      venue_type: venueType ?? undefined,
-      event_type: eventType ?? undefined,
-      audience_level: audience ?? undefined,
+      // The API client stringifies these to comma-separated values, which the
+      // stats endpoints parse back into multi-value filters (#13).
+      venue_type: venueTypes.length ? venueTypes.join(',') : undefined,
+      event_type: eventTypes.length ? eventTypes.join(',') : undefined,
+      audience_level: audiences.length ? audiences.join(',') : undefined,
       tags: tags.length ? tags.join(',') : undefined,
+      q: debouncedPeople.trim() || undefined,
     }),
-    [dates, venueType, eventType, audience, tags],
+    [dates, venueTypes, eventTypes, audiences, tags, debouncedPeople],
   );
   const activeFilterCount =
-    [venueType, eventType, audience].filter(Boolean).length +
+    (venueTypes.length ? 1 : 0) +
+    (eventTypes.length ? 1 : 0) +
+    (audiences.length ? 1 : 0) +
     (tags.length > 0 ? 1 : 0) +
+    (debouncedPeople.trim() ? 1 : 0) +
     (hasSiblings && !includeSiblings ? 1 : 0);
   const hasFilters = activeFilterCount > 0;
   const clearFilters = () => {
-    setVenueType(null);
-    setEventType(null);
-    setAudience(null);
+    setVenueTypes([]);
+    setEventTypes([]);
+    setAudiences([]);
     setTags([]);
+    setPeopleQuery('');
   };
 
   const { data: summary } = useQuery({
@@ -465,32 +482,43 @@ export function DashboardPage() {
 
       <FilterCard activeCount={activeFilterCount}>
         <Group align="flex-end">
-          <Select
+          <TextInput
+            label={t('dashboard.peopleSearchLabel')}
+            placeholder={t('dashboard.peopleSearchPlaceholder')}
+            leftSection={<IconSearch size={16} />}
+            value={peopleQuery}
+            onChange={(event) => setPeopleQuery(event.currentTarget.value)}
+            w={220}
+          />
+          <MultiSelect
             label={t('dashboard.venueTypeLabel')}
-            placeholder={t('common.all')}
+            placeholder={venueTypes.length ? undefined : t('common.all')}
             clearable
+            searchable
             data={VENUE_TYPES.map((v) => ({ value: v, label: enumLabel.venueType(v) }))}
-            value={venueType}
-            onChange={setVenueType}
-            w={180}
+            value={venueTypes}
+            onChange={setVenueTypes}
+            w={200}
           />
-          <Select
+          <MultiSelect
             label={t('dashboard.eventTypeLabel')}
-            placeholder={t('common.all')}
+            placeholder={eventTypes.length ? undefined : t('common.all')}
             clearable
+            searchable
             data={EVENT_TYPES.map((v) => ({ value: v, label: enumLabel.eventType(v) }))}
-            value={eventType}
-            onChange={setEventType}
-            w={180}
+            value={eventTypes}
+            onChange={setEventTypes}
+            w={200}
           />
-          <Select
+          <MultiSelect
             label={t('dashboard.audienceLabel')}
-            placeholder={t('common.all')}
+            placeholder={audiences.length ? undefined : t('common.all')}
             clearable
+            searchable
             data={AUDIENCE_LEVELS.map((v) => ({ value: v, label: enumLabel.audienceLevel(v) }))}
-            value={audience}
-            onChange={setAudience}
-            w={180}
+            value={audiences}
+            onChange={setAudiences}
+            w={200}
           />
           <MultiSelect
             label={t('dashboard.tagsLabel')}
@@ -503,12 +531,24 @@ export function DashboardPage() {
             w={220}
           />
           {hasSiblings && (
-            <Switch
-              label={t('dashboard.includeSiblings')}
-              checked={includeSiblings}
-              onChange={(event) => setIncludeSiblings(event.currentTarget.checked)}
-              mb={6}
-            />
+            <Group gap={6} align="center" mb={6} wrap="nowrap">
+              <Switch
+                label={t('dashboard.includeSiblings')}
+                checked={includeSiblings}
+                onChange={(event) => setIncludeSiblings(event.currentTarget.checked)}
+              />
+              <HelpTooltip
+                label={t('dashboard.siblingFilterCaveat')}
+                multiline
+                w={260}
+                withArrow
+                events={{ hover: true, focus: true, touch: true }}
+              >
+                <ThemeIcon variant="subtle" color="gray" size="sm" style={{ cursor: 'help' }}>
+                  <IconInfoCircle size={16} />
+                </ThemeIcon>
+              </HelpTooltip>
+            </Group>
           )}
           {hasFilters && (
             <Button variant="subtle" onClick={clearFilters}>

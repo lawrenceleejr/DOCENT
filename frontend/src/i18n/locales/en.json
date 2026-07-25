@@ -108,7 +108,7 @@
     "exportCsv": "Export CSV",
     "logVisit": "Log a visit",
     "searchLabel": "Search",
-    "searchPlaceholder": "Title or notes",
+    "searchPlaceholder": "Title, people, or notes",
     "statusLabel": "Status",
     "fromLabel": "From",
     "toLabel": "To",
@@ -559,7 +559,10 @@
     "federatedCaveat": "Combined totals may count a communicator more than once if they take part through multiple sibling communities.",
     "completedVisits": "Completed",
     "plannedVisits": "Scheduled",
-    "plannedCaption": "Solid: recorded · Dashed: scheduled"
+    "plannedCaption": "Solid: recorded · Dashed: scheduled",
+    "peopleSearchLabel": "Search people",
+    "peopleSearchPlaceholder": "Communicator or host name",
+    "siblingFilterCaveat": "Sibling-community entries carry limited detail — audience, tags, and host names aren’t shared, so those filters and the people search only partly apply to them."
   },
   "impact": {
     "unavailableTitle": "This page isn’t available",
