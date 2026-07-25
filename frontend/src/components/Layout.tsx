@@ -338,5 +338,6 @@ const BANNER_COLORS: Record<string, string> = {
 };
 
 const COPYRIGHT_YEAR = 2026;
-// Keep in step with package.json / backend version / CHANGELOG.
-const APP_VERSION = 'v0.1.0';
+// The footer version: the git tag when this commit is tagged, otherwise the
+// short commit hash. Injected at build time — see vite.config.ts (#26).
+const APP_VERSION = __APP_VERSION__;

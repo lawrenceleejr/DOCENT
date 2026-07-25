@@ -8,6 +8,10 @@ RUN if [ -f extra-ca.crt ]; then npm config set cafile /app/extra-ca.crt; fi \
 COPY tsconfig.json vite.config.ts postcss.config.cjs index.html ./
 COPY public ./public
 COPY src ./src
+# Footer version (#26): the deploy passes the git tag/hash here since the build
+# context has no .git; vite.config.ts reads it from VITE_APP_VERSION.
+ARG VITE_APP_VERSION=""
+ENV VITE_APP_VERSION=$VITE_APP_VERSION
 RUN npm run build
 
 FROM nginx:1.27-alpine

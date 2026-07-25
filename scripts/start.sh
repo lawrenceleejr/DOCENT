@@ -35,6 +35,11 @@ if [ -n "${domain}" ]; then
     profile_args=(--profile tls)
 fi
 
+# Stamp the footer with the current git version — the tag if this commit is
+# tagged, else the short hash — so it survives into the container build (#26).
+# (The build context has no .git, so vite.config.ts reads this instead.)
+export VITE_APP_VERSION="$(git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || true)"
+
 echo "Building and starting containers..."
 docker compose ${profile_args[@]+"${profile_args[@]}"} up -d --build
 

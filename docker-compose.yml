@@ -49,7 +49,11 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        # Stamp the footer with the git version; start.sh exports this.
+        VITE_APP_VERSION: ${VITE_APP_VERSION:-}
     ports:
       # Bind to localhost by default so the plain-HTTP app is NOT reachable
       # directly from the network. With no domain set you reach it here
