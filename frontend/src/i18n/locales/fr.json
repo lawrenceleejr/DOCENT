@@ -529,8 +529,8 @@
     "overTimeHeading": "Dans le temps",
     "breakdownsHeading": "Répartitions",
     "leadersHeading": "Palmarès",
-    "visitsPer6Months": "Visites par 6 mois",
-    "peopleReachedPer6Months": "Personnes rejointes par 6 mois",
+    "visitsPer6Months": "Visites au fil du temps",
+    "peopleReachedPer6Months": "Personnes touchées au fil du temps",
     "visitsByVenueType": "Visites par type de lieu",
     "visitsByAudienceLevel": "Visites par niveau de public",
     "visitsByHostRelationship": "Visites par relation avec l'hôte",
@@ -542,7 +542,9 @@
     "colCommunicator": "Communicateur",
     "includeSiblings": "Inclure les instances sœurs",
     "localOnlyNote": "Les classements et la répartition par relation avec l'hôte ne comptent que les activités de cette instance.",
-    "federatedCaveat": "Les totaux combinés peuvent compter un communicateur plusieurs fois s'il participe via plusieurs instances sœurs."
+    "federatedCaveat": "Les totaux combinés peuvent compter un communicateur plusieurs fois s'il participe via plusieurs instances sœurs.",
+    "completedVisits": "Réalisées",
+    "plannedVisits": "Planifiées"
   },
   "impact": {
     "unavailableTitle": "Cette page n'est pas disponible",

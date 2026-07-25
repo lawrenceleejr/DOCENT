@@ -529,8 +529,8 @@
     "overTimeHeading": "趨勢變化",
     "breakdownsHeading": "細項分析",
     "leadersHeading": "排行榜",
-    "visitsPer6Months": "每半年到訪次數",
-    "peopleReachedPer6Months": "每半年觸及人數",
+    "visitsPer6Months": "隨時間的造訪",
+    "peopleReachedPer6Months": "隨時間觸及的人數",
     "visitsByVenueType": "依場地類型劃分的到訪次數",
     "visitsByAudienceLevel": "依對象程度劃分的到訪次數",
     "visitsByHostRelationship": "依接待人關係劃分的到訪次數",
@@ -542,7 +542,9 @@
     "colCommunicator": "推廣人員",
     "includeSiblings": "包含姊妹站台",
     "localOnlyNote": "排行榜與接待人關係細項僅計入本站台的活動。",
-    "federatedCaveat": "若傳播者透過多個夥伴站台參與，合併總計可能會重複計算同一位傳播者。"
+    "federatedCaveat": "若傳播者透過多個夥伴站台參與，合併總計可能會重複計算同一位傳播者。",
+    "completedVisits": "已完成",
+    "plannedVisits": "已排程"
   },
   "impact": {
     "unavailableTitle": "此頁面目前無法使用",

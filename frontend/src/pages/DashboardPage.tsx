@@ -30,6 +30,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -74,46 +75,79 @@ function rangeToDates(range: RangeKey): { date_from?: string; date_to?: string }
 }
 
 export interface TimeRow {
-  t: number; // epoch ms of the half-year bucket start (for a real time axis)
-  label: string; // e.g. "2026 H1"
+  t: number; // epoch ms of the bucket start (for a real time axis)
+  label: string; // e.g. "2026-03", "2026 Q1", or "2026 H1"
   visits: number;
   people_reached: number;
+  planned_visits: number;
 }
 
-const halfStart = (year: number, half: 1 | 2) => Date.UTC(year, half === 1 ? 0 : 6, 1);
+type Gran = 'month' | 'quarter' | 'half';
+const STEP_MONTHS: Record<Gran, number> = { month: 1, quarter: 3, half: 6 };
 
-/** Turn "YYYY H1"/"YYYY H2" rows into a gap-filled series on a real time axis:
- * every 6-month bucket between the first and last present period is included
- * (missing ones as zero), so spacing reflects actual elapsed time. */
+/** Parse a bucket label the backend produced into its start-of-bucket epoch. The
+ * backend now picks the granularity dynamically (#27), so accept all three. */
+function parsePeriod(period: string): { t: number; gran: Gran } | null {
+  let m: RegExpExecArray | null;
+  if ((m = /^(\d{4})-(\d{2})$/.exec(period))) {
+    return { t: Date.UTC(Number(m[1]), Number(m[2]) - 1, 1), gran: 'month' };
+  }
+  if ((m = /^(\d{4})\sQ([1-4])$/.exec(period))) {
+    return { t: Date.UTC(Number(m[1]), (Number(m[2]) - 1) * 3, 1), gran: 'quarter' };
+  }
+  if ((m = /^(\d{4})\sH([12])$/.exec(period))) {
+    return { t: Date.UTC(Number(m[1]), (Number(m[2]) - 1) * 6, 1), gran: 'half' };
+  }
+  return null;
+}
+
+function labelForDate(t: number, gran: Gran): string {
+  const d = new Date(t);
+  const y = d.getUTCFullYear();
+  const mo = d.getUTCMonth();
+  if (gran === 'month') return `${y}-${String(mo + 1).padStart(2, '0')}`;
+  if (gran === 'quarter') return `${y} Q${Math.floor(mo / 3) + 1}`;
+  return `${y} H${mo < 6 ? 1 : 2}`;
+}
+
+/** Turn the backend's period rows into a gap-filled series on a real time axis:
+ * every bucket between the first and last present period is included (missing
+ * ones as zero) at the detected granularity, so spacing reflects elapsed time. */
 export function buildTimeSeries(points: TimeseriesPoint[]): TimeRow[] {
   const parsed = points
     .map((p) => {
-      const m = /^(\d{4})\sH([12])$/.exec(p.period);
-      if (!m) return null;
-      const year = Number(m[1]);
-      const half = Number(m[2]) as 1 | 2;
-      return { t: halfStart(year, half), year, half, visits: p.visits, people_reached: p.people_reached };
+      const pr = parsePeriod(p.period);
+      if (!pr) return null;
+      return {
+        t: pr.t,
+        gran: pr.gran,
+        visits: p.visits,
+        people_reached: p.people_reached,
+        planned_visits: p.planned_visits ?? 0,
+      };
     })
     .filter((x): x is NonNullable<typeof x> => x !== null)
     .sort((a, b) => a.t - b.t);
   if (parsed.length === 0) return [];
 
+  const gran = parsed[0].gran;
+  const step = STEP_MONTHS[gran];
   const byT = new Map(parsed.map((d) => [d.t, d]));
-  const end = parsed[parsed.length - 1];
+  const endT = parsed[parsed.length - 1].t;
   const out: TimeRow[] = [];
-  let year = parsed[0].year;
-  let half = parsed[0].half as 1 | 2;
+  const cur = new Date(parsed[0].t);
   for (;;) {
-    const t = halfStart(year, half);
+    const t = cur.getTime();
     const hit = byT.get(t);
     out.push({
       t,
-      label: `${year} H${half}`,
+      label: labelForDate(t, gran),
       visits: hit?.visits ?? 0,
       people_reached: hit?.people_reached ?? 0,
+      planned_visits: hit?.planned_visits ?? 0,
     });
-    if (year === end.year && half === end.half) break;
-    [year, half] = half === 1 ? [year, 2] : [year + 1, 1];
+    if (t >= endT) break;
+    cur.setUTCMonth(cur.getUTCMonth() + step);
   }
   return out;
 }
@@ -133,6 +167,9 @@ function TimePanel({
   dataKey,
   color,
   viz,
+  showPlanned,
+  seriesName,
+  plannedName,
 }: {
   title: string;
   data: TimeRow[];
@@ -140,6 +177,10 @@ function TimePanel({
   dataKey: 'visits' | 'people_reached';
   color: string;
   viz: typeof VIZ_LIGHT;
+  // When set, overlay scheduled (planned) visits as a dotted line (#28).
+  showPlanned?: boolean;
+  seriesName?: string;
+  plannedName?: string;
 }) {
   const labelFor = (t: number) => data.find((d) => d.t === t)?.label ?? '';
   return (
@@ -172,16 +213,31 @@ function TimePanel({
           <Tooltip
             contentStyle={tooltipStyle(viz)}
             labelFormatter={(t: number) => labelFor(t)}
-            formatter={(value: number) => [value.toLocaleString(), title]}
+            formatter={(value: number, name: string) => [value.toLocaleString(), name]}
           />
+          {showPlanned && <Legend wrapperStyle={{ fontSize: 12 }} />}
           <Line
             type="monotone"
             dataKey={dataKey}
+            name={seriesName ?? title}
             stroke={color}
             strokeWidth={2}
             dot={{ r: 3, fill: color, strokeWidth: 0 }}
             activeDot={{ r: 5, stroke: viz.tooltipBg, strokeWidth: 2 }}
           />
+          {showPlanned && (
+            <Line
+              type="monotone"
+              dataKey="planned_visits"
+              name={plannedName}
+              stroke={color}
+              strokeDasharray="5 4"
+              strokeWidth={2}
+              strokeOpacity={0.7}
+              dot={false}
+              activeDot={{ r: 4, stroke: viz.tooltipBg, strokeWidth: 2 }}
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
     </Card>
@@ -503,6 +559,9 @@ export function DashboardPage() {
           dataKey="visits"
           color={viz.series1}
           viz={viz}
+          showPlanned
+          seriesName={t('dashboard.completedVisits')}
+          plannedName={t('dashboard.plannedVisits')}
         />
         <TimePanel
           title={t('dashboard.peopleReachedPer6Months')}

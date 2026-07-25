@@ -529,8 +529,8 @@
     "overTimeHeading": "Sa Paglipas ng Panahon",
     "breakdownsHeading": "Mga Breakdown",
     "leadersHeading": "Mga Lider",
-    "visitsPer6Months": "Mga pagbisita kada 6 na buwan",
-    "peopleReachedPer6Months": "Taong naabot kada 6 na buwan",
+    "visitsPer6Months": "Mga bisita sa paglipas ng panahon",
+    "peopleReachedPer6Months": "Mga naabot na tao sa paglipas ng panahon",
     "visitsByVenueType": "Mga pagbisita ayon sa uri ng venue",
     "visitsByAudienceLevel": "Mga pagbisita ayon sa antas ng audience",
     "visitsByHostRelationship": "Mga pagbisita ayon sa relasyon sa host",
@@ -542,7 +542,9 @@
     "colCommunicator": "Communicator",
     "includeSiblings": "Isama ang mga sibling instance",
     "localOnlyNote": "Binibilang lang ng mga leaderboard at ng breakdown ng relasyon sa host ang mga aktibidad ng instance na ito.",
-    "federatedCaveat": "Maaaring mabilang nang higit sa isang beses ang isang komunikador sa pinagsamang kabuuan kung sumasali sila sa pamamagitan ng maraming kapwa instance."
+    "federatedCaveat": "Maaaring mabilang nang higit sa isang beses ang isang komunikador sa pinagsamang kabuuan kung sumasali sila sa pamamagitan ng maraming kapwa instance.",
+    "completedVisits": "Tapos na",
+    "plannedVisits": "Naka-iskedyul"
   },
   "impact": {
     "unavailableTitle": "Hindi available ang page na ito",

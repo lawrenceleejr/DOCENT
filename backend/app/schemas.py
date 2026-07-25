@@ -701,6 +701,9 @@ class TimeseriesPoint(BaseModel):
     period: str
     visits: int
     people_reached: int
+    # Scheduled (not-yet-completed) visits in this bucket — drawn as a separate
+    # dotted series in the analysis plots (#28).
+    planned_visits: int = 0
 
 
 class BreakdownRow(BaseModel):

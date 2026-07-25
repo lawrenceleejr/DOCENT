@@ -529,8 +529,8 @@
     "overTimeHeading": "趋势变化",
     "breakdownsHeading": "细分统计",
     "leadersHeading": "排行榜",
-    "visitsPer6Months": "每半年到访次数",
-    "peopleReachedPer6Months": "每半年触达人数",
+    "visitsPer6Months": "随时间的访问",
+    "peopleReachedPer6Months": "随时间触及的人数",
     "visitsByVenueType": "按场地类型统计的到访",
     "visitsByAudienceLevel": "按受众层次统计的到访",
     "visitsByHostRelationship": "按接待方关系统计的到访",
@@ -542,7 +542,9 @@
     "colCommunicator": "推广人",
     "includeSiblings": "包含姊妹实例",
     "localOnlyNote": "排行榜和按接待方关系细分仅统计本实例的活动。",
-    "federatedCaveat": "如果传播者通过多个同盟实例参与，合计总数可能会将其重复计算。"
+    "federatedCaveat": "如果传播者通过多个同盟实例参与，合计总数可能会将其重复计算。",
+    "completedVisits": "已完成",
+    "plannedVisits": "已排期"
   },
   "impact": {
     "unavailableTitle": "此页面不可用",

@@ -36,20 +36,37 @@ def test_summary(seeded, client):
     assert january["total_people_reached"] == 55
 
 
-def test_timeseries_half_year_buckets(seeded, client):
-    # Seeded visits (Jan/Feb/Mar 2026) all fall in the first half of 2026.
-    points = client.get("/api/stats/timeseries").json()
-    assert points == [{"period": "2026 H1", "visits": 4, "people_reached": 200}]
+def test_timeseries_monthly_for_short_span(seeded, client):
+    # ~2 months of data → monthly buckets, not one coarse half-year bar (#27).
+    by = {p["period"]: p for p in client.get("/api/stats/timeseries").json()}
+    assert set(by) == {"2026-01", "2026-02", "2026-03"}
+    assert by["2026-01"]["visits"] == 2
+    assert by["2026-01"]["people_reached"] == 55
+    assert by["2026-02"]["visits"] == 1
+    assert by["2026-03"]["visits"] == 1
+    assert all(p["planned_visits"] == 0 for p in by.values())
 
-    # A July visit lands in the second half and forms its own bucket.
-    venue = create_venue(client, name="Oak Ridge HS", venue_type="high_school", city="Oak Ridge")
+
+def test_timeseries_includes_planned_series(seeded, client):
+    # A scheduled (planned) visit appears as planned_visits, kept separate from
+    # the completed count so the plot can draw it as a dotted line (#28).
+    venue = create_venue(client, name="Future School", city="Later")
     create_visit(
-        client, venue["id"], visit_date="2026-09-15", people_reached=60,
-        audience_level="high_school",
+        client, venue["id"], status="planned", visit_date="2026-12-01", people_reached=0
     )
-    points = client.get("/api/stats/timeseries").json()
-    assert [p["period"] for p in points] == ["2026 H1", "2026 H2"]
-    assert points[1] == {"period": "2026 H2", "visits": 1, "people_reached": 60}
+    by = {p["period"]: p for p in client.get("/api/stats/timeseries").json()}
+    assert by["2026-12"]["planned_visits"] == 1
+    assert by["2026-12"]["visits"] == 0
+
+
+def test_timeseries_half_year_for_wide_span(client):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], visit_date="2018-02-01", people_reached=10)
+    create_visit(client, venue["id"], visit_date="2026-05-01", people_reached=20)
+    # An 8-year span falls back to half-year buckets.
+    periods = [p["period"] for p in client.get("/api/stats/timeseries").json()]
+    assert periods == ["2018 H1", "2026 H1"]
 
 
 def test_breakdowns(seeded, client):

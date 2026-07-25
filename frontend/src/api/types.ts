@@ -378,6 +378,7 @@ export interface TimeseriesPoint {
   period: string;
   visits: number;
   people_reached: number;
+  planned_visits: number;
 }
 
 export interface BreakdownRow {

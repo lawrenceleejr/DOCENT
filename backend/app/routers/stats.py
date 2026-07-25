@@ -47,6 +47,39 @@ def _half_year_period(d) -> str:
     return f"{d.year} H{1 if d.month <= 6 else 2}"
 
 
+def _choose_granularity(span_days: int) -> str:
+    """Pick the time-bucket size from how much history there is, so a young
+    instance gets monthly detail instead of one or two half-year bars (#27)."""
+    if span_days <= 550:  # up to ~18 months
+        return "month"
+    if span_days <= 1900:  # up to ~5 years
+        return "quarter"
+    return "half"
+
+
+def _period_label_py(d, granularity: str) -> str:
+    """Python-side bucket label (for federated rows), matching the SQL below."""
+    if granularity == "month":
+        return f"{d.year}-{d.month:02d}"
+    if granularity == "quarter":
+        return f"{d.year} Q{(d.month - 1) // 3 + 1}"
+    return _half_year_period(d)
+
+
+def _period_sql(granularity: str):
+    """SQL expression producing the same, lexically-sortable bucket labels."""
+    if granularity == "month":
+        return func.to_char(func.date_trunc("month", Visit.visit_date), "YYYY-MM")
+    if granularity == "quarter":
+        return func.concat(
+            func.to_char(Visit.visit_date, "YYYY"),
+            " Q",
+            cast(func.extract("quarter", Visit.visit_date), Integer),
+        )
+    half = cast(func.floor((func.extract("month", Visit.visit_date) - 1) / 6) + 1, Integer)
+    return func.concat(func.to_char(Visit.visit_date, "YYYY"), " H", half)
+
+
 def _federated_rows(
     db,
     *,
@@ -78,6 +111,7 @@ def _federated_rows(
 def _apply_filters(
     query: Select,
     *,
+    status: VisitStatus = VisitStatus.completed,
     date_from: date | None = None,
     date_to: date | None = None,
     venue_type: VenueType | None = None,
@@ -86,8 +120,9 @@ def _apply_filters(
     tags: str | None = None,
 ) -> Select:
     # The dashboard reflects outreach that actually happened — planned/future
-    # events are excluded until they're marked completed.
-    query = query.where(Visit.status == VisitStatus.completed)
+    # events are excluded from the main stats (but the timeseries pulls them in
+    # as a separate scheduled series by passing status=planned).
+    query = query.where(Visit.status == status)
     if date_from:
         query = query.where(Visit.visit_date >= date_from)
     if date_to:
@@ -169,37 +204,69 @@ def timeseries(
     tags: str | None = None,
     include_federated: bool = True,
 ):
-    # Bucket by half-year (H1 = Jan–Jun, H2 = Jul–Dec) → labels like "2026 H1".
-    half = cast(func.floor((func.extract("month", Visit.visit_date) - 1) / 6) + 1, Integer)
-    period = func.concat(func.to_char(Visit.visit_date, "YYYY"), " H", half)
-    rows = db.execute(
+    # Size the buckets from the actual data span (completed + planned), so a new
+    # instance with only a few months of history gets monthly detail (#27).
+    filters = dict(
+        date_from=date_from, date_to=date_to, venue_type=venue_type,
+        event_type=event_type, audience_level=audience_level, tags=tags,
+    )
+    c_lo, c_hi = db.execute(
+        _apply_filters(select(func.min(Visit.visit_date), func.max(Visit.visit_date)), **filters)
+    ).one()
+    p_lo, p_hi = db.execute(
+        _apply_filters(
+            select(func.min(Visit.visit_date), func.max(Visit.visit_date)),
+            status=VisitStatus.planned, **filters,
+        )
+    ).one()
+    lows = [d for d in (c_lo, p_lo) if d]
+    highs = [d for d in (c_hi, p_hi) if d]
+    span_days = (max(highs) - min(lows)).days if lows and highs else 0
+    granularity = _choose_granularity(span_days)
+    period = _period_sql(granularity)
+
+    # [visits, people_reached, planned_visits] per bucket.
+    buckets: dict[str, list[int]] = {}
+    completed = db.execute(
         _apply_filters(
             select(
                 period.label("period"),
                 func.count(Visit.id),
                 func.coalesce(func.sum(Visit.people_reached), 0),
             ),
-            date_from=date_from,
-            date_to=date_to,
-            venue_type=venue_type,
-            event_type=event_type,
-            audience_level=audience_level,
-            tags=tags,
+            **filters,
         )
         .group_by("period")
         .order_by("period")
     ).all()
-    buckets: dict[str, list[int]] = {r[0]: [r[1], r[2]] for r in rows}
+    for p, visits, people in completed:
+        buckets[p] = [visits, people, 0]
+
+    # Scheduled (planned) visits — a separate, dotted series (#28).
+    planned = db.execute(
+        _apply_filters(
+            select(period.label("period"), func.count(Visit.id)),
+            status=VisitStatus.planned,
+            **filters,
+        )
+        .group_by("period")
+        .order_by("period")
+    ).all()
+    for p, n in planned:
+        buckets.setdefault(p, [0, 0, 0])[2] = n
+
+    # Federated (completed) activity folds into the primary series.
     for a in _federated_rows(
         db, include_federated=include_federated, date_from=date_from, date_to=date_to,
         venue_type=venue_type, event_type=event_type, audience_level=audience_level, tags=tags,
     ):
-        b = buckets.setdefault(_half_year_period(a.visit_date), [0, 0])
+        b = buckets.setdefault(_period_label_py(a.visit_date, granularity), [0, 0, 0])
         b[0] += 1
         b[1] += a.people_reached
+
     return [
-        TimeseriesPoint(period=p, visits=v, people_reached=pr)
-        for p, (v, pr) in sorted(buckets.items())
+        TimeseriesPoint(period=p, visits=v, people_reached=pr, planned_visits=pl)
+        for p, (v, pr, pl) in sorted(buckets.items())
     ]
 
 
