@@ -484,7 +484,16 @@
     "tempPasswordModalTitle": "臨時密碼",
     "tempPasswordBody": "請透過安全的管道將此一次性密碼提供給 <bold>{{name}}</bold>。對方應登入後於個人資料頁面變更密碼。此密碼僅會顯示一次。",
     "copyButton": "複製",
-    "copiedButton": "已複製"
+    "copiedButton": "已複製",
+    "loginHistoryTitle": "登入紀錄",
+    "loginHistorySubtitle": "過去 30 天的成功登入。",
+    "loginHistoryTotal": "共 {{formattedCount}} 次",
+    "loginHistoryChartTitle": "每日登入次數",
+    "loginHistoryLoginsLabel": "登入",
+    "loginHistoryRecentTitle": "最近登入",
+    "loginHistoryColUser": "使用者",
+    "loginHistoryColWhen": "時間",
+    "loginHistoryEmpty": "尚無登入紀錄。"
   },
   "dashboard": {
     "title": "分析",

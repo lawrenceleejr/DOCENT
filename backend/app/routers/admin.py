@@ -2,7 +2,7 @@ import json
 import os
 import re
 import secrets
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +17,7 @@ from app.models import (
     FederatedActivity,
     FederationPeer,
     Institution,
+    LoginEvent,
     User,
     UserSchool,
     Venue,
@@ -40,6 +41,9 @@ from app.schemas import (
     InstitutionImportRequest,
     InstitutionImportResult,
     InstitutionUpdate,
+    LoginHistory,
+    LoginHistoryDay,
+    LoginHistoryEntry,
     PasswordResetResult,
     RegistrationSettings,
     RegistrationSettingsUpdate,
@@ -658,6 +662,61 @@ def run_backup(_admin: CurrentAdmin):
         )
     (BACKUP_ROOT / ".run-now").write_text("requested\n")
     return {"requested": True}
+
+
+@router.get("/login-history", response_model=LoginHistory)
+def login_history(
+    db: DbSession,
+    _admin: CurrentAdmin,
+    days: int = Query(default=30, ge=1, le=365),
+    limit: int = Query(default=50, ge=1, le=200),
+):
+    """Successful-login history for the admin panel (#30): a per-day series for
+    the plot plus the most recent individual logins."""
+    total = db.scalar(select(func.count(LoginEvent.id))) or 0
+
+    recent_rows = db.execute(
+        select(LoginEvent.id, LoginEvent.user_id, LoginEvent.created_at, User.name, User.email)
+        .join(User, User.id == LoginEvent.user_id)
+        .order_by(LoginEvent.created_at.desc())
+        .limit(limit)
+    ).all()
+    recent = [
+        LoginHistoryEntry(
+            id=row.id,
+            user_id=row.user_id,
+            user_name=row.name,
+            user_email=row.email,
+            created_at=row.created_at,
+        )
+        for row in recent_rows
+    ]
+
+    # Per-day counts over the window, then zero-fill so the plot has a
+    # continuous time axis instead of gaps on quiet days.
+    today = datetime.now(timezone.utc).date()
+    start = today - timedelta(days=days - 1)
+    day = func.date(LoginEvent.created_at)
+    grouped = db.execute(
+        select(
+            day.label("day"),
+            func.count(LoginEvent.id).label("logins"),
+            func.count(func.distinct(LoginEvent.user_id)).label("active_users"),
+        )
+        .where(func.date(LoginEvent.created_at) >= start)
+        .group_by(day)
+    ).all()
+    by_day = {row.day: (row.logins, row.active_users) for row in grouped}
+    daily: list[LoginHistoryDay] = []
+    cursor = start
+    while cursor <= today:
+        logins, active = by_day.get(cursor, (0, 0))
+        daily.append(
+            LoginHistoryDay(date=cursor.isoformat(), logins=logins, active_users=active)
+        )
+        cursor += timedelta(days=1)
+
+    return LoginHistory(total=total, recent=recent, daily=daily)
 
 
 @router.get("/backups/download")

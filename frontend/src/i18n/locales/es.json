@@ -484,7 +484,16 @@
     "tempPasswordModalTitle": "Contraseña temporal",
     "tempPasswordBody": "Comparte esta contraseña de un solo uso con <bold>{{name}}</bold> por un canal seguro. Debe iniciar sesión y cambiarla desde su perfil. Se muestra solo una vez.",
     "copyButton": "Copiar",
-    "copiedButton": "Copiado"
+    "copiedButton": "Copiado",
+    "loginHistoryTitle": "Historial de accesos",
+    "loginHistorySubtitle": "Inicios de sesión correctos en los últimos 30 días.",
+    "loginHistoryTotal": "{{formattedCount}} en total",
+    "loginHistoryChartTitle": "Accesos por día",
+    "loginHistoryLoginsLabel": "Accesos",
+    "loginHistoryRecentTitle": "Accesos recientes",
+    "loginHistoryColUser": "Usuario",
+    "loginHistoryColWhen": "Cuándo",
+    "loginHistoryEmpty": "Aún no hay accesos registrados."
   },
   "dashboard": {
     "title": "Análisis",

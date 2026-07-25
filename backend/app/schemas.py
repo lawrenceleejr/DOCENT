@@ -146,6 +146,30 @@ class AuthConfig(BaseModel):
     has_siblings: bool
 
 
+class LoginHistoryEntry(BaseModel):
+    """One successful login, for the admin login-history view (#30)."""
+
+    id: int
+    user_id: int
+    user_name: str
+    user_email: str
+    created_at: datetime
+
+
+class LoginHistoryDay(BaseModel):
+    """Per-day login totals for the login-history plot (zero-filled)."""
+
+    date: str
+    logins: int
+    active_users: int
+
+
+class LoginHistory(BaseModel):
+    total: int
+    recent: list[LoginHistoryEntry]
+    daily: list[LoginHistoryDay]
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

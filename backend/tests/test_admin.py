@@ -262,3 +262,28 @@ def test_backups_endpoints_and_traversal_guard(client, make_client):
     other = make_client()
     register(other, email="pleb@example.com")
     assert other.get("/api/admin/backups").status_code == 403
+
+
+def test_login_history_records_and_lists(client):
+    register(client, email="admin@example.com", password="password123")  # admin
+    # Explicit logins are what get recorded (the auto-login on register is not).
+    for _ in range(2):
+        assert client.post(
+            "/api/auth/login",
+            json={"email": "admin@example.com", "password": "password123"},
+        ).status_code == 200
+
+    hist = client.get("/api/admin/login-history").json()
+    assert hist["total"] == 2
+    assert len(hist["recent"]) == 2
+    assert hist["recent"][0]["user_email"] == "admin@example.com"
+    # The daily series is zero-filled across the default 30-day window.
+    assert len(hist["daily"]) == 30
+    assert sum(d["logins"] for d in hist["daily"]) == 2
+
+
+def test_login_history_admin_only(client, make_client):
+    register(client, email="admin@example.com")  # admin
+    user = make_client()
+    register(user, email="user@example.com")
+    assert user.get("/api/admin/login-history").status_code == 403

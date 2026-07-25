@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import func, select
 
 from app.deps import CurrentUser, DbSession
-from app.models import FederationPeer, User
+from app.models import FederationPeer, LoginEvent, User
 from app.ratelimit import login_rate_limit, register_rate_limit
 from app.schemas import AuthConfig, LoginRequest, RegisterRequest, UserOut
 from app.security import (
@@ -108,6 +108,9 @@ def login(body: LoginRequest, request: Request, response: Response, db: DbSessio
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Account is deactivated"
         )
     set_auth_cookie(response, create_access_token(user.id), request)
+    # Record the successful login for the admin login-history view (#30).
+    db.add(LoginEvent(user_id=user.id))
+    db.commit()
     return user
 
 

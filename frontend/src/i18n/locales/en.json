@@ -484,7 +484,16 @@
     "tempPasswordModalTitle": "Temporary password",
     "tempPasswordBody": "Share this one-time password with <bold>{{name}}</bold> over a secure channel. They should log in and change it from their profile. It is shown only once.",
     "copyButton": "Copy",
-    "copiedButton": "Copied"
+    "copiedButton": "Copied",
+    "loginHistoryTitle": "Login history",
+    "loginHistorySubtitle": "Successful sign-ins over the last 30 days.",
+    "loginHistoryTotal": "{{formattedCount}} total",
+    "loginHistoryChartTitle": "Logins per day",
+    "loginHistoryLoginsLabel": "Logins",
+    "loginHistoryRecentTitle": "Recent logins",
+    "loginHistoryColUser": "User",
+    "loginHistoryColWhen": "When",
+    "loginHistoryEmpty": "No logins recorded yet."
   },
   "dashboard": {
     "title": "Analysis",

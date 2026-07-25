@@ -413,3 +413,22 @@ class FederatedActivity(Base):
     )
 
     peer: Mapped[FederationPeer] = relationship(back_populates="activities")
+
+
+class LoginEvent(Base):
+    """A successful login, recorded for the admin login-history view (#30).
+
+    Deliberately minimal — user + timestamp only, no IP address or user-agent
+    — so it stays a lightweight activity log rather than a tracking record."""
+
+    __tablename__ = "login_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
+
+    user: Mapped["User"] = relationship()

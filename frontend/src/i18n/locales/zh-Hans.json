@@ -484,7 +484,16 @@
     "tempPasswordModalTitle": "临时密码",
     "tempPasswordBody": "请通过安全渠道将此一次性密码告知 <bold>{{name}}</bold>。对方登录后应在个人资料中修改密码。此密码仅显示一次。",
     "copyButton": "复制",
-    "copiedButton": "已复制"
+    "copiedButton": "已复制",
+    "loginHistoryTitle": "登录记录",
+    "loginHistorySubtitle": "过去 30 天的成功登录。",
+    "loginHistoryTotal": "共 {{formattedCount}} 次",
+    "loginHistoryChartTitle": "每日登录次数",
+    "loginHistoryLoginsLabel": "登录",
+    "loginHistoryRecentTitle": "最近登录",
+    "loginHistoryColUser": "用户",
+    "loginHistoryColWhen": "时间",
+    "loginHistoryEmpty": "暂无登录记录。"
   },
   "dashboard": {
     "title": "数据分析",

@@ -484,7 +484,16 @@
     "tempPasswordModalTitle": "Mot de passe temporaire",
     "tempPasswordBody": "Partagez ce mot de passe à usage unique avec <bold>{{name}}</bold> via un canal sécurisé. Cette personne devrait se connecter et le changer depuis son profil. Il n'est affiché qu'une seule fois.",
     "copyButton": "Copier",
-    "copiedButton": "Copié"
+    "copiedButton": "Copié",
+    "loginHistoryTitle": "Historique des connexions",
+    "loginHistorySubtitle": "Connexions réussies au cours des 30 derniers jours.",
+    "loginHistoryTotal": "{{formattedCount}} au total",
+    "loginHistoryChartTitle": "Connexions par jour",
+    "loginHistoryLoginsLabel": "Connexions",
+    "loginHistoryRecentTitle": "Connexions récentes",
+    "loginHistoryColUser": "Utilisateur",
+    "loginHistoryColWhen": "Quand",
+    "loginHistoryEmpty": "Aucune connexion enregistrée pour l’instant."
   },
   "dashboard": {
     "title": "Analyse",

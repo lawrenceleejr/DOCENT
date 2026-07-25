@@ -46,6 +46,7 @@ import type {
 import { LANGUAGES } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { BackupsCard } from '../components/BackupsCard';
+import { LoginHistoryCard } from '../components/LoginHistoryCard';
 import { InstitutionImportCard } from '../components/InstitutionImportCard';
 import { InstitutionManagerCard } from '../components/InstitutionManagerCard';
 import { SiteSetupCard } from '../components/SiteSetupCard';
@@ -626,6 +627,9 @@ export function AdminPage() {
       <Text size="sm" c="dimmed">
         {t('admin.deactivatedUsersNote')}
       </Text>
+
+      {/* Login history lives at the very bottom, collapsed by default (#30). */}
+      <LoginHistoryCard />
 
       <MergeUserModal
         source={mergeSource}

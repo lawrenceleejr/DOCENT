@@ -484,7 +484,16 @@
     "tempPasswordModalTitle": "Pansamantalang password",
     "tempPasswordBody": "Ibahagi ang one-time password na ito sa <bold>{{name}}</bold> sa isang secure channel. Dapat mag-log in sila at palitan ito mula sa kanilang profile. Ipinapakita ito nang isang pagkakataon lang.",
     "copyButton": "Kopyahin",
-    "copiedButton": "Kinopya"
+    "copiedButton": "Kinopya",
+    "loginHistoryTitle": "Kasaysayan ng login",
+    "loginHistorySubtitle": "Mga matagumpay na pag-sign in sa nakaraang 30 araw.",
+    "loginHistoryTotal": "{{formattedCount}} lahat",
+    "loginHistoryChartTitle": "Mga login kada araw",
+    "loginHistoryLoginsLabel": "Mga login",
+    "loginHistoryRecentTitle": "Mga kamakailang login",
+    "loginHistoryColUser": "User",
+    "loginHistoryColWhen": "Kailan",
+    "loginHistoryEmpty": "Wala pang naitalang login."
   },
   "dashboard": {
     "title": "Analysis",

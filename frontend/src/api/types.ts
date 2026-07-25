@@ -550,6 +550,26 @@ export interface AuthConfig {
   has_siblings: boolean;
 }
 
+export interface LoginHistoryEntry {
+  id: number;
+  user_id: number;
+  user_name: string;
+  user_email: string;
+  created_at: string;
+}
+
+export interface LoginHistoryDay {
+  date: string;
+  logins: number;
+  active_users: number;
+}
+
+export interface LoginHistory {
+  total: number;
+  recent: LoginHistoryEntry[];
+  daily: LoginHistoryDay[];
+}
+
 export const FEDERATION_INTERVALS = ['hour', 'day', 'week'] as const;
 export type FederationInterval = (typeof FEDERATION_INTERVALS)[number];
 
