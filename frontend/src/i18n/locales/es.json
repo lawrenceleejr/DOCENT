@@ -627,7 +627,10 @@
       "nameRequired": "El nombre es obligatorio",
       "currentPasswordRequired": "Obligatorio",
       "passwordMin": "Al menos 8 caracteres"
-    }
+    },
+    "orcidLabel": "ORCID iD",
+    "orcidDescription": "Vincula tu identidad de investigador. Viaja con la actividad federada para que las comunidades asociadas atribuyan el crédito a las personas correctas.",
+    "orcidLinkedPrefix": "Vinculado:"
   },
   "directory": {
     "title": "Directorio",
@@ -643,7 +646,8 @@
     "colLanguages": "Idiomas",
     "noMembersMatch": "Ningún miembro coincide con estos filtros.",
     "memberCount_one": "{{formattedCount}} miembro",
-    "memberCount_other": "{{formattedCount}} miembros"
+    "memberCount_other": "{{formattedCount}} miembros",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "Informes",

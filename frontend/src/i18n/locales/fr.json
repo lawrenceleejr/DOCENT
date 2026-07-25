@@ -627,7 +627,10 @@
       "nameRequired": "Le nom est requis",
       "currentPasswordRequired": "Requis",
       "passwordMin": "Au moins 8 caractères"
-    }
+    },
+    "orcidLabel": "identifiant ORCID",
+    "orcidDescription": "Reliez votre identité de chercheur. Elle accompagne l'activité fédérée afin que les communautés partenaires créditent les bonnes personnes.",
+    "orcidLinkedPrefix": "Lié :"
   },
   "directory": {
     "title": "Annuaire",
@@ -643,7 +646,8 @@
     "colLanguages": "Langues",
     "noMembersMatch": "Aucun membre ne correspond à ces filtres.",
     "memberCount_one": "{{formattedCount}} membre",
-    "memberCount_other": "{{formattedCount}} membres"
+    "memberCount_other": "{{formattedCount}} membres",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "Rapports",

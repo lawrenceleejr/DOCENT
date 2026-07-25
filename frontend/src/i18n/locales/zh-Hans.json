@@ -627,7 +627,10 @@
       "nameRequired": "请输入姓名",
       "currentPasswordRequired": "必填",
       "passwordMin": "至少 8 个字符"
-    }
+    },
+    "orcidLabel": "ORCID iD",
+    "orcidDescription": "关联你的研究者身份。它会随联邦活动一起传递，让伙伴社区能正确标注贡献者。",
+    "orcidLinkedPrefix": "已关联："
   },
   "directory": {
     "title": "会员名录",
@@ -643,7 +646,8 @@
     "colLanguages": "语言",
     "noMembersMatch": "没有符合筛选条件的成员。",
     "memberCount_one": "{{formattedCount}} 位成员",
-    "memberCount_other": "{{formattedCount}} 位成员"
+    "memberCount_other": "{{formattedCount}} 位成员",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "报告",

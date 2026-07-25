@@ -189,3 +189,26 @@ def test_user_merge_reassigns_schools_dedupes_collision(client, make_client):
 
     schools = {s["venue"]["id"] for s in client.get("/api/users/me/schools").json()}
     assert schools == {venue_a["id"], venue_b["id"]}
+
+
+def test_profile_orcid_normalize_validate_and_clear(client):
+    register(client, email="ada@example.com", name="Ada")
+
+    # A full orcid.org URL is accepted and normalized to the dashed id.
+    r = client.patch("/api/users/me", json={"orcid": "https://orcid.org/0000000218250097"})
+    assert r.status_code == 200, r.text
+    assert r.json()["orcid"] == "0000-0002-1825-0097"
+    assert client.get("/api/auth/me").json()["orcid"] == "0000-0002-1825-0097"
+
+    # A bare dashed id with a trailing checksum X is accepted.
+    r = client.patch("/api/users/me", json={"orcid": "0000-0002-1825-009X"})
+    assert r.status_code == 200
+    assert r.json()["orcid"] == "0000-0002-1825-009X"
+
+    # Garbage is rejected.
+    assert client.patch("/api/users/me", json={"orcid": "not-an-orcid"}).status_code == 422
+
+    # Sending an empty string clears it.
+    r = client.patch("/api/users/me", json={"orcid": ""})
+    assert r.status_code == 200
+    assert r.json()["orcid"] is None

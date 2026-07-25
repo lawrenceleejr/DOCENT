@@ -26,6 +26,24 @@ def normalize_tags(tags: list[str] | None) -> list[str]:
     return out[:MAX_TAGS]
 
 
+def normalize_orcid(value: str | None) -> str | None:
+    """Validate an ORCID iD and return it in canonical dashed form, or None if
+    blank. Accepts a bare 16-char id, a dashed id, or a full orcid.org URL."""
+    if value is None:
+        return None
+    s = value.strip()
+    if not s:
+        return None
+    for prefix in ("https://orcid.org/", "http://orcid.org/", "orcid.org/"):
+        if s.lower().startswith(prefix):
+            s = s[len(prefix):]
+            break
+    compact = s.replace("-", "").upper()
+    if not re.fullmatch(r"\d{15}[\dX]", compact):
+        raise ValueError("Invalid ORCID iD (expected 0000-0000-0000-0000)")
+    return f"{compact[0:4]}-{compact[4:8]}-{compact[8:12]}-{compact[12:16]}"
+
+
 class VisitLink(BaseModel):
     """An external link documenting coverage of a visit (press, social, …)."""
 
@@ -181,6 +199,7 @@ class UserOut(BaseModel):
     name: str
     affiliation: str | None
     position: str | None
+    orcid: str | None
     is_admin: bool
     is_active: bool
     languages_spoken: list[str]
@@ -198,6 +217,7 @@ class UserUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     affiliation: str | None = Field(default=None, max_length=255)
     position: str | None = Field(default=None, max_length=255)
+    orcid: str | None = Field(default=None, max_length=64)
     languages_spoken: list[str] | None = None
     current_password: str | None = None
     new_password: str | None = Field(default=None, min_length=8, max_length=128)
@@ -206,6 +226,11 @@ class UserUpdate(BaseModel):
     @classmethod
     def _clean_languages_spoken(cls, v: list[str] | None) -> list[str] | None:
         return None if v is None else clean_languages(v)
+
+    @field_validator("orcid")
+    @classmethod
+    def _clean_orcid(cls, v: str | None) -> str | None:
+        return normalize_orcid(v)
 
 
 class AdminUserUpdate(BaseModel):
@@ -440,6 +465,7 @@ class DirectoryUserOut(BaseModel):
     name: str
     affiliation: str | None
     position: str | None
+    orcid: str | None
     languages_spoken: list[str]
     schools: list[VenueBrief]
 

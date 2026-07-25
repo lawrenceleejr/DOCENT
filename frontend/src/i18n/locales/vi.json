@@ -627,7 +627,10 @@
       "nameRequired": "Cần nhập tên",
       "currentPasswordRequired": "Bắt buộc",
       "passwordMin": "Ít nhất 8 ký tự"
-    }
+    },
+    "orcidLabel": "ORCID iD",
+    "orcidDescription": "Liên kết danh tính nhà nghiên cứu của bạn. Nó đi kèm với hoạt động liên kết để các cộng đồng đối tác ghi nhận đúng người.",
+    "orcidLinkedPrefix": "Đã liên kết:"
   },
   "directory": {
     "title": "Danh bạ",
@@ -643,7 +646,8 @@
     "colLanguages": "Ngôn ngữ",
     "noMembersMatch": "Không có thành viên nào khớp với các bộ lọc này.",
     "memberCount_one": "{{formattedCount}} thành viên",
-    "memberCount_other": "{{formattedCount}} thành viên"
+    "memberCount_other": "{{formattedCount}} thành viên",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "Báo cáo",

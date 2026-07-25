@@ -201,6 +201,7 @@ export interface User {
   name: string;
   affiliation: string | null;
   position: string | null;
+  orcid: string | null;
   is_admin: boolean;
   is_active: boolean;
   languages_spoken: string[];
@@ -227,6 +228,7 @@ export interface DirectoryUser {
   name: string;
   affiliation: string | null;
   position: string | null;
+  orcid: string | null;
   languages_spoken: string[];
   schools: VenueBrief[];
 }

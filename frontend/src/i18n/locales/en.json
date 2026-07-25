@@ -627,7 +627,10 @@
       "nameRequired": "Name is required",
       "currentPasswordRequired": "Required",
       "passwordMin": "At least 8 characters"
-    }
+    },
+    "orcidLabel": "ORCID iD",
+    "orcidDescription": "Link your researcher identity. It travels with federated activity so partner communities can credit the right people.",
+    "orcidLinkedPrefix": "Linked:"
   },
   "directory": {
     "title": "Directory",
@@ -643,7 +646,8 @@
     "colLanguages": "Languages",
     "noMembersMatch": "No members match these filters.",
     "memberCount_one": "{{formattedCount}} member",
-    "memberCount_other": "{{formattedCount}} members"
+    "memberCount_other": "{{formattedCount}} members",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "Reports",

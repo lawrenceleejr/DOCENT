@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
 import { LANGUAGES, type School, type StatsSummary, type User } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { OrcidLink } from '../components/OrcidLink';
 import { VenuePicker } from '../components/VenuePicker';
 
 export function ProfilePage() {
@@ -54,6 +55,7 @@ export function ProfilePage() {
       name: user?.name ?? '',
       affiliation: user?.affiliation ?? '',
       position: user?.position ?? '',
+      orcid: user?.orcid ?? '',
       languages_spoken: user?.languages_spoken ?? [],
     },
     validate: { name: (v) => (v.trim().length > 0 ? null : t('profile.validation.nameRequired')) },
@@ -72,17 +74,25 @@ export function ProfilePage() {
       name: string;
       affiliation: string;
       position: string;
+      orcid: string;
       languages_spoken: string[];
     }) =>
       api.patch<User>('/api/users/me', {
         name: values.name.trim(),
         affiliation: values.affiliation.trim(),
         position: values.position.trim(),
+        orcid: values.orcid.trim(),
         languages_spoken: values.languages_spoken,
       }),
     onSuccess: async () => {
       await refresh();
       notifications.show({ message: t('profile.profileUpdated') });
+    },
+    onError: (e) => {
+      notifications.show({
+        color: 'red',
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
+      });
     },
   });
 
@@ -164,6 +174,17 @@ export function ProfilePage() {
               placeholder={t('profile.positionPlaceholder')}
               {...profileForm.getInputProps('position')}
             />
+            <TextInput
+              label={t('profile.orcidLabel')}
+              description={t('profile.orcidDescription')}
+              placeholder="0000-0000-0000-0000"
+              {...profileForm.getInputProps('orcid')}
+            />
+            {user.orcid && (
+              <Text size="sm" c="dimmed">
+                {t('profile.orcidLinkedPrefix')} <OrcidLink orcid={user.orcid} />
+              </Text>
+            )}
             <MultiSelect
               label={t('profile.languagesLabel')}
               placeholder={t('profile.languagesPlaceholder')}

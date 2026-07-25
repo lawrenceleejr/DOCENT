@@ -26,6 +26,9 @@ def update_me(body: UserUpdate, user: CurrentUser, db: DbSession):
         user.affiliation = body.affiliation
     if body.position is not None:
         user.position = body.position
+    # Present-in-request (even as null) means "set it", so an ORCID can be cleared.
+    if "orcid" in body.model_fields_set:
+        user.orcid = body.orcid
     if body.languages_spoken is not None:
         user.languages_spoken = body.languages_spoken
 
@@ -156,6 +159,7 @@ def user_directory(
             name=u.name,
             affiliation=u.affiliation,
             position=u.position,
+            orcid=u.orcid,
             languages_spoken=u.languages_spoken,
             schools=[s.venue for s in u.schools],
         )

@@ -627,7 +627,10 @@
       "nameRequired": "Kinakailangan ang pangalan",
       "currentPasswordRequired": "Kinakailangan",
       "passwordMin": "Hindi bababa sa 8 karakter"
-    }
+    },
+    "orcidLabel": "ORCID iD",
+    "orcidDescription": "I-link ang iyong researcher identity. Sumasama ito sa federated na aktibidad para ma-kredito ng mga partner community ang tamang tao.",
+    "orcidLinkedPrefix": "Naka-link:"
   },
   "directory": {
     "title": "Direktoryo",
@@ -643,7 +646,8 @@
     "colLanguages": "Mga Wika",
     "noMembersMatch": "Walang miyembrong tumutugma sa mga filter na ito.",
     "memberCount_one": "{{formattedCount}} miyembro",
-    "memberCount_other": "{{formattedCount}} miyembro"
+    "memberCount_other": "{{formattedCount}} miyembro",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "Mga Ulat",

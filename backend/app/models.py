@@ -106,6 +106,9 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255))
     affiliation: Mapped[str | None] = mapped_column(String(255))
     position: Mapped[str | None] = mapped_column(String(255))
+    # ORCID iD, stored in canonical dashed form (0000-0000-0000-0000). Links a
+    # communicator to their researcher identity and travels with federation.
+    orcid: Mapped[str | None] = mapped_column(String(19))
     password_hash: Mapped[str] = mapped_column(String(255))
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)

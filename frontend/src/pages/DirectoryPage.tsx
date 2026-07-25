@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import { LANGUAGES, type DirectoryUser, type Paginated } from '../api/types';
+import { OrcidLink } from '../components/OrcidLink';
 import { VenueFilterSelect } from '../components/VenueFilterSelect';
 
 export function DirectoryPage() {
@@ -67,6 +68,7 @@ export function DirectoryPage() {
                 <Table.Th>{t('directory.colName')}</Table.Th>
                 <Table.Th>{t('directory.colAffiliation')}</Table.Th>
                 <Table.Th>{t('directory.colPosition')}</Table.Th>
+                <Table.Th>{t('directory.colOrcid')}</Table.Th>
                 <Table.Th>{t('directory.colSchools')}</Table.Th>
                 <Table.Th>{t('directory.colLanguages')}</Table.Th>
               </Table.Tr>
@@ -77,6 +79,9 @@ export function DirectoryPage() {
                   <Table.Td>{member.name}</Table.Td>
                   <Table.Td>{member.affiliation ?? '—'}</Table.Td>
                   <Table.Td>{member.position ?? '—'}</Table.Td>
+                  <Table.Td>
+                    {member.orcid ? <OrcidLink orcid={member.orcid} /> : '—'}
+                  </Table.Td>
                   <Table.Td>
                     {member.schools.length > 0 ? (
                       <Group gap={4}>
@@ -97,7 +102,7 @@ export function DirectoryPage() {
               ))}
               {!isLoading && (data?.items.length ?? 0) === 0 && (
                 <Table.Tr>
-                  <Table.Td colSpan={5}>
+                  <Table.Td colSpan={6}>
                     <Text c="dimmed" ta="center" py="lg">
                       {t('directory.noMembersMatch')}
                     </Text>
