@@ -304,7 +304,11 @@ export function VenueDetailPage() {
   const address = [venue.address, venue.city, venue.state, venue.country]
     .filter(Boolean)
     .join(', ');
-  const canManage = user && (user.id === venue.created_by_id || user.is_admin);
+  // Mirrors the backend rule (#19): creator, admin, or anyone who has a visit
+  // (past or scheduled) at this venue may edit/delete it.
+  const hasMyVisit = !!user && (visits?.items ?? []).some((v) => v.author?.id === user.id);
+  const canManage =
+    !!user && (user.id === venue.created_by_id || user.is_admin || hasMyVisit);
 
   return (
     <Stack>

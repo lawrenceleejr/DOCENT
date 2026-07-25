@@ -244,6 +244,58 @@ def test_venue_delete(client, make_client):
     assert creator.get(f"/api/venues/{empty['id']}").status_code == 404
 
 
+def test_venue_edit_by_visitor(client, make_client):
+    register(client, email="admin@example.com")  # admin
+    creator = make_client()
+    register(creator, email="creator@example.com")
+    visitor = make_client()
+    register(visitor, email="visitor@example.com")
+    stranger = make_client()
+    register(stranger, email="stranger@example.com")
+
+    venue = create_venue(creator, name="Shared Venue", city="Town")
+
+    # Someone with no connection to the venue still can't edit it.
+    assert (
+        stranger.patch(f"/api/venues/{venue['id']}", json={"name": "Nope"}).status_code == 403
+    )
+
+    # Logging a visit there grants stewardship of the venue (#19).
+    create_visit(visitor, venue["id"])
+    edited = visitor.patch(f"/api/venues/{venue['id']}", json={"name": "Renamed by Visitor"})
+    assert edited.status_code == 200
+    assert edited.json()["name"] == "Renamed by Visitor"
+
+
+def test_venue_edit_by_future_scheduler(client, make_client):
+    register(client, email="admin@example.com")
+    creator = make_client()
+    register(creator, email="creator@example.com")
+    scheduler = make_client()
+    register(scheduler, email="scheduler@example.com")
+
+    venue = create_venue(creator, name="Planned Venue", city="Town")
+    # A future *planned* visit counts too, not just completed ones (#19).
+    create_visit(scheduler, venue["id"], status="planned", visit_date="2027-05-01")
+    edited = scheduler.patch(f"/api/venues/{venue['id']}", json={"name": "By Scheduler"})
+    assert edited.status_code == 200
+
+
+def test_venue_visitor_passes_delete_permission(client, make_client):
+    register(client, email="admin@example.com")
+    creator = make_client()
+    register(creator, email="creator@example.com")
+    visitor = make_client()
+    register(visitor, email="visitor@example.com")
+
+    venue = create_venue(creator, name="Visitor Delete", city="Town")
+    create_visit(visitor, venue["id"])
+
+    # The visitor clears the permission gate, so deletion is stopped by the
+    # has-visits guard (409) rather than being forbidden (403).
+    assert visitor.delete(f"/api/venues/{venue['id']}").status_code == 409
+
+
 def test_venue_list_includes_visit_count(client):
     register(client)
     venue = create_venue(client)
