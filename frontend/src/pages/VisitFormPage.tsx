@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Anchor,
   Button,
   Card,
   Checkbox,
@@ -44,6 +45,7 @@ import {
 } from '../api/types';
 import { useEnumLabel } from '../i18n/enumLabels';
 import { VenuePicker } from '../components/VenuePicker';
+import { confirmLeave, useUnsavedGuard } from '../components/useUnsavedGuard';
 import { toDateString } from './VisitListPage';
 
 interface FormValues {
@@ -174,6 +176,9 @@ export function VisitFormPage() {
         tags: existing.tags ?? [],
         links: (existing.links ?? []).map((l) => ({ ...l, label: l.label ?? '' })),
       });
+      // Loading an existing visit is not a user edit — rebaseline so the
+      // unsaved-changes guard only trips on real changes (#11).
+      form.resetDirty();
       if (
         existing.contact_name ||
         existing.contact_email ||
@@ -193,9 +198,13 @@ export function VisitFormPage() {
     const venueParam = searchParams.get('venue');
     if (!editing && venueParam) {
       form.setFieldValue('venue_id', Number(venueParam));
+      form.resetDirty();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, editing]);
+
+  // Warn before navigating away from a form with unsaved edits (#11).
+  useUnsavedGuard(form.isDirty());
 
   const save = useMutation({
     mutationFn: (values: FormValues) => {
@@ -436,7 +445,22 @@ export function VisitFormPage() {
           <Fieldset legend={t('visitForm.outcomeLegend')} radius="md">
             <Stack>
               <Input.Wrapper label={t('visitForm.howDidItGo')}>
-                <Rating size="lg" {...form.getInputProps('rating')} />
+                <Group gap="sm" align="center">
+                  <Rating size="lg" {...form.getInputProps('rating')} />
+                  {form.values.rating > 0 && (
+                    // A star rating can't be un-clicked, so offer an explicit
+                    // way back to "no rating" (#10).
+                    <Anchor
+                      component="button"
+                      type="button"
+                      size="sm"
+                      c="dimmed"
+                      onClick={() => form.setFieldValue('rating', 0)}
+                    >
+                      {t('common.clear')}
+                    </Anchor>
+                  )}
+                </Group>
               </Input.Wrapper>
               <Textarea
                 label={t('visitForm.reflectionLabel')}
@@ -547,7 +571,12 @@ export function VisitFormPage() {
           )}
 
           <Group justify="flex-end">
-            <Button variant="default" onClick={() => navigate(-1)}>
+            <Button
+              variant="default"
+              onClick={() => {
+                if (confirmLeave(form.isDirty(), t('common.unsavedConfirm'))) navigate(-1);
+              }}
+            >
               {t('common.cancel')}
             </Button>
             <Button type="submit" variant="gradient" loading={save.isPending}>

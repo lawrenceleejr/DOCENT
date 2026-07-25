@@ -10,7 +10,9 @@
     "any": "不限",
     "translationDisclaimer": "此翻译为自动生成，尚未经母语人士审阅，可能包含错误。欢迎志愿者协助校对。",
     "filters": "筛选条件",
-    "unexpectedError": "意外错误"
+    "unexpectedError": "意外错误",
+    "clear": "清除",
+    "unsavedConfirm": "你有未保存的更改。要离开此页面并放弃这些更改吗？"
   },
   "layout": {
     "home": "DOCENT 首页",

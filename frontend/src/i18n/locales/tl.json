@@ -10,7 +10,9 @@
     "any": "Kahit alin",
     "translationDisclaimer": "Awtomatikong ginawa ang pagsasaling ito at hindi pa nasusuri ng katutubong nagsasalita. Maaaring may mga pagkakamali — malugod naming tinatanggap ang mga boluntaryong makakatulong sa pagsusuri nito.",
     "filters": "Mga Filter",
-    "unexpectedError": "Hindi inaasahang error"
+    "unexpectedError": "Hindi inaasahang error",
+    "clear": "I-clear",
+    "unsavedConfirm": "May mga pagbabago kang hindi pa na-save. Aalis sa page na ito at itatapon ang mga ito?"
   },
   "layout": {
     "home": "Home ng DOCENT",

@@ -10,7 +10,9 @@
     "any": "Any",
     "filters": "Filters",
     "translationDisclaimer": "This translation is machine-generated and hasn't been reviewed by a native speaker yet. It may contain errors — volunteers to help review it are very welcome.",
-    "unexpectedError": "Unexpected error"
+    "unexpectedError": "Unexpected error",
+    "clear": "Clear",
+    "unsavedConfirm": "You have unsaved changes. Leave this page and discard them?"
   },
   "layout": {
     "home": "DOCENT home",

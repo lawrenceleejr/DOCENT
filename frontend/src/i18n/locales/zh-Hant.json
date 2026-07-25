@@ -10,7 +10,9 @@
     "any": "不限",
     "translationDisclaimer": "此翻譯為自動生成，尚未經母語人士審閱，可能包含錯誤。歡迎志工協助校對。",
     "filters": "篩選條件",
-    "unexpectedError": "發生未預期的錯誤"
+    "unexpectedError": "發生未預期的錯誤",
+    "clear": "清除",
+    "unsavedConfirm": "你有未儲存的變更。要離開此頁面並捨棄變更嗎？"
   },
   "layout": {
     "home": "DOCENT 首頁",

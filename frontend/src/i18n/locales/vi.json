@@ -10,7 +10,9 @@
     "any": "Bất kỳ",
     "translationDisclaimer": "Bản dịch này được tạo tự động và chưa được người nói tiếng mẹ đẻ kiểm duyệt. Có thể có sai sót — rất hoan nghênh những người tình nguyện giúp rà soát lại.",
     "filters": "Bộ lọc",
-    "unexpectedError": "Lỗi không mong muốn"
+    "unexpectedError": "Lỗi không mong muốn",
+    "clear": "Xóa",
+    "unsavedConfirm": "Bạn có thay đổi chưa lưu. Rời khỏi trang này và bỏ các thay đổi?"
   },
   "layout": {
     "home": "Trang chủ DOCENT",

@@ -10,7 +10,9 @@
     "any": "Cualquiera",
     "translationDisclaimer": "Esta traducción se generó automáticamente y aún no ha sido revisada por un hablante nativo. Puede contener errores — los voluntarios que quieran ayudar a revisarla son muy bienvenidos.",
     "filters": "Filtros",
-    "unexpectedError": "Error inesperado"
+    "unexpectedError": "Error inesperado",
+    "clear": "Borrar",
+    "unsavedConfirm": "Tienes cambios sin guardar. ¿Salir de esta página y descartarlos?"
   },
   "layout": {
     "home": "Inicio de DOCENT",

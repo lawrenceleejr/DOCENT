@@ -10,7 +10,9 @@
     "any": "N'importe lequel",
     "translationDisclaimer": "Cette traduction est générée automatiquement et n'a pas encore été relue par un locuteur natif. Elle peut contenir des erreurs — les volontaires souhaitant nous aider à la relire sont les bienvenus.",
     "filters": "Filtres",
-    "unexpectedError": "Erreur inattendue"
+    "unexpectedError": "Erreur inattendue",
+    "clear": "Effacer",
+    "unsavedConfirm": "Vous avez des modifications non enregistrées. Quitter cette page et les abandonner ?"
   },
   "layout": {
     "home": "Accueil DOCENT",
