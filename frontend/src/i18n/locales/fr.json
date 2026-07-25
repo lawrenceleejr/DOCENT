@@ -207,7 +207,11 @@
       "peopleReachedTooLarge": "Cela semble trop élevé (max {{max}}).",
       "peopleReachedTooLargeTypo": "Cela semble trop élevé (max {{max}}). Vérifiez qu'il n'y a pas d'erreur de frappe.",
       "peopleReachedRequired": "Combien de personnes avez-vous rejointes?"
-    }
+    },
+    "coPresentersLabel": "Co-présentateurs avec un compte",
+    "coPresentersDescription": "Reliez des collègues ayant un compte ici, afin qu'ils soient crédités et que leurs ORCID accompagnent l'activité fédérée.",
+    "coPresentersPlaceholder": "Rechercher des personnes par nom…",
+    "coPresentersNothing": "Aucune personne correspondante"
   },
   "visitDetail": {
     "markCompleted": "Marquer comme terminée",
@@ -234,7 +238,8 @@
     "fieldEmail": "Courriel",
     "fieldPhone": "Téléphone",
     "fieldHostNotes": "Notes sur l'hôte",
-    "minSuffix": "min"
+    "minSuffix": "min",
+    "fieldCoPresenters": "Co-présentateurs"
   },
   "enums": {
     "venueType": {

@@ -207,7 +207,11 @@
       "peopleReachedTooLarge": "Con số này có vẻ quá lớn (tối đa {{max}}).",
       "peopleReachedTooLargeTypo": "Con số này có vẻ quá lớn (tối đa {{max}}). Kiểm tra xem có gõ nhầm không.",
       "peopleReachedRequired": "Bạn đã tiếp cận bao nhiêu người?"
-    }
+    },
+    "coPresentersLabel": "Đồng thuyết trình có tài khoản",
+    "coPresentersDescription": "Liên kết đồng nghiệp có tài khoản tại đây để họ được ghi nhận và ORCID của họ đi kèm hoạt động liên kết.",
+    "coPresentersPlaceholder": "Tìm người theo tên…",
+    "coPresentersNothing": "Không có người phù hợp"
   },
   "visitDetail": {
     "markCompleted": "Đánh dấu là đã hoàn thành",
@@ -234,7 +238,8 @@
     "fieldEmail": "Email",
     "fieldPhone": "Số điện thoại",
     "fieldHostNotes": "Ghi chú về người tiếp đón",
-    "minSuffix": "phút"
+    "minSuffix": "phút",
+    "fieldCoPresenters": "Đồng thuyết trình"
   },
   "enums": {
     "venueType": {

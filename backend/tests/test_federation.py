@@ -510,3 +510,57 @@ def test_public_impact_federated_toggle(client, db, make_client):
     assert withfed["total_people_reached"] == base["total_people_reached"] + 15
     # Sibling names never leak into the public recent list.
     assert all("Remote Person" not in str(r) for r in withfed["recent"])
+
+
+def test_feed_contributors_carry_orcids(client, make_client):
+    register(client, email="ada@example.com", name="Ada Alvarez")  # admin/author
+    client.patch("/api/users/me", json={"orcid": "0000-0002-1825-0097"})
+
+    ben = make_client()
+    ben_id = register(ben, email="ben@example.com", name="Ben Okafor").json()["id"]
+    ben.patch("/api/users/me", json={"orcid": "0000-0001-5109-3700"})
+
+    venue = create_venue(client, latitude=35.9, longitude=-84.0)
+    create_visit(
+        client, venue["id"], title="Team demo", people_reached=30,
+        co_presenter_user_ids=[ben_id], additional_presenters="Guest Speaker",
+    )
+    token = _enable_publishing(client)
+
+    anon = make_client()
+    body = anon.get("/api/federation/activities", params={"token": token}).json()
+    assert body["feed_version"] == 2
+    activity = next(a for a in body["activities"] if a["person_name"] == "Ada Alvarez")
+    contribs = {c["name"]: c["orcid"] for c in activity["contributors"]}
+    # Lead, linked co-presenter (both with ORCIDs), and a name-only presenter.
+    assert contribs["Ada Alvarez"] == "0000-0002-1825-0097"
+    assert contribs["Ben Okafor"] == "0000-0001-5109-3700"
+    assert contribs["Guest Speaker"] is None
+
+
+def test_sync_stores_incoming_contributors(client, db):
+    register(client)
+    peer = FederationPeer(
+        feed_url="https://sib.example.edu/api/federation/activities?token=t",
+        interval=FederationInterval.day, enabled=True,
+    )
+    db.add(peer)
+    db.commit()
+    fed.upsert_activities(
+        db, peer,
+        {"activities": [{
+            "uid": "abc", "remote_id": 7, "status": "completed", "visit_date": "2026-03-01",
+            "person_name": "Ada Alvarez", "people_reached": 20,
+            "contributors": [
+                {"name": "Ada Alvarez", "orcid": "0000-0002-1825-0097"},
+                {"name": "Ben Okafor", "orcid": "0000-0001-5109-3700"},
+                {"bad": "entry"},
+            ],
+        }]},
+        prune=True,
+    )
+    db.commit()
+    row = db.scalar(select(FederatedActivity).where(FederatedActivity.remote_uid == "abc"))
+    assert [c["orcid"] for c in row.contributors] == [
+        "0000-0002-1825-0097", "0000-0001-5109-3700",
+    ]

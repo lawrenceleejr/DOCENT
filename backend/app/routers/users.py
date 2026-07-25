@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 from app.deps import CurrentUser, DbSession
 from app.models import Connection, HostRelationship, User, UserSchool, Venue
 from app.schemas import (
+    ContributorUser,
     DirectoryUserList,
     DirectoryUserOut,
     SchoolCreate,
@@ -46,6 +47,30 @@ def update_me(body: UserUpdate, user: CurrentUser, db: DbSession):
     db.commit()
     db.refresh(user)
     return user
+
+
+@router.get("/search", response_model=list[ContributorUser])
+def search_users(
+    user: CurrentUser,
+    db: DbSession,
+    q: str = Query(default="", max_length=100),
+    limit: int = Query(default=10, ge=1, le=25),
+):
+    """Targeted active-user search for linking co-presenters to accounts (#9).
+    Returns nothing for a blank query, and never lists the current user."""
+    if not q.strip():
+        return []
+    rows = db.scalars(
+        select(User)
+        .where(
+            User.is_active.is_(True),
+            User.id != user.id,
+            User.name.ilike(f"%{q.strip()}%"),
+        )
+        .order_by(User.name)
+        .limit(limit)
+    ).all()
+    return rows
 
 
 @router.get("/me/schools", response_model=list[SchoolOut])

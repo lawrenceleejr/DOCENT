@@ -207,7 +207,11 @@
       "peopleReachedTooLarge": "這個數字似乎太大了（最多 {{max}}）。",
       "peopleReachedTooLargeTypo": "這個數字似乎太大了（最多 {{max}}）。請檢查是否輸入錯誤。",
       "peopleReachedRequired": "您觸及了多少人？"
-    }
+    },
+    "coPresentersLabel": "具帳號的協同講者",
+    "coPresentersDescription": "連結在此擁有帳號的同事，讓他們獲得標註，且其 ORCID 會隨聯邦活動一起傳遞。",
+    "coPresentersPlaceholder": "以姓名搜尋人員…",
+    "coPresentersNothing": "沒有符合的人員"
   },
   "visitDetail": {
     "markCompleted": "標記為已完成",
@@ -234,7 +238,8 @@
     "fieldEmail": "電子郵件",
     "fieldPhone": "電話",
     "fieldHostNotes": "接待人備註",
-    "minSuffix": "分鐘"
+    "minSuffix": "分鐘",
+    "fieldCoPresenters": "協同講者"
   },
   "enums": {
     "venueType": {

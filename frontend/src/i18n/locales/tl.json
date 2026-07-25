@@ -207,7 +207,11 @@
       "peopleReachedTooLarge": "Mukhang sobrang laki nito (max {{max}}).",
       "peopleReachedTooLargeTypo": "Mukhang sobrang laki nito (max {{max}}). Suriin kung may typo.",
       "peopleReachedRequired": "Ilang tao ang naabot ninyo?"
-    }
+    },
+    "coPresentersLabel": "Mga co-presenter na may account",
+    "coPresentersDescription": "I-link ang mga kasamahang may account dito para ma-kredito sila at sumama ang kanilang ORCID sa federated na aktibidad.",
+    "coPresentersPlaceholder": "Maghanap ng tao ayon sa pangalan…",
+    "coPresentersNothing": "Walang tumugmang tao"
   },
   "visitDetail": {
     "markCompleted": "Markahan bilang natapos",
@@ -234,7 +238,8 @@
     "fieldEmail": "Email",
     "fieldPhone": "Numero ng telepono",
     "fieldHostNotes": "Mga tala tungkol sa host",
-    "minSuffix": "min"
+    "minSuffix": "min",
+    "fieldCoPresenters": "Mga co-presenter"
   },
   "enums": {
     "venueType": {

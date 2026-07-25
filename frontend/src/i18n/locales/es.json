@@ -207,7 +207,11 @@
       "peopleReachedTooLarge": "Eso parece demasiado alto (máximo {{max}}).",
       "peopleReachedTooLargeTypo": "Eso parece demasiado alto (máximo {{max}}). Verifica que no haya un error de escritura.",
       "peopleReachedRequired": "¿A cuántas personas alcanzaste?"
-    }
+    },
+    "coPresentersLabel": "Copresentadores con cuenta",
+    "coPresentersDescription": "Vincula a colegas que tengan una cuenta aquí, para que reciban crédito y sus ORCID viajen con la actividad federada.",
+    "coPresentersPlaceholder": "Buscar personas por nombre…",
+    "coPresentersNothing": "No hay personas coincidentes"
   },
   "visitDetail": {
     "markCompleted": "Marcar como completada",
@@ -234,7 +238,8 @@
     "fieldEmail": "Correo electrónico",
     "fieldPhone": "Teléfono",
     "fieldHostNotes": "Notas sobre el anfitrión",
-    "minSuffix": "min"
+    "minSuffix": "min",
+    "fieldCoPresenters": "Copresentadores"
   },
   "enums": {
     "venueType": {

@@ -213,6 +213,17 @@ class UserBrief(BaseModel):
     name: str
 
 
+class ContributorUser(BaseModel):
+    """A co-presenter resolved to their local account, for the visit form and
+    detail view (carries their ORCID so it can render as a link)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    orcid: str | None
+
+
 class UserUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     affiliation: str | None = Field(default=None, max_length=255)
@@ -580,6 +591,7 @@ class VisitCreate(BaseModel):
     reflection: str | None = None
     follow_up_planned: bool = False
     additional_presenters: str | None = Field(default=None, max_length=500)
+    co_presenter_user_ids: list[int] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
     links: list[VisitLink] = Field(default_factory=list)
 
@@ -622,6 +634,7 @@ class VisitUpdate(BaseModel):
     reflection: str | None = None
     follow_up_planned: bool | None = None
     additional_presenters: str | None = Field(default=None, max_length=500)
+    co_presenter_user_ids: list[int] | None = None
     tags: list[str] | None = None
     links: list[VisitLink] | None = None
 
@@ -668,6 +681,7 @@ class VisitOut(BaseModel):
     reflection: str | None
     follow_up_planned: bool
     additional_presenters: str | None
+    co_presenters: list[ContributorUser] = Field(default_factory=list)
     tags: list[str]
     links: list[VisitLink]
     created_at: datetime
@@ -819,6 +833,14 @@ class VenuePoint(BaseModel):
 
 # --- Federation ---
 
+class Contributor(BaseModel):
+    """A person involved in an activity — the lead or a co-presenter — with
+    their ORCID where known, so a receiving community can link people (#9)."""
+
+    name: str
+    orcid: str | None = None
+
+
 class FederatedActivityOut(BaseModel):
     """A single limited-field activity in the feed this instance publishes to
     siblings. Never carries private fields (description, reflection, rating,
@@ -836,6 +858,9 @@ class FederatedActivityOut(BaseModel):
     event_type: str | None  # raw enum value
     audience_level: str | None  # raw enum value
     person_name: str | None
+    # Lead + co-presenters with ORCIDs where known (person_name stays for
+    # backward compatibility with older consumers).
+    contributors: list[Contributor] = Field(default_factory=list)
     people_reached: int
     permalink: str | None
 

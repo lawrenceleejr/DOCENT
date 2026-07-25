@@ -117,6 +117,18 @@ def fetch_peer(feed_url: str, *, updated_since: datetime | None = None) -> dict[
     return envelope
 
 
+def _clean_contributors(raw: Any) -> list[dict[str, Any]]:
+    """Keep only well-formed {name, orcid} entries from a peer's feed (#9)."""
+    out: list[dict[str, Any]] = []
+    if not isinstance(raw, list):
+        return out
+    for c in raw[:50]:
+        if isinstance(c, dict) and c.get("name"):
+            orcid = c.get("orcid")
+            out.append({"name": str(c["name"])[:255], "orcid": str(orcid) if orcid else None})
+    return out
+
+
 def _coerce_row(raw: dict[str, Any]) -> dict[str, Any] | None:
     """Validate/normalize one feed activity; None if unusable."""
     visit_date = raw.get("visit_date")
@@ -144,6 +156,7 @@ def _coerce_row(raw: dict[str, Any]) -> dict[str, Any] | None:
         "event_type": raw.get("event_type"),
         "audience_level": raw.get("audience_level"),
         "person_name": raw.get("person_name"),
+        "contributors": _clean_contributors(raw.get("contributors")),
         "people_reached": raw.get("people_reached") or 0,
         "permalink": raw.get("permalink"),
     }

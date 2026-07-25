@@ -207,7 +207,11 @@
       "peopleReachedTooLarge": "That seems too large (max {{max}}).",
       "peopleReachedTooLargeTypo": "That seems too large (max {{max}}). Check for a typo.",
       "peopleReachedRequired": "How many people did you reach?"
-    }
+    },
+    "coPresentersLabel": "Co-presenters with accounts",
+    "coPresentersDescription": "Link colleagues who have an account here, so they're credited and their ORCIDs travel with federated activity.",
+    "coPresentersPlaceholder": "Search people by name…",
+    "coPresentersNothing": "No matching people"
   },
   "visitDetail": {
     "markCompleted": "Mark as completed",
@@ -234,7 +238,8 @@
     "fieldEmail": "Email",
     "fieldPhone": "Phone",
     "fieldHostNotes": "Host notes",
-    "minSuffix": "min"
+    "minSuffix": "min",
+    "fieldCoPresenters": "Co-presenters"
   },
   "enums": {
     "venueType": {

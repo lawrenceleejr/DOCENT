@@ -245,6 +245,11 @@ class Visit(Base):
     reflection: Mapped[str | None] = mapped_column(Text)
     follow_up_planned: Mapped[bool] = mapped_column(Boolean, default=False)
     additional_presenters: Mapped[str | None] = mapped_column(String(500))
+    # Co-presenters who have accounts here — links them (and their ORCIDs) to
+    # the event so those ORCIDs can travel with federation (#9).
+    co_presenter_user_ids: Mapped[list[int]] = mapped_column(
+        ARRAY(Integer), nullable=False, server_default=text("'{}'")
+    )
     # Free-text labels for grouping/filtering (e.g. "nsf-career", "girls-in-stem").
     tags: Mapped[list[str]] = mapped_column(
         ARRAY(String), nullable=False, server_default=text("'{}'")
@@ -409,6 +414,11 @@ class FederatedActivity(Base):
     event_type: Mapped[str | None] = mapped_column(String(50))  # raw enum value
     audience_level: Mapped[str | None] = mapped_column(String(50))  # raw enum value
     person_name: Mapped[str | None] = mapped_column(String(255))
+    # Lead + co-presenters with ORCIDs where known — list of {name, orcid} — so
+    # the receiving instance can link people across communities (#9).
+    contributors: Mapped[list] = mapped_column(
+        JSONB, nullable=False, server_default=text("'[]'::jsonb")
+    )
     people_reached: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     permalink: Mapped[str | None] = mapped_column(Text)
     fetched_at: Mapped[datetime] = mapped_column(

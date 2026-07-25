@@ -207,7 +207,11 @@
       "peopleReachedTooLarge": "该数字似乎过大（最多 {{max}} 人）。",
       "peopleReachedTooLargeTypo": "该数字似乎过大（最多 {{max}} 人）。请检查是否有输入错误。",
       "peopleReachedRequired": "请填写您触达的人数"
-    }
+    },
+    "coPresentersLabel": "具账号的协同讲者",
+    "coPresentersDescription": "关联在此拥有账号的同事，让他们获得标注，且其 ORCID 会随联邦活动一起传递。",
+    "coPresentersPlaceholder": "以姓名搜索人员…",
+    "coPresentersNothing": "没有匹配的人员"
   },
   "visitDetail": {
     "markCompleted": "标记为已完成",
@@ -234,7 +238,8 @@
     "fieldEmail": "电子邮箱",
     "fieldPhone": "电话",
     "fieldHostNotes": "接待方备注",
-    "minSuffix": "分钟"
+    "minSuffix": "分钟",
+    "fieldCoPresenters": "协同讲者"
   },
   "enums": {
     "venueType": {

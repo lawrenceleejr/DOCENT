@@ -318,10 +318,17 @@ export interface Visit {
   reflection: string | null;
   follow_up_planned: boolean;
   additional_presenters: string | null;
+  co_presenters: ContributorUser[];
   tags: string[];
   links: CoverageLink[];
   created_at: string;
   updated_at: string;
+}
+
+export interface ContributorUser {
+  id: number;
+  name: string;
+  orcid: string | null;
 }
 
 /** A visit-list row — either a local visit or an activity pulled from a sibling

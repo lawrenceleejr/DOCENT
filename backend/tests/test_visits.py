@@ -397,3 +397,28 @@ def test_visit_language_in_csv_export(client):
     header, row = csv_text.splitlines()[0], csv_text.splitlines()[1]
     assert "language" in header.split(",")
     assert "Vietnamese" in row
+
+
+def test_visit_co_presenters_resolve_with_orcid(client, make_client):
+    register(client, email="ada@example.com", name="Ada")
+    ben = make_client()
+    ben_id = register(ben, email="ben@example.com", name="Ben").json()["id"]
+    ben.patch("/api/users/me", json={"orcid": "0000-0001-5109-3700"})
+
+    venue = create_venue(client)
+    v = create_visit(client, venue["id"], co_presenter_user_ids=[ben_id])
+    detail = client.get(f"/api/visits/{v['id']}").json()
+    assert [c["name"] for c in detail["co_presenters"]] == ["Ben"]
+    assert detail["co_presenters"][0]["orcid"] == "0000-0001-5109-3700"
+
+
+def test_user_search_for_co_presenters(client, make_client):
+    register(client, email="ada@example.com", name="Ada Alvarez")
+    other = make_client()
+    register(other, email="ben@example.com", name="Ben Okafor")
+
+    assert client.get("/api/users/search").json() == []  # blank query -> nothing
+    res = client.get("/api/users/search", params={"q": "okafor"}).json()
+    assert [u["name"] for u in res] == ["Ben Okafor"]
+    # Excludes the searcher themselves.
+    assert client.get("/api/users/search", params={"q": "alvarez"}).json() == []

@@ -44,6 +44,7 @@ import {
   type VisitStatus,
 } from '../api/types';
 import { useEnumLabel } from '../i18n/enumLabels';
+import { CoPresenterPicker } from '../components/CoPresenterPicker';
 import { VenuePicker } from '../components/VenuePicker';
 import { confirmLeave, useUnsavedGuard } from '../components/useUnsavedGuard';
 import { toDateString } from './VisitListPage';
@@ -71,6 +72,7 @@ interface FormValues {
   reflection: string;
   follow_up_planned: boolean;
   additional_presenters: string;
+  co_presenter_user_ids: number[];
   tags: string[];
   links: CoverageLink[];
 }
@@ -122,6 +124,7 @@ export function VisitFormPage() {
       reflection: '',
       follow_up_planned: false,
       additional_presenters: '',
+      co_presenter_user_ids: [] as number[],
       tags: [],
       links: [],
     },
@@ -173,6 +176,7 @@ export function VisitFormPage() {
         reflection: existing.reflection ?? '',
         follow_up_planned: existing.follow_up_planned,
         additional_presenters: existing.additional_presenters ?? '',
+        co_presenter_user_ids: (existing.co_presenters ?? []).map((u) => u.id),
         tags: existing.tags ?? [],
         links: (existing.links ?? []).map((l) => ({ ...l, label: l.label ?? '' })),
       });
@@ -231,6 +235,7 @@ export function VisitFormPage() {
         reflection: values.reflection.trim() || null,
         follow_up_planned: values.follow_up_planned,
         additional_presenters: values.additional_presenters.trim() || null,
+        co_presenter_user_ids: values.co_presenter_user_ids,
         tags: values.tags,
         links: values.links
           .filter((l) => l.url.trim())
@@ -379,6 +384,11 @@ export function VisitFormPage() {
               placeholder={t('visitForm.additionalPresentersPlaceholder')}
               description={isPlanned ? undefined : t('visitForm.additionalPresentersDescription')}
               {...form.getInputProps('additional_presenters')}
+            />
+            <CoPresenterPicker
+              value={form.values.co_presenter_user_ids}
+              onChange={(ids) => form.setFieldValue('co_presenter_user_ids', ids)}
+              initialUsers={existing?.co_presenters}
             />
             <TagsInput
               label={t('visitForm.tagsLabel')}

@@ -17,6 +17,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import { isOverdue, type Visit } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { OrcidLink } from '../components/OrcidLink';
 import { useEnumLabel } from '../i18n/enumLabels';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -154,6 +155,23 @@ export function VisitDetailPage() {
           {visit.additional_presenters && (
             <Field label={t('visitDetail.fieldAdditionalPresenters')}>
               {visit.additional_presenters}
+            </Field>
+          )}
+          {visit.co_presenters.length > 0 && (
+            <Field label={t('visitDetail.fieldCoPresenters')}>
+              <Group gap="md">
+                {visit.co_presenters.map((p) => (
+                  <span key={p.id}>
+                    {p.name}
+                    {p.orcid && (
+                      <>
+                        {' · '}
+                        <OrcidLink orcid={p.orcid} size="xs" />
+                      </>
+                    )}
+                  </span>
+                ))}
+              </Group>
             </Field>
           )}
           {visit.tags.length > 0 && (
