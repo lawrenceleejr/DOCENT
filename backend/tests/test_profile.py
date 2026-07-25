@@ -212,3 +212,35 @@ def test_profile_orcid_normalize_validate_and_clear(client):
     r = client.patch("/api/users/me", json={"orcid": ""})
     assert r.status_code == 200
     assert r.json()["orcid"] is None
+
+
+def test_user_profile_view(client, make_client):
+    register(client, email="admin@example.com", name="Admin")  # admin
+    client.patch("/api/admin/settings", json={"user_directory_visible": False})
+
+    ada = make_client()
+    ada_id = register(ada, email="ada@example.com", name="Ada", affiliation="Physics").json()["id"]
+    ada.patch("/api/users/me", json={"orcid": "0000-0002-1825-0097"})
+    venue = create_venue(ada)
+    create_visit(ada, venue["id"], title="Star party", people_reached=40,
+                 reflection="secret reflection", rating=5)
+
+    # Admin can view Ada's profile + events; private fields never appear.
+    prof = client.get(f"/api/users/{ada_id}/profile").json()
+    assert prof["name"] == "Ada"
+    assert prof["affiliation"] == "Physics"
+    assert prof["orcid"] == "0000-0002-1825-0097"
+    assert prof["total_visits"] == 1
+    assert prof["total_people_reached"] == 40
+    assert prof["visits"][0]["title"] == "Star party"
+    assert "rating" not in prof["visits"][0]
+    assert "reflection" not in prof["visits"][0]
+
+    # A non-admin is blocked while the directory is disabled, allowed once on.
+    other = make_client()
+    register(other, email="other@example.com")
+    assert other.get(f"/api/users/{ada_id}/profile").status_code == 403
+    client.patch("/api/admin/settings", json={"user_directory_visible": True})
+    assert other.get(f"/api/users/{ada_id}/profile").status_code == 200
+
+    assert client.get("/api/users/99999/profile").status_code == 404

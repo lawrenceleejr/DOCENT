@@ -904,5 +904,18 @@
     "paused": "En pause",
     "soon": "Bientôt",
     "statusErrorCount": "Erreur ×{{count}}"
+  },
+  "profileView": {
+    "totalVisits": "Visites",
+    "peopleReached": "Personnes touchées",
+    "languages": "Intervient en",
+    "schools": "Établissements fréquentés",
+    "eventsTitle": "Événements",
+    "colDate": "Date",
+    "colTitle": "Titre",
+    "colVenue": "Lieu",
+    "colType": "Type",
+    "colPeople": "Personnes",
+    "noEvents": "Aucun événement pour l’instant."
   }
 }

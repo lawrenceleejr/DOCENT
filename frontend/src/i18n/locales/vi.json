@@ -904,5 +904,18 @@
     "paused": "Đã tạm dừng",
     "soon": "Sắp tới",
     "statusErrorCount": "Lỗi ×{{count}}"
+  },
+  "profileView": {
+    "totalVisits": "Lượt đến",
+    "peopleReached": "Người tiếp cận",
+    "languages": "Trình bày bằng",
+    "schools": "Trường đã học",
+    "eventsTitle": "Sự kiện",
+    "colDate": "Ngày",
+    "colTitle": "Tiêu đề",
+    "colVenue": "Địa điểm",
+    "colType": "Loại",
+    "colPeople": "Người",
+    "noEvents": "Chưa có sự kiện nào."
   }
 }

@@ -904,5 +904,18 @@
     "paused": "Naka-pause",
     "soon": "Malapit na",
     "statusErrorCount": "Error ×{{count}}"
+  },
+  "profileView": {
+    "totalVisits": "Mga bisita",
+    "peopleReached": "Naabot na tao",
+    "languages": "Nagpre-present sa",
+    "schools": "Mga paaralang pinasukan",
+    "eventsTitle": "Mga event",
+    "colDate": "Petsa",
+    "colTitle": "Pamagat",
+    "colVenue": "Lugar",
+    "colType": "Uri",
+    "colPeople": "Tao",
+    "noEvents": "Wala pang event."
   }
 }

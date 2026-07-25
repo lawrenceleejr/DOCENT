@@ -481,6 +481,36 @@ class DirectoryUserOut(BaseModel):
     schools: list[VenueBrief]
 
 
+class ProfileVisit(BaseModel):
+    """A member profile's visit row — factual fields only, never the private
+    ones (host contact/notes, reflection, rating)."""
+
+    id: int
+    visit_date: date
+    status: VisitStatus
+    title: str
+    event_type: EventType
+    audience_level: AudienceLevel | None
+    venue_name: str
+    venue_city: str | None
+    people_reached: int
+
+
+class UserProfileOut(BaseModel):
+    """Another member's viewable profile (#16): public details + their events."""
+
+    id: int
+    name: str
+    affiliation: str | None
+    position: str | None
+    orcid: str | None
+    languages_spoken: list[str]
+    schools: list[VenueBrief]
+    total_visits: int
+    total_people_reached: int
+    visits: list[ProfileVisit]
+
+
 class DirectoryUserList(BaseModel):
     items: list[DirectoryUserOut]
     total: int

@@ -223,6 +223,31 @@ export interface AdminUser extends User {
   schools: VenueBrief[];
 }
 
+export interface ProfileVisit {
+  id: number;
+  visit_date: string;
+  status: VisitStatus;
+  title: string;
+  event_type: EventType;
+  audience_level: AudienceLevel | null;
+  venue_name: string;
+  venue_city: string | null;
+  people_reached: number;
+}
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  affiliation: string | null;
+  position: string | null;
+  orcid: string | null;
+  languages_spoken: string[];
+  schools: VenueBrief[];
+  total_visits: number;
+  total_people_reached: number;
+  visits: ProfileVisit[];
+}
+
 export interface DirectoryUser {
   id: number;
   name: string;

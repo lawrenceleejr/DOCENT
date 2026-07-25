@@ -1,7 +1,8 @@
-import { Badge, Card, Group, Select, Stack, Table, Text, TextInput, Title } from '@mantine/core';
+import { Anchor, Badge, Card, Group, Select, Stack, Table, Text, TextInput, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { LANGUAGES, type DirectoryUser, type Paginated } from '../api/types';
 import { OrcidLink } from '../components/OrcidLink';
@@ -76,7 +77,11 @@ export function DirectoryPage() {
             <Table.Tbody>
               {(data?.items ?? []).map((member) => (
                 <Table.Tr key={member.id}>
-                  <Table.Td>{member.name}</Table.Td>
+                  <Table.Td>
+                    <Anchor component={Link} to={`/directory/${member.id}`}>
+                      {member.name}
+                    </Anchor>
+                  </Table.Td>
                   <Table.Td>{member.affiliation ?? '—'}</Table.Td>
                   <Table.Td>{member.position ?? '—'}</Table.Td>
                   <Table.Td>

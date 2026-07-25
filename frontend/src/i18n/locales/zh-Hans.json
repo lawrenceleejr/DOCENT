@@ -904,5 +904,18 @@
     "paused": "已暂停",
     "soon": "即将进行",
     "statusErrorCount": "错误 ×{{count}}"
+  },
+  "profileView": {
+    "totalVisits": "访问",
+    "peopleReached": "触及人数",
+    "languages": "使用语言",
+    "schools": "就读学校",
+    "eventsTitle": "活动",
+    "colDate": "日期",
+    "colTitle": "标题",
+    "colVenue": "地点",
+    "colType": "类型",
+    "colPeople": "人数",
+    "noEvents": "暂无活动。"
   }
 }

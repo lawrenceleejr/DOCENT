@@ -904,5 +904,18 @@
     "paused": "Paused",
     "soon": "Soon",
     "statusErrorCount": "Error ×{{count}}"
+  },
+  "profileView": {
+    "totalVisits": "Visits",
+    "peopleReached": "People reached",
+    "languages": "Presents in",
+    "schools": "Schools attended",
+    "eventsTitle": "Events",
+    "colDate": "Date",
+    "colTitle": "Title",
+    "colVenue": "Venue",
+    "colType": "Type",
+    "colPeople": "People",
+    "noEvents": "No events yet."
   }
 }

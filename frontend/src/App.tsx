@@ -10,6 +10,7 @@ import { MapPage } from './pages/MapPage';
 import { PublicImpactPage } from './pages/PublicImpactPage';
 import { SchedulePage } from './pages/SchedulePage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ProfileViewPage } from './pages/ProfileViewPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { VenueDetailPage } from './pages/VenueDetailPage';
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/directory" element={<DirectoryPage />} />
+        <Route path="/directory/:userId" element={<ProfileViewPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

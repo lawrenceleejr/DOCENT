@@ -3,14 +3,16 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentUser, DbSession
-from app.models import Connection, HostRelationship, User, UserSchool, Venue
+from app.models import Connection, HostRelationship, User, UserSchool, Venue, Visit
 from app.schemas import (
     ContributorUser,
     DirectoryUserList,
     DirectoryUserOut,
+    ProfileVisit,
     SchoolCreate,
     SchoolOut,
     UserOut,
+    UserProfileOut,
     UserUpdate,
 )
 from app.security import hash_password, verify_password
@@ -191,3 +193,54 @@ def user_directory(
         for u in users
     ]
     return DirectoryUserList(items=items, total=total, page=page, page_size=page_size)
+
+
+@router.get("/{user_id}/profile", response_model=UserProfileOut)
+def user_profile(user_id: int, user: CurrentUser, db: DbSession):
+    """Another member's profile and their events (#16). Available when the
+    member directory is enabled (admins always). Carries no private fields."""
+    if not user.is_admin and not user_directory_visible(db):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The member directory isn't enabled for this community",
+        )
+    target = db.get(
+        User,
+        user_id,
+        options=[joinedload(User.schools).joinedload(UserSchool.venue)],
+    )
+    if not target or not target.is_active:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    visits = db.scalars(
+        select(Visit)
+        .where(Visit.author_id == user_id)
+        .options(joinedload(Visit.venue))
+        .order_by(Visit.visit_date.desc(), Visit.id.desc())
+        .limit(500)
+    ).all()
+    return UserProfileOut(
+        id=target.id,
+        name=target.name,
+        affiliation=target.affiliation,
+        position=target.position,
+        orcid=target.orcid,
+        languages_spoken=target.languages_spoken,
+        schools=[s.venue for s in target.schools],
+        total_visits=len(visits),
+        total_people_reached=sum(v.people_reached for v in visits),
+        visits=[
+            ProfileVisit(
+                id=v.id,
+                visit_date=v.visit_date,
+                status=v.status,
+                title=v.title,
+                event_type=v.event_type,
+                audience_level=v.audience_level,
+                venue_name=v.venue.name,
+                venue_city=v.venue.city,
+                people_reached=v.people_reached,
+            )
+            for v in visits
+        ],
+    )
