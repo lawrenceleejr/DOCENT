@@ -303,3 +303,22 @@ def test_map_radius_setting(client):
 
     # A non-positive radius is rejected.
     assert client.patch("/api/admin/settings", json={"map_radius_km": 0}).status_code == 422
+
+
+def test_site_banner_setting(client):
+    register(client, email="admin@example.com")  # admin
+    # Off by default.
+    assert client.get("/api/auth/config").json()["banner_message"] is None
+    assert client.get("/api/admin/settings").json()["banner_level"] == "info"
+
+    r = client.patch(
+        "/api/admin/settings",
+        json={"banner_message": "  Maintenance tonight  ", "banner_level": "warning"},
+    )
+    assert r.status_code == 200
+    cfg = client.get("/api/auth/config").json()
+    assert cfg["banner_message"] == "Maintenance tonight"  # trimmed
+    assert cfg["banner_level"] == "warning"
+
+    # Invalid severity is rejected.
+    assert client.patch("/api/admin/settings", json={"banner_level": "boom"}).status_code == 422

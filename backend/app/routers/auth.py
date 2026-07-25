@@ -16,6 +16,8 @@ from app.services.settings import (
     effective_contact_email,
     effective_invite_code,
     effective_login_message,
+    effective_banner_level,
+    effective_banner_message,
     effective_map_center_lat,
     effective_map_center_lon,
     effective_map_radius_km,
@@ -41,6 +43,8 @@ def auth_config(db: DbSession) -> AuthConfig:
         map_center_lat=effective_map_center_lat(db),
         map_center_lon=effective_map_center_lon(db),
         map_radius_km=effective_map_radius_km(db),
+        banner_message=effective_banner_message(db) or None,
+        banner_level=effective_banner_level(db),
         user_directory_visible=user_directory_visible(db),
         has_siblings=bool(
             db.scalar(

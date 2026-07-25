@@ -119,7 +119,7 @@
     "colAudience": "Public",
     "colPeopleReached": "Personnes rejointes",
     "colRating": "Évaluation",
-    "overdue": "En retard",
+    "overdue": "Compte rendu à faire",
     "emptyTitle": "Aucune visite trouvée",
     "emptyDescription": "Aucune visite ne correspond à ces filtres pour l'instant. Consignez votre première visite de rayonnement pour commencer.",
     "emptyDescriptionShort": "Aucune visite ne correspond à ces filtres pour l'instant.",
@@ -494,7 +494,14 @@
     "loginHistoryColUser": "Utilisateur",
     "loginHistoryColWhen": "Quand",
     "loginHistoryEmpty": "Aucune connexion enregistrée pour l’instant.",
-    "radiusLabel": "Rayon de couverture (km)"
+    "radiusLabel": "Rayon de couverture (km)",
+    "bannerMessageLabel": "Bannière sur tout le site",
+    "bannerMessageDescription": "Affichée en haut de chaque page pour les utilisateurs connectés. Laissez vide pour la masquer.",
+    "bannerMessagePlaceholder": "ex. Maintenance planifiée ce samedi, de 21h à 23h.",
+    "bannerLevelLabel": "Niveau de la bannière",
+    "bannerLevelInfo": "Information",
+    "bannerLevelWarning": "Avertissement",
+    "bannerLevelCritical": "Critique"
   },
   "dashboard": {
     "title": "Analyse",
@@ -671,7 +678,8 @@
     "colPresenter": "Présentateur",
     "colCoverage": "Couverture",
     "emptyState": "Aucune activité ne correspond à ces filtres. Essayez « {{everyone}} » plutôt que « {{myActivities}} », réglez le Statut sur « {{all}} », ou élargissez la période.",
-    "showingFirst": "Affichage des {{limit}} premières activités sur {{total}}. Le téléchargement les inclut toutes."
+    "showingFirst": "Affichage des {{limit}} premières activités sur {{total}}. Le téléchargement les inclut toutes.",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
     "title": "Calendrier",
@@ -691,7 +699,7 @@
     "colVenue": "Lieu",
     "colCommunicator": "Communicateur",
     "colAudience": "Public",
-    "overdue": "En retard",
+    "overdue": "Compte rendu à faire",
     "markDone": "Marquer comme terminée",
     "emptyTitle": "Rien de prévu",
     "emptyDescription": "Aucune activité planifiée à venir ne correspond à ces filtres. Planifiez-en une et elle apparaîtra ici — prête à exporter vers votre calendrier.",

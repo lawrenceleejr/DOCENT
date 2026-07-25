@@ -547,6 +547,8 @@ export interface AuthConfig {
   map_center_lat: number;
   map_center_lon: number;
   map_radius_km: number;
+  banner_message: string | null;
+  banner_level: string;
   user_directory_visible: boolean;
   has_siblings: boolean;
 }
@@ -640,6 +642,8 @@ export interface RegistrationSettings {
   map_center_lat: number;
   map_center_lon: number;
   map_radius_km: number;
+  banner_message: string;
+  banner_level: string;
   user_directory_visible: boolean;
   federation_publish: boolean;
   federation_publish_planned: boolean;

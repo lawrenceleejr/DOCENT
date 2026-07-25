@@ -119,7 +119,7 @@
     "colAudience": "Audience",
     "colPeopleReached": "People reached",
     "colRating": "Rating",
-    "overdue": "Overdue",
+    "overdue": "Needs report",
     "emptyTitle": "No visits found",
     "emptyDescription": "No visits match these filters yet. Log your first outreach visit to get started.",
     "emptyDescriptionShort": "No visits match these filters yet.",
@@ -494,7 +494,14 @@
     "loginHistoryColUser": "User",
     "loginHistoryColWhen": "When",
     "loginHistoryEmpty": "No logins recorded yet.",
-    "radiusLabel": "Coverage radius (km)"
+    "radiusLabel": "Coverage radius (km)",
+    "bannerMessageLabel": "Site-wide banner",
+    "bannerMessageDescription": "Shown at the top of every page for signed-in users. Leave blank to hide.",
+    "bannerMessagePlaceholder": "e.g. Scheduled maintenance this Saturday, 9–11pm.",
+    "bannerLevelLabel": "Banner severity",
+    "bannerLevelInfo": "Info",
+    "bannerLevelWarning": "Warning",
+    "bannerLevelCritical": "Critical"
   },
   "dashboard": {
     "title": "Analysis",
@@ -671,7 +678,8 @@
     "colPresenter": "Presenter",
     "colCoverage": "Coverage",
     "emptyState": "No activities match these filters. Try “{{everyone}}” instead of “{{myActivities}}”, set Status to “{{all}}”, or widen the date range.",
-    "showingFirst": "Showing the first {{limit}} of {{total}} activities. The download includes all of them."
+    "showingFirst": "Showing the first {{limit}} of {{total}} activities. The download includes all of them.",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
     "title": "Schedule",
@@ -691,7 +699,7 @@
     "colVenue": "Venue",
     "colCommunicator": "Communicator",
     "colAudience": "Audience",
-    "overdue": "Overdue",
+    "overdue": "Needs report",
     "markDone": "Mark done",
     "emptyTitle": "Nothing scheduled",
     "emptyDescription": "No upcoming planned events match these filters. Schedule one and it will appear here — ready to export to your calendar.",

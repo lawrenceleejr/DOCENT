@@ -119,7 +119,7 @@
     "colAudience": "Audience",
     "colPeopleReached": "Taong naabot",
     "colRating": "Rating",
-    "overdue": "Lampas na sa deadline",
+    "overdue": "Kailangan ng ulat",
     "emptyTitle": "Walang nahanap na pagbisita",
     "emptyDescription": "Walang pagbisitang tumutugma sa mga filter na ito. Mag-log ng iyong unang outreach visit para makapagsimula.",
     "emptyDescriptionShort": "Walang pagbisitang tumutugma sa mga filter na ito.",
@@ -494,7 +494,14 @@
     "loginHistoryColUser": "User",
     "loginHistoryColWhen": "Kailan",
     "loginHistoryEmpty": "Wala pang naitalang login.",
-    "radiusLabel": "Radius ng saklaw (km)"
+    "radiusLabel": "Radius ng saklaw (km)",
+    "bannerMessageLabel": "Banner sa buong site",
+    "bannerMessageDescription": "Ipinapakita sa itaas ng bawat page para sa mga naka-sign in. Iwang blangko para itago.",
+    "bannerMessagePlaceholder": "hal. Nakaiskedyul na maintenance ngayong Sabado, 9–11pm.",
+    "bannerLevelLabel": "Antas ng banner",
+    "bannerLevelInfo": "Impormasyon",
+    "bannerLevelWarning": "Babala",
+    "bannerLevelCritical": "Kritikal"
   },
   "dashboard": {
     "title": "Analysis",
@@ -671,7 +678,8 @@
     "colPresenter": "Presenter",
     "colCoverage": "Coverage",
     "emptyState": "Walang aktibidad na tumutugma sa mga filter na ito. Subukang gamitin ang “{{everyone}}” sa halip ng “{{myActivities}}”, itakda ang Status sa “{{all}}”, o palawakin ang saklaw ng petsa.",
-    "showingFirst": "Ipinapakita ang unang {{limit}} sa {{total}} na aktibidad. Kasama sa download ang lahat nito."
+    "showingFirst": "Ipinapakita ang unang {{limit}} sa {{total}} na aktibidad. Kasama sa download ang lahat nito.",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
     "title": "Iskedyul",
@@ -691,7 +699,7 @@
     "colVenue": "Venue",
     "colCommunicator": "Communicator",
     "colAudience": "Audience",
-    "overdue": "Lampas na sa deadline",
+    "overdue": "Kailangan ng ulat",
     "markDone": "Markahan bilang tapos",
     "emptyTitle": "Walang naka-iskedyul",
     "emptyDescription": "Walang darating na naka-planong event na tumutugma sa mga filter na ito. Mag-iskedyul ng isa at lalabas ito rito — handa na para i-export sa inyong kalendaryo.",

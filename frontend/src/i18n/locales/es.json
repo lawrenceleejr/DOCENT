@@ -119,7 +119,7 @@
     "colAudience": "Público",
     "colPeopleReached": "Personas alcanzadas",
     "colRating": "Calificación",
-    "overdue": "Vencida",
+    "overdue": "Pendiente de informe",
     "emptyTitle": "No se encontraron visitas",
     "emptyDescription": "Ninguna visita coincide con estos filtros todavía. Registra tu primera visita de difusión para comenzar.",
     "emptyDescriptionShort": "Ninguna visita coincide con estos filtros todavía.",
@@ -494,7 +494,14 @@
     "loginHistoryColUser": "Usuario",
     "loginHistoryColWhen": "Cuándo",
     "loginHistoryEmpty": "Aún no hay accesos registrados.",
-    "radiusLabel": "Radio de cobertura (km)"
+    "radiusLabel": "Radio de cobertura (km)",
+    "bannerMessageLabel": "Aviso para todo el sitio",
+    "bannerMessageDescription": "Se muestra en la parte superior de cada página para los usuarios que han iniciado sesión. Déjalo en blanco para ocultarlo.",
+    "bannerMessagePlaceholder": "p. ej. Mantenimiento programado este sábado, de 21:00 a 23:00.",
+    "bannerLevelLabel": "Gravedad del aviso",
+    "bannerLevelInfo": "Información",
+    "bannerLevelWarning": "Advertencia",
+    "bannerLevelCritical": "Crítico"
   },
   "dashboard": {
     "title": "Análisis",
@@ -671,7 +678,8 @@
     "colPresenter": "Presentador",
     "colCoverage": "Cobertura",
     "emptyState": "Ninguna actividad coincide con estos filtros. Prueba con “{{everyone}}” en lugar de “{{myActivities}}”, cambia Estado a “{{all}}”, o amplía el rango de fechas.",
-    "showingFirst": "Mostrando las primeras {{limit}} de {{total}} actividades. La descarga las incluye todas."
+    "showingFirst": "Mostrando las primeras {{limit}} de {{total}} actividades. La descarga las incluye todas.",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
     "title": "Agenda",
@@ -691,7 +699,7 @@
     "colVenue": "Sede",
     "colCommunicator": "Comunicador",
     "colAudience": "Público",
-    "overdue": "Vencida",
+    "overdue": "Pendiente de informe",
     "markDone": "Marcar como hecho",
     "emptyTitle": "Nada programado",
     "emptyDescription": "Ningún próximo evento planeado coincide con estos filtros. Programa uno y aparecerá aquí — listo para exportar a tu calendario.",

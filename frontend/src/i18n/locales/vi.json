@@ -119,7 +119,7 @@
     "colAudience": "Đối tượng",
     "colPeopleReached": "Số người tiếp cận",
     "colRating": "Đánh giá",
-    "overdue": "Quá hạn",
+    "overdue": "Cần báo cáo",
     "emptyTitle": "Không tìm thấy lượt ghé thăm nào",
     "emptyDescription": "Chưa có lượt ghé thăm nào phù hợp với các bộ lọc này. Hãy ghi nhận lượt ghé thăm đầu tiên của bạn để bắt đầu.",
     "emptyDescriptionShort": "Chưa có lượt ghé thăm nào phù hợp với các bộ lọc này.",
@@ -494,7 +494,14 @@
     "loginHistoryColUser": "Người dùng",
     "loginHistoryColWhen": "Thời điểm",
     "loginHistoryEmpty": "Chưa ghi nhận lần đăng nhập nào.",
-    "radiusLabel": "Bán kính phạm vi (km)"
+    "radiusLabel": "Bán kính phạm vi (km)",
+    "bannerMessageLabel": "Biểu ngữ toàn trang",
+    "bannerMessageDescription": "Hiển thị ở đầu mỗi trang cho người dùng đã đăng nhập. Để trống để ẩn.",
+    "bannerMessagePlaceholder": "vd. Bảo trì theo lịch vào thứ Bảy này, 21–23h.",
+    "bannerLevelLabel": "Mức độ của biểu ngữ",
+    "bannerLevelInfo": "Thông tin",
+    "bannerLevelWarning": "Cảnh báo",
+    "bannerLevelCritical": "Nghiêm trọng"
   },
   "dashboard": {
     "title": "Phân tích",
@@ -671,7 +678,8 @@
     "colPresenter": "Người trình bày",
     "colCoverage": "Truyền thông",
     "emptyState": "Không có hoạt động nào khớp với các bộ lọc này. Hãy thử \"{{everyone}}\" thay vì \"{{myActivities}}\", đặt Trạng thái thành \"{{all}}\", hoặc mở rộng khoảng thời gian.",
-    "showingFirst": "Đang hiển thị {{limit}} hoạt động đầu tiên trong tổng số {{total}}. Tệp tải xuống bao gồm tất cả."
+    "showingFirst": "Đang hiển thị {{limit}} hoạt động đầu tiên trong tổng số {{total}}. Tệp tải xuống bao gồm tất cả.",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
     "title": "Lịch trình",
@@ -691,7 +699,7 @@
     "colVenue": "Địa điểm",
     "colCommunicator": "Người kết nối",
     "colAudience": "Đối tượng",
-    "overdue": "Quá hạn",
+    "overdue": "Cần báo cáo",
     "markDone": "Đánh dấu hoàn thành",
     "emptyTitle": "Không có gì được lên kế hoạch",
     "emptyDescription": "Không có sự kiện đã lên kế hoạch sắp tới nào khớp với các bộ lọc này. Hãy lên kế hoạch một sự kiện và nó sẽ xuất hiện ở đây — sẵn sàng để xuất vào lịch của bạn.",

@@ -119,7 +119,7 @@
     "colAudience": "對象",
     "colPeopleReached": "觸及人數",
     "colRating": "評分",
-    "overdue": "逾期",
+    "overdue": "待補報告",
     "emptyTitle": "找不到到訪紀錄",
     "emptyDescription": "目前沒有符合篩選條件的到訪紀錄。記錄您的第一次推廣到訪，開始建立紀錄吧。",
     "emptyDescriptionShort": "目前沒有符合篩選條件的到訪紀錄。",
@@ -494,7 +494,14 @@
     "loginHistoryColUser": "使用者",
     "loginHistoryColWhen": "時間",
     "loginHistoryEmpty": "尚無登入紀錄。",
-    "radiusLabel": "涵蓋半徑（公里）"
+    "radiusLabel": "涵蓋半徑（公里）",
+    "bannerMessageLabel": "全站橫幅",
+    "bannerMessageDescription": "顯示在每個頁面頂部（供已登入的使用者）。留空即可隱藏。",
+    "bannerMessagePlaceholder": "例如：本週六 21:00–23:00 進行系統維護。",
+    "bannerLevelLabel": "橫幅嚴重程度",
+    "bannerLevelInfo": "資訊",
+    "bannerLevelWarning": "警告",
+    "bannerLevelCritical": "嚴重"
   },
   "dashboard": {
     "title": "分析",
@@ -671,7 +678,8 @@
     "colPresenter": "主講人",
     "colCoverage": "報導",
     "emptyState": "沒有符合篩選條件的活動。可以試著將範圍改為「{{everyone}}」而非「{{myActivities}}」，將狀態設為「{{all}}」，或放寬日期範圍。",
-    "showingFirst": "目前顯示前 {{limit}} 筆，共 {{total}} 筆活動。下載檔案將包含全部項目。"
+    "showingFirst": "目前顯示前 {{limit}} 筆，共 {{total}} 筆活動。下載檔案將包含全部項目。",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
     "title": "行程",
@@ -691,7 +699,7 @@
     "colVenue": "場地",
     "colCommunicator": "推廣人員",
     "colAudience": "對象",
-    "overdue": "逾期",
+    "overdue": "待補報告",
     "markDone": "標記完成",
     "emptyTitle": "尚無排定行程",
     "emptyDescription": "沒有符合篩選條件的即將舉行活動。安排一場活動後即會顯示於此——並可匯出至您的日曆。",

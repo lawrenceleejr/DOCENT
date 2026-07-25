@@ -57,6 +57,8 @@ from app.services.geocode import geocode, to_meters
 from app.services.institution_import import upsert_institutions
 from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
 from app.services.settings import (
+    BANNER_LEVEL_KEY,
+    BANNER_MESSAGE_KEY,
     CONTACT_EMAIL_KEY,
     FEDERATION_PUBLISH_KEY,
     FEDERATION_PUBLISH_PLANNED_KEY,
@@ -69,6 +71,8 @@ from app.services.settings import (
     SITE_NAME_KEY,
     SITE_URL_KEY,
     USER_DIRECTORY_KEY,
+    effective_banner_level,
+    effective_banner_message,
     effective_contact_email,
     effective_invite_code,
     effective_login_message,
@@ -181,6 +185,8 @@ def _settings_out(db) -> RegistrationSettings:
         map_center_lat=effective_map_center_lat(db),
         map_center_lon=effective_map_center_lon(db),
         map_radius_km=effective_map_radius_km(db),
+        banner_message=effective_banner_message(db),
+        banner_level=effective_banner_level(db),
         user_directory_visible=user_directory_visible(db),
         federation_publish=federation_publish_enabled(db),
         federation_publish_planned=federation_publish_planned_enabled(db),
@@ -215,6 +221,10 @@ def update_registration_settings(
         set_setting(db, MAP_CENTER_LON_KEY, str(body.map_center_lon))
     if body.map_radius_km is not None:
         set_setting(db, MAP_RADIUS_KM_KEY, str(body.map_radius_km))
+    if body.banner_message is not None:
+        set_setting(db, BANNER_MESSAGE_KEY, body.banner_message.strip())
+    if body.banner_level is not None:
+        set_setting(db, BANNER_LEVEL_KEY, body.banner_level)
     if body.user_directory_visible is not None:
         set_setting(db, USER_DIRECTORY_KEY, "1" if body.user_directory_visible else "")
     if body.federation_publish is not None:

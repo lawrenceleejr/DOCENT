@@ -119,7 +119,7 @@
     "colAudience": "受众",
     "colPeopleReached": "触达人数",
     "colRating": "评分",
-    "overdue": "已逾期",
+    "overdue": "待补报告",
     "emptyTitle": "未找到到访记录",
     "emptyDescription": "目前没有符合筛选条件的到访记录。记录您的第一次科普推广到访，开始使用吧。",
     "emptyDescriptionShort": "目前没有符合筛选条件的到访记录。",
@@ -494,7 +494,14 @@
     "loginHistoryColUser": "用户",
     "loginHistoryColWhen": "时间",
     "loginHistoryEmpty": "暂无登录记录。",
-    "radiusLabel": "覆盖半径（公里）"
+    "radiusLabel": "覆盖半径（公里）",
+    "bannerMessageLabel": "全站横幅",
+    "bannerMessageDescription": "显示在每个页面顶部（供已登录的用户）。留空即可隐藏。",
+    "bannerMessagePlaceholder": "例如：本周六 21:00–23:00 进行系统维护。",
+    "bannerLevelLabel": "横幅严重程度",
+    "bannerLevelInfo": "信息",
+    "bannerLevelWarning": "警告",
+    "bannerLevelCritical": "严重"
   },
   "dashboard": {
     "title": "数据分析",
@@ -671,7 +678,8 @@
     "colPresenter": "主讲人",
     "colCoverage": "报道",
     "emptyState": "没有符合筛选条件的活动。可以尝试将范围改为“{{everyone}}”而不是“{{myActivities}}”，将状态设为“{{all}}”，或扩大日期范围。",
-    "showingFirst": "当前显示 {{total}} 项活动中的前 {{limit}} 项。下载文件将包含全部内容。"
+    "showingFirst": "当前显示 {{total}} 项活动中的前 {{limit}} 项。下载文件将包含全部内容。",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
     "title": "日程安排",
@@ -691,7 +699,7 @@
     "colVenue": "场地",
     "colCommunicator": "推广人",
     "colAudience": "受众",
-    "overdue": "已逾期",
+    "overdue": "待补报告",
     "markDone": "标记为完成",
     "emptyTitle": "暂无安排",
     "emptyDescription": "没有符合筛选条件的即将进行的计划活动。安排一场活动后，它会出现在这里，随时可以导出到您的日历。",

@@ -270,6 +270,92 @@ def report_markdown(report: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _latex_escape(text: Any) -> str:
+    """Escape LaTeX's special characters so arbitrary venue/activity text is safe
+    inside a table cell."""
+    s = "" if text is None else str(text)
+    repl = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "$": r"\$",
+        "#": r"\#",
+        "_": r"\_",
+        "{": r"\{",
+        "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
+    }
+    return "".join(repl.get(ch, ch) for ch in s)
+
+
+# Column widths (landscape A4) for the LaTeX longtable — mirrors the PDF's
+# curated, publication-friendly column set.
+_LATEX_COL_SPEC = {
+    "date": r"p{1.7cm}",
+    "title": r"p{4.5cm}",
+    "event_type": r"p{2.4cm}",
+    "venue": r"p{3.8cm}",
+    "location": r"p{3cm}",
+    "audience": r"p{2.4cm}",
+    "people_reached": r"r",
+    "presenter": r"p{3cm}",
+}
+
+
+def report_latex(report: dict[str, Any]) -> str:
+    """A standalone, compilable LaTeX document with a booktabs longtable of the
+    activities — for dropping into a grant report or paper (#14). Carries the
+    same non-private columns as the PDF."""
+    s = report["summary"]
+    esc = _latex_escape
+    lines = [
+        r"\documentclass[10pt]{article}",
+        r"\usepackage[landscape,margin=0.75in]{geometry}",
+        r"\usepackage{longtable}",
+        r"\usepackage{booktabs}",
+        r"\usepackage[T1]{fontenc}",
+        r"\usepackage[utf8]{inputenc}",
+        r"\setlength{\LTleft}{0pt}",
+        r"\setlength{\LTright}{0pt}",
+        r"\begin{document}",
+        r"\section*{" + esc(report["title"]) + "}",
+        r"\noindent\textbf{Scope:} " + esc(_scope_label(report["scope"])) + r" \\",
+        r"\textbf{Date range:} " + esc(_range_label(report)) + r" \\",
+        r"\textbf{Generated:} " + esc(report["generated_at"]) + r" \\[4pt]",
+        (
+            r"\textbf{Activities:} " + f"{s['total_activities']:,}" + r" \quad "
+            r"\textbf{People reached:} " + f"{s['total_people_reached']:,}" + r" \quad "
+            r"\textbf{Distinct venues:} " + f"{s['distinct_venues']:,}"
+        ),
+        r"\bigskip",
+    ]
+
+    if not report["rows"]:
+        lines.append(r"\emph{No activities match the selected filters.}")
+        lines.append(r"\end{document}")
+        return "\n".join(lines) + "\n"
+
+    colspec = "".join(_LATEX_COL_SPEC[key] for key, _ in PDF_COLUMNS)
+    header = " & ".join(r"\textbf{" + esc(h) + "}" for _, h in PDF_COLUMNS) + r" \\"
+    lines += [
+        r"\begin{longtable}{" + colspec + "}",
+        r"\toprule",
+        header,
+        r"\midrule",
+        r"\endfirsthead",
+        r"\toprule",
+        header,
+        r"\midrule",
+        r"\endhead",
+    ]
+    for row in report["rows"]:
+        cells = " & ".join(esc(row.get(key, "")) for key, _ in PDF_COLUMNS)
+        lines.append(cells + r" \\")
+    lines += [r"\bottomrule", r"\end{longtable}", r"\end{document}"]
+    return "\n".join(lines) + "\n"
+
+
 def _pdf_safe(text: Any) -> str:
     """fpdf2 core fonts are latin-1; transliterate/replace anything outside it."""
     s = "" if text is None else str(text)
@@ -357,7 +443,7 @@ def report_pdf(report: dict[str, Any]) -> bytes:
 
 
 def report_filename(fmt: str, generated_at: datetime) -> str:
-    ext = {"json": "json", "csv": "csv", "md": "md", "pdf": "pdf"}[fmt]
+    ext = {"json": "json", "csv": "csv", "md": "md", "pdf": "pdf", "latex": "tex"}[fmt]
     return f"docent-report-{generated_at.strftime('%Y%m%d')}.{ext}"
 
 
@@ -366,4 +452,5 @@ CONTENT_TYPES = {
     "csv": "text/csv",
     "md": "text/markdown",
     "pdf": "application/pdf",
+    "latex": "application/x-tex",
 }

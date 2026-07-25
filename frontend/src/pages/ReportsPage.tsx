@@ -18,6 +18,7 @@ import {
   IconFileTypePdf,
   IconJson,
   IconMarkdown,
+  IconMath,
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -73,7 +74,7 @@ export function ReportsPage() {
       api.get<ActivityReport>('/api/reports/activities', { format: 'json', ...filterParams }),
   });
 
-  const downloadHref = (format: 'json' | 'csv' | 'md' | 'pdf') =>
+  const downloadHref = (format: 'json' | 'csv' | 'md' | 'pdf' | 'latex') =>
     `/api/reports/activities${buildQuery({ format, ...filterParams })}`;
 
   const activeFilterCount =
@@ -87,6 +88,7 @@ export function ReportsPage() {
     { fmt: 'pdf' as const, label: t('reports.formatPdf'), icon: IconFileTypePdf },
     { fmt: 'csv' as const, label: t('reports.formatCsv'), icon: IconFileTypeCsv },
     { fmt: 'md' as const, label: t('reports.formatMarkdown'), icon: IconMarkdown },
+    { fmt: 'latex' as const, label: t('reports.formatLatex'), icon: IconMath },
     { fmt: 'json' as const, label: t('reports.formatJson'), icon: IconJson },
   ];
 

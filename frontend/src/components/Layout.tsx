@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Alert,
   Anchor,
   AppShell,
   Avatar,
@@ -208,6 +209,16 @@ export function Layout({ children }: { children: ReactNode }) {
       </AppShell.Header>
       <AppShell.Main>
         <Container size="xl">
+          {config?.banner_message && (
+            // Admin-set site-wide notice, colored by severity (#24).
+            <Alert
+              color={BANNER_COLORS[config.banner_level] ?? 'blue'}
+              variant="light"
+              mb="md"
+            >
+              {config.banner_message}
+            </Alert>
+          )}
           <TranslationDisclaimer />
           {children}
         </Container>
@@ -223,6 +234,12 @@ export function Layout({ children }: { children: ReactNode }) {
     </AppShell>
   );
 }
+
+const BANNER_COLORS: Record<string, string> = {
+  info: 'blue',
+  warning: 'yellow',
+  critical: 'red',
+};
 
 const COPYRIGHT_YEAR = 2026;
 // Keep in step with package.json / backend version / CHANGELOG.

@@ -68,6 +68,8 @@ function RegistrationCard() {
   const [name, setName] = useState<string | null>(null);
   const [publicPage, setPublicPage] = useState<boolean | null>(null);
   const [loginMessage, setLoginMessage] = useState<string | null>(null);
+  const [bannerMessage, setBannerMessage] = useState<string | null>(null);
+  const [bannerLevel, setBannerLevel] = useState<string | null>(null);
   const [mapLat, setMapLat] = useState<number | string | null>(null);
   const [mapLon, setMapLon] = useState<number | string | null>(null);
   const [mapRadius, setMapRadius] = useState<number | string | null>(null);
@@ -78,6 +80,8 @@ function RegistrationCard() {
   const nameValue = name ?? data?.site_name ?? '';
   const publicValue = publicPage ?? data?.public_page ?? false;
   const loginMessageValue = loginMessage ?? data?.login_message ?? '';
+  const bannerMessageValue = bannerMessage ?? data?.banner_message ?? '';
+  const bannerLevelValue = bannerLevel ?? data?.banner_level ?? 'info';
   const mapLatValue = mapLat ?? data?.map_center_lat ?? 0;
   const mapLonValue = mapLon ?? data?.map_center_lon ?? 0;
   const mapRadiusValue = mapRadius ?? data?.map_radius_km ?? 80;
@@ -91,6 +95,8 @@ function RegistrationCard() {
         site_name: nameValue,
         public_page: publicValue,
         login_message: loginMessageValue,
+        banner_message: bannerMessageValue,
+        banner_level: bannerLevelValue as 'info' | 'warning' | 'critical',
         map_center_lat: Number(mapLatValue),
         map_center_lon: Number(mapLonValue),
         map_radius_km: Number(mapRadiusValue),
@@ -104,6 +110,8 @@ function RegistrationCard() {
       setName(null);
       setPublicPage(null);
       setLoginMessage(null);
+      setBannerMessage(null);
+      setBannerLevel(null);
       setMapLat(null);
       setMapLon(null);
       setMapRadius(null);
@@ -185,6 +193,28 @@ function RegistrationCard() {
           value={loginMessageValue}
           onChange={(e) => setLoginMessage(e.currentTarget.value)}
         />
+        <Textarea
+          label={t('admin.bannerMessageLabel')}
+          description={t('admin.bannerMessageDescription')}
+          placeholder={t('admin.bannerMessagePlaceholder')}
+          minRows={2}
+          autosize
+          maxRows={6}
+          value={bannerMessageValue}
+          onChange={(e) => setBannerMessage(e.currentTarget.value)}
+        />
+        <Select
+          label={t('admin.bannerLevelLabel')}
+          data={[
+            { value: 'info', label: t('admin.bannerLevelInfo') },
+            { value: 'warning', label: t('admin.bannerLevelWarning') },
+            { value: 'critical', label: t('admin.bannerLevelCritical') },
+          ]}
+          value={bannerLevelValue}
+          onChange={(v) => setBannerLevel(v ?? 'info')}
+          allowDeselect={false}
+          w={240}
+        />
         <div>
           <Text size="sm" fw={500} mb={4}>
             {t('admin.mapStartingPointTitle')}
@@ -228,6 +258,8 @@ function RegistrationCard() {
               name === null &&
               publicPage === null &&
               loginMessage === null &&
+              bannerMessage === null &&
+              bannerLevel === null &&
               mapLat === null &&
               mapLon === null &&
               mapRadius === null &&
