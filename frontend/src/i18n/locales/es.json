@@ -27,7 +27,7 @@
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · Software libre bajo la",
     "nav": {
       "visits": "Visitas",
-      "schedule": "Agenda",
+      "schedule": "Planificador",
       "venues": "Sedes",
       "map": "Mapa",
       "analysis": "Análisis",
@@ -700,7 +700,7 @@
     "formatLatex": "LaTeX"
   },
   "schedule": {
-    "title": "Agenda",
+    "title": "Planificador",
     "subtitle": "Próximos eventos planeados en toda la comunidad. Marca uno como hecho para registrar la asistencia.",
     "addToCalendar": "Exportar eventos al calendario (.ics)",
     "scheduleEvent": "Programar un evento",

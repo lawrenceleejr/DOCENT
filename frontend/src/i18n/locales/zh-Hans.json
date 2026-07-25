@@ -27,7 +27,7 @@
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · 依据以下许可发布的自由软件",
     "nav": {
       "visits": "到访记录",
-      "schedule": "日程安排",
+      "schedule": "排期",
       "venues": "场地",
       "map": "地图",
       "analysis": "数据分析",
@@ -700,7 +700,7 @@
     "formatLatex": "LaTeX"
   },
   "schedule": {
-    "title": "日程安排",
+    "title": "排期",
     "subtitle": "社区内即将进行的计划活动。将活动标记为完成即可记录参与情况。",
     "addToCalendar": "导出活动到日历（.ics）",
     "scheduleEvent": "安排一场活动",

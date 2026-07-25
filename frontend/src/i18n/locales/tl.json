@@ -27,7 +27,7 @@
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · Libreng software sa ilalim ng",
     "nav": {
       "visits": "Mga Pagbisita",
-      "schedule": "Iskedyul",
+      "schedule": "Scheduler",
       "venues": "Mga Venue",
       "map": "Mapa",
       "analysis": "Analysis",
@@ -700,7 +700,7 @@
     "formatLatex": "LaTeX"
   },
   "schedule": {
-    "title": "Iskedyul",
+    "title": "Scheduler",
     "subtitle": "Mga darating na naka-planong event sa buong komunidad. Markahan ang isa bilang tapos para itala ang attendance.",
     "addToCalendar": "I-export ang mga Event sa Kalendaryo (.ics)",
     "scheduleEvent": "Mag-iskedyul ng event",

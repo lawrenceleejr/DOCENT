@@ -29,7 +29,7 @@ import {
   type VenuePoint,
 } from '../api/types';
 import { FilterCard } from '../components/FilterCard';
-import { COLORS, coveredIcon, dotIcon, gapIcon, venueIcon } from '../components/mapIcons';
+import { COLORS, coveredIcon, dotIcon, gapIcon } from '../components/mapIcons';
 
 // Sibling-instance activities are a separate layer; give them a distinct grape
 // marker so they never read as local covered/gap/venue dots.
@@ -395,7 +395,6 @@ export function MapPage() {
           <Group gap="md">
             <LegendDot color={COLORS.gap} label={t('map.legendGap')} />
             <LegendDot color={COLORS.covered} label={t('map.legendReached')} />
-            <LegendDot color={COLORS.venue} label={t('map.legendVenueNoVisits')} />
             {config?.has_siblings && (
               <LegendDot color={SIBLING_COLOR} label={t('map.legendSibling')} />
             )}
@@ -434,7 +433,9 @@ export function MapPage() {
                 <Marker
                   key={`v-${v.id}`}
                   position={[v.latitude, v.longitude]}
-                  icon={v.visited || v.visit_count > 0 ? coveredIcon : venueIcon}
+                  // An un-visited venue is the same "not yet visited" as a gap
+                  // institution — one marker, no separate colour (#20).
+                  icon={v.visited || v.visit_count > 0 ? coveredIcon : gapIcon}
                   // Visited (green) sits above a coincident sibling marker.
                   zIndexOffset={v.visited || v.visit_count > 0 ? 1000 : 0}
                 >

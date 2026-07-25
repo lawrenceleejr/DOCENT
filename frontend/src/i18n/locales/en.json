@@ -27,7 +27,7 @@
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · Free software under the",
     "nav": {
       "visits": "Visits",
-      "schedule": "Schedule",
+      "schedule": "Scheduler",
       "venues": "Venues",
       "map": "Map",
       "analysis": "Analysis",
@@ -700,7 +700,7 @@
     "formatLatex": "LaTeX"
   },
   "schedule": {
-    "title": "Schedule",
+    "title": "Scheduler",
     "subtitle": "Upcoming planned events across the community. Mark one done to record attendance.",
     "addToCalendar": "Export Events to Calendar (.ics)",
     "scheduleEvent": "Schedule an event",

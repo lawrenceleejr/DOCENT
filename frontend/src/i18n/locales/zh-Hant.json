@@ -27,7 +27,7 @@
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · 自由軟體，採用以下授權條款：",
     "nav": {
       "visits": "到訪",
-      "schedule": "行程",
+      "schedule": "排程",
       "venues": "場地",
       "map": "地圖",
       "analysis": "分析",
@@ -700,7 +700,7 @@
     "formatLatex": "LaTeX"
   },
   "schedule": {
-    "title": "行程",
+    "title": "排程",
     "subtitle": "社群中即將舉行的已排定活動。標記完成即可記錄出席情況。",
     "addToCalendar": "匯出活動至日曆（.ics）",
     "scheduleEvent": "安排活動",
