@@ -71,14 +71,47 @@ def normalize_links(links: list | None) -> list[dict]:
             break
     return out
 
+from app.languages import LANGUAGE_SET
 from app.models import (
     AudienceLevel,
     EventType,
+    FederationInterval,
     HostRelationship,
     InstitutionType,
     VenueType,
     VisitStatus,
 )
+
+
+def clean_language(v: str | None) -> str | None:
+    """Trim and validate against the central LANGUAGE_SET; blank -> None."""
+    if v is None:
+        return None
+    v = v.strip()
+    if not v:
+        return None
+    if v not in LANGUAGE_SET:
+        raise ValueError(f"'{v}' is not an allowed language")
+    return v
+
+
+def clean_languages(values: list[str] | None) -> list[str]:
+    """Validate each against LANGUAGE_SET (raises on an unknown one — these
+    come from a fixed picker, not free text) and dedupe, order-preserving."""
+    if not values:
+        return []
+    seen: set[str] = set()
+    out: list[str] = []
+    for raw in values:
+        v = (raw or "").strip()
+        if not v:
+            continue
+        if v not in LANGUAGE_SET:
+            raise ValueError(f"'{v}' is not an allowed language")
+        if v not in seen:
+            seen.add(v)
+            out.append(v)
+    return out
 
 
 # --- Auth / users ---
@@ -88,6 +121,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
     affiliation: str | None = Field(default=None, max_length=255)
+    position: str | None = Field(default=None, max_length=255)
     invite_code: str | None = None
 
 
@@ -103,6 +137,10 @@ class AuthConfig(BaseModel):
     contact_email: str | None
     site_name: str | None
     public_page: bool
+    login_message: str | None
+    map_center_lat: float
+    map_center_lon: float
+    user_directory_visible: bool
 
 
 class UserOut(BaseModel):
@@ -112,8 +150,10 @@ class UserOut(BaseModel):
     email: str
     name: str
     affiliation: str | None
+    position: str | None
     is_admin: bool
     is_active: bool
+    languages_spoken: list[str]
     created_at: datetime
 
 
@@ -127,8 +167,15 @@ class UserBrief(BaseModel):
 class UserUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     affiliation: str | None = Field(default=None, max_length=255)
+    position: str | None = Field(default=None, max_length=255)
+    languages_spoken: list[str] | None = None
     current_password: str | None = None
     new_password: str | None = Field(default=None, min_length=8, max_length=128)
+
+    @field_validator("languages_spoken")
+    @classmethod
+    def _clean_languages_spoken(cls, v: list[str] | None) -> list[str] | None:
+        return None if v is None else clean_languages(v)
 
 
 class AdminUserUpdate(BaseModel):
@@ -137,11 +184,8 @@ class AdminUserUpdate(BaseModel):
     email: EmailStr | None = None
 
 
-class UserList(BaseModel):
-    items: list[UserOut]
-    total: int
-    page: int
-    page_size: int
+class SchoolCreate(BaseModel):
+    venue_id: int
 
 
 class UserMergeRequest(BaseModel):
@@ -226,6 +270,16 @@ class RegistrationSettings(BaseModel):
     site_url: str
     site_name: str
     public_page: bool
+    login_message: str
+    map_center_lat: float
+    map_center_lon: float
+    user_directory_visible: bool
+    # Federation publishing: whether this instance serves its activities feed,
+    # whether it also shares planned (upcoming) events, and the full feed URL
+    # (incl. token) an admin hands to sibling instances.
+    federation_publish: bool
+    federation_publish_planned: bool
+    federation_feed_url: str
 
 
 class RegistrationSettingsUpdate(BaseModel):
@@ -234,6 +288,12 @@ class RegistrationSettingsUpdate(BaseModel):
     site_url: str | None = None
     site_name: str | None = Field(default=None, max_length=120)
     public_page: bool | None = None
+    login_message: str | None = Field(default=None, max_length=2000)
+    map_center_lat: float | None = Field(default=None, ge=-90, le=90)
+    map_center_lon: float | None = Field(default=None, ge=-180, le=180)
+    user_directory_visible: bool | None = None
+    federation_publish: bool | None = None
+    federation_publish_planned: bool | None = None
 
 
 
@@ -318,6 +378,43 @@ class VenueBrief(BaseModel):
     city: str | None
 
 
+class SchoolOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    venue: VenueBrief
+    created_at: datetime
+
+
+class AdminUserOut(UserOut):
+    schools: list[VenueBrief]
+
+
+class AdminUserList(BaseModel):
+    items: list[AdminUserOut]
+    total: int
+    page: int
+    page_size: int
+
+
+class DirectoryUserOut(BaseModel):
+    """Member-directory-safe view of a user — no email, no account flags."""
+
+    id: int
+    name: str
+    affiliation: str | None
+    position: str | None
+    languages_spoken: list[str]
+    schools: list[VenueBrief]
+
+
+class DirectoryUserList(BaseModel):
+    items: list[DirectoryUserOut]
+    total: int
+    page: int
+    page_size: int
+
+
 class VenueListItem(VenueOut):
     visit_count: int
 
@@ -332,6 +429,62 @@ class VenueList(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class PlaceSuggestion(BaseModel):
+    """One address/place autocomplete result — prefills a new venue's
+    address fields, never its name or type (a geocoder can't reliably tell
+    a middle school from a museum)."""
+
+    label: str
+    name: str | None
+    address: str | None
+    city: str | None
+    state: str | None
+    country: str | None
+    latitude: float
+    longitude: float
+
+
+# --- Connections ---
+# A standing personal-network contact at a venue (a teacher you know, an
+# alum, a past host) — independent of any logged visit.
+
+class ConnectionCreate(BaseModel):
+    venue_id: int
+    name: str = Field(min_length=1, max_length=255)
+    role: str | None = Field(default=None, max_length=255)
+    relationship_type: HostRelationship | None = None
+    relationship_detail: str | None = Field(default=None, max_length=500)
+    email: str | None = Field(default=None, max_length=255)
+    phone: str | None = Field(default=None, max_length=50)
+    notes: str | None = None
+
+
+class ConnectionUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    role: str | None = Field(default=None, max_length=255)
+    relationship_type: HostRelationship | None = None
+    relationship_detail: str | None = Field(default=None, max_length=500)
+    email: str | None = Field(default=None, max_length=255)
+    phone: str | None = Field(default=None, max_length=50)
+    notes: str | None = None
+
+
+class ConnectionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    venue_id: int
+    name: str
+    role: str | None
+    relationship_type: HostRelationship | None
+    relationship_detail: str | None
+    email: str | None
+    phone: str | None
+    notes: str | None
+    added_by: UserBrief | None
+    created_at: datetime
 
 
 # Sanity ceiling for a single outreach event's headcount — catches fat-finger
@@ -359,6 +512,7 @@ class VisitCreate(BaseModel):
     # Optional so a *planned* event can be scheduled before attendance is known.
     people_reached: int = Field(default=0, ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel
+    language: str | None = None
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)
     reflection: str | None = None
@@ -366,6 +520,11 @@ class VisitCreate(BaseModel):
     additional_presenters: str | None = Field(default=None, max_length=500)
     tags: list[str] = Field(default_factory=list)
     links: list[VisitLink] = Field(default_factory=list)
+
+    @field_validator("language")
+    @classmethod
+    def _clean_language(cls, v: str | None) -> str | None:
+        return clean_language(v)
 
     @field_validator("tags")
     @classmethod
@@ -395,6 +554,7 @@ class VisitUpdate(BaseModel):
     host_notes: str | None = None
     people_reached: int | None = Field(default=None, ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel | None = None
+    language: str | None = None
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)
     reflection: str | None = None
@@ -402,6 +562,11 @@ class VisitUpdate(BaseModel):
     additional_presenters: str | None = Field(default=None, max_length=500)
     tags: list[str] | None = None
     links: list[VisitLink] | None = None
+
+    @field_validator("language")
+    @classmethod
+    def _clean_language(cls, v: str | None) -> str | None:
+        return clean_language(v)
 
     @field_validator("tags")
     @classmethod
@@ -435,6 +600,7 @@ class VisitOut(BaseModel):
     host_notes: str | None
     people_reached: int
     audience_level: AudienceLevel
+    language: str | None
     duration_minutes: int | None
     rating: int | None
     reflection: str | None
@@ -446,11 +612,43 @@ class VisitOut(BaseModel):
     updated_at: datetime
 
 
+class ActivityListItem(BaseModel):
+    """A visit-list row that can be either a local visit or an activity pulled
+    from a sibling instance. Local rows fill every field; federated rows carry
+    only feed-safe fields (the rest are None / rendered as "—") plus an
+    `external_url` deep-link back to the primary instance. `venue`/`author` are
+    kept nested (matching the local visit shape) — for federated rows they are
+    synthetic (id 0, only name/city/type populated)."""
+
+    source: str  # "local" | the peer's label
+    id: int | None  # local visit id (None for federated)
+    external_url: str | None  # federated permalink (None for local)
+    visit_date: date
+    start_time: time | None = None
+    status: VisitStatus | None = None
+    title: str | None = None
+    event_type: EventType | None = None
+    audience_level: AudienceLevel | None = None
+    language: str | None = None
+    people_reached: int
+    rating: int | None = None
+    tags: list[str] = []
+    author: UserBrief | None = None
+    venue: VenueBrief | None = None
+
+
 class VisitList(BaseModel):
-    items: list[VisitOut]
+    items: list[ActivityListItem]
     total: int
     page: int
     page_size: int
+
+
+class ActivitySource(BaseModel):
+    """A selectable source for the list/map source filter: the local instance or
+    one enabled peer. `value` is "local" or the peer id as a string."""
+    value: str
+    label: str
 
 
 # --- Stats ---
@@ -552,3 +750,89 @@ class VenuePoint(BaseModel):
     visit_count: int
     visited: bool
     institution_id: int | None
+
+
+# --- Federation ---
+
+class FederatedActivityOut(BaseModel):
+    """A single limited-field activity in the feed this instance publishes to
+    siblings. Never carries private fields (description, reflection, rating,
+    host contact details, notes)."""
+
+    uid: str  # globally-unique, stable dedup key
+    remote_id: int  # this instance's own visit id (used to build the permalink)
+    status: str  # "completed" | "planned"
+    visit_date: date
+    venue_name: str | None
+    venue_city: str | None
+    latitude: float | None
+    longitude: float | None
+    venue_type: str | None  # raw enum value
+    event_type: str | None  # raw enum value
+    audience_level: str | None  # raw enum value
+    person_name: str | None
+    people_reached: int
+    permalink: str | None
+
+
+class FederationFeed(BaseModel):
+    """Envelope for the published feed — instance identity + activities."""
+
+    feed_version: int
+    instance_name: str | None
+    instance_url: str | None
+    generated_at: datetime
+    activities: list[FederatedActivityOut]
+
+
+class FederationPeerOut(BaseModel):
+    """Admin view of a registered sibling. `feed_url` has its token masked."""
+
+    id: int
+    label: str | None
+    feed_url: str  # token masked for display
+    interval: FederationInterval
+    enabled: bool
+    last_synced_at: datetime | None
+    next_sync_at: datetime | None
+    last_status: str | None
+    last_error: str | None
+    consecutive_failures: int
+    activity_count: int
+    created_at: datetime
+
+
+class FederationPeerPreview(BaseModel):
+    """Result of a "test this URL" probe before adding a peer."""
+
+    ok: bool
+    instance_name: str | None = None
+    instance_url: str | None = None
+    activity_count: int | None = None
+    error: str | None = None
+
+
+class FederationPeerCreate(BaseModel):
+    feed_url: str = Field(min_length=1, max_length=2000)
+    interval: FederationInterval = FederationInterval.day
+
+
+class FederationPeerUpdate(BaseModel):
+    label: str | None = Field(default=None, max_length=255)
+    interval: FederationInterval | None = None
+    enabled: bool | None = None
+
+
+class FederatedMapPoint(BaseModel):
+    """A sibling activity rendered as its own map layer (never affects local
+    coverage/gap counting)."""
+
+    latitude: float
+    longitude: float
+    venue_name: str | None
+    venue_type: str | None
+    person_name: str | None
+    visit_date: date
+    people_reached: int
+    permalink: str | None
+    source_label: str | None

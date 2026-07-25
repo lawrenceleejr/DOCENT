@@ -4,6 +4,7 @@ import { useAuth } from './auth/AuthContext';
 import { Layout } from './components/Layout';
 import { AdminPage } from './pages/AdminPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { DirectoryPage } from './pages/DirectoryPage';
 import { LoginPage } from './pages/LoginPage';
 import { MapPage } from './pages/MapPage';
 import { PublicImpactPage } from './pages/PublicImpactPage';
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/analysis" element={<DashboardPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/directory" element={<DirectoryPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

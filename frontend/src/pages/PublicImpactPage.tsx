@@ -8,6 +8,7 @@ import {
   Loader,
   SimpleGrid,
   Stack,
+  Switch,
   Table,
   Text,
   Title,
@@ -15,7 +16,8 @@ import {
 } from '@mantine/core';
 import { IconCalendarStats, IconMapPin, IconUserBolt, IconUsers } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   CartesianGrid,
@@ -27,10 +29,11 @@ import {
   YAxis,
 } from 'recharts';
 import { api, ApiError } from '../api/client';
-import { labelize, type PublicImpact } from '../api/types';
+import { type PublicImpact } from '../api/types';
 import { Logo } from '../components/Logo';
 import { StatTile } from '../components/StatTile';
 import { VIZ_DARK, VIZ_LIGHT } from '../components/vizTheme';
+import { useEnumLabel } from '../i18n/enumLabels';
 import { buildTimeSeries, type TimeRow } from './DashboardPage';
 
 function PublicTimePanel({
@@ -105,12 +108,16 @@ function PublicTimePanel({
 }
 
 export function PublicImpactPage() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const scheme = useComputedColorScheme('dark');
   const viz = scheme === 'dark' ? VIZ_DARK : VIZ_LIGHT;
+  const [includeSiblings, setIncludeSiblings] = useState(false);
 
   const { data, error, isLoading } = useQuery({
-    queryKey: ['public', 'impact'],
-    queryFn: () => api.get<PublicImpact>('/api/public/impact'),
+    queryKey: ['public', 'impact', includeSiblings],
+    queryFn: () =>
+      api.get<PublicImpact>('/api/public/impact', { include_federated: includeSiblings }),
     retry: false,
   });
 
@@ -135,12 +142,12 @@ export function PublicImpactPage() {
       <Center h="100vh">
         <Stack align="center" gap="xs">
           <Logo size={48} />
-          <Title order={3}>This page isn’t available</Title>
+          <Title order={3}>{t('impact.unavailableTitle')}</Title>
           <Text c="dimmed" size="sm">
-            The community hasn’t enabled its public impact page.
+            {t('impact.unavailableDescription')}
           </Text>
           <Anchor component={Link} to="/login" size="sm">
-            Sign in
+            {t('impact.signIn')}
           </Anchor>
         </Stack>
       </Center>
@@ -156,37 +163,50 @@ export function PublicImpactPage() {
             <div>
               <Title order={2}>{name}</Title>
               <Text c="dimmed" size="sm">
-                Community outreach impact — reaching out to schools, museums, libraries, and
-                the public.
+                {t('impact.tagline')}
               </Text>
             </div>
           </Group>
-          <Anchor component={Link} to="/login" size="sm" c="dimmed">
-            Community member? Sign in
-          </Anchor>
+          <Group gap="md">
+            <Switch
+              size="sm"
+              checked={includeSiblings}
+              onChange={(event) => setIncludeSiblings(event.currentTarget.checked)}
+              label={t('impact.includeSiblings')}
+            />
+            <Anchor component={Link} to="/login" size="sm" c="dimmed">
+              {t('impact.signInLink')}
+            </Anchor>
+          </Group>
         </Group>
+
+        {includeSiblings && (
+          <Text size="xs" c="dimmed">
+            {t('impact.includingSiblings')}
+          </Text>
+        )}
 
         <SimpleGrid cols={{ base: 2, sm: 4 }}>
           <StatTile
-            label="Outreach events"
+            label={t('impact.statOutreachEvents')}
             value={data.total_visits.toLocaleString()}
             icon={IconCalendarStats}
             color="brand"
           />
           <StatTile
-            label="People reached"
+            label={t('impact.statPeopleReached')}
             value={data.total_people_reached.toLocaleString()}
             icon={IconUsers}
             color="grape"
           />
           <StatTile
-            label="Venues visited"
+            label={t('impact.statVenuesVisited')}
             value={data.distinct_venues.toLocaleString()}
             icon={IconMapPin}
             color="teal"
           />
           <StatTile
-            label="Communicators"
+            label={t('impact.statCommunicators')}
             value={data.active_communicators.toLocaleString()}
             icon={IconUserBolt}
             color="indigo"
@@ -195,14 +215,14 @@ export function PublicImpactPage() {
 
         <SimpleGrid cols={{ base: 1, md: 2 }}>
           <PublicTimePanel
-            title="Events per 6 months"
+            title={t('impact.eventsPer6Months')}
             data={series}
             dataKey="visits"
             color={viz.series1}
             viz={viz}
           />
           <PublicTimePanel
-            title="People reached per 6 months"
+            title={t('impact.peopleReachedPer6Months')}
             data={series}
             dataKey="people_reached"
             color={viz.series2}
@@ -213,15 +233,19 @@ export function PublicImpactPage() {
         <SimpleGrid cols={{ base: 1, md: 2 }}>
           <Card withBorder p="md">
             <Text fw={600} mb="sm">
-              Where we go
+              {t('impact.whereWeGoHeading')}
             </Text>
             <Stack gap={8}>
               {data.by_venue_type.map((row) => (
                 <div key={row.key}>
                   <Group justify="space-between" mb={2}>
-                    <Text size="sm">{labelize(row.key)}</Text>
+                    <Text size="sm">{enumLabel.venueType(row.key)}</Text>
                     <Text size="sm" c="dimmed">
-                      {row.visits.toLocaleString()} events · {row.people_reached.toLocaleString()} people
+                      {t('impact.venueBreakdownCaption', {
+                        count: row.visits,
+                        formattedCount: row.visits.toLocaleString(),
+                        formattedPeopleCount: row.people_reached.toLocaleString(),
+                      })}
                     </Text>
                   </Group>
                   <div
@@ -237,7 +261,7 @@ export function PublicImpactPage() {
               ))}
               {data.by_venue_type.length === 0 && (
                 <Text c="dimmed" size="sm">
-                  No completed events yet.
+                  {t('impact.noCompletedEvents')}
                 </Text>
               )}
             </Stack>
@@ -245,7 +269,7 @@ export function PublicImpactPage() {
 
           <Card withBorder p="md">
             <Text fw={600} mb="sm">
-              Recent activity
+              {t('impact.recentActivityHeading')}
             </Text>
             <Table>
               <Table.Tbody>
@@ -263,7 +287,7 @@ export function PublicImpactPage() {
                       </Text>
                     </Table.Td>
                     <Table.Td ta="right">
-                      <Badge variant="light">{labelize(a.event_type)}</Badge>
+                      <Badge variant="light">{enumLabel.eventType(a.event_type)}</Badge>
                     </Table.Td>
                   </Table.Tr>
                 ))}
@@ -271,7 +295,7 @@ export function PublicImpactPage() {
                   <Table.Tr>
                     <Table.Td>
                       <Text c="dimmed" size="sm">
-                        No completed events yet.
+                        {t('impact.noCompletedEvents')}
                       </Text>
                     </Table.Td>
                   </Table.Tr>
@@ -282,11 +306,11 @@ export function PublicImpactPage() {
         </SimpleGrid>
 
         <Text size="xs" c="dimmed" ta="center">
-          Powered by{' '}
+          {t('impact.poweredByPrefix')}{' '}
           <Anchor href="https://github.com/lawrenceleejr/DOCENT" target="_blank" c="dimmed" underline="always">
             DOCENT
           </Anchor>{' '}
-          · free software under the GNU GPL v3
+          {t('impact.poweredBySuffix')}
         </Text>
       </Stack>
     </Container>

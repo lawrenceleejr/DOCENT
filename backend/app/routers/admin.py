@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import secrets
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -8,15 +9,30 @@ from typing import Any
 import httpx
 from fastapi import APIRouter, Body, HTTPException, Query, status
 from fastapi.responses import FileResponse, Response
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import delete, func, or_, select, update
+from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentAdmin, DbSession
-from app.models import Institution, User, Venue, Visit
+from app.models import (
+    FederatedActivity,
+    FederationPeer,
+    Institution,
+    User,
+    UserSchool,
+    Venue,
+    Visit,
+)
 from app.schemas import (
+    AdminUserList,
+    AdminUserOut,
     AdminUserUpdate,
     BackupItem,
     BackupList,
     DbImportResult,
+    FederationPeerCreate,
+    FederationPeerOut,
+    FederationPeerPreview,
+    FederationPeerUpdate,
     InstitutionAdminItem,
     InstitutionAdminList,
     InstitutionCreate,
@@ -27,27 +43,42 @@ from app.schemas import (
     PasswordResetResult,
     RegistrationSettings,
     RegistrationSettingsUpdate,
-    UserList,
     UserMergeRequest,
     UserOut,
 )
 from app.security import hash_password
 from app.services import dbtransfer
+from app.services import federation as fed
 from app.services.geocode import geocode, to_meters
 from app.services.institution_import import upsert_institutions
 from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
 from app.services.settings import (
     CONTACT_EMAIL_KEY,
+    FEDERATION_PUBLISH_KEY,
+    FEDERATION_PUBLISH_PLANNED_KEY,
     INVITE_CODE_KEY,
+    LOGIN_MESSAGE_KEY,
+    MAP_CENTER_LAT_KEY,
+    MAP_CENTER_LON_KEY,
     PUBLIC_PAGE_KEY,
     SITE_NAME_KEY,
     SITE_URL_KEY,
+    USER_DIRECTORY_KEY,
     effective_contact_email,
     effective_invite_code,
+    effective_login_message,
+    effective_map_center_lat,
+    effective_map_center_lon,
     effective_site_name,
     effective_site_url,
+    ensure_federation_token,
+    federation_feed_url,
+    federation_publish_enabled,
+    federation_publish_planned_enabled,
     public_page_enabled,
+    rotate_federation_token,
     set_setting,
+    user_directory_visible,
 )
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -56,11 +87,13 @@ MAX_RADIUS_M = 100_000  # 100 km (~62 mi) — keep Overpass queries bounded.
 BACKUP_ROOT = Path(os.environ.get("BACKUP_ROOT", "/backups"))
 
 
-@router.get("/users", response_model=UserList)
+@router.get("/users", response_model=AdminUserList)
 def list_users(
     db: DbSession,
     _admin: CurrentAdmin,
     q: str | None = None,
+    venue_id: int | None = None,
+    language: str | None = None,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=25, ge=1, le=100),
 ):
@@ -68,11 +101,32 @@ def list_users(
     if q:
         pattern = f"%{q.strip()}%"
         query = query.where(or_(User.name.ilike(pattern), User.email.ilike(pattern)))
+    if language:
+        query = query.where(User.languages_spoken.any(language))
+    if venue_id:
+        query = query.where(
+            User.id.in_(select(UserSchool.user_id).where(UserSchool.venue_id == venue_id))
+        )
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
-    users = db.scalars(
+    # Page user IDs first, then eager-load schools for just that page — a
+    # to-many join before LIMIT/OFFSET would paginate over fanned-out rows.
+    page_users = db.scalars(
         query.order_by(User.created_at).offset((page - 1) * page_size).limit(page_size)
     ).all()
-    return UserList(items=users, total=total, page=page, page_size=page_size)
+    users = db.scalars(
+        select(User)
+        .where(User.id.in_([u.id for u in page_users]))
+        .options(joinedload(User.schools).joinedload(UserSchool.venue))
+        .order_by(User.created_at)
+    ).unique().all()
+    items = [
+        AdminUserOut(
+            **UserOut.model_validate(u).model_dump(),
+            schools=[s.venue for s in u.schools],
+        )
+        for u in users
+    ]
+    return AdminUserList(items=items, total=total, page=page, page_size=page_size)
 
 
 @router.patch("/users/{user_id}", response_model=UserOut)
@@ -117,6 +171,13 @@ def _settings_out(db) -> RegistrationSettings:
         site_url=effective_site_url(db),
         site_name=effective_site_name(db),
         public_page=public_page_enabled(db),
+        login_message=effective_login_message(db),
+        map_center_lat=effective_map_center_lat(db),
+        map_center_lon=effective_map_center_lon(db),
+        user_directory_visible=user_directory_visible(db),
+        federation_publish=federation_publish_enabled(db),
+        federation_publish_planned=federation_publish_planned_enabled(db),
+        federation_feed_url=federation_feed_url(db),
     )
 
 
@@ -139,8 +200,150 @@ def update_registration_settings(
         set_setting(db, SITE_NAME_KEY, body.site_name.strip())
     if body.public_page is not None:
         set_setting(db, PUBLIC_PAGE_KEY, "1" if body.public_page else "")
+    if body.login_message is not None:
+        set_setting(db, LOGIN_MESSAGE_KEY, body.login_message.strip())
+    if body.map_center_lat is not None:
+        set_setting(db, MAP_CENTER_LAT_KEY, str(body.map_center_lat))
+    if body.map_center_lon is not None:
+        set_setting(db, MAP_CENTER_LON_KEY, str(body.map_center_lon))
+    if body.user_directory_visible is not None:
+        set_setting(db, USER_DIRECTORY_KEY, "1" if body.user_directory_visible else "")
+    if body.federation_publish is not None:
+        set_setting(db, FEDERATION_PUBLISH_KEY, "1" if body.federation_publish else "")
+        # Ensure a token exists the moment publishing is turned on, so the admin
+        # can immediately copy a working feed URL.
+        if body.federation_publish:
+            ensure_federation_token(db)
+    if body.federation_publish_planned is not None:
+        set_setting(
+            db, FEDERATION_PUBLISH_PLANNED_KEY, "1" if body.federation_publish_planned else ""
+        )
     db.commit()
     return _settings_out(db)
+
+
+@router.post("/federation/rotate-token", response_model=RegistrationSettings)
+def rotate_fed_token(_admin: CurrentAdmin, db: DbSession):
+    """Generate a fresh federation token — invalidates any feed URL already
+    handed to siblings, who must be given the new URL."""
+    rotate_federation_token(db)
+    db.commit()
+    return _settings_out(db)
+
+
+# --- Federation peers (sibling instances we pull from) ---
+
+def _mask_feed_url(url: str) -> str:
+    """Hide the token in a peer's feed URL for display."""
+    return re.sub(r"(token=)[^&]+", r"\1•••", url)
+
+
+def _peer_out(peer: FederationPeer) -> FederationPeerOut:
+    return FederationPeerOut(
+        id=peer.id,
+        label=peer.label,
+        feed_url=_mask_feed_url(peer.feed_url),
+        interval=peer.interval,
+        enabled=peer.enabled,
+        last_synced_at=peer.last_synced_at,
+        next_sync_at=fed.next_sync_at(peer),
+        last_status=peer.last_status,
+        last_error=peer.last_error,
+        consecutive_failures=peer.consecutive_failures,
+        activity_count=peer.activity_count,
+        created_at=peer.created_at,
+    )
+
+
+def _get_peer_or_404(peer_id: int, db) -> FederationPeer:
+    peer = db.get(FederationPeer, peer_id)
+    if not peer:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Peer not found")
+    return peer
+
+
+@router.get("/federation/peers", response_model=list[FederationPeerOut])
+def list_federation_peers(db: DbSession, _admin: CurrentAdmin):
+    peers = db.scalars(select(FederationPeer).order_by(FederationPeer.created_at)).all()
+    return [_peer_out(p) for p in peers]
+
+
+@router.post("/federation/peers/preview", response_model=FederationPeerPreview)
+def preview_federation_peer(body: FederationPeerCreate, _admin: CurrentAdmin):
+    """Probe a feed URL before adding it — validates the token and shows what
+    the peer publishes, without creating anything."""
+    url = body.feed_url.strip()
+    if not (url.startswith("http://") or url.startswith("https://")):
+        return FederationPeerPreview(ok=False, error="URL must start with http:// or https://")
+    try:
+        envelope = fed.fetch_peer(url)
+    except Exception as exc:  # noqa: BLE001 — report the failure to the admin
+        return FederationPeerPreview(ok=False, error=str(exc)[:500])
+    return FederationPeerPreview(
+        ok=True,
+        instance_name=envelope.get("instance_name"),
+        instance_url=envelope.get("instance_url"),
+        activity_count=len(envelope.get("activities") or []),
+    )
+
+
+@router.post("/federation/peers", response_model=FederationPeerOut, status_code=201)
+def add_federation_peer(body: FederationPeerCreate, _admin: CurrentAdmin, db: DbSession):
+    url = body.feed_url.strip()
+    if not (url.startswith("http://") or url.startswith("https://")):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Feed URL must start with http:// or https://",
+        )
+    peer = FederationPeer(feed_url=url, interval=body.interval)
+    db.add(peer)
+    db.commit()
+    db.refresh(peer)
+    fed.sync_peer(db, peer, force_full=True)  # first pull: full reconcile
+    db.refresh(peer)
+    return _peer_out(peer)
+
+
+@router.patch("/federation/peers/{peer_id}", response_model=FederationPeerOut)
+def update_federation_peer(
+    peer_id: int, body: FederationPeerUpdate, _admin: CurrentAdmin, db: DbSession
+):
+    peer = _get_peer_or_404(peer_id, db)
+    if body.label is not None:
+        peer.label = body.label.strip() or None
+    if body.interval is not None:
+        peer.interval = body.interval
+    if body.enabled is not None:
+        peer.enabled = body.enabled
+    db.commit()
+    db.refresh(peer)
+    return _peer_out(peer)
+
+
+@router.delete("/federation/peers/{peer_id}", status_code=204)
+def delete_federation_peer(peer_id: int, _admin: CurrentAdmin, db: DbSession):
+    peer = db.get(FederationPeer, peer_id)
+    if peer:
+        db.delete(peer)  # cascades cached activities
+        db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/federation/peers/{peer_id}/sync", response_model=FederationPeerOut)
+def sync_federation_peer(peer_id: int, _admin: CurrentAdmin, db: DbSession):
+    peer = _get_peer_or_404(peer_id, db)
+    fed.sync_peer(db, peer, force_full=True)
+    db.refresh(peer)
+    return _peer_out(peer)
+
+
+@router.post("/federation/sync", response_model=list[FederationPeerOut])
+def sync_all_federation_peers(_admin: CurrentAdmin, db: DbSession):
+    peers = db.scalars(select(FederationPeer)).all()
+    for peer in peers:
+        fed.sync_peer(db, peer, force_full=True)
+    refreshed = db.scalars(select(FederationPeer).order_by(FederationPeer.created_at)).all()
+    return [_peer_out(p) for p in refreshed]
 
 
 @router.get("/db/export")
@@ -261,6 +464,23 @@ def merge_user(user_id: int, body: UserMergeRequest, admin: CurrentAdmin, db: Db
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     db.execute(update(Visit).where(Visit.author_id == user_id).values(author_id=body.into_id))
     db.execute(update(Venue).where(Venue.created_by_id == user_id).values(created_by_id=body.into_id))
+    # Reassign "schools attended" too, dropping any that would collide with
+    # one the target already has (uq_user_school) — otherwise deleting the
+    # source account would silently lose them.
+    target_venue_ids = {
+        row[0]
+        for row in db.execute(
+            select(UserSchool.venue_id).where(UserSchool.user_id == body.into_id)
+        )
+    }
+    db.execute(
+        delete(UserSchool).where(
+            UserSchool.user_id == user_id, UserSchool.venue_id.in_(target_venue_ids)
+        )
+    )
+    db.execute(
+        update(UserSchool).where(UserSchool.user_id == user_id).values(user_id=body.into_id)
+    )
     db.delete(source)
     db.commit()
     db.refresh(target)

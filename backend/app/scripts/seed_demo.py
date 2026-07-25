@@ -62,6 +62,10 @@ LINK_SETS = [
     [],
 ]
 
+# Most visits are in English (None -> omitted); a few show up in other
+# languages so the language filter/picker has something to demo.
+LANGUAGES = [None, None, None, "Spanish", None, None, "French", None, None, None, "Vietnamese"]
+
 
 def build_payload() -> dict:
     visits = []
@@ -84,6 +88,7 @@ def build_payload() -> dict:
                 "title": title,
                 "people_reached": 15 + (i * 17) % 90,
                 "audience_level": audience,
+                "language": LANGUAGES[i % len(LANGUAGES)],
                 "duration_minutes": [45, 60, 90][i % 3],
                 "rating": [4, 5, 3, 5, 4][i % 5],
                 "additional_presenters": USERS[(i + 1) % len(USERS)]["name"] if i % 4 == 0 else None,

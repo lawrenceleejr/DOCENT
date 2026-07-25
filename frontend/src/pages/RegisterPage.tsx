@@ -12,6 +12,7 @@ import {
 import { useForm } from '@mantine/form';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import type { AuthConfig } from '../api/types';
@@ -20,21 +21,23 @@ import { AuthShell } from '../components/AuthShell';
 import { Logo } from '../components/Logo';
 
 function ContactLine({ email, prefix }: { email: string | null; prefix: string }) {
+  const { t } = useTranslation();
   if (email) {
     return (
       <Text size="sm" c="dimmed">
-        {prefix} <Anchor href={`mailto:${email}`}>{email}</Anchor> to request one.
+        {prefix} <Anchor href={`mailto:${email}`}>{email}</Anchor> {t('register.contactSuffixRequest')}
       </Text>
     );
   }
   return (
     <Text size="sm" c="dimmed">
-      {prefix} your community administrator to request one.
+      {prefix} {t('register.contactAdminFallback')}
     </Text>
   );
 }
 
 export function RegisterPage() {
+  const { t } = useTranslation();
   const { user, register } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
@@ -48,12 +51,19 @@ export function RegisterPage() {
   const registrationEnabled = config?.registration_enabled ?? true;
 
   const form = useForm({
-    initialValues: { name: '', email: '', password: '', affiliation: '', invite_code: '' },
+    initialValues: {
+      name: '',
+      email: '',
+      password: '',
+      affiliation: '',
+      position: '',
+      invite_code: '',
+    },
     validate: {
-      name: (v) => (v.trim().length > 0 ? null : 'Name is required'),
-      email: (v) => (/^\S+@\S+$/.test(v) ? null : 'Invalid email'),
-      password: (v) => (v.length >= 8 ? null : 'At least 8 characters'),
-      invite_code: (v) => (v.trim().length > 0 ? null : 'An access code is required'),
+      name: (v) => (v.trim().length > 0 ? null : t('register.validation.nameRequired')),
+      email: (v) => (/^\S+@\S+$/.test(v) ? null : t('register.validation.invalidEmail')),
+      password: (v) => (v.length >= 8 ? null : t('register.validation.passwordMin')),
+      invite_code: (v) => (v.trim().length > 0 ? null : t('register.validation.codeRequired')),
     },
   });
 
@@ -68,11 +78,12 @@ export function RegisterPage() {
         email: values.email,
         password: values.password,
         affiliation: values.affiliation.trim() || undefined,
+        position: values.position.trim() || undefined,
         invite_code: values.invite_code.trim(),
       });
       navigate('/');
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Registration failed');
+      setError(e instanceof ApiError ? e.message : t('register.registrationFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -84,10 +95,10 @@ export function RegisterPage() {
         <Logo size={30} />
       </Box>
       <Title order={2} mt="xs">
-        Create your account
+        {t('register.createAccount')}
       </Title>
       <Text c="dimmed" size="sm">
-        Join your community’s outreach record.
+        {t('register.joinCommunity')}
       </Text>
     </Stack>
   );
@@ -98,16 +109,16 @@ export function RegisterPage() {
       <AuthShell>
         <Stack gap="md">
           {header}
-          <Alert color="brand" title="Registration is by invitation">
+          <Alert color="brand" title={t('register.closedTitle')}>
             <Stack gap={4}>
-              <Text size="sm">New accounts require an access code from an administrator.</Text>
-              <ContactLine email={contactEmail} prefix="Contact" />
+              <Text size="sm">{t('register.closedBody')}</Text>
+              <ContactLine email={contactEmail} prefix={t('register.closedContactPrefix')} />
             </Stack>
           </Alert>
           <Text size="sm" c="dimmed">
-            Already have an account?{' '}
+            {t('register.alreadyHaveAccount')}{' '}
             <Anchor component={Link} to="/login">
-              Log in
+              {t('register.loginLink')}
             </Anchor>
           </Text>
         </Stack>
@@ -120,37 +131,54 @@ export function RegisterPage() {
       <form onSubmit={submit}>
         <Stack gap="md">
           {header}
-          <TextInput label="Full name" placeholder="Ada Lovelace" {...form.getInputProps('name')} />
-          <TextInput label="Email" placeholder="you@university.edu" {...form.getInputProps('email')} />
+          <TextInput
+            label={t('register.fullNameLabel')}
+            placeholder={t('register.fullNamePlaceholder')}
+            autoComplete="name"
+            {...form.getInputProps('name')}
+          />
+          <TextInput
+            label={t('register.emailLabel')}
+            placeholder={t('register.emailPlaceholder')}
+            type="email"
+            autoComplete="username"
+            {...form.getInputProps('email')}
+          />
           <PasswordInput
-            label="Password"
-            description="At least 8 characters"
+            label={t('register.passwordLabel')}
+            description={t('register.passwordDescription')}
+            autoComplete="new-password"
             {...form.getInputProps('password')}
           />
           <TextInput
-            label="Affiliation"
-            placeholder="University of Tennessee (optional)"
+            label={t('register.affiliationLabel')}
+            placeholder={t('register.affiliationPlaceholder')}
             {...form.getInputProps('affiliation')}
           />
           <TextInput
-            label="Access code"
-            placeholder="Required"
+            label={t('register.positionLabel')}
+            placeholder={t('register.positionPlaceholder')}
+            {...form.getInputProps('position')}
+          />
+          <TextInput
+            label={t('register.accessCodeLabel')}
+            placeholder={t('register.accessCodeRequired')}
             withAsterisk
             {...form.getInputProps('invite_code')}
           />
-          <ContactLine email={contactEmail} prefix="Don’t have an access code? Contact" />
+          <ContactLine email={contactEmail} prefix={t('register.contactPrefixHaveCode')} />
           {error && (
             <Text c="red" size="sm">
               {error}
             </Text>
           )}
           <Button type="submit" variant="gradient" loading={submitting}>
-            Register
+            {t('register.submit')}
           </Button>
           <Text size="sm" c="dimmed">
-            Already have an account?{' '}
+            {t('register.alreadyHaveAccount')}{' '}
             <Anchor component={Link} to="/login">
-              Log in
+              {t('register.loginLink')}
             </Anchor>
           </Text>
         </Stack>

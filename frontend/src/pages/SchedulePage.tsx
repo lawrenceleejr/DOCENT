@@ -13,30 +13,35 @@ import {
   Title,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { IconCalendarPlus } from '@tabler/icons-react';
+import { IconCalendarPlus, IconExternalLink } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, buildQuery } from '../api/client';
 import {
   AUDIENCE_LEVELS,
   EVENT_TYPES,
   isOverdue,
-  labelize,
   VENUE_TYPES,
+  type ActivityListItem,
   type Paginated,
-  type Visit,
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { EmptyState } from '../components/EmptyState';
+import { FilterCard } from '../components/FilterCard';
 import { filterParams, type VisitFilters } from '../components/filters';
+import { useEnumLabel } from '../i18n/enumLabels';
 import { toDateString } from './VisitListPage';
 
 export function SchedulePage() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [filters, setFilters] = useState<VisitFilters>({});
   const [mineOnly, setMineOnly] = useState(false);
+  const [showSiblings, setShowSiblings] = useState(true);
 
   const update = (patch: Partial<VisitFilters>) => setFilters((f) => ({ ...f, ...patch }));
 
@@ -44,12 +49,15 @@ export function SchedulePage() {
     ...filterParams(filters),
     status: 'planned',
     author_id: mineOnly ? user?.id : undefined,
+    // Siblings that opt into publishing planned events appear here too; the
+    // mine-only scope keeps them out (the feed can't satisfy an author filter).
+    include_federated: showSiblings && !mineOnly,
     sort: 'visit_date', // soonest first
     page_size: 100,
   };
   const { data, isLoading } = useQuery({
     queryKey: ['visits', 'schedule', params],
-    queryFn: () => api.get<Paginated<Visit>>('/api/visits', params),
+    queryFn: () => api.get<Paginated<ActivityListItem>>('/api/visits', params),
     enabled: !!user,
   });
 
@@ -65,72 +73,78 @@ export function SchedulePage() {
     ...(mineOnly ? { author_id: user?.id } : { everyone: true }),
   })}`;
 
+  const activeFilterCount =
+    [filters.date_from, filters.date_to, filters.venue_type, filters.event_type,
+      filters.audience_level].filter(Boolean).length +
+    ((filters.tags?.length ?? 0) > 0 ? 1 : 0) +
+    (mineOnly ? 1 : 0);
+
   return (
     <Stack>
       <Group justify="space-between">
         <div>
-          <Title order={2}>Schedule</Title>
+          <Title order={2}>{t('schedule.title')}</Title>
           <Text c="dimmed" size="sm">
-            Upcoming planned events across the community. Mark one done to record attendance.
+            {t('schedule.subtitle')}
           </Text>
         </div>
         <Group>
           <Button component="a" href={icsHref} variant="default">
-            Add to calendar (.ics)
+            {t('schedule.addToCalendar')}
           </Button>
           <Button variant="gradient" onClick={() => navigate('/visits/new?status=planned')}>
-            Schedule an event
+            {t('schedule.scheduleEvent')}
           </Button>
         </Group>
       </Group>
 
-      <Card withBorder p="md">
+      <FilterCard activeCount={activeFilterCount}>
         <Group align="flex-end">
           <DateInput
-            label="From"
-            placeholder="Any"
+            label={t('schedule.fromLabel')}
+            placeholder={t('common.any')}
             clearable
             valueFormat="YYYY-MM-DD"
             value={filters.date_from ? new Date(`${filters.date_from}T00:00:00`) : null}
             onChange={(d) => update({ date_from: d ? toDateString(d) : undefined })}
           />
           <DateInput
-            label="To"
-            placeholder="Any"
+            label={t('schedule.toLabel')}
+            placeholder={t('common.any')}
             clearable
             valueFormat="YYYY-MM-DD"
             value={filters.date_to ? new Date(`${filters.date_to}T00:00:00`) : null}
             onChange={(d) => update({ date_to: d ? toDateString(d) : undefined })}
           />
           <Select
-            label="Venue type"
-            placeholder="All"
+            label={t('schedule.venueTypeLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={VENUE_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            data={VENUE_TYPES.map((v) => ({ value: v, label: enumLabel.venueType(v) }))}
             value={filters.venue_type || null}
             onChange={(v) => update({ venue_type: (v ?? '') as VisitFilters['venue_type'] })}
           />
           <Select
-            label="Event type"
-            placeholder="All"
+            label={t('schedule.eventTypeLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={EVENT_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            data={EVENT_TYPES.map((v) => ({ value: v, label: enumLabel.eventType(v) }))}
             value={filters.event_type || null}
             onChange={(v) => update({ event_type: (v ?? '') as VisitFilters['event_type'] })}
           />
           <Select
-            label="Audience"
-            placeholder="All"
+            label={t('schedule.audienceLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={AUDIENCE_LEVELS.map((t) => ({ value: t, label: labelize(t) }))}
+            data={AUDIENCE_LEVELS.map((v) => ({ value: v, label: enumLabel.audienceLevel(v) }))}
             value={filters.audience_level || null}
             onChange={(v) =>
               update({ audience_level: (v ?? '') as VisitFilters['audience_level'] })
             }
           />
           <MultiSelect
-            label="Tags"
-            placeholder={filters.tags?.length ? undefined : 'Any'}
+            label={t('schedule.tagsLabel')}
+            placeholder={filters.tags?.length ? undefined : t('common.any')}
             clearable
             searchable
             data={tagOptions}
@@ -139,76 +153,109 @@ export function SchedulePage() {
             w={200}
           />
           <Switch
-            label="Mine only"
+            label={t('schedule.mineOnly')}
             checked={mineOnly}
             onChange={(e) => setMineOnly(e.currentTarget.checked)}
             pb={8}
           />
+          {!mineOnly && (
+            <Switch
+              label={t('visitList.includeSiblings')}
+              checked={showSiblings}
+              onChange={(e) => setShowSiblings(e.currentTarget.checked)}
+              pb={8}
+            />
+          )}
         </Group>
-      </Card>
+      </FilterCard>
 
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={760}>
         <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Date</Table.Th>
-              <Table.Th>Time</Table.Th>
-              <Table.Th>Title</Table.Th>
-              <Table.Th>Venue</Table.Th>
-              <Table.Th>Communicator</Table.Th>
-              <Table.Th>Audience</Table.Th>
+              <Table.Th>{t('schedule.colDate')}</Table.Th>
+              <Table.Th>{t('schedule.colTime')}</Table.Th>
+              <Table.Th>{t('schedule.colTitle')}</Table.Th>
+              <Table.Th>{t('schedule.colVenue')}</Table.Th>
+              <Table.Th>{t('schedule.colCommunicator')}</Table.Th>
+              <Table.Th>{t('schedule.colAudience')}</Table.Th>
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {(data?.items ?? []).map((visit) => (
-              <Table.Tr key={visit.id}>
+            {(data?.items ?? []).map((it) => {
+              const isLocal = it.source === 'local';
+              return (
+              <Table.Tr key={`${it.source}-${it.id ?? it.external_url}`}>
                 <Table.Td>
                   <Group gap="xs" wrap="nowrap">
-                    {visit.visit_date}
-                    {isOverdue(visit) && (
-                      <Badge variant="light" color="red" size="sm">
-                        Overdue
+                    {it.visit_date}
+                    {isLocal &&
+                      it.status &&
+                      isOverdue({ status: it.status, visit_date: it.visit_date }) && (
+                        <Badge variant="light" color="red" size="sm">
+                          {t('schedule.overdue')}
+                        </Badge>
+                      )}
+                    {!isLocal && (
+                      <Badge variant="outline" color="grape" size="sm">
+                        {it.source}
                       </Badge>
                     )}
                   </Group>
                 </Table.Td>
-                <Table.Td>{visit.start_time ? visit.start_time.slice(0, 5) : '—'}</Table.Td>
+                <Table.Td>{it.start_time ? it.start_time.slice(0, 5) : '—'}</Table.Td>
                 <Table.Td>
-                  <Anchor component={Link} to={`/visits/${visit.id}`}>
-                    {visit.title}
-                  </Anchor>
+                  {isLocal ? (
+                    <Anchor component={Link} to={`/visits/${it.id}`}>
+                      {it.title}
+                    </Anchor>
+                  ) : (
+                    <Anchor
+                      href={it.external_url ?? undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {it.event_type ? enumLabel.eventType(it.event_type) : t('visitList.siblingActivity')}
+                      <IconExternalLink size={14} style={{ marginLeft: 4, verticalAlign: 'text-bottom' }} />
+                    </Anchor>
+                  )}
                 </Table.Td>
                 <Table.Td>
-                  {visit.venue.name}
-                  {visit.venue.city ? `, ${visit.venue.city}` : ''}
+                  {it.venue?.name}
+                  {it.venue?.city ? `, ${it.venue.city}` : ''}
                 </Table.Td>
-                <Table.Td>{visit.author.name}</Table.Td>
+                <Table.Td>{it.author?.name ?? '—'}</Table.Td>
                 <Table.Td>
-                  <Badge variant="light">{labelize(visit.audience_level)}</Badge>
+                  {it.audience_level ? (
+                    <Badge variant="light">{enumLabel.audienceLevel(it.audience_level)}</Badge>
+                  ) : (
+                    '—'
+                  )}
                 </Table.Td>
                 <Table.Td ta="right">
-                  {(visit.author.id === user?.id || user?.is_admin) && (
+                  {isLocal && (it.author?.id === user?.id || user?.is_admin) && (
                     <Button
                       size="compact-sm"
                       variant="light"
-                      onClick={() => navigate(`/visits/${visit.id}/edit`)}
+                      onClick={() => navigate(`/visits/${it.id}/edit`)}
                     >
-                      Mark done
+                      {t('schedule.markDone')}
                     </Button>
                   )}
                 </Table.Td>
               </Table.Tr>
-            ))}
+              );
+            })}
             {!isLoading && (data?.items.length ?? 0) === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={7} p={0}>
                   <EmptyState
                     icon={IconCalendarPlus}
-                    title="Nothing scheduled"
-                    description="No upcoming planned events match these filters. Schedule one and it will appear here — ready to export to your calendar."
-                    actionLabel="Schedule an event"
+                    title={t('schedule.emptyTitle')}
+                    description={t('schedule.emptyDescription')}
+                    actionLabel={t('schedule.scheduleEvent')}
                     onAction={() => navigate('/visits/new?status=planned')}
                   />
                 </Table.Td>

@@ -26,6 +26,7 @@ import {
 } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
 import type { RegistrationSettings } from '../api/types';
 
@@ -45,6 +46,7 @@ function parseHost(value: string): { host: string; label: string } | null {
 
 /** A code block with a copy-to-clipboard button in the corner. */
 function CopyBlock({ label, text }: { label: string; text: string }) {
+  const { t } = useTranslation();
   return (
     <div>
       <Group justify="space-between" mb={4}>
@@ -53,7 +55,7 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
         </Text>
         <CopyButton value={text} timeout={1500}>
           {({ copied, copy }) => (
-            <Tooltip label={copied ? 'Copied' : 'Copy'} withArrow>
+            <Tooltip label={copied ? t('siteSetupCard.copiedTooltip') : t('siteSetupCard.copyTooltip')} withArrow>
               <ActionIcon variant="subtle" color={copied ? 'teal' : 'gray'} onClick={copy}>
                 {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
               </ActionIcon>
@@ -69,6 +71,7 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
 }
 
 export function SiteSetupCard() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   // Collapsed by default — most deployments won't touch domain setup.
   const [open, { toggle }] = useDisclosure(false);
@@ -90,42 +93,39 @@ export function SiteSetupCard() {
     onSuccess: (updated) => {
       queryClient.setQueryData(['admin', 'settings'], updated);
       setSiteUrl(null);
-      notifications.show({ message: 'Site address saved', color: 'green' });
+      notifications.show({ message: t('siteSetupCard.saveSuccessMessage'), color: 'green' });
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not save',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('siteSetupCard.saveErrorTitle'),
+        message: e instanceof ApiError ? e.message : t('siteSetupCard.unexpectedError'),
       });
     },
   });
 
   const parsed = parseHost(urlValue);
   const host = parsed?.host ?? 'docent.your-org.edu';
-  const ipValue = ip.trim() || '<your server’s public IP>';
+  const ipValue = ip.trim() || t('siteSetupCard.ipPlaceholderFallback');
 
-  const dnsRequest = `Subject: DNS request — new A record for ${host}
+  const dnsRequest = `${t('siteSetupCard.dnsRequestSubject', { host })}
 
-Hi IT team,
+${t('siteSetupCard.dnsRequestGreeting')}
 
-We're running a small self-hosted web app on our own server and would like a
-subdomain to point to it. Could you please create this DNS record?
+${t('siteSetupCard.dnsRequestIntro')}
 
     Type:   A
     Name:   ${host}
     Value:  ${ipValue}
     TTL:    3600   (1 hour)
 
-If we also have an IPv6 address, please add a matching AAAA record to it.
+${t('siteSetupCard.dnsRequestIpv6Note')}
 
-Once the record is live we'll serve the site over HTTPS — the server obtains and
-renews its own TLS certificate automatically, so nothing else is needed on your
-end. The only inbound ports the server uses are 80 and 443.
+${t('siteSetupCard.dnsRequestClosing')}
 
-Thanks very much!`;
+${t('siteSetupCard.dnsRequestSignoff')}`;
 
-  const envSnippet = `# in your .env on the server, then re-run ./scripts/start.sh
+  const envSnippet = `# ${t('siteSetupCard.envSnippetComment')}
 SITE_DOMAIN=${host}`;
 
   return (
@@ -134,28 +134,26 @@ SITE_DOMAIN=${host}`;
         <Group gap="xs" wrap="nowrap">
           {open ? <IconChevronDown size={18} /> : <IconChevronRight size={18} />}
           <IconWorld size={20} />
-          <Title order={3}>Site address &amp; domain setup</Title>
+          <Title order={3}>{t('siteSetupCard.title')}</Title>
           {!open && (
             <Text size="sm" c="dimmed">
-              — point a subdomain at this server (optional)
+              {t('siteSetupCard.collapsedSubtitle')}
             </Text>
           )}
         </Group>
       </UnstyledButton>
       <Collapse in={open}>
       <Text size="sm" c="dimmed" mb="md" mt="md">
-        Give your instance a friendly web address like{' '}
-        <Code>https://docent.your-org.edu</Code>. This takes two things: a{' '}
-        <strong>DNS “A record”</strong> your IT department adds (pointing the name at your
-        machine), and HTTPS on the server — which DOCENT already bundles. Fill in the two
-        fields below and this panel writes the exact request to send IT and the one-line
-        change that turns HTTPS on.
+        <Trans
+          i18nKey="siteSetupCard.description"
+          components={{ code: <Code />, strong: <strong /> }}
+        />
       </Text>
 
       <Stack>
         <TextInput
-          label="Public site address"
-          description="Saved with your instance and used to build the setup instructions below."
+          label={t('siteSetupCard.publicSiteAddressLabel')}
+          description={t('siteSetupCard.publicSiteAddressDescription')}
           placeholder="https://docent.your-org.edu"
           leftSection={<IconWorld size={16} />}
           value={urlValue}
@@ -168,20 +166,22 @@ SITE_DOMAIN=${host}`;
             disabled={siteUrl === null}
             onClick={() => save.mutate()}
           >
-            Save address
+            {t('siteSetupCard.saveButton')}
           </Button>
         </Group>
 
         {urlValue.trim() && !parsed && (
           <Alert color="yellow" variant="light" icon={<IconInfoCircle size={16} />}>
-            That doesn’t look like a valid web address — use something like{' '}
-            <Code>https://docent.your-org.edu</Code>.
+            <Trans
+              i18nKey="siteSetupCard.invalidAddressWarning"
+              components={{ code: <Code /> }}
+            />
           </Alert>
         )}
 
         <TextInput
-          label="Your server’s public IP address"
-          description="Find this in your cloud/VM console (e.g. the instance's public IPv4). Not stored — only used to fill in the request."
+          label={t('siteSetupCard.serverIpLabel')}
+          description={t('siteSetupCard.serverIpDescription')}
           placeholder="203.0.113.42"
           value={ip}
           onChange={(e) => setIp(e.currentTarget.value)}
@@ -189,29 +189,38 @@ SITE_DOMAIN=${host}`;
 
         <Alert color="blue" variant="light" icon={<IconInfoCircle size={16} />}>
           <Text size="sm" fw={600} mb={4}>
-            How the pieces fit together
+            {t('siteSetupCard.howItFitsTogetherTitle')}
           </Text>
           <Text size="sm">
-            1. IT creates an <strong>A record</strong> so <Code>{host}</Code> resolves to your
-            machine’s IP, and opens ports <strong>80</strong> and <strong>443</strong>. 2. You
-            set <Code>SITE_DOMAIN</Code> in <Code>.env</Code> and re-run{' '}
-            <Code>./scripts/start.sh</Code> — DOCENT’s bundled{' '}
-            <a href="https://caddyserver.com" target="_blank" rel="noreferrer">
-              Caddy
-            </a>{' '}
-            proxy then serves HTTPS and gets a free, auto-renewing certificate. Nothing extra
-            to install. That’s the whole setup.
+            <Trans
+              i18nKey="siteSetupCard.howItFitsTogetherBody"
+              values={{ host }}
+              components={{
+                strongRecord: <strong />,
+                hostCode: <Code />,
+                strongPort80: <strong />,
+                strongPort443: <strong />,
+                domainCode: <Code />,
+                envCode: <Code />,
+                scriptCode: <Code />,
+                caddyLink: <a href="https://caddyserver.com" target="_blank" rel="noreferrer" />,
+              }}
+            />
           </Text>
         </Alert>
 
-        <CopyBlock label="1 · Request to send your IT / DNS department" text={dnsRequest} />
-        <CopyBlock label="2 · Turn on HTTPS (on the server)" text={envSnippet} />
+        <CopyBlock label={t('siteSetupCard.requestLabel')} text={dnsRequest} />
+        <CopyBlock label={t('siteSetupCard.envSnippetLabel')} text={envSnippet} />
         <Text size="xs" c="dimmed">
-          Once IT confirms the record is live, add that line to <Code>.env</Code> and run{' '}
-          <Code>./scripts/start.sh</Code> — the bundled Caddy proxy starts automatically and
-          fetches the certificate. DNS changes can take up to an hour to take effect
-          worldwide. Leaving <Code>SITE_DOMAIN</Code> empty keeps the app on{' '}
-          <Code>http://localhost</Code> only.
+          <Trans
+            i18nKey="siteSetupCard.footerNote"
+            components={{
+              envCode: <Code />,
+              scriptCode: <Code />,
+              domainCode: <Code />,
+              localhostCode: <Code />,
+            }}
+          />
         </Text>
       </Stack>
       </Collapse>

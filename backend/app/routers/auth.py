@@ -15,8 +15,12 @@ from app.security import (
 from app.services.settings import (
     effective_contact_email,
     effective_invite_code,
+    effective_login_message,
+    effective_map_center_lat,
+    effective_map_center_lon,
     effective_site_name,
     public_page_enabled,
+    user_directory_visible,
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -24,13 +28,18 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 @router.get("/config", response_model=AuthConfig)
 def auth_config(db: DbSession) -> AuthConfig:
-    """Public: whether sign-up is open and where to request access — the
-    login/register pages render this so they can point people at the admin."""
+    """Public: instance-wide, non-sensitive config the login/register pages
+    (and, once signed in, the rest of the app) need — sign-up status, contact
+    info, and small branding/behavior overrides like the map's start point."""
     return AuthConfig(
         registration_enabled=bool(effective_invite_code(db)),
         contact_email=effective_contact_email(db) or None,
         site_name=effective_site_name(db) or None,
         public_page=public_page_enabled(db),
+        login_message=effective_login_message(db) or None,
+        map_center_lat=effective_map_center_lat(db),
+        map_center_lon=effective_map_center_lon(db),
+        user_directory_visible=user_directory_visible(db),
     )
 
 
@@ -67,6 +76,7 @@ def register(body: RegisterRequest, request: Request, response: Response, db: Db
         email=email,
         name=body.name,
         affiliation=body.affiliation,
+        position=body.position,
         password_hash=hash_password(body.password),
         is_admin=is_first_user,
     )

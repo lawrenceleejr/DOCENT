@@ -9,6 +9,7 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Switch,
   Text,
   Table,
   Title,
@@ -23,6 +24,7 @@ import {
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Bar,
@@ -39,7 +41,6 @@ import { api } from '../api/client';
 import {
   AUDIENCE_LEVELS,
   EVENT_TYPES,
-  labelize,
   VENUE_TYPES,
   type BreakdownRow,
   type LeaderboardRow,
@@ -47,14 +48,16 @@ import {
   type TimeseriesPoint,
   type TopVenueRow,
 } from '../api/types';
+import { FilterCard } from '../components/FilterCard';
 import { StatTile } from '../components/StatTile';
 import { VIZ_DARK, VIZ_LIGHT } from '../components/vizTheme';
+import { useEnumLabel } from '../i18n/enumLabels';
 import { toDateString } from './VisitListPage';
 
 const RANGES = [
-  { label: 'Last 3 years', value: '3y' },
-  { label: 'Last 5 years', value: '5y' },
-  { label: 'All time', value: 'all' },
+  { labelKey: 'rangeLast3Years', captionKey: 'rangeCaptionLast3Years', value: '3y' },
+  { labelKey: 'rangeLast5Years', captionKey: 'rangeCaptionLast5Years', value: '5y' },
+  { labelKey: 'rangeAllTime', captionKey: 'rangeCaptionAllTime', value: 'all' },
 ] as const;
 type RangeKey = (typeof RANGES)[number]['value'];
 
@@ -187,15 +190,19 @@ function TimePanel({
 function BreakdownPanel({
   title,
   data,
+  by,
   color,
   viz,
 }: {
   title: string;
   data: BreakdownRow[];
+  by: 'venueType' | 'audienceLevel' | 'hostRelationship';
   color: string;
   viz: typeof VIZ_LIGHT;
 }) {
-  const rows = data.map((row) => ({ ...row, label: labelize(row.key) }));
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
+  const rows = data.map((row) => ({ ...row, label: enumLabel[by](row.key) }));
   const height = rows.length <= 1 ? 96 : Math.max(140, rows.length * 38 + 24);
   return (
     <Card withBorder p="md">
@@ -204,7 +211,7 @@ function BreakdownPanel({
       </Text>
       {rows.length === 0 ? (
         <Text c="dimmed" size="sm" py="xl" ta="center">
-          No data recorded in this range yet.
+          {t('dashboard.noDataInRange')}
         </Text>
       ) : (
       <ResponsiveContainer width="100%" height={height}>
@@ -230,7 +237,7 @@ function BreakdownPanel({
             contentStyle={tooltipStyle(viz)}
             formatter={(value: number, name: string) => [
               value.toLocaleString(),
-              name === 'visits' ? 'Visits' : 'People reached',
+              name === 'visits' ? t('dashboard.statVisits') : t('dashboard.statPeopleReached'),
             ]}
           />
           <Bar dataKey="visits" fill={color} barSize={16} radius={[0, 4, 4, 0]} />
@@ -242,6 +249,8 @@ function BreakdownPanel({
 }
 
 export function DashboardPage() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const scheme = useComputedColorScheme('dark');
   const viz = scheme === 'dark' ? VIZ_DARK : VIZ_LIGHT;
   const [range, setRange] = useState<RangeKey>('5y');
@@ -252,6 +261,7 @@ export function DashboardPage() {
   const [eventType, setEventType] = useState<string | null>(null);
   const [audience, setAudience] = useState<string | null>(null);
   const [tags, setTags] = useState<string[]>([]);
+  const [includeSiblings, setIncludeSiblings] = useState(true);
 
   const { data: tagOptions = [] } = useQuery({
     queryKey: ['visits', 'tags'],
@@ -268,7 +278,11 @@ export function DashboardPage() {
     }),
     [dates, venueType, eventType, audience, tags],
   );
-  const hasFilters = !!(venueType || eventType || audience || tags.length);
+  const activeFilterCount =
+    [venueType, eventType, audience].filter(Boolean).length +
+    (tags.length > 0 ? 1 : 0) +
+    (includeSiblings ? 0 : 1);
+  const hasFilters = activeFilterCount > 0;
   const clearFilters = () => {
     setVenueType(null);
     setEventType(null);
@@ -277,27 +291,49 @@ export function DashboardPage() {
   };
 
   const { data: summary } = useQuery({
-    queryKey: ['stats', 'summary', filters],
-    queryFn: () => api.get<StatsSummary>('/api/stats/summary', filters),
+    queryKey: ['stats', 'summary', filters, includeSiblings],
+    queryFn: () =>
+      api.get<StatsSummary>('/api/stats/summary', {
+        ...filters,
+        include_federated: includeSiblings,
+      }),
   });
   const { data: timeseries } = useQuery({
-    queryKey: ['stats', 'timeseries', filters],
-    queryFn: () => api.get<TimeseriesPoint[]>('/api/stats/timeseries', filters),
+    queryKey: ['stats', 'timeseries', filters, includeSiblings],
+    queryFn: () =>
+      api.get<TimeseriesPoint[]>('/api/stats/timeseries', {
+        ...filters,
+        include_federated: includeSiblings,
+      }),
   });
   const { data: byVenueType } = useQuery({
-    queryKey: ['stats', 'breakdown', 'venue_type', filters],
+    queryKey: ['stats', 'breakdown', 'venue_type', filters, includeSiblings],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'venue_type', ...filters }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', {
+        by: 'venue_type',
+        ...filters,
+        include_federated: includeSiblings,
+      }),
   });
   const { data: byAudience } = useQuery({
-    queryKey: ['stats', 'breakdown', 'audience_level', filters],
+    queryKey: ['stats', 'breakdown', 'audience_level', filters, includeSiblings],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'audience_level', ...filters }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', {
+        by: 'audience_level',
+        ...filters,
+        include_federated: includeSiblings,
+      }),
   });
   const { data: byRelationship } = useQuery({
+    // host_relationship stays local-only — the federation feed carries no
+    // host-relationship data.
     queryKey: ['stats', 'breakdown', 'host_relationship', filters],
     queryFn: () =>
-      api.get<BreakdownRow[]>('/api/stats/breakdown', { by: 'host_relationship', ...filters }),
+      api.get<BreakdownRow[]>('/api/stats/breakdown', {
+        by: 'host_relationship',
+        ...filters,
+        include_federated: false,
+      }),
   });
   const { data: topVenues } = useQuery({
     queryKey: ['stats', 'top-venues', filters],
@@ -318,7 +354,8 @@ export function DashboardPage() {
     );
   }, [series]);
 
-  const rangeLabel = RANGES.find((r) => r.value === range)?.label.toLowerCase() ?? '';
+  const activeRange = RANGES.find((r) => r.value === range);
+  const rangeCaption = activeRange ? t(`dashboard.${activeRange.captionKey}`) : '';
   const avgPerVisit =
     summary && summary.total_visits > 0
       ? Math.round(summary.total_people_reached / summary.total_visits)
@@ -328,50 +365,50 @@ export function DashboardPage() {
     <Stack>
       <Group justify="space-between" align="flex-end">
         <div>
-          <Title order={2}>Analysis</Title>
+          <Title order={2}>{t('dashboard.title')}</Title>
           <Text c="dimmed" size="sm">
-            Your community’s collective outreach impact.
+            {t('dashboard.subtitle')}
           </Text>
         </div>
         <SegmentedControl
           value={range}
           onChange={(value) => setRange(value as RangeKey)}
-          data={RANGES.map((r) => ({ label: r.label, value: r.value }))}
+          data={RANGES.map((r) => ({ label: t(`dashboard.${r.labelKey}`), value: r.value }))}
         />
       </Group>
 
-      <Card withBorder p="md">
+      <FilterCard activeCount={activeFilterCount}>
         <Group align="flex-end">
           <Select
-            label="Venue type"
-            placeholder="All"
+            label={t('dashboard.venueTypeLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={VENUE_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            data={VENUE_TYPES.map((v) => ({ value: v, label: enumLabel.venueType(v) }))}
             value={venueType}
             onChange={setVenueType}
             w={180}
           />
           <Select
-            label="Event type"
-            placeholder="All"
+            label={t('dashboard.eventTypeLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={EVENT_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+            data={EVENT_TYPES.map((v) => ({ value: v, label: enumLabel.eventType(v) }))}
             value={eventType}
             onChange={setEventType}
             w={180}
           />
           <Select
-            label="Audience"
-            placeholder="All"
+            label={t('dashboard.audienceLabel')}
+            placeholder={t('common.all')}
             clearable
-            data={AUDIENCE_LEVELS.map((t) => ({ value: t, label: labelize(t) }))}
+            data={AUDIENCE_LEVELS.map((v) => ({ value: v, label: enumLabel.audienceLevel(v) }))}
             value={audience}
             onChange={setAudience}
             w={180}
           />
           <MultiSelect
-            label="Tags"
-            placeholder={tags.length ? undefined : 'Any'}
+            label={t('dashboard.tagsLabel')}
+            placeholder={tags.length ? undefined : t('common.any')}
             clearable
             searchable
             data={tagOptions}
@@ -379,59 +416,75 @@ export function DashboardPage() {
             onChange={setTags}
             w={220}
           />
+          <Switch
+            label={t('dashboard.includeSiblings')}
+            checked={includeSiblings}
+            onChange={(event) => setIncludeSiblings(event.currentTarget.checked)}
+            mb={6}
+          />
           {hasFilters && (
             <Button variant="subtle" onClick={clearFilters}>
-              Clear filters
+              {t('dashboard.clearFilters')}
             </Button>
           )}
         </Group>
-      </Card>
+      </FilterCard>
+
+      {includeSiblings && (
+        <Text size="xs" c="dimmed">
+          {t('dashboard.federatedCaveat')}
+        </Text>
+      )}
 
       <SimpleGrid cols={{ base: 1, xs: 2, md: 5 }}>
         <StatTile
-          label="Visits"
+          label={t('dashboard.statVisits')}
           value={summary?.total_visits.toLocaleString() ?? '—'}
           icon={IconCalendarStats}
           color="brand"
-          sub={rangeLabel}
+          sub={rangeCaption}
         />
         <StatTile
-          label="People reached"
+          label={t('dashboard.statPeopleReached')}
           value={summary?.total_people_reached.toLocaleString() ?? '—'}
           icon={IconUsers}
           color="grape"
-          sub={avgPerVisit != null ? `~${avgPerVisit.toLocaleString()} per visit` : undefined}
+          sub={
+            avgPerVisit != null
+              ? t('dashboard.avgPerVisit', { formattedCount: avgPerVisit.toLocaleString() })
+              : undefined
+          }
         />
         <StatTile
-          label="Venues visited"
+          label={t('dashboard.statVenuesVisited')}
           value={summary?.distinct_venues ?? '—'}
           icon={IconMapPin}
           color="teal"
-          sub="distinct locations"
+          sub={t('dashboard.distinctLocations')}
         />
         <StatTile
-          label="Active communicators"
+          label={t('dashboard.statActiveCommunicators')}
           value={summary?.active_communicators ?? '—'}
           icon={IconUserBolt}
           color="indigo"
-          sub="contributing"
+          sub={t('dashboard.contributing')}
         />
         <StatTile
-          label="Avg. rating"
+          label={t('dashboard.statAvgRating')}
           value={summary?.avg_rating != null ? `${summary.avg_rating}` : '—'}
           icon={IconStar}
           color="yellow"
-          sub="out of 5"
+          sub={t('dashboard.outOfFive')}
         />
       </SimpleGrid>
 
       <Title order={3} mt="sm">
-        Over time
+        {t('dashboard.overTimeHeading')}
       </Title>
       {/* Two measures, two panels — never a dual-axis chart. */}
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <TimePanel
-          title="Visits per 6 months"
+          title={t('dashboard.visitsPer6Months')}
           data={series}
           ticks={yearTicks}
           dataKey="visits"
@@ -439,7 +492,7 @@ export function DashboardPage() {
           viz={viz}
         />
         <TimePanel
-          title="People reached per 6 months"
+          title={t('dashboard.peopleReachedPer6Months')}
           data={series}
           ticks={yearTicks}
           dataKey="people_reached"
@@ -449,44 +502,50 @@ export function DashboardPage() {
       </SimpleGrid>
 
       <Title order={3} mt="sm">
-        Breakdowns
+        {t('dashboard.breakdownsHeading')}
       </Title>
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <BreakdownPanel
-          title="Visits by venue type"
+          title={t('dashboard.visitsByVenueType')}
           data={byVenueType ?? []}
+          by="venueType"
           color={viz.series1}
           viz={viz}
         />
         <BreakdownPanel
-          title="Visits by audience level"
+          title={t('dashboard.visitsByAudienceLevel')}
           data={byAudience ?? []}
+          by="audienceLevel"
           color={viz.series1}
           viz={viz}
         />
         <BreakdownPanel
-          title="Visits by host relationship"
+          title={t('dashboard.visitsByHostRelationship')}
           data={byRelationship ?? []}
+          by="hostRelationship"
           color={viz.series2}
           viz={viz}
         />
       </SimpleGrid>
 
       <Title order={3} mt="sm">
-        Leaders
+        {t('dashboard.leadersHeading')}
       </Title>
+      <Text c="dimmed" size="xs">
+        {t('dashboard.localOnlyNote')}
+      </Text>
       <Grid>
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Card withBorder p="md">
             <Text fw={600} mb="xs">
-              Top venues
+              {t('dashboard.topVenues')}
             </Text>
             <Table>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Venue</Table.Th>
-                  <Table.Th ta="right">Visits</Table.Th>
-                  <Table.Th ta="right">People reached</Table.Th>
+                  <Table.Th>{t('dashboard.colVenue')}</Table.Th>
+                  <Table.Th ta="right">{t('dashboard.statVisits')}</Table.Th>
+                  <Table.Th ta="right">{t('dashboard.statPeopleReached')}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -515,7 +574,7 @@ export function DashboardPage() {
                   <Table.Tr>
                     <Table.Td colSpan={3}>
                       <Text c="dimmed" ta="center" py="sm">
-                        No data in this range
+                        {t('dashboard.noDataShort')}
                       </Text>
                     </Table.Td>
                   </Table.Tr>
@@ -527,14 +586,14 @@ export function DashboardPage() {
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Card withBorder p="md">
             <Text fw={600} mb="xs">
-              Communicator leaderboard
+              {t('dashboard.communicatorLeaderboard')}
             </Text>
             <Table>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Communicator</Table.Th>
-                  <Table.Th ta="right">Visits</Table.Th>
-                  <Table.Th ta="right">People reached</Table.Th>
+                  <Table.Th>{t('dashboard.colCommunicator')}</Table.Th>
+                  <Table.Th ta="right">{t('dashboard.statVisits')}</Table.Th>
+                  <Table.Th ta="right">{t('dashboard.statPeopleReached')}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -553,7 +612,7 @@ export function DashboardPage() {
                   <Table.Tr>
                     <Table.Td colSpan={3}>
                       <Text c="dimmed" ta="center" py="sm">
-                        No data in this range
+                        {t('dashboard.noDataShort')}
                       </Text>
                     </Table.Td>
                   </Table.Tr>

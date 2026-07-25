@@ -14,6 +14,7 @@ from sqlalchemy import Integer, cast, func, select
 from app.deps import DbSession
 from app.models import Venue, Visit, VisitStatus
 from app.schemas import BreakdownRow, PublicActivity, PublicImpact, TimeseriesPoint
+from app.services.federation import federated_query
 from app.services.settings import effective_site_name, public_page_enabled
 
 router = APIRouter(prefix="/api/public", tags=["public"])
@@ -21,8 +22,12 @@ router = APIRouter(prefix="/api/public", tags=["public"])
 RECENT_LIMIT = 12
 
 
+def _half_year_period(d) -> str:
+    return f"{d.year} H{1 if d.month <= 6 else 2}"
+
+
 @router.get("/impact", response_model=PublicImpact)
-def public_impact(db: DbSession) -> PublicImpact:
+def public_impact(db: DbSession, include_federated: bool = False) -> PublicImpact:
     if not public_page_enabled(db):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Public page is not enabled"
@@ -72,17 +77,43 @@ def public_impact(db: DbSession) -> PublicImpact:
         .limit(RECENT_LIMIT)
     ).all()
 
+    total_visits, total_people, distinct_venues, active_communicators = (
+        totals[0], totals[1], totals[2], totals[3]
+    )
+    series_buckets: dict[str, list[int]] = {r[0]: [r[1], r[2]] for r in series}
+    vtype_buckets: dict[str, list[int]] = {r[0].value: [r[1], r[2]] for r in breakdown}
+
+    # Optionally fold in the wider federation network — aggregate numbers only,
+    # NEVER sibling names (the recent list below stays local and name-free).
+    if include_federated:
+        fed_rows = [a for a, _label in federated_query(db)]
+        if fed_rows:
+            total_visits += len(fed_rows)
+            total_people += sum(a.people_reached for a in fed_rows)
+            distinct_venues += len({(a.venue_name, a.venue_city) for a in fed_rows})
+            active_communicators += len({a.person_name for a in fed_rows if a.person_name})
+            for a in fed_rows:
+                sb = series_buckets.setdefault(_half_year_period(a.visit_date), [0, 0])
+                sb[0] += 1
+                sb[1] += a.people_reached
+                if a.venue_type:
+                    vb = vtype_buckets.setdefault(a.venue_type, [0, 0])
+                    vb[0] += 1
+                    vb[1] += a.people_reached
+
     return PublicImpact(
         site_name=effective_site_name(db) or None,
-        total_visits=totals[0],
-        total_people_reached=totals[1],
-        distinct_venues=totals[2],
-        active_communicators=totals[3],
+        total_visits=total_visits,
+        total_people_reached=total_people,
+        distinct_venues=distinct_venues,
+        active_communicators=active_communicators,
         timeseries=[
-            TimeseriesPoint(period=r[0], visits=r[1], people_reached=r[2]) for r in series
+            TimeseriesPoint(period=p, visits=v, people_reached=pr)
+            for p, (v, pr) in sorted(series_buckets.items())
         ],
         by_venue_type=[
-            BreakdownRow(key=r[0].value, visits=r[1], people_reached=r[2]) for r in breakdown
+            BreakdownRow(key=k, visits=v, people_reached=pr)
+            for k, (v, pr) in sorted(vtype_buckets.items(), key=lambda kv: kv[1][0], reverse=True)
         ],
         recent=[
             PublicActivity(

@@ -16,12 +16,16 @@ import { notifications } from '@mantine/notifications';
 import { IconTrash } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
-import { INSTITUTION_TYPES, labelize, type AdminInstitution, type Paginated } from '../api/types';
+import { INSTITUTION_TYPES, type AdminInstitution, type Paginated } from '../api/types';
+import { useEnumLabel } from '../i18n/enumLabels';
 
 const PAGE_SIZE = 10;
 
 export function InstitutionManagerCard() {
+  const { t } = useTranslation();
+  const enumLabel = useEnumLabel();
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [type, setType] = useState<string | null>('school');
@@ -55,13 +59,16 @@ export function InstitutionManagerCard() {
       setName('');
       setLocation('');
       setCity('');
-      notifications.show({ color: 'green', message: `Added “${inst.name}” to the catalog` });
+      notifications.show({
+        color: 'green',
+        message: t('institutionManagerCard.addedMessage', { name: inst.name }),
+      });
     },
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not add institution',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('institutionManagerCard.addErrorTitle'),
+        message: e instanceof ApiError ? e.message : t('institutionManagerCard.unexpectedError'),
       });
     },
   });
@@ -72,8 +79,8 @@ export function InstitutionManagerCard() {
     onError: (e) => {
       notifications.show({
         color: 'red',
-        title: 'Could not delete',
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        title: t('institutionManagerCard.deleteErrorTitle'),
+        message: e instanceof ApiError ? e.message : t('institutionManagerCard.unexpectedError'),
       });
     },
   });
@@ -83,47 +90,46 @@ export function InstitutionManagerCard() {
 
   return (
     <Card withBorder p="lg">
-      <Title order={3}>Institution catalog</Title>
+      <Title order={3}>{t('institutionManagerCard.title')}</Title>
       <Text size="sm" c="dimmed" mb="md">
-        Add institutions the OpenStreetMap importer can’t find (some schools are only mapped as
-        a building, so they never import). New entries appear on the Map as coverage targets.
+        {t('institutionManagerCard.description')}
       </Text>
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} mb="xs">
         <TextInput
-          label="Name"
-          placeholder="L&N STEM Academy"
+          label={t('institutionManagerCard.nameLabel')}
+          placeholder={t('institutionManagerCard.namePlaceholder')}
           value={name}
           onChange={(e) => setName(e.currentTarget.value)}
         />
         <Select
-          label="Type"
-          data={INSTITUTION_TYPES.map((t) => ({ value: t, label: labelize(t) }))}
+          label={t('institutionManagerCard.typeLabel')}
+          data={INSTITUTION_TYPES.map((v) => ({ value: v, label: enumLabel.institutionType(v) }))}
           value={type}
           onChange={setType}
         />
         <TextInput
-          label="Location"
-          description="Address or place to look up, or a raw “lat, lon”"
-          placeholder="401 Henley St, Knoxville TN"
+          label={t('institutionManagerCard.locationLabel')}
+          description={t('institutionManagerCard.locationDescription')}
+          placeholder={t('institutionManagerCard.locationPlaceholder')}
           value={location}
           onChange={(e) => setLocation(e.currentTarget.value)}
         />
         <TextInput
-          label="City (optional)"
-          placeholder="Knoxville"
+          label={t('institutionManagerCard.cityLabel')}
+          placeholder={t('institutionManagerCard.cityPlaceholder')}
           value={city}
           onChange={(e) => setCity(e.currentTarget.value)}
         />
       </SimpleGrid>
       <Group justify="flex-end" mb="lg">
         <Button variant="gradient" loading={add.isPending} disabled={!canAdd} onClick={() => add.mutate()}>
-          Add to catalog
+          {t('institutionManagerCard.addButton')}
         </Button>
       </Group>
 
       <TextInput
-        placeholder="Search catalog by name or city"
+        placeholder={t('institutionManagerCard.searchPlaceholder')}
         value={q}
         onChange={(e) => {
           setQ(e.currentTarget.value);
@@ -135,10 +141,10 @@ export function InstitutionManagerCard() {
         <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Type</Table.Th>
-              <Table.Th>City</Table.Th>
-              <Table.Th>Region</Table.Th>
+              <Table.Th>{t('institutionManagerCard.colName')}</Table.Th>
+              <Table.Th>{t('institutionManagerCard.colType')}</Table.Th>
+              <Table.Th>{t('institutionManagerCard.colCity')}</Table.Th>
+              <Table.Th>{t('institutionManagerCard.colRegion')}</Table.Th>
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
@@ -146,7 +152,7 @@ export function InstitutionManagerCard() {
             {(data?.items ?? []).map((inst) => (
               <Table.Tr key={inst.id}>
                 <Table.Td>{inst.name}</Table.Td>
-                <Table.Td>{labelize(inst.institution_type)}</Table.Td>
+                <Table.Td>{enumLabel.institutionType(inst.institution_type)}</Table.Td>
                 <Table.Td>{inst.city ?? '—'}</Table.Td>
                 <Table.Td>
                   <Text size="sm" c="dimmed">
@@ -154,13 +160,13 @@ export function InstitutionManagerCard() {
                   </Text>
                 </Table.Td>
                 <Table.Td ta="right">
-                  <Tooltip label="Delete from catalog">
+                  <Tooltip label={t('institutionManagerCard.deleteTooltip')}>
                     <ActionIcon
                       color="red"
                       variant="subtle"
                       loading={remove.isPending && remove.variables === inst.id}
                       onClick={() => {
-                        if (window.confirm(`Delete “${inst.name}” from the catalog?`)) {
+                        if (window.confirm(t('institutionManagerCard.deleteConfirm', { name: inst.name }))) {
                           remove.mutate(inst.id);
                         }
                       }}
@@ -175,7 +181,9 @@ export function InstitutionManagerCard() {
               <Table.Tr>
                 <Table.Td colSpan={5}>
                   <Text c="dimmed" ta="center" py="md">
-                    No catalog entries {q ? `match “${q}”` : 'yet'}.
+                    {q
+                      ? t('institutionManagerCard.emptyMatch', { q })
+                      : t('institutionManagerCard.emptyYet')}
                   </Text>
                 </Table.Td>
               </Table.Tr>
@@ -186,7 +194,10 @@ export function InstitutionManagerCard() {
 
       <Group justify="space-between" mt="sm">
         <Text size="sm" c="dimmed">
-          {total.toLocaleString()} institution{total === 1 ? '' : 's'}
+          {t('institutionManagerCard.institutionCount', {
+            count: total,
+            formattedCount: total.toLocaleString(),
+          })}
         </Text>
         <Pagination
           size="sm"

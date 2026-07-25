@@ -4,8 +4,21 @@ from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import func, select
 
 from app.deps import CurrentUser, DbSession
-from app.models import Institution, InstitutionType, Venue, Visit, VisitStatus
-from app.schemas import InstitutionDetail, InstitutionPoint, VenuePoint
+from app.models import (
+    FederatedActivity,
+    FederationPeer,
+    Institution,
+    InstitutionType,
+    Venue,
+    Visit,
+    VisitStatus,
+)
+from app.schemas import (
+    FederatedMapPoint,
+    InstitutionDetail,
+    InstitutionPoint,
+    VenuePoint,
+)
 
 router = APIRouter(prefix="/api", tags=["map"])
 
@@ -119,6 +132,77 @@ def map_venues(
             institution_id=venue.institution_id,
         )
         for venue, count, visited_flag in rows
+    ]
+
+
+@router.get("/map/federated", response_model=list[FederatedMapPoint])
+def map_federated(
+    db: DbSession,
+    _user: CurrentUser,
+    south: float | None = None,
+    north: float | None = None,
+    west: float | None = None,
+    east: float | None = None,
+):
+    """Sibling activities with coordinates, as their own map layer. These never
+    affect local covered/gap counting — they're other instances' venues. A
+    sibling point that coincides with a place WE have already reached is dropped,
+    so a jointly-visited institution reads as a single reached (green) marker."""
+    query = (
+        select(FederatedActivity, FederationPeer.label)
+        .join(FederationPeer, FederatedActivity.peer_id == FederationPeer.id)
+        .where(
+            FederationPeer.enabled.is_(True),
+            FederatedActivity.status == "completed",
+            FederatedActivity.latitude.isnot(None),
+            FederatedActivity.longitude.isnot(None),
+        )
+        .limit(MAX_POINTS)
+    )
+    query = _bbox(
+        query, FederatedActivity.latitude, FederatedActivity.longitude, south, north, west, east
+    )
+    rows = db.execute(query).all()
+
+    # Coordinates we've locally reached: covered institutions + visited venues.
+    # Round to ~11 m so near-coincident points collapse.
+    def key(lat: float, lon: float) -> tuple[float, float]:
+        return (round(lat, 4), round(lon, 4))
+
+    reached: set[tuple[float, float]] = set()
+    covered_inst = _bbox(
+        select(Institution.latitude, Institution.longitude)
+        .join(Venue, Venue.institution_id == Institution.id)
+        .join(Visit, (Visit.venue_id == Venue.id) & (Visit.status == VisitStatus.completed)),
+        Institution.latitude, Institution.longitude, south, north, west, east,
+    )
+    for lat, lon in db.execute(covered_inst).all():
+        if lat is not None and lon is not None:
+            reached.add(key(lat, lon))
+    visited_venues = _bbox(
+        select(Venue.latitude, Venue.longitude)
+        .join(Visit, (Visit.venue_id == Venue.id) & (Visit.status == VisitStatus.completed))
+        .where(Venue.latitude.isnot(None), Venue.longitude.isnot(None)),
+        Venue.latitude, Venue.longitude, south, north, west, east,
+    )
+    for lat, lon in db.execute(visited_venues).all():
+        if lat is not None and lon is not None:
+            reached.add(key(lat, lon))
+
+    return [
+        FederatedMapPoint(
+            latitude=a.latitude,
+            longitude=a.longitude,
+            venue_name=a.venue_name,
+            venue_type=a.venue_type,
+            person_name=a.person_name,
+            visit_date=a.visit_date,
+            people_reached=a.people_reached,
+            permalink=a.permalink,
+            source_label=label,
+        )
+        for a, label in rows
+        if key(a.latitude, a.longitude) not in reached
     ]
 
 

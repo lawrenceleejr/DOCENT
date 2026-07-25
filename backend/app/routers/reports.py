@@ -29,6 +29,7 @@ def activities_report(
     event_type: EventType | None = None,
     audience_level: AudienceLevel | None = None,
     tags: str | None = None,
+    language: str | None = None,
 ):
     """Export a grant-ready outreach report in JSON / CSV / Markdown / PDF.
 
@@ -50,6 +51,7 @@ def activities_report(
             q=None,
             status=status_filter,
             tags=_parse_tags(tags),
+            language=language,
         ),
         "-visit_date",
     ).options(joinedload(Visit.author), joinedload(Visit.venue))

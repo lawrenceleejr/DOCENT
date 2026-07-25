@@ -29,6 +29,17 @@ Impact.**
 - **Per-instance branding**: set a community name shown in the header, on the
   login page, and on the public page.
 
+### Federate (show sibling instances)
+- **Federation**: publish a token-authenticated feed of your completed (and,
+  optionally, planned) activities, and subscribe to sibling instances' feeds so
+  an activity logged once shows up everywhere — in the Visits list, Map,
+  Schedule, and Analysis — never carrying private notes, ratings, or host
+  details. Filter by **source** or hide siblings entirely per view.
+- Peers sync on an **hourly / daily / weekly** interval via a built-in job:
+  incremental, paged pulls with a periodic full reconcile, per-peer status,
+  next-sync time, and exponential backoff on failure. **Test** a feed URL before
+  adding it, and **Rotate token** to revoke a URL you've shared.
+
 ### Report (Broad Impact)
 - **Reports**: grant-ready activity exports (PDF / CSV / Markdown / JSON) over a
   custom date range with filters — factual data only, never private notes or

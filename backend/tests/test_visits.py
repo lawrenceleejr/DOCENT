@@ -294,3 +294,54 @@ def test_venue_search(client):
     hits = client.get("/api/venues", params={"q": "knox"}).json()
     assert hits["total"] == 1
     assert hits["items"][0]["name"] == "Lincoln Elementary"
+
+
+def test_visit_language(client):
+    register(client)
+    venue = create_venue(client)
+
+    visit = create_visit(client, venue["id"], language="Spanish")
+    assert visit["language"] == "Spanish"
+    fetched = client.get(f"/api/visits/{visit['id']}").json()
+    assert fetched["language"] == "Spanish"
+
+    # Not in the central list -> rejected.
+    bad = client.post(
+        "/api/visits",
+        json={
+            "venue_id": venue["id"], "visit_date": "2026-03-14",
+            "event_type": "classroom_visit", "title": "Bad language",
+            "people_reached": 10, "audience_level": "elementary",
+            "language": "Klingon",
+        },
+    )
+    assert bad.status_code == 422
+
+    # Blank clears it rather than raising.
+    no_lang = create_visit(client, venue["id"], language="")
+    assert no_lang["language"] is None
+
+    # Filtering by language.
+    create_visit(client, venue["id"], language="French")
+    matches = client.get("/api/visits", params={"language": "Spanish"}).json()
+    assert matches["total"] == 1
+    assert matches["items"][0]["id"] == visit["id"]
+
+    # PATCH can update and clear it.
+    updated = client.patch(
+        f"/api/visits/{visit['id']}", json={"language": "French"}
+    ).json()
+    assert updated["language"] == "French"
+    cleared = client.patch(f"/api/visits/{visit['id']}", json={"language": None}).json()
+    assert cleared["language"] is None
+
+
+def test_visit_language_in_csv_export(client):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], language="Vietnamese")
+
+    csv_text = client.get("/api/visits/export.csv").text
+    header, row = csv_text.splitlines()[0], csv_text.splitlines()[1]
+    assert "language" in header.split(",")
+    assert "Vietnamese" in row
