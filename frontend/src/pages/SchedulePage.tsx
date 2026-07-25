@@ -26,6 +26,7 @@ import {
   isOverdue,
   VENUE_TYPES,
   type ActivityListItem,
+  type AuthConfig,
   type Paginated,
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
@@ -44,6 +45,15 @@ export function SchedulePage() {
   const [mineOnly, setMineOnly] = useState(false);
   const [showSiblings, setShowSiblings] = useState(true);
 
+  // Only offer the sibling-instances scope when this instance actually
+  // federates; otherwise the control is meaningless noise (#6).
+  const { data: config } = useQuery({
+    queryKey: ['auth', 'config'],
+    queryFn: () => api.get<AuthConfig>('/api/auth/config'),
+    staleTime: 5 * 60 * 1000,
+  });
+  const hasSiblings = !!config?.has_siblings;
+
   const update = (patch: Partial<VisitFilters>) => setFilters((f) => ({ ...f, ...patch }));
 
   const params = {
@@ -52,7 +62,7 @@ export function SchedulePage() {
     author_id: mineOnly ? user?.id : undefined,
     // Siblings that opt into publishing planned events appear here too; the
     // mine-only scope keeps them out (the feed can't satisfy an author filter).
-    include_federated: showSiblings && !mineOnly,
+    include_federated: showSiblings && !mineOnly && hasSiblings,
     sort: 'visit_date', // soonest first
     page_size: 100,
   };
@@ -176,7 +186,7 @@ export function SchedulePage() {
             onChange={(e) => setMineOnly(e.currentTarget.checked)}
             pb={8}
           />
-          {!mineOnly && (
+          {!mineOnly && hasSiblings && (
             <Switch
               label={t('visitList.includeSiblings')}
               checked={showSiblings}

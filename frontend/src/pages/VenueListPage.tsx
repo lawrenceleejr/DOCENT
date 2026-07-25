@@ -3,6 +3,7 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Group,
   Pagination,
   Select,
@@ -34,6 +35,9 @@ export function VenueListPage() {
   const queryClient = useQueryClient();
   const [q, setQ] = useState('');
   const [venueType, setVenueType] = useState<string | null>(null);
+  // Default to hiding never-visited catalog venues so this page matches the
+  // map's "reached" places out of the box (#12).
+  const [onlyWithEvents, setOnlyWithEvents] = useState(true);
   const [page, setPage] = useState(1);
   const [creating, create] = useDisclosure(false);
   const [addingConnection, connectionActions] = useDisclosure(false);
@@ -41,6 +45,7 @@ export function VenueListPage() {
   const params = {
     q: q || undefined,
     venue_type: venueType ?? undefined,
+    has_visits: onlyWithEvents || undefined,
     page,
     page_size: PAGE_SIZE,
   };
@@ -85,6 +90,15 @@ export function VenueListPage() {
               setVenueType(v);
               setPage(1);
             }}
+          />
+          <Checkbox
+            label={t('venueList.onlyWithEvents')}
+            checked={onlyWithEvents}
+            onChange={(e) => {
+              setOnlyWithEvents(e.currentTarget.checked);
+              setPage(1);
+            }}
+            pb={8}
           />
         </Group>
       </Card>

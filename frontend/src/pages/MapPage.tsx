@@ -193,7 +193,7 @@ export function MapPage() {
   const [bounds, setBounds] = useState<Bounds | null>(null);
   const [types, setTypes] = useState<InstitutionType[]>(DEFAULT_TYPES);
   const [statusFilter, setStatusFilter] = useState<'all' | 'gap' | 'covered'>('all');
-  const [showVenues, setShowVenues] = useState(true);
+  const [showVenues, setShowVenues] = useState(false);
   const [showSiblings, setShowSiblings] = useState(true);
   const [siblingSource, setSiblingSource] = useState<string | null>(null);
 
@@ -219,10 +219,18 @@ export function MapPage() {
     enabled: !!rounded && types.length > 0,
   });
 
+  // "Show my venues" is an opt-in layer of only the current user's venues, and
+  // it honors the same type/status filters as the institution layer (#21).
   const { data: venues = [] } = useQuery({
-    queryKey: ['map', 'venues', rounded],
-    queryFn: () => api.get<VenuePoint[]>('/api/map/venues', { ...rounded! }),
-    enabled: !!rounded && showVenues,
+    queryKey: ['map', 'venues', rounded, typeParam, statusFilter],
+    queryFn: () =>
+      api.get<VenuePoint[]>('/api/map/venues', {
+        ...rounded!,
+        mine: true,
+        types: typeParam,
+        status: statusFilter,
+      }),
+    enabled: !!rounded && showVenues && types.length > 0,
   });
 
   // Sibling-instance activities: a separate, read-only layer that never affects
@@ -230,7 +238,7 @@ export function MapPage() {
   const { data: federatedAll = [] } = useQuery({
     queryKey: ['map', 'federated', rounded],
     queryFn: () => api.get<FederatedMapPoint[]>('/api/map/federated', { ...rounded! }),
-    enabled: !!rounded && showSiblings,
+    enabled: !!rounded && showSiblings && !!config?.has_siblings,
   });
 
   // Distinct sibling labels present, for the source Select.
@@ -248,9 +256,9 @@ export function MapPage() {
   const activeFilterCount =
     (types.length !== DEFAULT_TYPES.length ? 1 : 0) +
     (statusFilter !== 'all' ? 1 : 0) +
-    (!showVenues ? 1 : 0) +
-    (!showSiblings ? 1 : 0) +
-    (siblingSource ? 1 : 0);
+    (showVenues ? 1 : 0) +
+    (config?.has_siblings && !showSiblings ? 1 : 0) +
+    (config?.has_siblings && siblingSource ? 1 : 0);
 
   const logVisitHere = async (inst: InstitutionPoint) => {
     try {
@@ -351,28 +359,35 @@ export function MapPage() {
               checked={showVenues}
               onChange={(e) => setShowVenues(e.currentTarget.checked)}
             />
-            <Checkbox
-              label={t('map.showSiblings')}
-              checked={showSiblings}
-              onChange={(e) => setShowSiblings(e.currentTarget.checked)}
-            />
-            {showSiblings && siblingLabels.length > 1 && (
-              <Select
-                size="xs"
-                placeholder={t('map.allSiblings')}
-                clearable
-                data={siblingLabels}
-                value={siblingSource}
-                onChange={setSiblingSource}
-                w={170}
-              />
+            {/* Only meaningful when this instance actually federates (#6). */}
+            {config?.has_siblings && (
+              <>
+                <Checkbox
+                  label={t('map.showSiblings')}
+                  checked={showSiblings}
+                  onChange={(e) => setShowSiblings(e.currentTarget.checked)}
+                />
+                {showSiblings && siblingLabels.length > 1 && (
+                  <Select
+                    size="xs"
+                    placeholder={t('map.allSiblings')}
+                    clearable
+                    data={siblingLabels}
+                    value={siblingSource}
+                    onChange={setSiblingSource}
+                    w={170}
+                  />
+                )}
+              </>
             )}
           </Group>
           <Group gap="md">
             <LegendDot color={COLORS.gap} label={t('map.legendGap')} />
             <LegendDot color={COLORS.covered} label={t('map.legendReached')} />
             <LegendDot color={COLORS.venue} label={t('map.legendVenueNoVisits')} />
-            <LegendDot color={SIBLING_COLOR} label={t('map.legendSibling')} />
+            {config?.has_siblings && (
+              <LegendDot color={SIBLING_COLOR} label={t('map.legendSibling')} />
+            )}
           </Group>
         </Group>
       </FilterCard>

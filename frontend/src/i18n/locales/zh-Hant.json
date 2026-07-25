@@ -757,7 +757,8 @@
     "emptyTitle": "找不到場地",
     "emptyDescription": "新增一所學校、學院、博物館或圖書館，開始追蹤該處的推廣紀錄。",
     "venueCount_one": "{{formattedCount}} 個場地",
-    "venueCount_other": "{{formattedCount}} 個場地"
+    "venueCount_other": "{{formattedCount}} 個場地",
+    "onlyWithEvents": "僅顯示有活動的地點"
   },
   "venueDetail": {
     "mergeSuccess": "場地已合併",

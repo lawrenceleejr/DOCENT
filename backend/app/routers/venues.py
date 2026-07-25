@@ -38,6 +38,7 @@ def list_venues(
     _user: CurrentUser,
     q: str | None = None,
     venue_type: VenueType | None = None,
+    has_visits: bool = False,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=50, ge=1, le=100),
 ):
@@ -47,6 +48,9 @@ def list_venues(
         filters.append(or_(Venue.name.ilike(pattern), Venue.city.ilike(pattern)))
     if venue_type:
         filters.append(Venue.venue_type == venue_type)
+    if has_visits:
+        # "Only venues with events" — venues that have at least one visit (#12).
+        filters.append(Venue.id.in_(select(Visit.venue_id)))
 
     total = db.scalar(select(func.count()).select_from(Venue).where(*filters)) or 0
     visit_count = func.count(Visit.id).label("visit_count")

@@ -757,7 +757,8 @@
     "emptyTitle": "Aucun lieu trouvé",
     "emptyDescription": "Ajoutez une école, un collège, un musée ou une bibliothèque pour commencer à suivre le rayonnement là-bas.",
     "venueCount_one": "{{formattedCount}} lieu",
-    "venueCount_other": "{{formattedCount}} lieux"
+    "venueCount_other": "{{formattedCount}} lieux",
+    "onlyWithEvents": "Uniquement les lieux avec des événements"
   },
   "venueDetail": {
     "mergeSuccess": "Lieux fusionnés",

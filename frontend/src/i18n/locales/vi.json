@@ -757,7 +757,8 @@
     "emptyTitle": "Không tìm thấy địa điểm nào",
     "emptyDescription": "Thêm một trường học, trường cao đẳng, viện bảo tàng, hoặc thư viện để bắt đầu theo dõi hoạt động kết nối cộng đồng tại đó.",
     "venueCount_one": "{{formattedCount}} địa điểm",
-    "venueCount_other": "{{formattedCount}} địa điểm"
+    "venueCount_other": "{{formattedCount}} địa điểm",
+    "onlyWithEvents": "Chỉ những địa điểm có sự kiện"
   },
   "venueDetail": {
     "mergeSuccess": "Đã hợp nhất địa điểm",

@@ -757,7 +757,8 @@
     "emptyTitle": "Walang nahanap na venue",
     "emptyDescription": "Magdagdag ng paaralan, kolehiyo, museo, o aklatan para magsimulang mag-track ng outreach dito.",
     "venueCount_one": "{{formattedCount}} venue",
-    "venueCount_other": "{{formattedCount}} venue"
+    "venueCount_other": "{{formattedCount}} venue",
+    "onlyWithEvents": "Mga lugar na may event lang"
   },
   "venueDetail": {
     "mergeSuccess": "Na-merge ang mga venue",

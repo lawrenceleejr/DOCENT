@@ -42,6 +42,7 @@ import {
   AUDIENCE_LEVELS,
   EVENT_TYPES,
   VENUE_TYPES,
+  type AuthConfig,
   type BreakdownRow,
   type LeaderboardRow,
   type StatsSummary,
@@ -263,6 +264,16 @@ export function DashboardPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [includeSiblings, setIncludeSiblings] = useState(true);
 
+  // Federation controls only make sense when this instance pulls from peers;
+  // hide them otherwise so the analysis page stays uncluttered (#6).
+  const { data: config } = useQuery({
+    queryKey: ['auth', 'config'],
+    queryFn: () => api.get<AuthConfig>('/api/auth/config'),
+    staleTime: 5 * 60 * 1000,
+  });
+  const hasSiblings = !!config?.has_siblings;
+  const includeFederated = includeSiblings && hasSiblings;
+
   const { data: tagOptions = [] } = useQuery({
     queryKey: ['visits', 'tags'],
     queryFn: () => api.get<string[]>('/api/visits/tags'),
@@ -281,7 +292,7 @@ export function DashboardPage() {
   const activeFilterCount =
     [venueType, eventType, audience].filter(Boolean).length +
     (tags.length > 0 ? 1 : 0) +
-    (includeSiblings ? 0 : 1);
+    (hasSiblings && !includeSiblings ? 1 : 0);
   const hasFilters = activeFilterCount > 0;
   const clearFilters = () => {
     setVenueType(null);
@@ -291,37 +302,37 @@ export function DashboardPage() {
   };
 
   const { data: summary } = useQuery({
-    queryKey: ['stats', 'summary', filters, includeSiblings],
+    queryKey: ['stats', 'summary', filters, includeFederated],
     queryFn: () =>
       api.get<StatsSummary>('/api/stats/summary', {
         ...filters,
-        include_federated: includeSiblings,
+        include_federated: includeFederated,
       }),
   });
   const { data: timeseries } = useQuery({
-    queryKey: ['stats', 'timeseries', filters, includeSiblings],
+    queryKey: ['stats', 'timeseries', filters, includeFederated],
     queryFn: () =>
       api.get<TimeseriesPoint[]>('/api/stats/timeseries', {
         ...filters,
-        include_federated: includeSiblings,
+        include_federated: includeFederated,
       }),
   });
   const { data: byVenueType } = useQuery({
-    queryKey: ['stats', 'breakdown', 'venue_type', filters, includeSiblings],
+    queryKey: ['stats', 'breakdown', 'venue_type', filters, includeFederated],
     queryFn: () =>
       api.get<BreakdownRow[]>('/api/stats/breakdown', {
         by: 'venue_type',
         ...filters,
-        include_federated: includeSiblings,
+        include_federated: includeFederated,
       }),
   });
   const { data: byAudience } = useQuery({
-    queryKey: ['stats', 'breakdown', 'audience_level', filters, includeSiblings],
+    queryKey: ['stats', 'breakdown', 'audience_level', filters, includeFederated],
     queryFn: () =>
       api.get<BreakdownRow[]>('/api/stats/breakdown', {
         by: 'audience_level',
         ...filters,
-        include_federated: includeSiblings,
+        include_federated: includeFederated,
       }),
   });
   const { data: byRelationship } = useQuery({
@@ -416,12 +427,14 @@ export function DashboardPage() {
             onChange={setTags}
             w={220}
           />
-          <Switch
-            label={t('dashboard.includeSiblings')}
-            checked={includeSiblings}
-            onChange={(event) => setIncludeSiblings(event.currentTarget.checked)}
-            mb={6}
-          />
+          {hasSiblings && (
+            <Switch
+              label={t('dashboard.includeSiblings')}
+              checked={includeSiblings}
+              onChange={(event) => setIncludeSiblings(event.currentTarget.checked)}
+              mb={6}
+            />
+          )}
           {hasFilters && (
             <Button variant="subtle" onClick={clearFilters}>
               {t('dashboard.clearFilters')}
@@ -430,7 +443,7 @@ export function DashboardPage() {
         </Group>
       </FilterCard>
 
-      {includeSiblings && (
+      {includeFederated && (
         <Text size="xs" c="dimmed">
           {t('dashboard.federatedCaveat')}
         </Text>

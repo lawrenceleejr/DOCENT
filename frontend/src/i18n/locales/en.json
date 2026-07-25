@@ -757,7 +757,8 @@
     "emptyTitle": "No venues found",
     "emptyDescription": "Add a school, college, museum, or library to start tracking outreach there.",
     "venueCount_one": "{{formattedCount}} venue",
-    "venueCount_other": "{{formattedCount}} venues"
+    "venueCount_other": "{{formattedCount}} venues",
+    "onlyWithEvents": "Only venues with events"
   },
   "venueDetail": {
     "mergeSuccess": "Venues merged",

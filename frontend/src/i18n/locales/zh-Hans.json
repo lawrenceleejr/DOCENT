@@ -757,7 +757,8 @@
     "emptyTitle": "未找到场地",
     "emptyDescription": "添加一所学校、学院、博物馆或图书馆，即可开始记录在此处的科普推广活动。",
     "venueCount_one": "{{formattedCount}} 个场地",
-    "venueCount_other": "{{formattedCount}} 个场地"
+    "venueCount_other": "{{formattedCount}} 个场地",
+    "onlyWithEvents": "仅显示有活动的场所"
   },
   "venueDetail": {
     "mergeSuccess": "场地已合并",

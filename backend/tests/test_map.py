@@ -1,5 +1,5 @@
 from app.models import Institution, InstitutionType
-from tests.conftest import create_visit, register
+from tests.conftest import create_venue, create_visit, register
 
 # Knoxville-ish coordinates.
 KNOX = {"latitude": 35.96, "longitude": -83.92}
@@ -96,3 +96,83 @@ def test_create_venue_with_bad_institution_404(client):
         json={"name": "X", "venue_type": "library", "city": "Y", "institution_id": 99999},
     )
     assert r.status_code == 404
+
+
+def test_map_venues_mine_filter(client, make_client):
+    register(client)
+    mine = client.post(
+        "/api/venues",
+        json={"name": "My Venue", "venue_type": "museum", "city": "Knoxville",
+              "latitude": 35.96, "longitude": -83.92},
+    ).json()
+    create_visit(client, mine["id"])
+
+    other = make_client()
+    register(other, email="other@example.com", name="Other")
+    other.post(
+        "/api/venues",
+        json={"name": "Other Venue", "venue_type": "library", "city": "Knoxville",
+              "latitude": 35.97, "longitude": -83.93},
+    )
+
+    everyones = {p["name"] for p in client.get("/api/map/venues").json()}
+    assert {"My Venue", "Other Venue"} <= everyones
+
+    just_mine = {p["name"] for p in client.get("/api/map/venues", params={"mine": "true"}).json()}
+    assert just_mine == {"My Venue"}
+
+
+def test_map_venues_status_filter(client):
+    register(client)
+    visited = client.post(
+        "/api/venues",
+        json={"name": "Reached", "venue_type": "museum", "city": "K",
+              "latitude": 35.96, "longitude": -83.92},
+    ).json()
+    create_visit(client, visited["id"])
+    client.post(
+        "/api/venues",
+        json={"name": "Untouched", "venue_type": "library", "city": "K",
+              "latitude": 35.97, "longitude": -83.93},
+    )
+
+    covered = {p["name"] for p in client.get("/api/map/venues", params={"status": "covered"}).json()}
+    assert covered == {"Reached"}
+    gaps = {p["name"] for p in client.get("/api/map/venues", params={"status": "gap"}).json()}
+    assert gaps == {"Untouched"}
+
+
+def test_map_venues_type_filter(client):
+    register(client)
+    client.post(
+        "/api/venues",
+        json={"name": "The Museum", "venue_type": "museum", "city": "K",
+              "latitude": 35.96, "longitude": -83.92},
+    )
+    client.post(
+        "/api/venues",
+        json={"name": "Elem School", "venue_type": "elementary_school", "city": "K",
+              "latitude": 35.97, "longitude": -83.93},
+    )
+
+    # Institution type "school" spans the elementary/middle/high venue types.
+    schools = {p["name"] for p in client.get("/api/map/venues", params={"types": "school"}).json()}
+    assert schools == {"Elem School"}
+    museums = {p["name"] for p in client.get("/api/map/venues", params={"types": "museum"}).json()}
+    assert museums == {"The Museum"}
+
+
+def test_venue_list_has_visits_filter(client):
+    register(client)
+    with_visit = create_venue(client, name="Has Events")
+    create_visit(client, with_visit["id"])
+    create_venue(client, name="No Events")
+
+    everyone = {v["name"] for v in client.get("/api/venues").json()["items"]}
+    assert {"Has Events", "No Events"} <= everyone
+
+    only = {
+        v["name"]
+        for v in client.get("/api/venues", params={"has_visits": "true"}).json()["items"]
+    }
+    assert only == {"Has Events"}

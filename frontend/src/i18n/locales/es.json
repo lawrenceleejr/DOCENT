@@ -757,7 +757,8 @@
     "emptyTitle": "No se encontraron sedes",
     "emptyDescription": "Agrega una escuela, instituto, museo o biblioteca para empezar a registrar la difusión ahí.",
     "venueCount_one": "{{formattedCount}} sede",
-    "venueCount_other": "{{formattedCount}} sedes"
+    "venueCount_other": "{{formattedCount}} sedes",
+    "onlyWithEvents": "Solo lugares con eventos"
   },
   "venueDetail": {
     "mergeSuccess": "Sedes combinadas",

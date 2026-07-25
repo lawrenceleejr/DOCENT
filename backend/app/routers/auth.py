@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import func, select
 
 from app.deps import CurrentUser, DbSession
-from app.models import User
+from app.models import FederationPeer, User
 from app.ratelimit import login_rate_limit, register_rate_limit
 from app.schemas import AuthConfig, LoginRequest, RegisterRequest, UserOut
 from app.security import (
@@ -40,6 +40,13 @@ def auth_config(db: DbSession) -> AuthConfig:
         map_center_lat=effective_map_center_lat(db),
         map_center_lon=effective_map_center_lon(db),
         user_directory_visible=user_directory_visible(db),
+        has_siblings=bool(
+            db.scalar(
+                select(func.count())
+                .select_from(FederationPeer)
+                .where(FederationPeer.enabled.is_(True))
+            )
+        ),
     )
 
 

@@ -547,6 +547,7 @@ export interface AuthConfig {
   map_center_lat: number;
   map_center_lon: number;
   user_directory_visible: boolean;
+  has_siblings: boolean;
 }
 
 export const FEDERATION_INTERVALS = ['hour', 'day', 'week'] as const;

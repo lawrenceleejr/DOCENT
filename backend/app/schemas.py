@@ -141,6 +141,9 @@ class AuthConfig(BaseModel):
     map_center_lat: float
     map_center_lon: float
     user_directory_visible: bool
+    # True when at least one enabled federation peer exists, so the UI can hide
+    # the "sibling instances" controls entirely on stand-alone instances (#6).
+    has_siblings: bool
 
 
 class UserOut(BaseModel):
