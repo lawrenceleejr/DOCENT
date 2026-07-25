@@ -37,7 +37,10 @@
     },
     "completeProfileTitle": "Completa tu perfil",
     "completeProfileText": "Añade tu afiliación, cargo, ORCID y los idiomas en los que presentas para que tus colegas puedan encontrarte.",
-    "completeProfileLink": "Ir a tu perfil"
+    "completeProfileLink": "Ir a tu perfil",
+    "needsReportTitle": "{{count}} visita(s) necesitan informe",
+    "needsReportText": "Tienes eventos pasados por documentar; empieza por",
+    "needsReportMore": "y {{count}} más."
   },
   "authShell": {
     "taglineBold": "Acércate.",

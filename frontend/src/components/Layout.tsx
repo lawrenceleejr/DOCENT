@@ -21,7 +21,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
-import type { AuthConfig } from '../api/types';
+import { isOverdue, type ActivityListItem, type AuthConfig, type Paginated } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
@@ -85,6 +85,39 @@ export function Layout({ children }: { children: ReactNode }) {
     setNudgeDismissed(true);
   };
   const showProfileNudge = profileEmpty && !nudgeDismissed && location.pathname !== '/profile';
+
+  // Visits this user still needs to write up — past scheduled events not yet
+  // marked done. Surfaced as a banner with links to the first few (#26).
+  const { data: myPlanned } = useQuery({
+    queryKey: ['visits', 'needs-report', user?.id],
+    queryFn: () =>
+      api.get<Paginated<ActivityListItem>>('/api/visits', {
+        author_id: user!.id,
+        status: 'planned',
+        sort: 'visit_date',
+        page_size: 100,
+      }),
+    enabled: !!user,
+  });
+  const needsReport = (myPlanned?.items ?? []).filter(
+    (it) => it.source === 'local' && it.status && isOverdue({ status: it.status, visit_date: it.visit_date }),
+  );
+  const [reportDismissed, setReportDismissed] = useState(() => {
+    try {
+      return sessionStorage.getItem('docent_needs_report') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const dismissReport = () => {
+    try {
+      sessionStorage.setItem('docent_needs_report', '1');
+    } catch {
+      /* storage may be unavailable */
+    }
+    setReportDismissed(true);
+  };
+  const showNeedsReport = needsReport.length > 0 && !reportDismissed;
 
   const TABS = [
     { value: '/', label: t('layout.nav.visits') },
@@ -242,6 +275,28 @@ export function Layout({ children }: { children: ReactNode }) {
               mb="md"
             >
               {config.banner_message}
+            </Alert>
+          )}
+          {showNeedsReport && (
+            // Remind the user of past events they still need to write up (#26).
+            <Alert
+              color="yellow"
+              variant="light"
+              mb="md"
+              withCloseButton
+              onClose={dismissReport}
+              title={t('layout.needsReportTitle', { count: needsReport.length })}
+            >
+              {t('layout.needsReportText')}{' '}
+              {needsReport.slice(0, 3).map((v, i) => (
+                <span key={v.id}>
+                  {i > 0 && ', '}
+                  <Anchor component={Link} to={`/visits/${v.id}/edit`}>
+                    {v.title || v.venue?.name || v.visit_date}
+                  </Anchor>
+                </span>
+              ))}
+              {needsReport.length > 3 && ` ${t('layout.needsReportMore', { count: needsReport.length - 3 })}`}
             </Alert>
           )}
           {showProfileNudge && (

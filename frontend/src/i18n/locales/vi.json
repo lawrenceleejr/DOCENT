@@ -37,7 +37,10 @@
     },
     "completeProfileTitle": "Hoàn thiện hồ sơ của bạn",
     "completeProfileText": "Thêm đơn vị, vai trò, ORCID và các ngôn ngữ bạn trình bày để đồng nghiệp có thể tìm thấy bạn.",
-    "completeProfileLink": "Đến hồ sơ của bạn"
+    "completeProfileLink": "Đến hồ sơ của bạn",
+    "needsReportTitle": "{{count}} lượt đến cần báo cáo",
+    "needsReportText": "Bạn có các sự kiện đã qua cần ghi lại — bắt đầu với",
+    "needsReportMore": "và {{count}} nữa."
   },
   "authShell": {
     "taglineBold": "Kết nối cộng đồng.",

@@ -37,7 +37,10 @@
     },
     "completeProfileTitle": "Kumpletuhin ang iyong profile",
     "completeProfileText": "Idagdag ang iyong affiliation, tungkulin, ORCID, at mga wikang ginagamit mo para mahanap ka ng mga kasamahan.",
-    "completeProfileLink": "Pumunta sa iyong profile"
+    "completeProfileLink": "Pumunta sa iyong profile",
+    "needsReportTitle": "{{count}} bisita ang kailangan ng ulat",
+    "needsReportText": "May mga nakaraang event kang dapat i-report — magsimula sa",
+    "needsReportMore": "at {{count}} pa."
   },
   "authShell": {
     "taglineBold": "Umabot.",

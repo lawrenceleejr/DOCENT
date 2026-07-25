@@ -37,7 +37,10 @@
     },
     "completeProfileTitle": "Complete your profile",
     "completeProfileText": "Add your affiliation, role, ORCID, and the languages you present in so colleagues can find you.",
-    "completeProfileLink": "Go to your profile"
+    "completeProfileLink": "Go to your profile",
+    "needsReportTitle": "{{count}} visit(s) need a report",
+    "needsReportText": "You have past events to write up — start with",
+    "needsReportMore": "and {{count}} more."
   },
   "authShell": {
     "taglineBold": "Reach out.",

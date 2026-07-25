@@ -37,7 +37,10 @@
     },
     "completeProfileTitle": "完善你的個人檔案",
     "completeProfileText": "填寫你的單位、職稱、ORCID 以及你用來進行推廣的語言，讓同事能找到你。",
-    "completeProfileLink": "前往個人檔案"
+    "completeProfileLink": "前往個人檔案",
+    "needsReportTitle": "{{count}} 筆造訪待填報告",
+    "needsReportText": "你有過去的活動待記錄——先從",
+    "needsReportMore": "等另 {{count}} 筆。"
   },
   "authShell": {
     "taglineBold": "走出去。",
