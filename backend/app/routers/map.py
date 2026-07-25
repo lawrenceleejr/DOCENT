@@ -18,6 +18,7 @@ from app.schemas import (
     FederatedMapPoint,
     InstitutionDetail,
     InstitutionPoint,
+    MapExtent,
     VenuePoint,
 )
 
@@ -177,6 +178,26 @@ def map_venues(
         )
         for venue, count, visited_flag in rows
     ]
+
+
+@router.get("/map/extent", response_model=MapExtent)
+def map_extent(db: DbSession, _user: CurrentUser):
+    """Bounding box of every venue that has at least one visit (completed or
+    planned), so the map can open framed on the actual activity instead of a
+    fixed radius (#18). Returns has_data=False when there's nothing to frame."""
+    south, north, west, east = db.execute(
+        select(
+            func.min(Venue.latitude),
+            func.max(Venue.latitude),
+            func.min(Venue.longitude),
+            func.max(Venue.longitude),
+        )
+        .where(Venue.latitude.isnot(None), Venue.longitude.isnot(None))
+        .where(Venue.id.in_(select(Visit.venue_id)))
+    ).one()
+    if south is None:
+        return MapExtent(has_data=False)
+    return MapExtent(has_data=True, south=south, north=north, west=west, east=east)
 
 
 @router.get("/map/federated", response_model=list[FederatedMapPoint])

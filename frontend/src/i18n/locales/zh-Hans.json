@@ -618,6 +618,7 @@
     "gapsOnly": "尚未访问",
     "reached": "已触达",
     "showMyVenues": "仅显示我的场地",
+    "showOnlyMyVenues": "仅显示我的场地",
     "legendGap": "尚未访问",
     "legendReached": "已触达",
     "legendVenueNoVisits": "场地（尚无到访记录）",

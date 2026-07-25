@@ -1001,6 +1001,18 @@ class FederationPeerUpdate(BaseModel):
         return None if v is None else normalize_tags(v)
 
 
+class MapExtent(BaseModel):
+    """Bounding box of venues that have any visit (completed or planned), so the
+    map opens framed to cover the actual activity rather than a fixed radius
+    (#18). has_data is False on a fresh instance with nothing to frame."""
+
+    has_data: bool
+    south: float | None = None
+    north: float | None = None
+    west: float | None = None
+    east: float | None = None
+
+
 class FederatedMapPoint(BaseModel):
     """A sibling activity rendered as its own map layer (never affects local
     coverage/gap counting)."""

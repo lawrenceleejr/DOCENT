@@ -618,6 +618,7 @@
     "gapsOnly": "Pas encore visités",
     "reached": "Rejoint",
     "showMyVenues": "Afficher mes lieux",
+    "showOnlyMyVenues": "Afficher uniquement mes lieux",
     "legendGap": "Pas encore visités",
     "legendReached": "Rejoint",
     "legendVenueNoVisits": "Lieu (aucune visite encore)",
