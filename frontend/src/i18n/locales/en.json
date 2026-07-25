@@ -34,7 +34,10 @@
       "reports": "Reports",
       "admin": "Admin",
       "directory": "Directory"
-    }
+    },
+    "completeProfileTitle": "Complete your profile",
+    "completeProfileText": "Add your affiliation, role, ORCID, and the languages you present in so colleagues can find you.",
+    "completeProfileLink": "Go to your profile"
   },
   "authShell": {
     "taglineBold": "Reach out.",

@@ -34,7 +34,10 @@
       "reports": "Informes",
       "admin": "Administración",
       "directory": "Directorio"
-    }
+    },
+    "completeProfileTitle": "Completa tu perfil",
+    "completeProfileText": "Añade tu afiliación, cargo, ORCID y los idiomas en los que presentas para que tus colegas puedan encontrarte.",
+    "completeProfileLink": "Ir a tu perfil"
   },
   "authShell": {
     "taglineBold": "Acércate.",

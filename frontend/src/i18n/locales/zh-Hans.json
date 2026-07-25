@@ -34,7 +34,10 @@
       "reports": "报告",
       "admin": "管理",
       "directory": "会员名录"
-    }
+    },
+    "completeProfileTitle": "完善你的个人资料",
+    "completeProfileText": "填写你的单位、职务、ORCID 以及你用于推广的语言，让同事能找到你。",
+    "completeProfileLink": "前往个人资料"
   },
   "authShell": {
     "taglineBold": "走出去，连接彼此。",

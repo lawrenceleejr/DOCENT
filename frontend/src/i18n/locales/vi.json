@@ -34,7 +34,10 @@
       "reports": "Báo cáo",
       "admin": "Quản trị",
       "directory": "Danh bạ"
-    }
+    },
+    "completeProfileTitle": "Hoàn thiện hồ sơ của bạn",
+    "completeProfileText": "Thêm đơn vị, vai trò, ORCID và các ngôn ngữ bạn trình bày để đồng nghiệp có thể tìm thấy bạn.",
+    "completeProfileLink": "Đến hồ sơ của bạn"
   },
   "authShell": {
     "taglineBold": "Kết nối cộng đồng.",

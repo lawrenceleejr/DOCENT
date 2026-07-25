@@ -34,7 +34,10 @@
       "reports": "Mga Ulat",
       "admin": "Admin",
       "directory": "Direktoryo"
-    }
+    },
+    "completeProfileTitle": "Kumpletuhin ang iyong profile",
+    "completeProfileText": "Idagdag ang iyong affiliation, tungkulin, ORCID, at mga wikang ginagamit mo para mahanap ka ng mga kasamahan.",
+    "completeProfileLink": "Pumunta sa iyong profile"
   },
   "authShell": {
     "taglineBold": "Umabot.",

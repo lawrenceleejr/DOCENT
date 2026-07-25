@@ -17,9 +17,9 @@ import {
 } from '@mantine/core';
 import { IconLogout, IconMenu2, IconMoon, IconSun, IconUser } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import type { AuthConfig } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
@@ -60,6 +60,31 @@ export function Layout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Nudge users who haven't filled in any optional profile detail to do so
+  // (#23). Dismissible for the session.
+  const profileEmpty =
+    !!user &&
+    !user.affiliation &&
+    !user.position &&
+    !user.orcid &&
+    user.languages_spoken.length === 0;
+  const [nudgeDismissed, setNudgeDismissed] = useState(() => {
+    try {
+      return sessionStorage.getItem('docent_profile_nudge') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const dismissNudge = () => {
+    try {
+      sessionStorage.setItem('docent_profile_nudge', '1');
+    } catch {
+      /* storage may be unavailable */
+    }
+    setNudgeDismissed(true);
+  };
+  const showProfileNudge = profileEmpty && !nudgeDismissed && location.pathname !== '/profile';
 
   const TABS = [
     { value: '/', label: t('layout.nav.visits') },
@@ -217,6 +242,22 @@ export function Layout({ children }: { children: ReactNode }) {
               mb="md"
             >
               {config.banner_message}
+            </Alert>
+          )}
+          {showProfileNudge && (
+            // Invite users who haven't filled in their profile to complete it (#23).
+            <Alert
+              color="brand"
+              variant="light"
+              mb="md"
+              withCloseButton
+              onClose={dismissNudge}
+              title={t('layout.completeProfileTitle')}
+            >
+              {t('layout.completeProfileText')}{' '}
+              <Anchor component={Link} to="/profile">
+                {t('layout.completeProfileLink')}
+              </Anchor>
             </Alert>
           )}
           <TranslationDisclaimer />
