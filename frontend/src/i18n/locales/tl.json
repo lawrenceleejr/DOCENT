@@ -552,7 +552,8 @@
     "localOnlyNote": "Binibilang lang ng mga leaderboard at ng breakdown ng relasyon sa host ang mga aktibidad ng instance na ito.",
     "federatedCaveat": "Maaaring mabilang nang higit sa isang beses ang isang komunikador sa pinagsamang kabuuan kung sumasali sila sa pamamagitan ng maraming kapwa community.",
     "completedVisits": "Tapos na",
-    "plannedVisits": "Naka-iskedyul"
+    "plannedVisits": "Naka-iskedyul",
+    "plannedCaption": "Solid: naitala · Putol-putol: naka-iskedyul"
   },
   "impact": {
     "unavailableTitle": "Hindi available ang page na ito",

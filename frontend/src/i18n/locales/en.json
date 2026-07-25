@@ -552,7 +552,8 @@
     "localOnlyNote": "Leaderboards and the host-relationship breakdown count this instance's activities only.",
     "federatedCaveat": "Combined totals may count a communicator more than once if they take part through multiple sibling communities.",
     "completedVisits": "Completed",
-    "plannedVisits": "Scheduled"
+    "plannedVisits": "Scheduled",
+    "plannedCaption": "Solid: recorded · Dashed: scheduled"
   },
   "impact": {
     "unavailableTitle": "This page isn’t available",

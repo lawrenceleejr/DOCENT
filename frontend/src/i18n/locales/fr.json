@@ -552,7 +552,8 @@
     "localOnlyNote": "Les classements et la répartition par relation avec l'hôte ne comptent que les activités de cette instance.",
     "federatedCaveat": "Les totaux combinés peuvent compter un communicateur plusieurs fois s'il participe via plusieurs communautés sœurs.",
     "completedVisits": "Réalisées",
-    "plannedVisits": "Planifiées"
+    "plannedVisits": "Planifiées",
+    "plannedCaption": "Continu : réalisées · Pointillé : planifiées"
   },
   "impact": {
     "unavailableTitle": "Cette page n'est pas disponible",

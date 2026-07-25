@@ -552,7 +552,8 @@
     "localOnlyNote": "Las tablas de clasificación y el desglose por relación con el anfitrión cuentan únicamente las actividades de esta instancia.",
     "federatedCaveat": "Los totales combinados pueden contar a un comunicador más de una vez si participa a través de varias comunidades hermanas.",
     "completedVisits": "Completadas",
-    "plannedVisits": "Programadas"
+    "plannedVisits": "Programadas",
+    "plannedCaption": "Continua: registradas · Discontinua: programadas"
   },
   "impact": {
     "unavailableTitle": "Esta página no está disponible",

@@ -30,7 +30,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -164,30 +163,32 @@ function TimePanel({
   title,
   data,
   ticks,
-  dataKey,
+  lines,
   color,
   viz,
-  showPlanned,
-  seriesName,
-  plannedName,
+  caption,
 }: {
   title: string;
   data: TimeRow[];
   ticks: number[];
-  dataKey: 'visits' | 'people_reached';
+  // One or more series to draw in the same color; `dashed` renders it as a
+  // dashed segment (used for the future/scheduled tail — #28).
+  lines: { key: string; dashed?: boolean }[];
   color: string;
   viz: typeof VIZ_LIGHT;
-  // When set, overlay scheduled (planned) visits as a dotted line (#28).
-  showPlanned?: boolean;
-  seriesName?: string;
-  plannedName?: string;
+  caption?: string;
 }) {
   const labelFor = (t: number) => data.find((d) => d.t === t)?.label ?? '';
   return (
     <Card withBorder p="md">
-      <Text fw={600} mb="xs">
-        {title}
-      </Text>
+      <Group justify="space-between" gap="xs" wrap="nowrap" mb="xs">
+        <Text fw={600}>{title}</Text>
+        {caption && (
+          <Text size="xs" c="dimmed" style={{ whiteSpace: 'nowrap' }}>
+            {caption}
+          </Text>
+        )}
+      </Group>
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={data} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
           <CartesianGrid stroke={viz.grid} vertical={false} />
@@ -197,10 +198,11 @@ function TimePanel({
             scale="time"
             domain={['dataMin', 'dataMax']}
             ticks={ticks}
-            tickFormatter={(t: number) => String(new Date(t).getUTCFullYear())}
+            tickFormatter={labelFor}
             stroke={viz.axis}
-            tick={{ fill: viz.mutedInk, fontSize: 12 }}
+            tick={{ fill: viz.mutedInk, fontSize: 11 }}
             tickLine={false}
+            minTickGap={8}
           />
           <YAxis
             stroke={viz.axis}
@@ -213,31 +215,23 @@ function TimePanel({
           <Tooltip
             contentStyle={tooltipStyle(viz)}
             labelFormatter={(t: number) => labelFor(t)}
-            formatter={(value: number, name: string) => [value.toLocaleString(), name]}
+            formatter={(value: number) => [Number(value).toLocaleString(), title]}
           />
-          {showPlanned && <Legend wrapperStyle={{ fontSize: 12 }} />}
-          <Line
-            type="monotone"
-            dataKey={dataKey}
-            name={seriesName ?? title}
-            stroke={color}
-            strokeWidth={2}
-            dot={{ r: 3, fill: color, strokeWidth: 0 }}
-            activeDot={{ r: 5, stroke: viz.tooltipBg, strokeWidth: 2 }}
-          />
-          {showPlanned && (
+          {lines.map((ln) => (
             <Line
+              key={ln.key}
               type="monotone"
-              dataKey="planned_visits"
-              name={plannedName}
+              dataKey={ln.key}
               stroke={color}
-              strokeDasharray="5 4"
               strokeWidth={2}
-              strokeOpacity={0.7}
-              dot={false}
-              activeDot={{ r: 4, stroke: viz.tooltipBg, strokeWidth: 2 }}
+              strokeDasharray={ln.dashed ? '5 4' : undefined}
+              strokeOpacity={ln.dashed ? 0.75 : 1}
+              dot={ln.dashed ? false : { r: 3, fill: color, strokeWidth: 0 }}
+              activeDot={{ r: 5, stroke: viz.tooltipBg, strokeWidth: 2 }}
+              connectNulls={false}
+              isAnimationActive={false}
             />
-          )}
+          ))}
         </LineChart>
       </ResponsiveContainer>
     </Card>
@@ -412,13 +406,38 @@ export function DashboardPage() {
   });
 
   const series = useMemo(() => buildTimeSeries(timeseries ?? []), [timeseries]);
-  // One tick per calendar year (Jan 1) that falls within the data range.
-  const yearTicks = useMemo(() => {
+
+  // Split the visits series so it's one continuous line: solid through the
+  // current period (recorded visits), then dashed for future periods
+  // (scheduled visits). The two segments share the boundary point so they
+  // join seamlessly (#28).
+  const [nowT] = useState(() => Date.now());
+  const chartData = useMemo(() => {
+    let boundary = -1;
+    series.forEach((r, i) => {
+      if (r.t <= nowT) boundary = i;
+    });
+    const hasFuture = boundary < series.length - 1;
+    return series.map((r, i) => {
+      const isPast = i <= boundary;
+      const value = isPast ? r.visits : r.planned_visits;
+      return {
+        ...r,
+        pastVisits: isPast ? value : null,
+        futureVisits: hasFuture && i >= boundary ? value : null,
+      };
+    });
+  }, [series, nowT]);
+
+  // Ticks at the actual bucket boundaries (months/quarters/half-years),
+  // thinned to ~6, so the axis isn't just year labels (#28).
+  const periodTicks = useMemo(() => {
     if (series.length === 0) return [];
-    const years = new Set(series.map((d) => new Date(d.t).getUTCFullYear()));
-    return [...years].map((y) => Date.UTC(y, 0, 1)).filter(
-      (t) => t >= series[0].t && t <= series[series.length - 1].t,
-    );
+    const step = Math.max(1, Math.ceil(series.length / 6));
+    const ts = series.filter((_, i) => i % step === 0).map((r) => r.t);
+    const lastT = series[series.length - 1].t;
+    if (ts[ts.length - 1] !== lastT) ts.push(lastT);
+    return ts;
   }, [series]);
 
   const activeRange = RANGES.find((r) => r.value === range);
@@ -554,20 +573,18 @@ export function DashboardPage() {
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <TimePanel
           title={t('dashboard.visitsPer6Months')}
-          data={series}
-          ticks={yearTicks}
-          dataKey="visits"
+          data={chartData}
+          ticks={periodTicks}
+          lines={[{ key: 'pastVisits' }, { key: 'futureVisits', dashed: true }]}
           color={viz.series1}
           viz={viz}
-          showPlanned
-          seriesName={t('dashboard.completedVisits')}
-          plannedName={t('dashboard.plannedVisits')}
+          caption={t('dashboard.plannedCaption')}
         />
         <TimePanel
           title={t('dashboard.peopleReachedPer6Months')}
-          data={series}
-          ticks={yearTicks}
-          dataKey="people_reached"
+          data={chartData}
+          ticks={periodTicks}
+          lines={[{ key: 'people_reached' }]}
           color={viz.series2}
           viz={viz}
         />
