@@ -493,7 +493,8 @@
     "loginHistoryRecentTitle": "Mga kamakailang login",
     "loginHistoryColUser": "User",
     "loginHistoryColWhen": "Kailan",
-    "loginHistoryEmpty": "Wala pang naitalang login."
+    "loginHistoryEmpty": "Wala pang naitalang login.",
+    "radiusLabel": "Radius ng saklaw (km)"
   },
   "dashboard": {
     "title": "Analysis",

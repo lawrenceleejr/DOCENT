@@ -493,7 +493,8 @@
     "loginHistoryRecentTitle": "Connexions récentes",
     "loginHistoryColUser": "Utilisateur",
     "loginHistoryColWhen": "Quand",
-    "loginHistoryEmpty": "Aucune connexion enregistrée pour l’instant."
+    "loginHistoryEmpty": "Aucune connexion enregistrée pour l’instant.",
+    "radiusLabel": "Rayon de couverture (km)"
   },
   "dashboard": {
     "title": "Analyse",

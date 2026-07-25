@@ -140,6 +140,7 @@ class AuthConfig(BaseModel):
     login_message: str | None
     map_center_lat: float
     map_center_lon: float
+    map_radius_km: float
     user_directory_visible: bool
     # True when at least one enabled federation peer exists, so the UI can hide
     # the "sibling instances" controls entirely on stand-alone instances (#6).
@@ -300,6 +301,7 @@ class RegistrationSettings(BaseModel):
     login_message: str
     map_center_lat: float
     map_center_lon: float
+    map_radius_km: float
     user_directory_visible: bool
     # Federation publishing: whether this instance serves its activities feed,
     # whether it also shares planned (upcoming) events, and the full feed URL
@@ -318,6 +320,7 @@ class RegistrationSettingsUpdate(BaseModel):
     login_message: str | None = Field(default=None, max_length=2000)
     map_center_lat: float | None = Field(default=None, ge=-90, le=90)
     map_center_lon: float | None = Field(default=None, ge=-180, le=180)
+    map_radius_km: float | None = Field(default=None, gt=0, le=20000)
     user_directory_visible: bool | None = None
     federation_publish: bool | None = None
     federation_publish_planned: bool | None = None

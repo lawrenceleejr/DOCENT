@@ -493,7 +493,8 @@
     "loginHistoryRecentTitle": "最近登录",
     "loginHistoryColUser": "用户",
     "loginHistoryColWhen": "时间",
-    "loginHistoryEmpty": "暂无登录记录。"
+    "loginHistoryEmpty": "暂无登录记录。",
+    "radiusLabel": "覆盖半径（公里）"
   },
   "dashboard": {
     "title": "数据分析",

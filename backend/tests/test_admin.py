@@ -287,3 +287,19 @@ def test_login_history_admin_only(client, make_client):
     user = make_client()
     register(user, email="user@example.com")
     assert user.get("/api/admin/login-history").status_code == 403
+
+
+def test_map_radius_setting(client):
+    register(client, email="admin@example.com")  # admin
+    # The default surfaces in both admin settings and the public config.
+    assert client.get("/api/admin/settings").json()["map_radius_km"] == 80.0
+    assert client.get("/api/auth/config").json()["map_radius_km"] == 80.0
+
+    # An admin can change it, and the public config reflects it.
+    r = client.patch("/api/admin/settings", json={"map_radius_km": 25})
+    assert r.status_code == 200
+    assert r.json()["map_radius_km"] == 25.0
+    assert client.get("/api/auth/config").json()["map_radius_km"] == 25.0
+
+    # A non-positive radius is rejected.
+    assert client.patch("/api/admin/settings", json={"map_radius_km": 0}).status_code == 422

@@ -493,7 +493,8 @@
     "loginHistoryRecentTitle": "最近登入",
     "loginHistoryColUser": "使用者",
     "loginHistoryColWhen": "時間",
-    "loginHistoryEmpty": "尚無登入紀錄。"
+    "loginHistoryEmpty": "尚無登入紀錄。",
+    "radiusLabel": "涵蓋半徑（公里）"
   },
   "dashboard": {
     "title": "分析",

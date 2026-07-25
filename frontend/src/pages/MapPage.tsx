@@ -12,7 +12,7 @@ import {
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useQuery } from '@tanstack/react-query';
-import { divIcon } from 'leaflet';
+import { divIcon, type LatLngBoundsExpression } from 'leaflet';
 import { useMemo, useReducer, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +48,17 @@ interface Bounds {
 function roundBounds(b: Bounds): Bounds {
   const r = (n: number) => Math.round(n * 100) / 100;
   return { south: r(b.south), north: r(b.north), west: r(b.west), east: r(b.east) };
+}
+
+// A lat/lon box roughly `km` in every direction from the center, so the map can
+// open framed on the instance's coverage area instead of a fixed zoom (#18).
+function radiusToBounds(lat: number, lon: number, km: number): LatLngBoundsExpression {
+  const dLat = km / 111.32;
+  const dLon = km / (111.32 * Math.cos((lat * Math.PI) / 180));
+  return [
+    [lat - dLat, lon - dLon],
+    [lat + dLat, lon + dLon],
+  ];
 }
 
 function BoundsWatcher({ onChange }: { onChange: (b: Bounds) => void }) {
@@ -394,11 +405,14 @@ export function MapPage() {
 
       <Card withBorder p={0} style={{ overflow: 'hidden' }}>
         {config && (
-          // center is only read on mount — wait for the admin-configured
-          // starting point so the map never flashes at the wrong location.
+          // bounds are only read on mount — wait for the admin-configured
+          // center + radius so the map opens framed on the coverage area (#18).
           <MapContainer
-            center={[config.map_center_lat, config.map_center_lon]}
-            zoom={7}
+            bounds={radiusToBounds(
+              config.map_center_lat,
+              config.map_center_lon,
+              config.map_radius_km,
+            )}
             style={{ height: '70vh', width: '100%' }}
             scrollWheelZoom
           >

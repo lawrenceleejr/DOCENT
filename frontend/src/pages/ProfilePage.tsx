@@ -216,7 +216,7 @@ export function ProfilePage() {
           )}
           <Group align="flex-end">
             <div style={{ flex: 1 }}>
-              <VenuePicker value={newSchoolId} onChange={setNewSchoolId} />
+              <VenuePicker value={newSchoolId} onChange={setNewSchoolId} educationalOnly />
             </div>
             <Button
               disabled={newSchoolId === null}

@@ -70,6 +70,7 @@ function RegistrationCard() {
   const [loginMessage, setLoginMessage] = useState<string | null>(null);
   const [mapLat, setMapLat] = useState<number | string | null>(null);
   const [mapLon, setMapLon] = useState<number | string | null>(null);
+  const [mapRadius, setMapRadius] = useState<number | string | null>(null);
   const [directoryVisible, setDirectoryVisible] = useState<boolean | null>(null);
 
   const codeValue = code ?? data?.invite_code ?? '';
@@ -79,6 +80,7 @@ function RegistrationCard() {
   const loginMessageValue = loginMessage ?? data?.login_message ?? '';
   const mapLatValue = mapLat ?? data?.map_center_lat ?? 0;
   const mapLonValue = mapLon ?? data?.map_center_lon ?? 0;
+  const mapRadiusValue = mapRadius ?? data?.map_radius_km ?? 80;
   const directoryValue = directoryVisible ?? data?.user_directory_visible ?? false;
 
   const save = useMutation({
@@ -91,6 +93,7 @@ function RegistrationCard() {
         login_message: loginMessageValue,
         map_center_lat: Number(mapLatValue),
         map_center_lon: Number(mapLonValue),
+        map_radius_km: Number(mapRadiusValue),
         user_directory_visible: directoryValue,
       }),
     onSuccess: (updated) => {
@@ -103,6 +106,7 @@ function RegistrationCard() {
       setLoginMessage(null);
       setMapLat(null);
       setMapLon(null);
+      setMapRadius(null);
       setDirectoryVisible(null);
       notifications.show({ message: t('admin.settingsSaved'), color: 'green' });
     },
@@ -205,6 +209,13 @@ function RegistrationCard() {
               value={mapLonValue}
               onChange={setMapLon}
             />
+            <NumberInput
+              label={t('admin.radiusLabel')}
+              min={1}
+              max={20000}
+              value={mapRadiusValue}
+              onChange={setMapRadius}
+            />
           </Group>
         </div>
         <Group justify="flex-end">
@@ -219,6 +230,7 @@ function RegistrationCard() {
               loginMessage === null &&
               mapLat === null &&
               mapLon === null &&
+              mapRadius === null &&
               directoryVisible === null
             }
             onClick={() => save.mutate()}

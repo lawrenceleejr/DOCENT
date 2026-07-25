@@ -64,6 +64,7 @@ from app.services.settings import (
     LOGIN_MESSAGE_KEY,
     MAP_CENTER_LAT_KEY,
     MAP_CENTER_LON_KEY,
+    MAP_RADIUS_KM_KEY,
     PUBLIC_PAGE_KEY,
     SITE_NAME_KEY,
     SITE_URL_KEY,
@@ -73,6 +74,7 @@ from app.services.settings import (
     effective_login_message,
     effective_map_center_lat,
     effective_map_center_lon,
+    effective_map_radius_km,
     effective_site_name,
     effective_site_url,
     ensure_federation_token,
@@ -178,6 +180,7 @@ def _settings_out(db) -> RegistrationSettings:
         login_message=effective_login_message(db),
         map_center_lat=effective_map_center_lat(db),
         map_center_lon=effective_map_center_lon(db),
+        map_radius_km=effective_map_radius_km(db),
         user_directory_visible=user_directory_visible(db),
         federation_publish=federation_publish_enabled(db),
         federation_publish_planned=federation_publish_planned_enabled(db),
@@ -210,6 +213,8 @@ def update_registration_settings(
         set_setting(db, MAP_CENTER_LAT_KEY, str(body.map_center_lat))
     if body.map_center_lon is not None:
         set_setting(db, MAP_CENTER_LON_KEY, str(body.map_center_lon))
+    if body.map_radius_km is not None:
+        set_setting(db, MAP_RADIUS_KM_KEY, str(body.map_radius_km))
     if body.user_directory_visible is not None:
         set_setting(db, USER_DIRECTORY_KEY, "1" if body.user_directory_visible else "")
     if body.federation_publish is not None:

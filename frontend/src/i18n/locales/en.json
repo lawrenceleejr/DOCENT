@@ -493,7 +493,8 @@
     "loginHistoryRecentTitle": "Recent logins",
     "loginHistoryColUser": "User",
     "loginHistoryColWhen": "When",
-    "loginHistoryEmpty": "No logins recorded yet."
+    "loginHistoryEmpty": "No logins recorded yet.",
+    "radiusLabel": "Coverage radius (km)"
   },
   "dashboard": {
     "title": "Analysis",

@@ -493,7 +493,8 @@
     "loginHistoryRecentTitle": "Đăng nhập gần đây",
     "loginHistoryColUser": "Người dùng",
     "loginHistoryColWhen": "Thời điểm",
-    "loginHistoryEmpty": "Chưa ghi nhận lần đăng nhập nào."
+    "loginHistoryEmpty": "Chưa ghi nhận lần đăng nhập nào.",
+    "radiusLabel": "Bán kính phạm vi (km)"
   },
   "dashboard": {
     "title": "Phân tích",

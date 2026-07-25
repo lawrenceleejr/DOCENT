@@ -493,7 +493,8 @@
     "loginHistoryRecentTitle": "Accesos recientes",
     "loginHistoryColUser": "Usuario",
     "loginHistoryColWhen": "Cuándo",
-    "loginHistoryEmpty": "Aún no hay accesos registrados."
+    "loginHistoryEmpty": "Aún no hay accesos registrados.",
+    "radiusLabel": "Radio de cobertura (km)"
   },
   "dashboard": {
     "title": "Análisis",
