@@ -934,7 +934,12 @@
     "colNextSync": "下次同步",
     "paused": "已暫停",
     "soon": "即將",
-    "statusErrorCount": "錯誤 ×{{count}}"
+    "statusErrorCount": "錯誤 ×{{count}}",
+    "colTagFilter": "篩選標籤",
+    "tagFilterAll": "所有活動",
+    "tagFilterLabel": "僅拉取帶有這些標籤的活動（選填）",
+    "tagFilterDescription": "留空以拉取此姊妹社群的所有活動。新增標籤以僅拉取帶有其中至少一個標籤的活動。",
+    "tagFilterPlaceholder": "例如：nsf-career"
   },
   "profileView": {
     "totalVisits": "造訪",

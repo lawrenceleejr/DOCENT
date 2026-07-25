@@ -33,8 +33,9 @@ from app.services.settings import (
 router = APIRouter(prefix="/api/federation", tags=["federation"])
 
 # Bumped when the feed's shape changes so consumers can adapt.
-# Bumped to 2 when `contributors` (per-person ORCIDs) was added to each activity.
-FEED_VERSION = 2
+# Bumped to 2 when `contributors` (per-person ORCIDs) was added to each activity,
+# and to 3 when `tags` were added so subscribers can pull a tagged subset (#31).
+FEED_VERSION = 3
 DEFAULT_LIMIT = 1000
 MAX_LIMIT = 5000
 
@@ -142,6 +143,7 @@ def federation_feed(
                 audience_level=v.audience_level.value if v.audience_level else None,
                 person_name=v.author.name if v.author else None,
                 contributors=_build_contributors(v, linked),
+                tags=list(v.tags or []),
                 people_reached=v.people_reached,
                 permalink=f"{base}/visits/{v.id}",
             )

@@ -367,6 +367,11 @@ class FederationPeer(Base):
         Enum(FederationInterval, name="federation_interval"),
         server_default=FederationInterval.day.value,
     )
+    # Only pull in this sibling's events whose tags overlap this list; empty
+    # means pull everything (#31).
+    tag_filter: Mapped[list[str]] = mapped_column(
+        ARRAY(String), nullable=False, server_default=text("'{}'")
+    )
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
     last_synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_status: Mapped[str | None] = mapped_column(String(16))  # "ok" | "error"
@@ -418,6 +423,11 @@ class FederatedActivity(Base):
     venue_type: Mapped[str | None] = mapped_column(String(50))  # raw enum value
     event_type: Mapped[str | None] = mapped_column(String(50))  # raw enum value
     audience_level: Mapped[str | None] = mapped_column(String(50))  # raw enum value
+    # The source visit's tags, so a subscriber can pull in only a tagged subset
+    # of a sibling's events (#31).
+    tags: Mapped[list[str]] = mapped_column(
+        ARRAY(String), nullable=False, server_default=text("'{}'")
+    )
     person_name: Mapped[str | None] = mapped_column(String(255))
     # Lead + co-presenters with ORCIDs where known — list of {name, orcid} — so
     # the receiving instance can link people across communities (#9).

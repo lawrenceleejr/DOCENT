@@ -631,6 +631,7 @@ export interface FederationPeer {
   activity_count: number;
   next_sync_at: string | null;
   consecutive_failures: number;
+  tag_filter: string[];
   created_at: string;
 }
 

@@ -934,7 +934,12 @@
     "colNextSync": "下次同步",
     "paused": "已暂停",
     "soon": "即将进行",
-    "statusErrorCount": "错误 ×{{count}}"
+    "statusErrorCount": "错误 ×{{count}}",
+    "colTagFilter": "筛选标签",
+    "tagFilterAll": "所有活动",
+    "tagFilterLabel": "仅拉取带有这些标签的活动（选填）",
+    "tagFilterDescription": "留空以拉取此姊妹社区的所有活动。添加标签以仅拉取带有其中至少一个标签的活动。",
+    "tagFilterPlaceholder": "例如：nsf-career"
   },
   "profileView": {
     "totalVisits": "访问",

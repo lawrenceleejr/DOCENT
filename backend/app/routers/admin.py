@@ -271,6 +271,7 @@ def _peer_out(peer: FederationPeer) -> FederationPeerOut:
         last_error=peer.last_error,
         consecutive_failures=peer.consecutive_failures,
         activity_count=peer.activity_count,
+        tag_filter=peer.tag_filter,
         created_at=peer.created_at,
     )
 
@@ -315,7 +316,7 @@ def add_federation_peer(body: FederationPeerCreate, _admin: CurrentAdmin, db: Db
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Feed URL must start with http:// or https://",
         )
-    peer = FederationPeer(feed_url=url, interval=body.interval)
+    peer = FederationPeer(feed_url=url, interval=body.interval, tag_filter=body.tag_filter)
     db.add(peer)
     db.commit()
     db.refresh(peer)
@@ -335,8 +336,17 @@ def update_federation_peer(
         peer.interval = body.interval
     if body.enabled is not None:
         peer.enabled = body.enabled
+    resync = False
+    if body.tag_filter is not None and body.tag_filter != (peer.tag_filter or []):
+        peer.tag_filter = body.tag_filter
+        resync = True
     db.commit()
     db.refresh(peer)
+    # A changed tag filter changes what should be cached — re-pull with a full
+    # reconcile so newly-included events arrive and excluded ones are pruned (#31).
+    if resync and peer.enabled:
+        fed.sync_peer(db, peer, force_full=True)
+        db.refresh(peer)
     return _peer_out(peer)
 
 

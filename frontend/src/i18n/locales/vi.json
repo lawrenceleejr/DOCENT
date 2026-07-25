@@ -934,7 +934,12 @@
     "colNextSync": "Lần đồng bộ tiếp theo",
     "paused": "Đã tạm dừng",
     "soon": "Sắp tới",
-    "statusErrorCount": "Lỗi ×{{count}}"
+    "statusErrorCount": "Lỗi ×{{count}}",
+    "colTagFilter": "Thẻ lọc",
+    "tagFilterAll": "Tất cả sự kiện",
+    "tagFilterLabel": "Chỉ lấy sự kiện có các thẻ này (không bắt buộc)",
+    "tagFilterDescription": "Để trống để lấy tất cả sự kiện của cộng đồng anh em này. Thêm thẻ để chỉ lấy những sự kiện có ít nhất một thẻ trong số đó.",
+    "tagFilterPlaceholder": "ví dụ: nsf-career"
   },
   "profileView": {
     "totalVisits": "Lượt đến",

@@ -12,6 +12,7 @@ import {
   Stack,
   Switch,
   Table,
+  TagsInput,
   Text,
   TextInput,
   Title,
@@ -48,6 +49,7 @@ export function FederationCard() {
 
   const [feedUrl, setFeedUrl] = useState('');
   const [interval, setInterval] = useState<FederationInterval>('day');
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [rotateModalOpen, { open: openRotate, close: closeRotate }] = useDisclosure(false);
   const [preview, setPreview] = useState<FederationPeerPreview | null>(null);
 
@@ -129,10 +131,12 @@ export function FederationCard() {
       api.post<FederationPeer>('/api/admin/federation/peers', {
         feed_url: feedUrl.trim(),
         interval,
+        tag_filter: tagFilter,
       }),
     onSuccess: () => {
       setFeedUrl('');
       setInterval('day');
+      setTagFilter([]);
       setPreview(null);
       invalidatePeers();
       invalidateMerged();
@@ -147,9 +151,18 @@ export function FederationCard() {
       patch,
     }: {
       id: number;
-      patch: { label?: string; interval?: FederationInterval; enabled?: boolean };
+      patch: {
+        label?: string;
+        interval?: FederationInterval;
+        enabled?: boolean;
+        tag_filter?: string[];
+      };
     }) => api.patch<FederationPeer>(`/api/admin/federation/peers/${id}`, patch),
-    onSuccess: invalidatePeers,
+    onSuccess: () => {
+      // enabled / tag_filter changes alter what's merged in, so refresh both.
+      invalidatePeers();
+      invalidateMerged();
+    },
     onError: showError,
   });
 
@@ -348,6 +361,16 @@ export function FederationCard() {
         </Button>
       </Group>
 
+      <TagsInput
+        label={t('federationCard.tagFilterLabel')}
+        description={t('federationCard.tagFilterDescription')}
+        placeholder={tagFilter.length === 0 ? t('federationCard.tagFilterPlaceholder') : undefined}
+        value={tagFilter}
+        onChange={setTagFilter}
+        clearable
+        mb="md"
+      />
+
       {preview && (
         <Alert
           mb="lg"
@@ -365,12 +388,13 @@ export function FederationCard() {
         </Alert>
       )}
 
-      <Table.ScrollContainer minWidth={720}>
+      <Table.ScrollContainer minWidth={900}>
         <Table highlightOnHover>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>{t('federationCard.colLabel')}</Table.Th>
               <Table.Th>{t('federationCard.colInterval')}</Table.Th>
+              <Table.Th>{t('federationCard.colTagFilter')}</Table.Th>
               <Table.Th>{t('federationCard.colEnabled')}</Table.Th>
               <Table.Th>{t('federationCard.colLastSynced')}</Table.Th>
               <Table.Th>{t('federationCard.colNextSync')}</Table.Th>
@@ -397,6 +421,20 @@ export function FederationCard() {
                     onChange={(v) =>
                       v && update.mutate({ id: peer.id, patch: { interval: v as FederationInterval } })
                     }
+                  />
+                </Table.Td>
+                <Table.Td>
+                  <TagsInput
+                    size="xs"
+                    w={170}
+                    placeholder={
+                      peer.tag_filter.length === 0 ? t('federationCard.tagFilterAll') : undefined
+                    }
+                    value={peer.tag_filter}
+                    onChange={(value) =>
+                      update.mutate({ id: peer.id, patch: { tag_filter: value } })
+                    }
+                    clearable
                   />
                 </Table.Td>
                 <Table.Td>
@@ -480,7 +518,7 @@ export function FederationCard() {
             ))}
             {(peers?.length ?? 0) === 0 && (
               <Table.Tr>
-                <Table.Td colSpan={8}>
+                <Table.Td colSpan={9}>
                   <Text c="dimmed" ta="center" py="md">
                     {t('federationCard.noPeers')}
                   </Text>

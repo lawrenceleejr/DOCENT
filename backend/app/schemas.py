@@ -929,6 +929,8 @@ class FederatedActivityOut(BaseModel):
     # Lead + co-presenters with ORCIDs where known (person_name stays for
     # backward compatibility with older consumers).
     contributors: list[Contributor] = Field(default_factory=list)
+    # The activity's tags, so subscribers can pull in only a tagged subset (#31).
+    tags: list[str] = Field(default_factory=list)
     people_reached: int
     permalink: str | None
 
@@ -957,6 +959,7 @@ class FederationPeerOut(BaseModel):
     last_error: str | None
     consecutive_failures: int
     activity_count: int
+    tag_filter: list[str] = []
     created_at: datetime
 
 
@@ -973,12 +976,26 @@ class FederationPeerPreview(BaseModel):
 class FederationPeerCreate(BaseModel):
     feed_url: str = Field(min_length=1, max_length=2000)
     interval: FederationInterval = FederationInterval.day
+    # Only pull this sibling's events whose tags overlap this list (#31);
+    # empty pulls everything.
+    tag_filter: list[str] = []
+
+    @field_validator("tag_filter")
+    @classmethod
+    def _clean_tag_filter(cls, v: list[str]) -> list[str]:
+        return normalize_tags(v)
 
 
 class FederationPeerUpdate(BaseModel):
     label: str | None = Field(default=None, max_length=255)
     interval: FederationInterval | None = None
     enabled: bool | None = None
+    tag_filter: list[str] | None = None
+
+    @field_validator("tag_filter")
+    @classmethod
+    def _clean_tag_filter(cls, v: list[str] | None) -> list[str] | None:
+        return None if v is None else normalize_tags(v)
 
 
 class FederatedMapPoint(BaseModel):

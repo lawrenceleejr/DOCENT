@@ -934,7 +934,12 @@
     "colNextSync": "Susunod na sync",
     "paused": "Naka-pause",
     "soon": "Malapit na",
-    "statusErrorCount": "Error ×{{count}}"
+    "statusErrorCount": "Error ×{{count}}",
+    "colTagFilter": "Mga filter tag",
+    "tagFilterAll": "Lahat ng event",
+    "tagFilterLabel": "Kunin lang ang mga event na may ganitong tag (opsyonal)",
+    "tagFilterDescription": "Iwanang blangko para kunin ang lahat ng event ng kapatid na komunidad na ito. Magdagdag ng tag para kunin lang ang mga event na may kahit isa sa mga ito.",
+    "tagFilterPlaceholder": "hal. nsf-career"
   },
   "profileView": {
     "totalVisits": "Mga bisita",

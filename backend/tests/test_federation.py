@@ -529,7 +529,7 @@ def test_feed_contributors_carry_orcids(client, make_client):
 
     anon = make_client()
     body = anon.get("/api/federation/activities", params={"token": token}).json()
-    assert body["feed_version"] == 2
+    assert body["feed_version"] == 3
     activity = next(a for a in body["activities"] if a["person_name"] == "Ada Alvarez")
     contribs = {c["name"]: c["orcid"] for c in activity["contributors"]}
     # Lead, linked co-presenter (both with ORCIDs), and a name-only presenter.
@@ -564,3 +564,61 @@ def test_sync_stores_incoming_contributors(client, db):
     assert [c["orcid"] for c in row.contributors] == [
         "0000-0002-1825-0097", "0000-0001-5109-3700",
     ]
+
+
+def test_feed_publishes_tags_and_peer_tag_filter(client, db, make_client):
+    """The feed carries each activity's tags (v3), and a peer's tag_filter pulls
+    in only the matching subset at sync time (#31)."""
+    register(client, email="ada@example.com", name="Ada")
+    venue = create_venue(client, latitude=35.9, longitude=-84.0)
+    create_visit(
+        client, venue["id"], title="Tagged", people_reached=10,
+        tags=["nsf-career", "girls-in-stem"],
+    )
+    token = _enable_publishing(client)
+
+    # 1) The published feed carries the tags.
+    anon = make_client()
+    body = anon.get("/api/federation/activities", params={"token": token}).json()
+    assert body["feed_version"] == 3
+    assert set(body["activities"][0]["tags"]) == {"nsf-career", "girls-in-stem"}
+
+    envelope = {"activities": [
+        {"uid": "m1", "remote_id": 1, "status": "completed", "visit_date": "2026-03-01",
+         "person_name": "X", "people_reached": 5, "tags": ["nsf-career", "other"]},
+        {"uid": "m2", "remote_id": 2, "status": "completed", "visit_date": "2026-03-02",
+         "person_name": "Y", "people_reached": 7, "tags": ["unrelated"]},
+        {"uid": "m3", "remote_id": 3, "status": "completed", "visit_date": "2026-03-03",
+         "person_name": "Z", "people_reached": 9, "tags": []},
+    ]}
+
+    # 2) A subscriber with a tag_filter caches only the matching event.
+    peer = FederationPeer(
+        feed_url="https://sib.example.edu/api/federation/activities?token=t",
+        interval=FederationInterval.day, enabled=True, tag_filter=["nsf-career"],
+    )
+    db.add(peer)
+    db.commit()
+    fed.upsert_activities(db, peer, envelope, prune=True)
+    db.commit()
+    kept = {
+        a.remote_uid: a
+        for a in db.scalars(select(FederatedActivity).where(FederatedActivity.peer_id == peer.id))
+    }
+    assert set(kept) == {"m1"}
+    assert set(kept["m1"].tags) == {"nsf-career", "other"}
+
+    # 3) A peer with no filter caches everything.
+    peer2 = FederationPeer(
+        feed_url="https://sib2.example.edu/api/federation/activities?token=t",
+        interval=FederationInterval.day, enabled=True,
+    )
+    db.add(peer2)
+    db.commit()
+    fed.upsert_activities(db, peer2, envelope, prune=True)
+    db.commit()
+    all_uids = {
+        a.remote_uid
+        for a in db.scalars(select(FederatedActivity).where(FederatedActivity.peer_id == peer2.id))
+    }
+    assert all_uids == {"m1", "m2", "m3"}

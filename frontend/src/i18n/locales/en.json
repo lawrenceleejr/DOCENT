@@ -934,7 +934,12 @@
     "colNextSync": "Next sync",
     "paused": "Paused",
     "soon": "Soon",
-    "statusErrorCount": "Error ×{{count}}"
+    "statusErrorCount": "Error ×{{count}}",
+    "colTagFilter": "Filter tags",
+    "tagFilterAll": "All events",
+    "tagFilterLabel": "Only pull events tagged (optional)",
+    "tagFilterDescription": "Leave empty to pull all of this sibling's events. Add tags to pull only events carrying at least one of them.",
+    "tagFilterPlaceholder": "e.g. nsf-career"
   },
   "profileView": {
     "totalVisits": "Visits",

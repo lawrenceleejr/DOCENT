@@ -934,7 +934,12 @@
     "colNextSync": "Próxima sincronización",
     "paused": "En pausa",
     "soon": "Pronto",
-    "statusErrorCount": "Errores ×{{count}}"
+    "statusErrorCount": "Errores ×{{count}}",
+    "colTagFilter": "Etiquetas de filtro",
+    "tagFilterAll": "Todos los eventos",
+    "tagFilterLabel": "Solo traer eventos con estas etiquetas (opcional)",
+    "tagFilterDescription": "Déjalo vacío para traer todos los eventos de esta comunidad hermana. Agrega etiquetas para traer solo los eventos que tengan al menos una.",
+    "tagFilterPlaceholder": "p. ej., nsf-career"
   },
   "profileView": {
     "totalVisits": "Visitas",
