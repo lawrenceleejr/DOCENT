@@ -25,6 +25,8 @@
     "switchToDark": "Lumipat sa dark mode",
     "language": "Wika",
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · Libreng software sa ilalim ng",
+    "footerGithub": "GitHub",
+    "footerSuggestions": "May mungkahi?",
     "nav": {
       "visits": "Mga Pagbisita",
       "schedule": "Scheduler",

@@ -25,6 +25,8 @@
     "switchToDark": "Cambiar a modo oscuro",
     "language": "Idioma",
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · Software libre bajo la",
+    "footerGithub": "GitHub",
+    "footerSuggestions": "¿Sugerencias?",
     "nav": {
       "visits": "Visitas",
       "schedule": "Planificador",

@@ -25,6 +25,8 @@
     "switchToDark": "切換至深色模式",
     "language": "語言",
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · 自由軟體，採用以下授權條款：",
+    "footerGithub": "GitHub",
+    "footerSuggestions": "有建議？",
     "nav": {
       "visits": "到訪",
       "schedule": "排程",

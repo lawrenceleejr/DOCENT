@@ -25,6 +25,8 @@
     "switchToDark": "Chuyển sang giao diện tối",
     "language": "Ngôn ngữ",
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · Phần mềm miễn phí theo",
+    "footerGithub": "GitHub",
+    "footerSuggestions": "Góp ý?",
     "nav": {
       "visits": "Lượt ghé thăm",
       "schedule": "Lịch trình",

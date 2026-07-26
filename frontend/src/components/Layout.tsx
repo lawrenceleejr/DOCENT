@@ -323,6 +323,12 @@ export function Layout({ children }: { children: ReactNode }) {
             {t('layout.footerPrefix', { version: APP_VERSION, year: COPYRIGHT_YEAR })}{' '}
             <Anchor href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" c="dimmed" underline="always">
               GNU GPL v3
+            </Anchor>{' · '}
+            <Anchor href={GITHUB_README_URL} target="_blank" c="dimmed" underline="always">
+              {t('layout.footerGithub')}
+            </Anchor>{' · '}
+            <Anchor href={GITHUB_CONTRIBUTING_URL} target="_blank" c="dimmed" underline="always">
+              {t('layout.footerSuggestions')}
             </Anchor>
           </Text>
         </Container>
@@ -341,3 +347,9 @@ const COPYRIGHT_YEAR = 2026;
 // The footer version: the git tag when this commit is tagged, otherwise the
 // short commit hash. Injected at build time — see vite.config.ts (#26).
 const APP_VERSION = __APP_VERSION__;
+
+// Footer links back to the project home and its contribution guide (#34).
+const GITHUB_README_URL =
+  'https://github.com/lawrenceleejr/DOCENT?tab=readme-ov-file#docent--reach-out-track-it-prove-your-broad-impact';
+const GITHUB_CONTRIBUTING_URL =
+  'https://github.com/lawrenceleejr/DOCENT?tab=contributing-ov-file#contributing-to-docent';
