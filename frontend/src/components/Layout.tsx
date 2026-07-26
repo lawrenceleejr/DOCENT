@@ -23,6 +23,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { isOverdue, type ActivityListItem, type AuthConfig, type Paginated } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { GITHUB_CONTRIBUTING_URL, GITHUB_README_URL } from '../links';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
 import { TranslationDisclaimer } from './TranslationDisclaimer';
@@ -323,6 +324,12 @@ export function Layout({ children }: { children: ReactNode }) {
             {t('layout.footerPrefix', { version: APP_VERSION, year: COPYRIGHT_YEAR })}{' '}
             <Anchor href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" c="dimmed" underline="always">
               GNU GPL v3
+            </Anchor>{' · '}
+            <Anchor href={GITHUB_README_URL} target="_blank" c="dimmed" underline="always">
+              {t('layout.footerGithub')}
+            </Anchor>{' · '}
+            <Anchor href={GITHUB_CONTRIBUTING_URL} target="_blank" c="dimmed" underline="always">
+              {t('layout.footerSuggestions')}
             </Anchor>
           </Text>
         </Container>

@@ -1,0 +1,29 @@
+/* Full-screen brand splash shown briefly on phones before the login form.
+   The gradient mirrors the desktop auth hero so the two entry points feel
+   like one product. See MobileSplash.tsx (#33). */
+.docent-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(150deg, #4423a3 0%, #6d41ec 45%, #b14fe0 100%);
+  opacity: 1;
+  transition: opacity 0.42s ease;
+}
+.docent-splash.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The tagline ships tuned for a near-black surface; lighten its ink on the
+   bright gradient so the acronym definition stays legible. */
+.docent-splash .dc-tagline {
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 22em;
+}
+.docent-splash .dc-tagline b {
+  color: #fff;
+}
