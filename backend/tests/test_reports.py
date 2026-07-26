@@ -136,3 +136,22 @@ def test_pdf_format(seeded, client):
 
 def test_requires_auth(client):
     assert client.get("/api/reports/activities").status_code == 401
+
+
+def test_report_latex_format(client):
+    register(client)
+    venue = create_venue(client, name="Ada & Co. {Museum}")  # LaTeX-special chars
+    create_visit(client, venue["id"], title="50% off science")
+
+    r = client.get("/api/reports/activities", params={"format": "latex", "scope": "mine"})
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("application/x-tex")
+    assert "docent-report-" in r.headers["content-disposition"]
+    assert r.headers["content-disposition"].endswith(".tex")
+    body = r.text
+    assert r"\begin{longtable}" in body
+    assert r"\documentclass" in body
+    # Special characters are escaped, not emitted raw.
+    assert r"\&" in body and r"\%" in body and r"\{" in body
+    # Privacy: subjective/private fields never appear in a report.
+    assert "reflection" not in body.lower()

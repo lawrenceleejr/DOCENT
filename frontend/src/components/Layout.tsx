@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Alert,
   Anchor,
   AppShell,
   Avatar,
@@ -16,11 +17,11 @@ import {
 } from '@mantine/core';
 import { IconLogout, IconMenu2, IconMoon, IconSun, IconUser } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
-import type { AuthConfig } from '../api/types';
+import { isOverdue, type ActivityListItem, type AuthConfig, type Paginated } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
@@ -59,6 +60,64 @@ export function Layout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Nudge users who haven't filled in any optional profile detail to do so
+  // (#23). Dismissible for the session.
+  const profileEmpty =
+    !!user &&
+    !user.affiliation &&
+    !user.position &&
+    !user.orcid &&
+    user.languages_spoken.length === 0;
+  const [nudgeDismissed, setNudgeDismissed] = useState(() => {
+    try {
+      return sessionStorage.getItem('docent_profile_nudge') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const dismissNudge = () => {
+    try {
+      sessionStorage.setItem('docent_profile_nudge', '1');
+    } catch {
+      /* storage may be unavailable */
+    }
+    setNudgeDismissed(true);
+  };
+  const showProfileNudge = profileEmpty && !nudgeDismissed && location.pathname !== '/profile';
+
+  // Visits this user still needs to write up — past scheduled events not yet
+  // marked done. Surfaced as a banner with links to the first few (#26).
+  const { data: myPlanned } = useQuery({
+    queryKey: ['visits', 'needs-report', user?.id],
+    queryFn: () =>
+      api.get<Paginated<ActivityListItem>>('/api/visits', {
+        author_id: user!.id,
+        status: 'planned',
+        sort: 'visit_date',
+        page_size: 100,
+      }),
+    enabled: !!user,
+  });
+  const needsReport = (myPlanned?.items ?? []).filter(
+    (it) => it.source === 'local' && it.status && isOverdue({ status: it.status, visit_date: it.visit_date }),
+  );
+  const [reportDismissed, setReportDismissed] = useState(() => {
+    try {
+      return sessionStorage.getItem('docent_needs_report') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const dismissReport = () => {
+    try {
+      sessionStorage.setItem('docent_needs_report', '1');
+    } catch {
+      /* storage may be unavailable */
+    }
+    setReportDismissed(true);
+  };
+  const showNeedsReport = needsReport.length > 0 && !reportDismissed;
 
   const TABS = [
     { value: '/', label: t('layout.nav.visits') },
@@ -208,6 +267,54 @@ export function Layout({ children }: { children: ReactNode }) {
       </AppShell.Header>
       <AppShell.Main>
         <Container size="xl">
+          {config?.banner_message && (
+            // Admin-set site-wide notice, colored by severity (#24).
+            <Alert
+              color={BANNER_COLORS[config.banner_level] ?? 'blue'}
+              variant="light"
+              mb="md"
+            >
+              {config.banner_message}
+            </Alert>
+          )}
+          {showNeedsReport && (
+            // Remind the user of past events they still need to write up (#26).
+            <Alert
+              color="yellow"
+              variant="light"
+              mb="md"
+              withCloseButton
+              onClose={dismissReport}
+              title={t('layout.needsReportTitle', { count: needsReport.length })}
+            >
+              {t('layout.needsReportText')}{' '}
+              {needsReport.slice(0, 3).map((v, i) => (
+                <span key={v.id}>
+                  {i > 0 && ', '}
+                  <Anchor component={Link} to={`/visits/${v.id}/edit`}>
+                    {v.title || v.venue?.name || v.visit_date}
+                  </Anchor>
+                </span>
+              ))}
+              {needsReport.length > 3 && ` ${t('layout.needsReportMore', { count: needsReport.length - 3 })}`}
+            </Alert>
+          )}
+          {showProfileNudge && (
+            // Invite users who haven't filled in their profile to complete it (#23).
+            <Alert
+              color="brand"
+              variant="light"
+              mb="md"
+              withCloseButton
+              onClose={dismissNudge}
+              title={t('layout.completeProfileTitle')}
+            >
+              {t('layout.completeProfileText')}{' '}
+              <Anchor component={Link} to="/profile">
+                {t('layout.completeProfileLink')}
+              </Anchor>
+            </Alert>
+          )}
           <TranslationDisclaimer />
           {children}
         </Container>
@@ -224,6 +331,13 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
+const BANNER_COLORS: Record<string, string> = {
+  info: 'blue',
+  warning: 'yellow',
+  critical: 'red',
+};
+
 const COPYRIGHT_YEAR = 2026;
-// Keep in step with package.json / backend version / CHANGELOG.
-const APP_VERSION = 'v0.1.0';
+// The footer version: the git tag when this commit is tagged, otherwise the
+// short commit hash. Injected at build time — see vite.config.ts (#26).
+const APP_VERSION = __APP_VERSION__;

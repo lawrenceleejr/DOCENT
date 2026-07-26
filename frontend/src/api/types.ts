@@ -15,6 +15,9 @@ export const EVENT_TYPES = [
   'classroom_visit',
   'science_fair',
   'public_lecture',
+  'colloquium',
+  'seminar',
+  'conference',
   'lab_tour',
   'career_day',
   'demo_booth',
@@ -195,15 +198,22 @@ export function labelize(value: string): string {
     .join(' ');
 }
 
+export interface UserRole {
+  title: string;
+  organization: string | null;
+}
+
 export interface User {
   id: number;
   email: string;
   name: string;
   affiliation: string | null;
   position: string | null;
+  orcid: string | null;
   is_admin: boolean;
   is_active: boolean;
   languages_spoken: string[];
+  roles: UserRole[];
   created_at: string;
 }
 
@@ -222,12 +232,40 @@ export interface AdminUser extends User {
   schools: VenueBrief[];
 }
 
+export interface ProfileVisit {
+  id: number;
+  visit_date: string;
+  status: VisitStatus;
+  title: string;
+  event_type: EventType;
+  audience_level: AudienceLevel | null;
+  venue_name: string;
+  venue_city: string | null;
+  people_reached: number;
+}
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  affiliation: string | null;
+  position: string | null;
+  orcid: string | null;
+  languages_spoken: string[];
+  roles: UserRole[];
+  schools: VenueBrief[];
+  total_visits: number;
+  total_people_reached: number;
+  visits: ProfileVisit[];
+}
+
 export interface DirectoryUser {
   id: number;
   name: string;
   affiliation: string | null;
   position: string | null;
+  orcid: string | null;
   languages_spoken: string[];
+  roles: UserRole[];
   schools: VenueBrief[];
 }
 
@@ -316,10 +354,17 @@ export interface Visit {
   reflection: string | null;
   follow_up_planned: boolean;
   additional_presenters: string | null;
+  co_presenters: ContributorUser[];
   tags: string[];
   links: CoverageLink[];
   created_at: string;
   updated_at: string;
+}
+
+export interface ContributorUser {
+  id: number;
+  name: string;
+  orcid: string | null;
 }
 
 /** A visit-list row — either a local visit or an activity pulled from a sibling
@@ -378,6 +423,7 @@ export interface TimeseriesPoint {
   period: string;
   visits: number;
   people_reached: number;
+  planned_visits: number;
 }
 
 export interface BreakdownRow {
@@ -449,6 +495,16 @@ export interface VenuePoint {
   visit_count: number;
   visited: boolean;
   institution_id: number | null;
+}
+
+// Bounding box of venues with any visit, so the map opens framed on the actual
+// activity rather than a fixed radius (#18).
+export interface MapExtent {
+  has_data: boolean;
+  south: number | null;
+  north: number | null;
+  west: number | null;
+  east: number | null;
 }
 
 // Best-effort mapping from a catalog institution to venue-create defaults.
@@ -546,7 +602,31 @@ export interface AuthConfig {
   login_message: string | null;
   map_center_lat: number;
   map_center_lon: number;
+  map_radius_km: number;
+  banner_message: string | null;
+  banner_level: string;
   user_directory_visible: boolean;
+  has_siblings: boolean;
+}
+
+export interface LoginHistoryEntry {
+  id: number;
+  user_id: number;
+  user_name: string;
+  user_email: string;
+  created_at: string;
+}
+
+export interface LoginHistoryDay {
+  date: string;
+  logins: number;
+  active_users: number;
+}
+
+export interface LoginHistory {
+  total: number;
+  recent: LoginHistoryEntry[];
+  daily: LoginHistoryDay[];
 }
 
 export const FEDERATION_INTERVALS = ['hour', 'day', 'week'] as const;
@@ -564,6 +644,7 @@ export interface FederationPeer {
   activity_count: number;
   next_sync_at: string | null;
   consecutive_failures: number;
+  tag_filter: string[];
   created_at: string;
 }
 
@@ -599,6 +680,7 @@ export interface PublicActivity {
 
 export interface PublicImpact {
   site_name: string | null;
+  has_siblings: boolean;
   total_visits: number;
   total_people_reached: number;
   distinct_venues: number;
@@ -617,6 +699,9 @@ export interface RegistrationSettings {
   login_message: string;
   map_center_lat: number;
   map_center_lon: number;
+  map_radius_km: number;
+  banner_message: string;
+  banner_level: string;
   user_directory_visible: boolean;
   federation_publish: boolean;
   federation_publish_planned: boolean;
@@ -655,4 +740,11 @@ export interface BackupListResponse {
   count: number;
   total_size_bytes: number;
   last_backup_at: string | null;
+}
+
+export interface RestoreStatus {
+  state: 'idle' | 'queued' | 'running' | 'success' | 'failed';
+  detail: string | null;
+  backup: string | null;
+  at: string | null;
 }

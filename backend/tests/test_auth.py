@@ -54,6 +54,26 @@ def test_auth_config_endpoint(client, monkeypatch):
     assert cfg["contact_email"] is None
 
 
+def test_auth_config_has_siblings(client, db):
+    from app.models import FederationInterval, FederationPeer
+
+    assert client.get("/api/auth/config").json()["has_siblings"] is False
+
+    peer = FederationPeer(
+        feed_url="https://sib.example.edu/api/federation/activities?token=t",
+        interval=FederationInterval.day,
+        enabled=True,
+    )
+    db.add(peer)
+    db.commit()
+    assert client.get("/api/auth/config").json()["has_siblings"] is True
+
+    # A disabled peer doesn't count — a stand-alone instance again.
+    peer.enabled = False
+    db.commit()
+    assert client.get("/api/auth/config").json()["has_siblings"] is False
+
+
 def test_login_logout_flow(client, make_client):
     register(client, email="bob@example.com", password="password123")
 

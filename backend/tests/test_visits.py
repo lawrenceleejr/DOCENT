@@ -244,6 +244,58 @@ def test_venue_delete(client, make_client):
     assert creator.get(f"/api/venues/{empty['id']}").status_code == 404
 
 
+def test_venue_edit_by_visitor(client, make_client):
+    register(client, email="admin@example.com")  # admin
+    creator = make_client()
+    register(creator, email="creator@example.com")
+    visitor = make_client()
+    register(visitor, email="visitor@example.com")
+    stranger = make_client()
+    register(stranger, email="stranger@example.com")
+
+    venue = create_venue(creator, name="Shared Venue", city="Town")
+
+    # Someone with no connection to the venue still can't edit it.
+    assert (
+        stranger.patch(f"/api/venues/{venue['id']}", json={"name": "Nope"}).status_code == 403
+    )
+
+    # Logging a visit there grants stewardship of the venue (#19).
+    create_visit(visitor, venue["id"])
+    edited = visitor.patch(f"/api/venues/{venue['id']}", json={"name": "Renamed by Visitor"})
+    assert edited.status_code == 200
+    assert edited.json()["name"] == "Renamed by Visitor"
+
+
+def test_venue_edit_by_future_scheduler(client, make_client):
+    register(client, email="admin@example.com")
+    creator = make_client()
+    register(creator, email="creator@example.com")
+    scheduler = make_client()
+    register(scheduler, email="scheduler@example.com")
+
+    venue = create_venue(creator, name="Planned Venue", city="Town")
+    # A future *planned* visit counts too, not just completed ones (#19).
+    create_visit(scheduler, venue["id"], status="planned", visit_date="2027-05-01")
+    edited = scheduler.patch(f"/api/venues/{venue['id']}", json={"name": "By Scheduler"})
+    assert edited.status_code == 200
+
+
+def test_venue_visitor_passes_delete_permission(client, make_client):
+    register(client, email="admin@example.com")
+    creator = make_client()
+    register(creator, email="creator@example.com")
+    visitor = make_client()
+    register(visitor, email="visitor@example.com")
+
+    venue = create_venue(creator, name="Visitor Delete", city="Town")
+    create_visit(visitor, venue["id"])
+
+    # The visitor clears the permission gate, so deletion is stopped by the
+    # has-visits guard (409) rather than being forbidden (403).
+    assert visitor.delete(f"/api/venues/{venue['id']}").status_code == 409
+
+
 def test_venue_list_includes_visit_count(client):
     register(client)
     venue = create_venue(client)
@@ -345,3 +397,44 @@ def test_visit_language_in_csv_export(client):
     header, row = csv_text.splitlines()[0], csv_text.splitlines()[1]
     assert "language" in header.split(",")
     assert "Vietnamese" in row
+
+
+def test_visit_co_presenters_resolve_with_orcid(client, make_client):
+    register(client, email="ada@example.com", name="Ada")
+    ben = make_client()
+    ben_id = register(ben, email="ben@example.com", name="Ben").json()["id"]
+    ben.patch("/api/users/me", json={"orcid": "0000-0001-5109-3700"})
+
+    venue = create_venue(client)
+    v = create_visit(client, venue["id"], co_presenter_user_ids=[ben_id])
+    detail = client.get(f"/api/visits/{v['id']}").json()
+    assert [c["name"] for c in detail["co_presenters"]] == ["Ben"]
+    assert detail["co_presenters"][0]["orcid"] == "0000-0001-5109-3700"
+
+
+def test_user_search_for_co_presenters(client, make_client):
+    register(client, email="ada@example.com", name="Ada Alvarez")
+    other = make_client()
+    register(other, email="ben@example.com", name="Ben Okafor")
+
+    assert client.get("/api/users/search").json() == []  # blank query -> nothing
+    res = client.get("/api/users/search", params={"q": "okafor"}).json()
+    assert [u["name"] for u in res] == ["Ben Okafor"]
+    # Excludes the searcher themselves.
+    assert client.get("/api/users/search", params={"q": "alvarez"}).json() == []
+
+
+def test_visit_search_matches_people(client):
+    """The visits search box also matches the people involved — the communicator
+    (author), the host, and free-text additional presenters — not just the
+    title/notes (#13)."""
+    register(client, name="Dana Communicator")
+    venue = create_venue(client)
+    create_visit(
+        client, venue["id"], title="Plain title",
+        contact_name="Hank Host", additional_presenters="Iris Presenter",
+    )
+    assert client.get("/api/visits", params={"q": "dana"}).json()["total"] == 1
+    assert client.get("/api/visits", params={"q": "Hank"}).json()["total"] == 1
+    assert client.get("/api/visits", params={"q": "Iris"}).json()["total"] == 1
+    assert client.get("/api/visits", params={"q": "nobody-here"}).json()["total"] == 0

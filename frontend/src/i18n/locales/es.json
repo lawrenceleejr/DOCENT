@@ -10,7 +10,9 @@
     "any": "Cualquiera",
     "translationDisclaimer": "Esta traducción se generó automáticamente y aún no ha sido revisada por un hablante nativo. Puede contener errores — los voluntarios que quieran ayudar a revisarla son muy bienvenidos.",
     "filters": "Filtros",
-    "unexpectedError": "Error inesperado"
+    "unexpectedError": "Error inesperado",
+    "clear": "Borrar",
+    "unsavedConfirm": "Tienes cambios sin guardar. ¿Salir de esta página y descartarlos?"
   },
   "layout": {
     "home": "Inicio de DOCENT",
@@ -25,14 +27,20 @@
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · Software libre bajo la",
     "nav": {
       "visits": "Visitas",
-      "schedule": "Agenda",
+      "schedule": "Planificador",
       "venues": "Sedes",
       "map": "Mapa",
       "analysis": "Análisis",
       "reports": "Informes",
       "admin": "Administración",
       "directory": "Directorio"
-    }
+    },
+    "completeProfileTitle": "Completa tu perfil",
+    "completeProfileText": "Añade tu afiliación, cargo, ORCID y los idiomas en los que presentas para que tus colegas puedan encontrarte.",
+    "completeProfileLink": "Ir a tu perfil",
+    "needsReportTitle": "{{count}} visita(s) necesitan informe",
+    "needsReportText": "Tienes eventos pasados por documentar; empieza por",
+    "needsReportMore": "y {{count}} más."
   },
   "authShell": {
     "taglineBold": "Acércate.",
@@ -43,7 +51,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · Software libre bajo la"
   },
   "login": {
-    "welcomeBack": "Bienvenido de nuevo",
+    "welcome": "Te damos la bienvenida",
     "loginToSite": "Inicia sesión en {{siteName}}.",
     "loginToDefault": "Inicia sesión en tu cuenta de DOCENT.",
     "emailLabel": "Correo electrónico",
@@ -60,7 +68,8 @@
     "viewImpactLink": "Ver nuestra página pública de impacto",
     "noAccountNeededSuffix": "— no se necesita cuenta.",
     "invalidEmail": "Correo electrónico no válido",
-    "passwordRequired": "La contraseña es obligatoria"
+    "passwordRequired": "La contraseña es obligatoria",
+    "welcomeBack": "Bienvenido de nuevo"
   },
   "register": {
     "createAccount": "Crea tu cuenta",
@@ -99,7 +108,7 @@
     "exportCsv": "Exportar CSV",
     "logVisit": "Registrar una visita",
     "searchLabel": "Buscar",
-    "searchPlaceholder": "Título o notas",
+    "searchPlaceholder": "Título, personas o notas",
     "statusLabel": "Estado",
     "fromLabel": "Desde",
     "toLabel": "Hasta",
@@ -117,15 +126,15 @@
     "colAudience": "Público",
     "colPeopleReached": "Personas alcanzadas",
     "colRating": "Calificación",
-    "overdue": "Vencida",
+    "overdue": "Pendiente de informe",
     "emptyTitle": "No se encontraron visitas",
     "emptyDescription": "Ninguna visita coincide con estos filtros todavía. Registra tu primera visita de difusión para comenzar.",
     "emptyDescriptionShort": "Ninguna visita coincide con estos filtros todavía.",
     "reachedSuffix": "alcanzadas",
     "visitCount_one": "{{formattedCount}} visita",
     "visitCount_other": "{{formattedCount}} visitas",
-    "includeSiblings": "Incluir instancias hermanas",
-    "siblingBadge": "De una instancia hermana",
+    "includeSiblings": "Incluir comunidades hermanas",
+    "siblingBadge": "De una comunidad hermana",
     "siblingActivity": "Actividad",
     "sourceLabel": "Fuente"
   },
@@ -205,7 +214,13 @@
       "peopleReachedTooLarge": "Eso parece demasiado alto (máximo {{max}}).",
       "peopleReachedTooLargeTypo": "Eso parece demasiado alto (máximo {{max}}). Verifica que no haya un error de escritura.",
       "peopleReachedRequired": "¿A cuántas personas alcanzaste?"
-    }
+    },
+    "coPresentersLabel": "Copresentadores con cuenta",
+    "coPresentersDescription": "Vincula a colegas que tengan una cuenta aquí, para que reciban crédito y sus ORCID viajen con la actividad federada.",
+    "coPresentersPlaceholder": "Buscar personas por nombre…",
+    "coPresentersNothing": "No hay personas coincidentes",
+    "mapHintText": "También puedes iniciar un evento desde el",
+    "mapHintLink": "mapa"
   },
   "visitDetail": {
     "markCompleted": "Marcar como completada",
@@ -232,7 +247,8 @@
     "fieldEmail": "Correo electrónico",
     "fieldPhone": "Teléfono",
     "fieldHostNotes": "Notas sobre el anfitrión",
-    "minSuffix": "min"
+    "minSuffix": "min",
+    "fieldCoPresenters": "Copresentadores"
   },
   "enums": {
     "venueType": {
@@ -250,6 +266,9 @@
       "classroom_visit": "Visita a un salón de clases",
       "science_fair": "Feria de ciencias",
       "public_lecture": "Charla pública",
+      "colloquium": "Coloquio",
+      "seminar": "Seminario",
+      "conference": "Conferencia",
       "lab_tour": "Recorrido de laboratorio",
       "career_day": "Día de las profesiones",
       "demo_booth": "Estand de demostraciones",
@@ -312,7 +331,25 @@
     "tableTakenHeader": "Realizada",
     "tableSizeHeader": "Tamaño",
     "downloadButton": "Descargar",
-    "emptyState": "Todavía no se encontraron copias de seguridad. Una se ejecuta automáticamente cada noche."
+    "emptyState": "Todavía no se encontraron copias de seguridad. Una se ejecuta automáticamente cada noche.",
+    "restoreButton": "Restaurar",
+    "restoreUploadButton": "Restaurar archivo subido",
+    "chooseFileButton": "Elegir archivo .dump",
+    "restoreModalTitle": "Restaurar base de datos",
+    "restoreWarning": "Esto sobrescribe TODOS los datos actuales con el contenido de la copia de seguridad. Se perderán los cambios realizados desde entonces.",
+    "restoreFromBackup": "¿Restaurar desde {{path}}?",
+    "restoreFromUpload": "¿Restaurar desde el archivo subido {{name}}?",
+    "restoreSafetyNote": "Primero se toma una copia de seguridad previa a la restauración, para poder deshacerlo.",
+    "typeToConfirm": "Escribe {{word}} para confirmar",
+    "confirmRestoreButton": "Restaurar ahora",
+    "reloadApp": "Recargar la aplicación",
+    "restoreError": "No se pudo iniciar la restauración.",
+    "restoreState": {
+      "queued": "Restauración en cola",
+      "running": "Restauración en curso",
+      "success": "Restauración completada",
+      "failed": "La restauración falló"
+    }
   },
   "dbToolsCard": {
     "title": "Exportar e importar datos",
@@ -482,7 +519,24 @@
     "tempPasswordModalTitle": "Contraseña temporal",
     "tempPasswordBody": "Comparte esta contraseña de un solo uso con <bold>{{name}}</bold> por un canal seguro. Debe iniciar sesión y cambiarla desde su perfil. Se muestra solo una vez.",
     "copyButton": "Copiar",
-    "copiedButton": "Copiado"
+    "copiedButton": "Copiado",
+    "loginHistoryTitle": "Historial de accesos",
+    "loginHistorySubtitle": "Inicios de sesión correctos en los últimos 30 días.",
+    "loginHistoryTotal": "{{formattedCount}} en total",
+    "loginHistoryChartTitle": "Accesos por día",
+    "loginHistoryLoginsLabel": "Accesos",
+    "loginHistoryRecentTitle": "Accesos recientes",
+    "loginHistoryColUser": "Usuario",
+    "loginHistoryColWhen": "Cuándo",
+    "loginHistoryEmpty": "Aún no hay accesos registrados.",
+    "radiusLabel": "Radio de cobertura (km)",
+    "bannerMessageLabel": "Aviso para todo el sitio",
+    "bannerMessageDescription": "Se muestra en la parte superior de cada página para los usuarios que han iniciado sesión. Déjalo en blanco para ocultarlo.",
+    "bannerMessagePlaceholder": "p. ej. Mantenimiento programado este sábado, de 21:00 a 23:00.",
+    "bannerLevelLabel": "Gravedad del aviso",
+    "bannerLevelInfo": "Información",
+    "bannerLevelWarning": "Advertencia",
+    "bannerLevelCritical": "Crítico"
   },
   "dashboard": {
     "title": "Análisis",
@@ -510,8 +564,8 @@
     "overTimeHeading": "A lo largo del tiempo",
     "breakdownsHeading": "Desgloses",
     "leadersHeading": "Líderes",
-    "visitsPer6Months": "Visitas cada 6 meses",
-    "peopleReachedPer6Months": "Personas alcanzadas cada 6 meses",
+    "visitsPer6Months": "Visitas a lo largo del tiempo",
+    "peopleReachedPer6Months": "Personas alcanzadas a lo largo del tiempo",
     "visitsByVenueType": "Visitas por tipo de sede",
     "visitsByAudienceLevel": "Visitas por nivel de público",
     "visitsByHostRelationship": "Visitas por relación con el anfitrión",
@@ -521,9 +575,15 @@
     "communicatorLeaderboard": "Tabla de comunicadores destacados",
     "colVenue": "Sede",
     "colCommunicator": "Comunicador",
-    "includeSiblings": "Incluir instancias hermanas",
+    "includeSiblings": "Incluir comunidades hermanas",
     "localOnlyNote": "Las tablas de clasificación y el desglose por relación con el anfitrión cuentan únicamente las actividades de esta instancia.",
-    "federatedCaveat": "Los totales combinados pueden contar a un comunicador más de una vez si participa a través de varias instancias hermanas."
+    "federatedCaveat": "Los totales combinados pueden contar a un comunicador más de una vez si participa a través de varias comunidades hermanas.",
+    "completedVisits": "Completadas",
+    "plannedVisits": "Programadas",
+    "plannedCaption": "Continua: registradas · Discontinua: programadas",
+    "peopleSearchLabel": "Buscar personas",
+    "peopleSearchPlaceholder": "Nombre del comunicador o anfitrión",
+    "siblingFilterCaveat": "Las entradas de las comunidades hermanas tienen detalles limitados: no se comparten la audiencia, las etiquetas ni los nombres de los anfitriones, por lo que esos filtros y la búsqueda de personas solo se aplican en parte."
   },
   "impact": {
     "unavailableTitle": "Esta página no está disponible",
@@ -544,21 +604,22 @@
     "recentActivityHeading": "Actividad reciente",
     "poweredByPrefix": "Desarrollado con",
     "poweredBySuffix": "· software libre bajo la GNU GPL v3",
-    "includeSiblings": "Incluir instancias hermanas",
-    "includingSiblings": "Las cifras incluyen actividades de nuestras instancias hermanas, que pueden solaparse."
+    "includeSiblings": "Incluir comunidades hermanas",
+    "includingSiblings": "Las cifras incluyen actividades de nuestras comunidades hermanas, que pueden solaparse."
   },
   "map": {
     "title": "Mapa",
-    "gapsPrefix": "Detecta vacíos de cobertura —",
+    "gapsPrefix": "Consulta tu cobertura —",
     "institutionsInView_one": "{{formattedCount}} institución en vista",
     "institutionsInView_other": "{{formattedCount}} instituciones en vista",
     "notYetReached_one": "{{formattedCount}} sin alcanzar todavía",
     "notYetReached_other": "{{formattedCount}} sin alcanzar todavía",
     "none": "Ninguno",
-    "gapsOnly": "Solo vacíos",
+    "gapsOnly": "Aún no visitados",
     "reached": "Alcanzadas",
     "showMyVenues": "Mostrar mis sedes",
-    "legendGap": "Vacío",
+    "showOnlyMyVenues": "Mostrar solo mis sedes",
+    "legendGap": "Aún no visitados",
     "legendReached": "Alcanzada",
     "legendVenueNoVisits": "Sede (sin visitas todavía)",
     "popupReached_one": "Alcanzada — {{formattedCount}} visita",
@@ -572,11 +633,11 @@
     "unexpectedError": "Error inesperado",
     "institutionDataAttribution": "Datos de instituciones © colaboradores de OpenStreetMap.",
     "importMoreRegionsPrefix": "Importa más regiones con",
-    "showSiblings": "Actividades de instancias hermanas",
-    "legendSibling": "Actividad de instancia hermana",
+    "showSiblings": "Actividades de comunidades hermanas",
+    "legendSibling": "Actividad de comunidad hermana",
     "fromSibling": "De {{name}}",
     "openOnPrimary": "Abrir en la instancia principal",
-    "allSiblings": "Todas las instancias hermanas"
+    "allSiblings": "Todas las comunidades hermanas"
   },
   "profile": {
     "title": "Perfil",
@@ -606,7 +667,20 @@
       "nameRequired": "El nombre es obligatorio",
       "currentPasswordRequired": "Obligatorio",
       "passwordMin": "Al menos 8 caracteres"
-    }
+    },
+    "orcidLabel": "ORCID iD",
+    "orcidDescription": "Vincula tu identidad de investigador. Viaja con la actividad federada para que las comunidades asociadas atribuyan el crédito a las personas correctas.",
+    "orcidLinkedPrefix": "Vinculado:",
+    "affiliationPlaceholder": "Universidad de Tennessee (opcional)",
+    "rolesLabel": "Otros cargos",
+    "rolesDescription": "Otros cargos que ocupas, dentro o fuera de tu institución.",
+    "rolesEmpty": "Aún no hay cargos adicionales.",
+    "roleTitleLabel": "Cargo",
+    "roleTitlePlaceholder": "p. ej., Miembro de la junta",
+    "roleOrgLabel": "Organización",
+    "roleOrgPlaceholder": "p. ej., Museo de Ciencias de la Ciudad (opcional)",
+    "addRole": "Agregar cargo",
+    "removeRole": "Eliminar cargo"
   },
   "directory": {
     "title": "Directorio",
@@ -622,7 +696,8 @@
     "colLanguages": "Idiomas",
     "noMembersMatch": "Ningún miembro coincide con estos filtros.",
     "memberCount_one": "{{formattedCount}} miembro",
-    "memberCount_other": "{{formattedCount}} miembros"
+    "memberCount_other": "{{formattedCount}} miembros",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "Informes",
@@ -659,12 +734,13 @@
     "colPresenter": "Presentador",
     "colCoverage": "Cobertura",
     "emptyState": "Ninguna actividad coincide con estos filtros. Prueba con “{{everyone}}” en lugar de “{{myActivities}}”, cambia Estado a “{{all}}”, o amplía el rango de fechas.",
-    "showingFirst": "Mostrando las primeras {{limit}} de {{total}} actividades. La descarga las incluye todas."
+    "showingFirst": "Mostrando las primeras {{limit}} de {{total}} actividades. La descarga las incluye todas.",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
-    "title": "Agenda",
+    "title": "Planificador",
     "subtitle": "Próximos eventos planeados en toda la comunidad. Marca uno como hecho para registrar la asistencia.",
-    "addToCalendar": "Agregar al calendario (.ics)",
+    "addToCalendar": "Exportar eventos al calendario (.ics)",
     "scheduleEvent": "Programar un evento",
     "fromLabel": "Desde",
     "toLabel": "Hasta",
@@ -679,10 +755,12 @@
     "colVenue": "Sede",
     "colCommunicator": "Comunicador",
     "colAudience": "Público",
-    "overdue": "Vencida",
+    "overdue": "Pendiente de informe",
     "markDone": "Marcar como hecho",
     "emptyTitle": "Nada programado",
-    "emptyDescription": "Ningún próximo evento planeado coincide con estos filtros. Programa uno y aparecerá aquí — listo para exportar a tu calendario."
+    "emptyDescription": "Ningún próximo evento planeado coincide con estos filtros. Programa uno y aparecerá aquí — listo para exportar a tu calendario.",
+    "addToCalendarTooltip": "Exporta los eventos que se muestran aquí, según tus filtros actuales.",
+    "addToCalendarEmpty": "Aún no hay eventos para exportar."
   },
   "venuePicker": {
     "venueLabel": "Sede",
@@ -711,7 +789,8 @@
     "validation": {
       "nameRequired": "El nombre es obligatorio",
       "typeRequired": "El tipo es obligatorio"
-    }
+    },
+    "mapHint": "También puedes elegir un lugar desde el Mapa: ábrelo y selecciona «Registrar una visita aquí»."
   },
   "connectionForm": {
     "editTitle": "Editar contacto",
@@ -754,7 +833,8 @@
     "emptyTitle": "No se encontraron sedes",
     "emptyDescription": "Agrega una escuela, instituto, museo o biblioteca para empezar a registrar la difusión ahí.",
     "venueCount_one": "{{formattedCount}} sede",
-    "venueCount_other": "{{formattedCount}} sedes"
+    "venueCount_other": "{{formattedCount}} sedes",
+    "onlyWithEvents": "Solo lugares con eventos"
   },
   "venueDetail": {
     "mergeSuccess": "Sedes combinadas",
@@ -805,22 +885,22 @@
   },
   "federationCard": {
     "title": "Federación",
-    "description": "Comparte el feed de actividad de esta instancia con instancias hermanas y trae sus actividades a tus vistas combinadas.",
+    "description": "Comparte el feed de actividad de esta instancia con comunidades hermanas y trae sus actividades a tus vistas combinadas.",
     "publishSectionTitle": "Publicación (el feed de esta instancia)",
     "publishToggle": "Publicar en la federación",
-    "publishToggleDescription": "Sirve el feed de actividad de esta instancia para que las instancias hermanas puedan suscribirse a él.",
+    "publishToggleDescription": "Sirve el feed de actividad de esta instancia para que las comunidades hermanas puedan suscribirse a él.",
     "feedUrlLabel": "La URL de tu feed",
-    "feedUrlHelp": "Entrega esta URL a las instancias hermanas para que puedan traer tus actividades. Contiene un token secreto, así que compártela de forma privada y solo por HTTPS.",
+    "feedUrlHelp": "Entrega esta URL a las comunidades hermanas para que puedan traer tus actividades. Contiene un token secreto, así que compártela de forma privada y solo por HTTPS.",
     "copy": "Copiar",
     "copied": "Copiado",
     "rotateToken": "Rotar token",
-    "tokenRotated": "Token del feed rotado. Vuelve a compartir la nueva URL con tus instancias hermanas.",
-    "setSiteUrlHint": "La publicación está activada, pero la URL de tu feed aún no es absoluta. Establece la Dirección del sitio de esta instancia en la configuración de dirección del sitio para que las instancias hermanas reciban una URL completa y enlazable.",
-    "peersSectionTitle": "Instancias hermanas (feeds de los que traemos datos)",
-    "peersSectionDescription": "Suscríbete a los feeds de instancias hermanas. Sus actividades se combinan en tu mapa y tus análisis.",
+    "tokenRotated": "Token del feed rotado. Vuelve a compartir la nueva URL con tus comunidades hermanas.",
+    "setSiteUrlHint": "La publicación está activada, pero la URL de tu feed aún no es absoluta. Establece la Dirección del sitio de esta instancia en la configuración de dirección del sitio para que las comunidades hermanas reciban una URL completa y enlazable.",
+    "peersSectionTitle": "Comunidades hermanas (feeds de los que traemos datos)",
+    "peersSectionDescription": "Suscríbete a los feeds de comunidades hermanas. Sus actividades se combinan en tu mapa y tus análisis.",
     "addPeer": "Agregar",
     "feedUrlPlaceholder": "https://hermana.example.edu/api/federation/activities?token=...",
-    "addFeedUrlLabel": "URL del feed de la instancia hermana",
+    "addFeedUrlLabel": "URL del feed de la comunidad hermana",
     "intervalLabel": "Sincronizar cada",
     "interval_hour": "Hora",
     "interval_day": "Día",
@@ -838,19 +918,19 @@
     "syncNow": "Sincronizar ahora",
     "syncAll": "Sincronizar todo ahora",
     "remove": "Quitar",
-    "confirmRemove": "¿Quitar la instancia hermana \"{{label}}\"? Las actividades traídas de ella dejarán de aparecer en tus vistas combinadas.",
-    "noPeers": "Todavía no hay instancias hermanas.",
-    "added": "Instancia hermana agregada.",
-    "removed": "Instancia hermana eliminada.",
+    "confirmRemove": "¿Quitar la comunidad hermana \"{{label}}\"? Las actividades traídas de ella dejarán de aparecer en tus vistas combinadas.",
+    "noPeers": "Todavía no hay comunidades hermanas.",
+    "added": "Comunidad hermana agregada.",
+    "removed": "Comunidad hermana eliminada.",
     "synced": "Sincronización completa.",
     "saved": "Guardado.",
     "couldNotSave": "No se pudo guardar",
     "rotateModalTitle": "¿Rotar el token de federación?",
-    "rotateModalBody": "Esto invalida de inmediato la URL de tu feed actual. Todas las instancias hermanas que leen tus datos dejarán de sincronizar y se romperán hasta que les envíes la nueva URL y actualicen su configuración. Hazlo solo si el token actual pudo haber quedado expuesto: no se puede deshacer.",
+    "rotateModalBody": "Esto invalida de inmediato la URL de tu feed actual. Todas las comunidades hermanas que leen tus datos dejarán de sincronizar y se romperán hasta que les envíes la nueva URL y actualicen su configuración. Hazlo solo si el token actual pudo haber quedado expuesto: no se puede deshacer.",
     "rotateConfirm": "Sí, rotar el token",
     "rotateCancel": "Cancelar",
     "publishPlannedToggle": "Publicar eventos planificados",
-    "publishPlannedDescription": "Comparte también los próximos eventos (planificados) para que las instancias hermanas puedan ver tu calendario. Desactivado de forma predeterminada.",
+    "publishPlannedDescription": "Comparte también los próximos eventos (planificados) para que las comunidades hermanas puedan ver tu calendario. Desactivado de forma predeterminada.",
     "testFeed": "Probar",
     "previewOk": "Se conectó con {{name}}: {{formattedCount}} actividades disponibles.",
     "previewError": "No se pudo acceder al feed: {{error}}",
@@ -858,6 +938,24 @@
     "colNextSync": "Próxima sincronización",
     "paused": "En pausa",
     "soon": "Pronto",
-    "statusErrorCount": "Errores ×{{count}}"
+    "statusErrorCount": "Errores ×{{count}}",
+    "colTagFilter": "Etiquetas de filtro",
+    "tagFilterAll": "Todos los eventos",
+    "tagFilterLabel": "Solo traer eventos con estas etiquetas (opcional)",
+    "tagFilterDescription": "Déjalo vacío para traer todos los eventos de esta comunidad hermana. Agrega etiquetas para traer solo los eventos que tengan al menos una.",
+    "tagFilterPlaceholder": "p. ej., nsf-career"
+  },
+  "profileView": {
+    "totalVisits": "Visitas",
+    "peopleReached": "Personas alcanzadas",
+    "languages": "Presenta en",
+    "schools": "Escuelas a las que asistió",
+    "eventsTitle": "Eventos",
+    "colDate": "Fecha",
+    "colTitle": "Título",
+    "colVenue": "Lugar",
+    "colType": "Tipo",
+    "colPeople": "Personas",
+    "noEvents": "Aún no hay eventos."
   }
 }

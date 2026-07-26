@@ -10,7 +10,9 @@
     "any": "不限",
     "translationDisclaimer": "此翻譯為自動生成，尚未經母語人士審閱，可能包含錯誤。歡迎志工協助校對。",
     "filters": "篩選條件",
-    "unexpectedError": "發生未預期的錯誤"
+    "unexpectedError": "發生未預期的錯誤",
+    "clear": "清除",
+    "unsavedConfirm": "你有未儲存的變更。要離開此頁面並捨棄變更嗎？"
   },
   "layout": {
     "home": "DOCENT 首頁",
@@ -25,14 +27,20 @@
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · 自由軟體，採用以下授權條款：",
     "nav": {
       "visits": "到訪",
-      "schedule": "行程",
+      "schedule": "排程",
       "venues": "場地",
       "map": "地圖",
       "analysis": "分析",
       "reports": "報告",
       "admin": "管理",
       "directory": "會員名錄"
-    }
+    },
+    "completeProfileTitle": "完善你的個人檔案",
+    "completeProfileText": "填寫你的單位、職稱、ORCID 以及你用來進行推廣的語言，讓同事能找到你。",
+    "completeProfileLink": "前往個人檔案",
+    "needsReportTitle": "{{count}} 筆造訪待填報告",
+    "needsReportText": "你有過去的活動待記錄——先從",
+    "needsReportMore": "等另 {{count}} 筆。"
   },
   "authShell": {
     "taglineBold": "走出去。",
@@ -43,7 +51,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · 自由軟體，採用以下授權條款："
   },
   "login": {
-    "welcomeBack": "歡迎回來",
+    "welcome": "歡迎",
     "loginToSite": "登入 {{siteName}}。",
     "loginToDefault": "登入您的 DOCENT 帳戶。",
     "emailLabel": "電子郵件",
@@ -60,7 +68,8 @@
     "viewImpactLink": "查看我們的公開影響力頁面",
     "noAccountNeededSuffix": "——不需要帳戶。",
     "invalidEmail": "電子郵件格式不正確",
-    "passwordRequired": "請輸入密碼"
+    "passwordRequired": "請輸入密碼",
+    "welcomeBack": "歡迎回來"
   },
   "register": {
     "createAccount": "建立您的帳戶",
@@ -99,7 +108,7 @@
     "exportCsv": "匯出 CSV",
     "logVisit": "記錄到訪",
     "searchLabel": "搜尋",
-    "searchPlaceholder": "標題或備註",
+    "searchPlaceholder": "標題、人員或備註",
     "statusLabel": "狀態",
     "fromLabel": "自",
     "toLabel": "至",
@@ -117,15 +126,15 @@
     "colAudience": "對象",
     "colPeopleReached": "觸及人數",
     "colRating": "評分",
-    "overdue": "逾期",
+    "overdue": "待補報告",
     "emptyTitle": "找不到到訪紀錄",
     "emptyDescription": "目前沒有符合篩選條件的到訪紀錄。記錄您的第一次推廣到訪，開始建立紀錄吧。",
     "emptyDescriptionShort": "目前沒有符合篩選條件的到訪紀錄。",
     "reachedSuffix": "人觸及",
     "visitCount_one": "{{formattedCount}} 次到訪",
     "visitCount_other": "{{formattedCount}} 次到訪",
-    "includeSiblings": "包含姊妹站台",
-    "siblingBadge": "來自姊妹站台",
+    "includeSiblings": "包含姊妹社群",
+    "siblingBadge": "來自姊妹社群",
     "siblingActivity": "活動",
     "sourceLabel": "來源"
   },
@@ -205,7 +214,13 @@
       "peopleReachedTooLarge": "這個數字似乎太大了（最多 {{max}}）。",
       "peopleReachedTooLargeTypo": "這個數字似乎太大了（最多 {{max}}）。請檢查是否輸入錯誤。",
       "peopleReachedRequired": "您觸及了多少人？"
-    }
+    },
+    "coPresentersLabel": "具帳號的協同講者",
+    "coPresentersDescription": "連結在此擁有帳號的同事，讓他們獲得標註，且其 ORCID 會隨聯邦活動一起傳遞。",
+    "coPresentersPlaceholder": "以姓名搜尋人員…",
+    "coPresentersNothing": "沒有符合的人員",
+    "mapHintText": "你也可以從地圖開始建立活動：",
+    "mapHintLink": "地圖"
   },
   "visitDetail": {
     "markCompleted": "標記為已完成",
@@ -232,7 +247,8 @@
     "fieldEmail": "電子郵件",
     "fieldPhone": "電話",
     "fieldHostNotes": "接待人備註",
-    "minSuffix": "分鐘"
+    "minSuffix": "分鐘",
+    "fieldCoPresenters": "協同講者"
   },
   "enums": {
     "venueType": {
@@ -250,6 +266,9 @@
       "classroom_visit": "教室到訪",
       "science_fair": "科學展覽",
       "public_lecture": "公開演講",
+      "colloquium": "學術座談",
+      "seminar": "專題研討",
+      "conference": "學術會議",
       "lab_tour": "實驗室參觀",
       "career_day": "職涯日",
       "demo_booth": "示範攤位",
@@ -312,7 +331,25 @@
     "tableTakenHeader": "建立時間",
     "tableSizeHeader": "大小",
     "downloadButton": "下載",
-    "emptyState": "目前尚無備份。系統每晚會自動執行一次備份。"
+    "emptyState": "目前尚無備份。系統每晚會自動執行一次備份。",
+    "restoreButton": "還原",
+    "restoreUploadButton": "還原上傳的檔案",
+    "chooseFileButton": "選擇 .dump 檔案",
+    "restoreModalTitle": "還原資料庫",
+    "restoreWarning": "這會以備份內容覆寫目前所有資料。自該備份以來的所有變更都將遺失。",
+    "restoreFromBackup": "從 {{path}} 還原？",
+    "restoreFromUpload": "從上傳的檔案 {{name}} 還原？",
+    "restoreSafetyNote": "會先建立一份還原前備份，因此可以復原此操作。",
+    "typeToConfirm": "輸入 {{word}} 以確認",
+    "confirmRestoreButton": "立即還原",
+    "reloadApp": "重新載入應用程式",
+    "restoreError": "無法開始還原。",
+    "restoreState": {
+      "queued": "還原已排入佇列",
+      "running": "還原進行中",
+      "success": "還原完成",
+      "failed": "還原失敗"
+    }
   },
   "dbToolsCard": {
     "title": "匯出與匯入資料",
@@ -482,7 +519,24 @@
     "tempPasswordModalTitle": "臨時密碼",
     "tempPasswordBody": "請透過安全的管道將此一次性密碼提供給 <bold>{{name}}</bold>。對方應登入後於個人資料頁面變更密碼。此密碼僅會顯示一次。",
     "copyButton": "複製",
-    "copiedButton": "已複製"
+    "copiedButton": "已複製",
+    "loginHistoryTitle": "登入紀錄",
+    "loginHistorySubtitle": "過去 30 天的成功登入。",
+    "loginHistoryTotal": "共 {{formattedCount}} 次",
+    "loginHistoryChartTitle": "每日登入次數",
+    "loginHistoryLoginsLabel": "登入",
+    "loginHistoryRecentTitle": "最近登入",
+    "loginHistoryColUser": "使用者",
+    "loginHistoryColWhen": "時間",
+    "loginHistoryEmpty": "尚無登入紀錄。",
+    "radiusLabel": "涵蓋半徑（公里）",
+    "bannerMessageLabel": "全站橫幅",
+    "bannerMessageDescription": "顯示在每個頁面頂部（供已登入的使用者）。留空即可隱藏。",
+    "bannerMessagePlaceholder": "例如：本週六 21:00–23:00 進行系統維護。",
+    "bannerLevelLabel": "橫幅嚴重程度",
+    "bannerLevelInfo": "資訊",
+    "bannerLevelWarning": "警告",
+    "bannerLevelCritical": "嚴重"
   },
   "dashboard": {
     "title": "分析",
@@ -510,8 +564,8 @@
     "overTimeHeading": "趨勢變化",
     "breakdownsHeading": "細項分析",
     "leadersHeading": "排行榜",
-    "visitsPer6Months": "每半年到訪次數",
-    "peopleReachedPer6Months": "每半年觸及人數",
+    "visitsPer6Months": "隨時間的造訪",
+    "peopleReachedPer6Months": "隨時間觸及的人數",
     "visitsByVenueType": "依場地類型劃分的到訪次數",
     "visitsByAudienceLevel": "依對象程度劃分的到訪次數",
     "visitsByHostRelationship": "依接待人關係劃分的到訪次數",
@@ -521,9 +575,15 @@
     "communicatorLeaderboard": "推廣人員排行榜",
     "colVenue": "場地",
     "colCommunicator": "推廣人員",
-    "includeSiblings": "包含姊妹站台",
+    "includeSiblings": "包含姊妹社群",
     "localOnlyNote": "排行榜與接待人關係細項僅計入本站台的活動。",
-    "federatedCaveat": "若傳播者透過多個夥伴站台參與，合併總計可能會重複計算同一位傳播者。"
+    "federatedCaveat": "若傳播者透過多個夥伴社群參與，合併總計可能會重複計算同一位傳播者。",
+    "completedVisits": "已完成",
+    "plannedVisits": "已排程",
+    "plannedCaption": "實線：已記錄 · 虛線：已排程",
+    "peopleSearchLabel": "搜尋人員",
+    "peopleSearchPlaceholder": "溝通者或主辦人姓名",
+    "siblingFilterCaveat": "姊妹社群的項目所含細節有限——不會共享受眾、標籤與主辦人姓名，因此這些篩選條件與人員搜尋僅部分適用。"
   },
   "impact": {
     "unavailableTitle": "此頁面目前無法使用",
@@ -544,21 +604,22 @@
     "recentActivityHeading": "近期活動",
     "poweredByPrefix": "技術支援：",
     "poweredBySuffix": "· 自由軟體，採用 GNU GPL v3 授權條款",
-    "includeSiblings": "包含姊妹站台",
-    "includingSiblings": "數字涵蓋我們各夥伴站台的活動，內容可能有所重疊。"
+    "includeSiblings": "包含姊妹社群",
+    "includingSiblings": "數字涵蓋我們各夥伴社群的活動，內容可能有所重疊。"
   },
   "map": {
     "title": "地圖",
-    "gapsPrefix": "找出推廣缺口——",
+    "gapsPrefix": "檢視你的推廣範圍——",
     "institutionsInView_one": "檢視範圍內有 {{formattedCount}} 個機構",
     "institutionsInView_other": "檢視範圍內有 {{formattedCount}} 個機構",
     "notYetReached_one": "{{formattedCount}} 個尚未觸及",
     "notYetReached_other": "{{formattedCount}} 個尚未觸及",
     "none": "無",
-    "gapsOnly": "僅顯示缺口",
+    "gapsOnly": "尚未造訪",
     "reached": "已觸及",
     "showMyVenues": "僅顯示我的場地",
-    "legendGap": "缺口",
+    "showOnlyMyVenues": "僅顯示我的場地",
+    "legendGap": "尚未造訪",
     "legendReached": "已觸及",
     "legendVenueNoVisits": "場地（尚無到訪紀錄）",
     "popupReached_one": "已觸及——{{formattedCount}} 次到訪",
@@ -572,11 +633,11 @@
     "unexpectedError": "發生未預期的錯誤",
     "institutionDataAttribution": "機構資料 © OpenStreetMap 貢獻者。",
     "importMoreRegionsPrefix": "使用以下功能匯入更多地區：",
-    "showSiblings": "姊妹站台活動",
-    "legendSibling": "姊妹站台活動",
+    "showSiblings": "姊妹社群活動",
+    "legendSibling": "姊妹社群活動",
     "fromSibling": "來自 {{name}}",
     "openOnPrimary": "在主要站台上開啟",
-    "allSiblings": "所有夥伴站台"
+    "allSiblings": "所有夥伴社群"
   },
   "profile": {
     "title": "個人資料",
@@ -606,7 +667,20 @@
       "nameRequired": "請輸入姓名",
       "currentPasswordRequired": "必填",
       "passwordMin": "至少 8 個字元"
-    }
+    },
+    "orcidLabel": "ORCID iD",
+    "orcidDescription": "連結你的研究者身分。它會隨聯邦活動一起傳遞，讓夥伴社群能正確標註貢獻者。",
+    "orcidLinkedPrefix": "已連結：",
+    "affiliationPlaceholder": "田納西大學（選填）",
+    "rolesLabel": "其他角色",
+    "rolesDescription": "您在機構內外擔任的其他角色。",
+    "rolesEmpty": "尚無其他角色。",
+    "roleTitleLabel": "角色",
+    "roleTitlePlaceholder": "例如：理事會成員",
+    "roleOrgLabel": "組織",
+    "roleOrgPlaceholder": "例如：城市科學博物館（選填）",
+    "addRole": "新增角色",
+    "removeRole": "移除角色"
   },
   "directory": {
     "title": "會員名錄",
@@ -622,7 +696,8 @@
     "colLanguages": "語言",
     "noMembersMatch": "沒有符合篩選條件的成員。",
     "memberCount_one": "{{formattedCount}} 位成員",
-    "memberCount_other": "{{formattedCount}} 位成員"
+    "memberCount_other": "{{formattedCount}} 位成員",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "報告",
@@ -659,12 +734,13 @@
     "colPresenter": "主講人",
     "colCoverage": "報導",
     "emptyState": "沒有符合篩選條件的活動。可以試著將範圍改為「{{everyone}}」而非「{{myActivities}}」，將狀態設為「{{all}}」，或放寬日期範圍。",
-    "showingFirst": "目前顯示前 {{limit}} 筆，共 {{total}} 筆活動。下載檔案將包含全部項目。"
+    "showingFirst": "目前顯示前 {{limit}} 筆，共 {{total}} 筆活動。下載檔案將包含全部項目。",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
-    "title": "行程",
+    "title": "排程",
     "subtitle": "社群中即將舉行的已排定活動。標記完成即可記錄出席情況。",
-    "addToCalendar": "加入日曆（.ics）",
+    "addToCalendar": "匯出活動至日曆（.ics）",
     "scheduleEvent": "安排活動",
     "fromLabel": "自",
     "toLabel": "至",
@@ -679,10 +755,12 @@
     "colVenue": "場地",
     "colCommunicator": "推廣人員",
     "colAudience": "對象",
-    "overdue": "逾期",
+    "overdue": "待補報告",
     "markDone": "標記完成",
     "emptyTitle": "尚無排定行程",
-    "emptyDescription": "沒有符合篩選條件的即將舉行活動。安排一場活動後即會顯示於此——並可匯出至您的日曆。"
+    "emptyDescription": "沒有符合篩選條件的即將舉行活動。安排一場活動後即會顯示於此——並可匯出至您的日曆。",
+    "addToCalendarTooltip": "匯出目前依篩選條件顯示的活動。",
+    "addToCalendarEmpty": "目前沒有可匯出的活動。"
   },
   "venuePicker": {
     "venueLabel": "場地",
@@ -711,7 +789,8 @@
     "validation": {
       "nameRequired": "請輸入名稱",
       "typeRequired": "請選擇類型"
-    }
+    },
+    "mapHint": "你也可以從地圖選擇地點——開啟地圖並選擇「在此記錄一次造訪」。"
   },
   "connectionForm": {
     "editTitle": "編輯聯絡人",
@@ -754,7 +833,8 @@
     "emptyTitle": "找不到場地",
     "emptyDescription": "新增一所學校、學院、博物館或圖書館，開始追蹤該處的推廣紀錄。",
     "venueCount_one": "{{formattedCount}} 個場地",
-    "venueCount_other": "{{formattedCount}} 個場地"
+    "venueCount_other": "{{formattedCount}} 個場地",
+    "onlyWithEvents": "僅顯示有活動的地點"
   },
   "venueDetail": {
     "mergeSuccess": "場地已合併",
@@ -805,22 +885,22 @@
   },
   "federationCard": {
     "title": "聯播網",
-    "description": "與姊妹站台分享本站台的活動動態消息，並將它們的活動匯入您的合併檢視中。",
+    "description": "與姊妹社群分享本社群的活動動態消息，並將它們的活動匯入您的合併檢視中。",
     "publishSectionTitle": "發布（本站台的動態消息）",
     "publishToggle": "發布至聯播網",
-    "publishToggleDescription": "提供本站台的活動動態消息，讓姊妹站台得以訂閱。",
+    "publishToggleDescription": "提供本社群的活動動態消息，讓姊妹社群得以訂閱。",
     "feedUrlLabel": "您的動態消息 URL",
-    "feedUrlHelp": "將此 URL 提供給姊妹站台，讓它們可以拉取您的活動。其中包含一個祕密權杖，因此請私下分享，且僅透過 HTTPS 傳遞。",
+    "feedUrlHelp": "將此 URL 提供給姊妹社群，讓它們可以拉取您的活動。其中包含一個祕密權杖，因此請私下分享，且僅透過 HTTPS 傳遞。",
     "copy": "複製",
     "copied": "已複製",
     "rotateToken": "輪換權杖",
-    "tokenRotated": "動態消息權杖已輪換。請將新的 URL 重新分享給您的姊妹站台。",
-    "setSiteUrlHint": "發布功能已開啟，但您的動態消息 URL 尚非絕對網址。請在網站位址設定中設定本站台的網站網址，讓姊妹站台取得完整且可連結的 URL。",
-    "peersSectionTitle": "姊妹站台（我們拉取的動態消息）",
-    "peersSectionDescription": "訂閱姊妹站台的動態消息。它們的活動會合併到您的地圖與統計數據中。",
+    "tokenRotated": "動態消息權杖已輪換。請將新的 URL 重新分享給您的姊妹社群。",
+    "setSiteUrlHint": "發布功能已開啟，但您的動態消息 URL 尚非絕對網址。請在網站位址設定中設定本社群的網站網址，讓姊妹社群取得完整且可連結的 URL。",
+    "peersSectionTitle": "姊妹社群（我們拉取的動態消息）",
+    "peersSectionDescription": "訂閱姊妹社群的動態消息。它們的活動會合併到您的地圖與統計數據中。",
     "addPeer": "新增",
     "feedUrlPlaceholder": "https://sibling.example.edu/api/federation/activities?token=...",
-    "addFeedUrlLabel": "姊妹站台動態消息 URL",
+    "addFeedUrlLabel": "姊妹社群動態消息 URL",
     "intervalLabel": "同步頻率",
     "interval_hour": "小時",
     "interval_day": "天",
@@ -838,19 +918,19 @@
     "syncNow": "立即同步",
     "syncAll": "全部立即同步",
     "remove": "移除",
-    "confirmRemove": "要移除姊妹站台「{{label}}」嗎？從其拉取的活動將不再顯示於您的合併檢視中。",
-    "noPeers": "尚無姊妹站台。",
-    "added": "已新增姊妹站台。",
-    "removed": "已移除姊妹站台。",
+    "confirmRemove": "要移除姊妹社群「{{label}}」嗎？從其拉取的活動將不再顯示於您的合併檢視中。",
+    "noPeers": "尚無姊妹社群。",
+    "added": "已新增姊妹社群。",
+    "removed": "已移除姊妹社群。",
     "synced": "同步完成。",
     "saved": "已儲存。",
     "couldNotSave": "無法儲存",
     "rotateModalTitle": "要輪換聯播網權杖嗎？",
-    "rotateModalBody": "此操作會立即使您目前的動態消息 URL 失效。所有讀取您資料的姊妹站台都會停止同步並中斷，直到您將新的 URL 傳送給它們並更新其設定為止。僅在目前的權杖可能已外洩時才執行此操作——此動作無法復原。",
+    "rotateModalBody": "此操作會立即使您目前的動態消息 URL 失效。所有讀取您資料的姊妹社群都會停止同步並中斷，直到您將新的 URL 傳送給它們並更新其設定為止。僅在目前的權杖可能已外洩時才執行此操作——此動作無法復原。",
     "rotateConfirm": "是的，輪換權杖",
     "rotateCancel": "取消",
     "publishPlannedToggle": "發布計畫中的活動",
-    "publishPlannedDescription": "同時分享即將舉行（計畫中）的活動，讓夥伴站台可以查看你的排程。預設為關閉。",
+    "publishPlannedDescription": "同時分享即將舉行（計畫中）的活動，讓夥伴社群可以查看你的排程。預設為關閉。",
     "testFeed": "測試",
     "previewOk": "已連上 {{name}} — 有 {{formattedCount}} 筆活動可供取用。",
     "previewError": "無法連上動態消息來源：{{error}}",
@@ -858,6 +938,24 @@
     "colNextSync": "下次同步",
     "paused": "已暫停",
     "soon": "即將",
-    "statusErrorCount": "錯誤 ×{{count}}"
+    "statusErrorCount": "錯誤 ×{{count}}",
+    "colTagFilter": "篩選標籤",
+    "tagFilterAll": "所有活動",
+    "tagFilterLabel": "僅拉取帶有這些標籤的活動（選填）",
+    "tagFilterDescription": "留空以拉取此姊妹社群的所有活動。新增標籤以僅拉取帶有其中至少一個標籤的活動。",
+    "tagFilterPlaceholder": "例如：nsf-career"
+  },
+  "profileView": {
+    "totalVisits": "造訪",
+    "peopleReached": "觸及人數",
+    "languages": "使用語言",
+    "schools": "就讀學校",
+    "eventsTitle": "活動",
+    "colDate": "日期",
+    "colTitle": "標題",
+    "colVenue": "地點",
+    "colType": "類型",
+    "colPeople": "人數",
+    "noEvents": "尚無活動。"
   }
 }

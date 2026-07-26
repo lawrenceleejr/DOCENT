@@ -10,7 +10,9 @@
     "any": "N'importe lequel",
     "translationDisclaimer": "Cette traduction est générée automatiquement et n'a pas encore été relue par un locuteur natif. Elle peut contenir des erreurs — les volontaires souhaitant nous aider à la relire sont les bienvenus.",
     "filters": "Filtres",
-    "unexpectedError": "Erreur inattendue"
+    "unexpectedError": "Erreur inattendue",
+    "clear": "Effacer",
+    "unsavedConfirm": "Vous avez des modifications non enregistrées. Quitter cette page et les abandonner ?"
   },
   "layout": {
     "home": "Accueil DOCENT",
@@ -25,14 +27,20 @@
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · Logiciel libre sous la",
     "nav": {
       "visits": "Visites",
-      "schedule": "Calendrier",
+      "schedule": "Planificateur",
       "venues": "Lieux",
       "map": "Carte",
       "analysis": "Analyse",
       "reports": "Rapports",
       "admin": "Administration",
       "directory": "Annuaire"
-    }
+    },
+    "completeProfileTitle": "Complétez votre profil",
+    "completeProfileText": "Ajoutez votre affiliation, votre rôle, votre ORCID et les langues dans lesquelles vous intervenez pour que vos collègues puissent vous trouver.",
+    "completeProfileLink": "Accéder à votre profil",
+    "needsReportTitle": "{{count}} visite(s) à compléter",
+    "needsReportText": "Vous avez des événements passés à documenter — commencez par",
+    "needsReportMore": "et {{count}} de plus."
   },
   "authShell": {
     "taglineBold": "Rayonnez.",
@@ -43,7 +51,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · Logiciel libre sous la"
   },
   "login": {
-    "welcomeBack": "Content de vous revoir",
+    "welcome": "Bienvenue",
     "loginToSite": "Connectez-vous à {{siteName}}.",
     "loginToDefault": "Connectez-vous à votre compte DOCENT.",
     "emailLabel": "Courriel",
@@ -60,7 +68,8 @@
     "viewImpactLink": "Consultez notre page d'impact public",
     "noAccountNeededSuffix": "— aucun compte requis.",
     "invalidEmail": "Courriel invalide",
-    "passwordRequired": "Le mot de passe est requis"
+    "passwordRequired": "Le mot de passe est requis",
+    "welcomeBack": "Content de vous revoir"
   },
   "register": {
     "createAccount": "Créez votre compte",
@@ -99,7 +108,7 @@
     "exportCsv": "Exporter en CSV",
     "logVisit": "Consigner une visite",
     "searchLabel": "Rechercher",
-    "searchPlaceholder": "Titre ou notes",
+    "searchPlaceholder": "Titre, personnes ou notes",
     "statusLabel": "Statut",
     "fromLabel": "Du",
     "toLabel": "Au",
@@ -117,15 +126,15 @@
     "colAudience": "Public",
     "colPeopleReached": "Personnes rejointes",
     "colRating": "Évaluation",
-    "overdue": "En retard",
+    "overdue": "Compte rendu à faire",
     "emptyTitle": "Aucune visite trouvée",
     "emptyDescription": "Aucune visite ne correspond à ces filtres pour l'instant. Consignez votre première visite de rayonnement pour commencer.",
     "emptyDescriptionShort": "Aucune visite ne correspond à ces filtres pour l'instant.",
     "reachedSuffix": "rejointes",
     "visitCount_one": "{{formattedCount}} visite",
     "visitCount_other": "{{formattedCount}} visites",
-    "includeSiblings": "Inclure les instances sœurs",
-    "siblingBadge": "D'une instance sœur",
+    "includeSiblings": "Inclure les communautés sœurs",
+    "siblingBadge": "D'une communauté sœur",
     "siblingActivity": "Activité",
     "sourceLabel": "Source"
   },
@@ -205,7 +214,13 @@
       "peopleReachedTooLarge": "Cela semble trop élevé (max {{max}}).",
       "peopleReachedTooLargeTypo": "Cela semble trop élevé (max {{max}}). Vérifiez qu'il n'y a pas d'erreur de frappe.",
       "peopleReachedRequired": "Combien de personnes avez-vous rejointes?"
-    }
+    },
+    "coPresentersLabel": "Co-présentateurs avec un compte",
+    "coPresentersDescription": "Reliez des collègues ayant un compte ici, afin qu'ils soient crédités et que leurs ORCID accompagnent l'activité fédérée.",
+    "coPresentersPlaceholder": "Rechercher des personnes par nom…",
+    "coPresentersNothing": "Aucune personne correspondante",
+    "mapHintText": "Vous pouvez aussi créer un événement depuis la",
+    "mapHintLink": "carte"
   },
   "visitDetail": {
     "markCompleted": "Marquer comme terminée",
@@ -232,7 +247,8 @@
     "fieldEmail": "Courriel",
     "fieldPhone": "Téléphone",
     "fieldHostNotes": "Notes sur l'hôte",
-    "minSuffix": "min"
+    "minSuffix": "min",
+    "fieldCoPresenters": "Co-présentateurs"
   },
   "enums": {
     "venueType": {
@@ -250,6 +266,9 @@
       "classroom_visit": "Visite en classe",
       "science_fair": "Expo-sciences",
       "public_lecture": "Conférence publique",
+      "colloquium": "Colloque",
+      "seminar": "Séminaire",
+      "conference": "Conférence",
       "lab_tour": "Visite de laboratoire",
       "career_day": "Journée carrière",
       "demo_booth": "Kiosque de démonstration",
@@ -312,7 +331,25 @@
     "tableTakenHeader": "Effectuée",
     "tableSizeHeader": "Taille",
     "downloadButton": "Télécharger",
-    "emptyState": "Aucune sauvegarde trouvée pour l'instant. Une sauvegarde s'exécute automatiquement chaque nuit."
+    "emptyState": "Aucune sauvegarde trouvée pour l'instant. Une sauvegarde s'exécute automatiquement chaque nuit.",
+    "restoreButton": "Restaurer",
+    "restoreUploadButton": "Restaurer le fichier importé",
+    "chooseFileButton": "Choisir un fichier .dump",
+    "restoreModalTitle": "Restaurer la base de données",
+    "restoreWarning": "Cela remplace TOUTES les données actuelles par le contenu de la sauvegarde. Toutes les modifications effectuées depuis seront perdues.",
+    "restoreFromBackup": "Restaurer depuis {{path}} ?",
+    "restoreFromUpload": "Restaurer depuis le fichier importé {{name}} ?",
+    "restoreSafetyNote": "Une sauvegarde préalable est effectuée d'abord, ce qui permet d'annuler l'opération.",
+    "typeToConfirm": "Saisissez {{word}} pour confirmer",
+    "confirmRestoreButton": "Restaurer maintenant",
+    "reloadApp": "Recharger l'application",
+    "restoreError": "La restauration n'a pas pu démarrer.",
+    "restoreState": {
+      "queued": "Restauration en file d'attente",
+      "running": "Restauration en cours",
+      "success": "Restauration terminée",
+      "failed": "Échec de la restauration"
+    }
   },
   "dbToolsCard": {
     "title": "Exporter et importer des données",
@@ -482,7 +519,24 @@
     "tempPasswordModalTitle": "Mot de passe temporaire",
     "tempPasswordBody": "Partagez ce mot de passe à usage unique avec <bold>{{name}}</bold> via un canal sécurisé. Cette personne devrait se connecter et le changer depuis son profil. Il n'est affiché qu'une seule fois.",
     "copyButton": "Copier",
-    "copiedButton": "Copié"
+    "copiedButton": "Copié",
+    "loginHistoryTitle": "Historique des connexions",
+    "loginHistorySubtitle": "Connexions réussies au cours des 30 derniers jours.",
+    "loginHistoryTotal": "{{formattedCount}} au total",
+    "loginHistoryChartTitle": "Connexions par jour",
+    "loginHistoryLoginsLabel": "Connexions",
+    "loginHistoryRecentTitle": "Connexions récentes",
+    "loginHistoryColUser": "Utilisateur",
+    "loginHistoryColWhen": "Quand",
+    "loginHistoryEmpty": "Aucune connexion enregistrée pour l’instant.",
+    "radiusLabel": "Rayon de couverture (km)",
+    "bannerMessageLabel": "Bannière sur tout le site",
+    "bannerMessageDescription": "Affichée en haut de chaque page pour les utilisateurs connectés. Laissez vide pour la masquer.",
+    "bannerMessagePlaceholder": "ex. Maintenance planifiée ce samedi, de 21h à 23h.",
+    "bannerLevelLabel": "Niveau de la bannière",
+    "bannerLevelInfo": "Information",
+    "bannerLevelWarning": "Avertissement",
+    "bannerLevelCritical": "Critique"
   },
   "dashboard": {
     "title": "Analyse",
@@ -510,8 +564,8 @@
     "overTimeHeading": "Dans le temps",
     "breakdownsHeading": "Répartitions",
     "leadersHeading": "Palmarès",
-    "visitsPer6Months": "Visites par 6 mois",
-    "peopleReachedPer6Months": "Personnes rejointes par 6 mois",
+    "visitsPer6Months": "Visites au fil du temps",
+    "peopleReachedPer6Months": "Personnes touchées au fil du temps",
     "visitsByVenueType": "Visites par type de lieu",
     "visitsByAudienceLevel": "Visites par niveau de public",
     "visitsByHostRelationship": "Visites par relation avec l'hôte",
@@ -521,9 +575,15 @@
     "communicatorLeaderboard": "Classement des communicateurs",
     "colVenue": "Lieu",
     "colCommunicator": "Communicateur",
-    "includeSiblings": "Inclure les instances sœurs",
+    "includeSiblings": "Inclure les communautés sœurs",
     "localOnlyNote": "Les classements et la répartition par relation avec l'hôte ne comptent que les activités de cette instance.",
-    "federatedCaveat": "Les totaux combinés peuvent compter un communicateur plusieurs fois s'il participe via plusieurs instances sœurs."
+    "federatedCaveat": "Les totaux combinés peuvent compter un communicateur plusieurs fois s'il participe via plusieurs communautés sœurs.",
+    "completedVisits": "Réalisées",
+    "plannedVisits": "Planifiées",
+    "plannedCaption": "Continu : réalisées · Pointillé : planifiées",
+    "peopleSearchLabel": "Rechercher des personnes",
+    "peopleSearchPlaceholder": "Nom du communicant ou de l’hôte",
+    "siblingFilterCaveat": "Les entrées des communautés sœurs comportent des détails limités : l’audience, les étiquettes et les noms des hôtes ne sont pas partagés, de sorte que ces filtres et la recherche de personnes ne s’appliquent que partiellement."
   },
   "impact": {
     "unavailableTitle": "Cette page n'est pas disponible",
@@ -544,21 +604,22 @@
     "recentActivityHeading": "Activité récente",
     "poweredByPrefix": "Propulsé par",
     "poweredBySuffix": "· logiciel libre sous la GNU GPL v3",
-    "includeSiblings": "Inclure les instances sœurs",
-    "includingSiblings": "Les chiffres incluent les activités de nos instances sœurs, qui peuvent se recouper."
+    "includeSiblings": "Inclure les communautés sœurs",
+    "includingSiblings": "Les chiffres incluent les activités de nos communautés sœurs, qui peuvent se recouper."
   },
   "map": {
     "title": "Carte",
-    "gapsPrefix": "Repérer les lacunes de couverture —",
+    "gapsPrefix": "Consultez votre couverture —",
     "institutionsInView_one": "{{formattedCount}} institution visible",
     "institutionsInView_other": "{{formattedCount}} institutions visibles",
     "notYetReached_one": "{{formattedCount}} pas encore rejointe",
     "notYetReached_other": "{{formattedCount}} pas encore rejointes",
     "none": "Aucun",
-    "gapsOnly": "Lacunes seulement",
+    "gapsOnly": "Pas encore visités",
     "reached": "Rejoint",
     "showMyVenues": "Afficher mes lieux",
-    "legendGap": "Lacune",
+    "showOnlyMyVenues": "Afficher uniquement mes lieux",
+    "legendGap": "Pas encore visités",
     "legendReached": "Rejoint",
     "legendVenueNoVisits": "Lieu (aucune visite encore)",
     "popupReached_one": "Rejoint — {{formattedCount}} visite",
@@ -572,11 +633,11 @@
     "unexpectedError": "Erreur inattendue",
     "institutionDataAttribution": "Données des institutions © contributeurs d'OpenStreetMap.",
     "importMoreRegionsPrefix": "Importer davantage de régions avec",
-    "showSiblings": "Activités des instances sœurs",
-    "legendSibling": "Activité d'une instance sœur",
+    "showSiblings": "Activités des communautés sœurs",
+    "legendSibling": "Activité d'une communauté sœur",
     "fromSibling": "De {{name}}",
     "openOnPrimary": "Ouvrir sur l'instance principale",
-    "allSiblings": "Toutes les instances sœurs"
+    "allSiblings": "Toutes les communautés sœurs"
   },
   "profile": {
     "title": "Profil",
@@ -606,7 +667,20 @@
       "nameRequired": "Le nom est requis",
       "currentPasswordRequired": "Requis",
       "passwordMin": "Au moins 8 caractères"
-    }
+    },
+    "orcidLabel": "identifiant ORCID",
+    "orcidDescription": "Reliez votre identité de chercheur. Elle accompagne l'activité fédérée afin que les communautés partenaires créditent les bonnes personnes.",
+    "orcidLinkedPrefix": "Lié :",
+    "affiliationPlaceholder": "Université du Tennessee (facultatif)",
+    "rolesLabel": "Autres rôles",
+    "rolesDescription": "Autres rôles que vous occupez, au sein ou en dehors de votre institution.",
+    "rolesEmpty": "Aucun autre rôle pour le moment.",
+    "roleTitleLabel": "Rôle",
+    "roleTitlePlaceholder": "p. ex. Membre du conseil",
+    "roleOrgLabel": "Organisation",
+    "roleOrgPlaceholder": "p. ex. Musée des sciences de la ville (facultatif)",
+    "addRole": "Ajouter un rôle",
+    "removeRole": "Supprimer le rôle"
   },
   "directory": {
     "title": "Annuaire",
@@ -622,7 +696,8 @@
     "colLanguages": "Langues",
     "noMembersMatch": "Aucun membre ne correspond à ces filtres.",
     "memberCount_one": "{{formattedCount}} membre",
-    "memberCount_other": "{{formattedCount}} membres"
+    "memberCount_other": "{{formattedCount}} membres",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "Rapports",
@@ -659,12 +734,13 @@
     "colPresenter": "Présentateur",
     "colCoverage": "Couverture",
     "emptyState": "Aucune activité ne correspond à ces filtres. Essayez « {{everyone}} » plutôt que « {{myActivities}} », réglez le Statut sur « {{all}} », ou élargissez la période.",
-    "showingFirst": "Affichage des {{limit}} premières activités sur {{total}}. Le téléchargement les inclut toutes."
+    "showingFirst": "Affichage des {{limit}} premières activités sur {{total}}. Le téléchargement les inclut toutes.",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
-    "title": "Calendrier",
+    "title": "Planificateur",
     "subtitle": "Activités planifiées à venir dans toute la communauté. Marquez-en une comme terminée pour consigner l'assistance.",
-    "addToCalendar": "Ajouter au calendrier (.ics)",
+    "addToCalendar": "Exporter les événements vers le calendrier (.ics)",
     "scheduleEvent": "Planifier une activité",
     "fromLabel": "Du",
     "toLabel": "Au",
@@ -679,10 +755,12 @@
     "colVenue": "Lieu",
     "colCommunicator": "Communicateur",
     "colAudience": "Public",
-    "overdue": "En retard",
+    "overdue": "Compte rendu à faire",
     "markDone": "Marquer comme terminée",
     "emptyTitle": "Rien de prévu",
-    "emptyDescription": "Aucune activité planifiée à venir ne correspond à ces filtres. Planifiez-en une et elle apparaîtra ici — prête à exporter vers votre calendrier."
+    "emptyDescription": "Aucune activité planifiée à venir ne correspond à ces filtres. Planifiez-en une et elle apparaîtra ici — prête à exporter vers votre calendrier.",
+    "addToCalendarTooltip": "Exporte les événements affichés ici, selon vos filtres actuels.",
+    "addToCalendarEmpty": "Aucun événement à exporter pour l’instant."
   },
   "venuePicker": {
     "venueLabel": "Lieu",
@@ -711,7 +789,8 @@
     "validation": {
       "nameRequired": "Le nom est requis",
       "typeRequired": "Le type est requis"
-    }
+    },
+    "mapHint": "Vous pouvez aussi choisir un lieu depuis la Carte : ouvrez-la et sélectionnez « Enregistrer une visite ici »."
   },
   "connectionForm": {
     "editTitle": "Modifier le contact",
@@ -754,7 +833,8 @@
     "emptyTitle": "Aucun lieu trouvé",
     "emptyDescription": "Ajoutez une école, un collège, un musée ou une bibliothèque pour commencer à suivre le rayonnement là-bas.",
     "venueCount_one": "{{formattedCount}} lieu",
-    "venueCount_other": "{{formattedCount}} lieux"
+    "venueCount_other": "{{formattedCount}} lieux",
+    "onlyWithEvents": "Uniquement les lieux avec des événements"
   },
   "venueDetail": {
     "mergeSuccess": "Lieux fusionnés",
@@ -805,22 +885,22 @@
   },
   "federationCard": {
     "title": "Fédération",
-    "description": "Partagez le fil d'activité de cette instance avec les instances sœurs, et intégrez leurs activités à vos vues fusionnées.",
+    "description": "Partagez le fil d'activité de cette instance avec les communautés sœurs, et intégrez leurs activités à vos vues fusionnées.",
     "publishSectionTitle": "Publication (le fil de cette instance)",
     "publishToggle": "Publier vers la fédération",
-    "publishToggleDescription": "Diffusez le fil d'activité de cette instance afin que les instances sœurs puissent s'y abonner.",
+    "publishToggleDescription": "Diffusez le fil d'activité de cette instance afin que les communautés sœurs puissent s'y abonner.",
     "feedUrlLabel": "URL de votre fil",
-    "feedUrlHelp": "Transmettez cette URL aux instances sœurs pour qu'elles puissent intégrer vos activités. Elle contient un jeton secret : partagez-la en privé et uniquement via HTTPS.",
+    "feedUrlHelp": "Transmettez cette URL aux communautés sœurs pour qu'elles puissent intégrer vos activités. Elle contient un jeton secret : partagez-la en privé et uniquement via HTTPS.",
     "copy": "Copier",
     "copied": "Copié",
     "rotateToken": "Renouveler le jeton",
-    "tokenRotated": "Jeton du fil renouvelé. Partagez de nouveau la nouvelle URL avec vos instances sœurs.",
-    "setSiteUrlHint": "La publication est activée, mais l'URL de votre fil n'est pas encore absolue. Définissez l'adresse du site de cette instance dans les paramètres d'adresse du site afin que les instances sœurs obtiennent une URL complète et cliquable.",
-    "peersSectionTitle": "Instances sœurs (fils dont nous récupérons les données)",
-    "peersSectionDescription": "Abonnez-vous aux fils des instances sœurs. Leurs activités sont fusionnées dans votre carte et vos statistiques.",
+    "tokenRotated": "Jeton du fil renouvelé. Partagez de nouveau la nouvelle URL avec vos communautés sœurs.",
+    "setSiteUrlHint": "La publication est activée, mais l'URL de votre fil n'est pas encore absolue. Définissez l'adresse du site de cette instance dans les paramètres d'adresse du site afin que les communautés sœurs obtiennent une URL complète et cliquable.",
+    "peersSectionTitle": "Communautés sœurs (fils dont nous récupérons les données)",
+    "peersSectionDescription": "Abonnez-vous aux fils des communautés sœurs. Leurs activités sont fusionnées dans votre carte et vos statistiques.",
     "addPeer": "Ajouter",
     "feedUrlPlaceholder": "https://soeur.exemple.edu/api/federation/activities?token=...",
-    "addFeedUrlLabel": "URL du fil de l'instance sœur",
+    "addFeedUrlLabel": "URL du fil de la communauté sœur",
     "intervalLabel": "Synchroniser toutes les",
     "interval_hour": "Heure",
     "interval_day": "Jour",
@@ -838,19 +918,19 @@
     "syncNow": "Synchroniser maintenant",
     "syncAll": "Tout synchroniser maintenant",
     "remove": "Retirer",
-    "confirmRemove": "Retirer l'instance sœur « {{label}} »? Les activités récupérées auprès d'elle n'apparaîtront plus dans vos vues fusionnées.",
-    "noPeers": "Aucune instance sœur pour l'instant.",
-    "added": "Instance sœur ajoutée.",
-    "removed": "Instance sœur retirée.",
+    "confirmRemove": "Retirer la communauté sœur « {{label}} »? Les activités récupérées auprès d'elle n'apparaîtront plus dans vos vues fusionnées.",
+    "noPeers": "Aucune communauté sœur pour l'instant.",
+    "added": "Communauté sœur ajoutée.",
+    "removed": "Communauté sœur retirée.",
     "synced": "Synchronisation terminée.",
     "saved": "Enregistré.",
     "couldNotSave": "Impossible d'enregistrer",
     "rotateModalTitle": "Renouveler le jeton de fédération?",
-    "rotateModalBody": "Cela invalide immédiatement l'URL de votre fil actuelle. Toutes les instances sœurs qui lisent vos données cesseront de se synchroniser et seront interrompues jusqu'à ce que vous leur envoyiez la nouvelle URL et qu'elles mettent à jour leur configuration. Ne faites cela que si le jeton actuel a pu être exposé : c'est irréversible.",
+    "rotateModalBody": "Cela invalide immédiatement l'URL de votre fil actuelle. Toutes les communautés sœurs qui lisent vos données cesseront de se synchroniser et seront interrompues jusqu'à ce que vous leur envoyiez la nouvelle URL et qu'elles mettent à jour leur configuration. Ne faites cela que si le jeton actuel a pu être exposé : c'est irréversible.",
     "rotateConfirm": "Oui, renouveler le jeton",
     "rotateCancel": "Annuler",
     "publishPlannedToggle": "Publier les événements planifiés",
-    "publishPlannedDescription": "Partager aussi les événements à venir (planifiés) afin que les instances sœurs puissent voir votre calendrier. Désactivé par défaut.",
+    "publishPlannedDescription": "Partager aussi les événements à venir (planifiés) afin que les communautés sœurs puissent voir votre calendrier. Désactivé par défaut.",
     "testFeed": "Tester",
     "previewOk": "Connexion à {{name}} réussie — {{formattedCount}} activités disponibles.",
     "previewError": "Impossible d'accéder au flux : {{error}}",
@@ -858,6 +938,24 @@
     "colNextSync": "Prochaine synchronisation",
     "paused": "En pause",
     "soon": "Bientôt",
-    "statusErrorCount": "Erreur ×{{count}}"
+    "statusErrorCount": "Erreur ×{{count}}",
+    "colTagFilter": "Étiquettes de filtre",
+    "tagFilterAll": "Tous les événements",
+    "tagFilterLabel": "N'importer que les événements ainsi étiquetés (facultatif)",
+    "tagFilterDescription": "Laissez vide pour importer tous les événements de cette communauté sœur. Ajoutez des étiquettes pour n'importer que ceux en portant au moins une.",
+    "tagFilterPlaceholder": "p. ex. nsf-career"
+  },
+  "profileView": {
+    "totalVisits": "Visites",
+    "peopleReached": "Personnes touchées",
+    "languages": "Intervient en",
+    "schools": "Établissements fréquentés",
+    "eventsTitle": "Événements",
+    "colDate": "Date",
+    "colTitle": "Titre",
+    "colVenue": "Lieu",
+    "colType": "Type",
+    "colPeople": "Personnes",
+    "noEvents": "Aucun événement pour l’instant."
   }
 }

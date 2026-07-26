@@ -19,6 +19,10 @@ PUBLIC_PAGE_KEY = "public_page"
 LOGIN_MESSAGE_KEY = "login_message"
 MAP_CENTER_LAT_KEY = "map_center_lat"
 MAP_CENTER_LON_KEY = "map_center_lon"
+MAP_RADIUS_KM_KEY = "map_radius_km"
+BANNER_MESSAGE_KEY = "banner_message"
+BANNER_LEVEL_KEY = "banner_level"
+BANNER_LEVELS = ("info", "warning", "critical")
 USER_DIRECTORY_KEY = "user_directory_visible"
 FEDERATION_PUBLISH_KEY = "federation_publish"
 FEDERATION_PUBLISH_PLANNED_KEY = "federation_publish_planned"
@@ -78,6 +82,22 @@ def effective_map_center_lat(db: Session) -> float:
 def effective_map_center_lon(db: Session) -> float:
     override = get_setting(db, MAP_CENTER_LON_KEY)
     return float(override) if override is not None else get_settings().map_center_lon
+
+
+def effective_map_radius_km(db: Session) -> float:
+    override = get_setting(db, MAP_RADIUS_KM_KEY)
+    return float(override) if override is not None else get_settings().map_radius_km
+
+
+def effective_banner_message(db: Session) -> str:
+    override = get_setting(db, BANNER_MESSAGE_KEY)
+    return override if override is not None else get_settings().banner_message
+
+
+def effective_banner_level(db: Session) -> str:
+    override = get_setting(db, BANNER_LEVEL_KEY)
+    level = override if override is not None else get_settings().banner_level
+    return level if level in BANNER_LEVELS else "info"
 
 
 def user_directory_visible(db: Session) -> bool:

@@ -31,5 +31,8 @@
 ## Versioning
 
 Keep these in step when cutting a release: `backend/app/main.py` (FastAPI
-version), `frontend/package.json`, `APP_VERSION` in
-`frontend/src/components/Layout.tsx`, `CITATION.cff`, and `CHANGELOG.md`.
+version), `frontend/package.json`, `CITATION.cff`, and `CHANGELOG.md` — then
+**tag the release commit** `vX.Y.Z`. The app footer shows the version from git
+(the tag when the commit is tagged, otherwise the short commit hash), injected
+at build time by `frontend/vite.config.ts`, so there's no hardcoded version in
+`Layout.tsx` to bump.

@@ -40,6 +40,9 @@ class EventType(str, enum.Enum):
     classroom_visit = "classroom_visit"
     science_fair = "science_fair"
     public_lecture = "public_lecture"
+    colloquium = "colloquium"
+    seminar = "seminar"
+    conference = "conference"
     lab_tour = "lab_tour"
     career_day = "career_day"
     demo_booth = "demo_booth"
@@ -106,6 +109,9 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255))
     affiliation: Mapped[str | None] = mapped_column(String(255))
     position: Mapped[str | None] = mapped_column(String(255))
+    # ORCID iD, stored in canonical dashed form (0000-0000-0000-0000). Links a
+    # communicator to their researcher identity and travels with federation.
+    orcid: Mapped[str | None] = mapped_column(String(19))
     password_hash: Mapped[str] = mapped_column(String(255))
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -113,6 +119,11 @@ class User(Base):
     # app.languages.LANGUAGE_SET, same central list as Visit.language.
     languages_spoken: Mapped[list[str]] = mapped_column(
         ARRAY(String), nullable=False, server_default=text("'{}'")
+    )
+    # Additional roles the person holds beyond their primary position, inside or
+    # outside their institution (#22). Each entry is {title, organization}.
+    roles: Mapped[list[dict]] = mapped_column(
+        JSONB, nullable=False, server_default=text("'[]'")
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -242,6 +253,11 @@ class Visit(Base):
     reflection: Mapped[str | None] = mapped_column(Text)
     follow_up_planned: Mapped[bool] = mapped_column(Boolean, default=False)
     additional_presenters: Mapped[str | None] = mapped_column(String(500))
+    # Co-presenters who have accounts here — links them (and their ORCIDs) to
+    # the event so those ORCIDs can travel with federation (#9).
+    co_presenter_user_ids: Mapped[list[int]] = mapped_column(
+        ARRAY(Integer), nullable=False, server_default=text("'{}'")
+    )
     # Free-text labels for grouping/filtering (e.g. "nsf-career", "girls-in-stem").
     tags: Mapped[list[str]] = mapped_column(
         ARRAY(String), nullable=False, server_default=text("'{}'")
@@ -354,6 +370,11 @@ class FederationPeer(Base):
         Enum(FederationInterval, name="federation_interval"),
         server_default=FederationInterval.day.value,
     )
+    # Only pull in this sibling's events whose tags overlap this list; empty
+    # means pull everything (#31).
+    tag_filter: Mapped[list[str]] = mapped_column(
+        ARRAY(String), nullable=False, server_default=text("'{}'")
+    )
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
     last_synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_status: Mapped[str | None] = mapped_column(String(16))  # "ok" | "error"
@@ -405,7 +426,17 @@ class FederatedActivity(Base):
     venue_type: Mapped[str | None] = mapped_column(String(50))  # raw enum value
     event_type: Mapped[str | None] = mapped_column(String(50))  # raw enum value
     audience_level: Mapped[str | None] = mapped_column(String(50))  # raw enum value
+    # The source visit's tags, so a subscriber can pull in only a tagged subset
+    # of a sibling's events (#31).
+    tags: Mapped[list[str]] = mapped_column(
+        ARRAY(String), nullable=False, server_default=text("'{}'")
+    )
     person_name: Mapped[str | None] = mapped_column(String(255))
+    # Lead + co-presenters with ORCIDs where known — list of {name, orcid} — so
+    # the receiving instance can link people across communities (#9).
+    contributors: Mapped[list] = mapped_column(
+        JSONB, nullable=False, server_default=text("'[]'::jsonb")
+    )
     people_reached: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     permalink: Mapped[str | None] = mapped_column(Text)
     fetched_at: Mapped[datetime] = mapped_column(
@@ -413,3 +444,22 @@ class FederatedActivity(Base):
     )
 
     peer: Mapped[FederationPeer] = relationship(back_populates="activities")
+
+
+class LoginEvent(Base):
+    """A successful login, recorded for the admin login-history view (#30).
+
+    Deliberately minimal — user + timestamp only, no IP address or user-agent
+    — so it stays a lightweight activity log rather than a tracking record."""
+
+    __tablename__ = "login_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
+
+    user: Mapped["User"] = relationship()

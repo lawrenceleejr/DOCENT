@@ -10,7 +10,9 @@
     "any": "Any",
     "filters": "Filters",
     "translationDisclaimer": "This translation is machine-generated and hasn't been reviewed by a native speaker yet. It may contain errors — volunteers to help review it are very welcome.",
-    "unexpectedError": "Unexpected error"
+    "unexpectedError": "Unexpected error",
+    "clear": "Clear",
+    "unsavedConfirm": "You have unsaved changes. Leave this page and discard them?"
   },
   "layout": {
     "home": "DOCENT home",
@@ -25,14 +27,20 @@
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · Free software under the",
     "nav": {
       "visits": "Visits",
-      "schedule": "Schedule",
+      "schedule": "Scheduler",
       "venues": "Venues",
       "map": "Map",
       "analysis": "Analysis",
       "reports": "Reports",
       "admin": "Admin",
       "directory": "Directory"
-    }
+    },
+    "completeProfileTitle": "Complete your profile",
+    "completeProfileText": "Add your affiliation, role, ORCID, and the languages you present in so colleagues can find you.",
+    "completeProfileLink": "Go to your profile",
+    "needsReportTitle": "{{count}} visit(s) need a report",
+    "needsReportText": "You have past events to write up — start with",
+    "needsReportMore": "and {{count}} more."
   },
   "authShell": {
     "taglineBold": "Reach out.",
@@ -43,7 +51,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · Free software under the"
   },
   "login": {
-    "welcomeBack": "Welcome back",
+    "welcome": "Welcome",
     "loginToSite": "Log in to {{siteName}}.",
     "loginToDefault": "Log in to your DOCENT account.",
     "emailLabel": "Email",
@@ -60,7 +68,8 @@
     "viewImpactLink": "View our public impact page",
     "noAccountNeededSuffix": "— no account needed.",
     "invalidEmail": "Invalid email",
-    "passwordRequired": "Password is required"
+    "passwordRequired": "Password is required",
+    "welcomeBack": "Welcome back"
   },
   "register": {
     "createAccount": "Create your account",
@@ -99,7 +108,7 @@
     "exportCsv": "Export CSV",
     "logVisit": "Log a visit",
     "searchLabel": "Search",
-    "searchPlaceholder": "Title or notes",
+    "searchPlaceholder": "Title, people, or notes",
     "statusLabel": "Status",
     "fromLabel": "From",
     "toLabel": "To",
@@ -117,15 +126,15 @@
     "colAudience": "Audience",
     "colPeopleReached": "People reached",
     "colRating": "Rating",
-    "overdue": "Overdue",
+    "overdue": "Needs report",
     "emptyTitle": "No visits found",
     "emptyDescription": "No visits match these filters yet. Log your first outreach visit to get started.",
     "emptyDescriptionShort": "No visits match these filters yet.",
     "reachedSuffix": "reached",
     "visitCount_one": "{{formattedCount}} visit",
     "visitCount_other": "{{formattedCount}} visits",
-    "includeSiblings": "Include sibling instances",
-    "siblingBadge": "From a sibling instance",
+    "includeSiblings": "Include sibling communities",
+    "siblingBadge": "From a sibling community",
     "siblingActivity": "Activity",
     "sourceLabel": "Source"
   },
@@ -205,7 +214,13 @@
       "peopleReachedTooLarge": "That seems too large (max {{max}}).",
       "peopleReachedTooLargeTypo": "That seems too large (max {{max}}). Check for a typo.",
       "peopleReachedRequired": "How many people did you reach?"
-    }
+    },
+    "coPresentersLabel": "Co-presenters with accounts",
+    "coPresentersDescription": "Link colleagues who have an account here, so they're credited and their ORCIDs travel with federated activity.",
+    "coPresentersPlaceholder": "Search people by name…",
+    "coPresentersNothing": "No matching people",
+    "mapHintText": "You can also start an event from the",
+    "mapHintLink": "map"
   },
   "visitDetail": {
     "markCompleted": "Mark as completed",
@@ -232,7 +247,8 @@
     "fieldEmail": "Email",
     "fieldPhone": "Phone",
     "fieldHostNotes": "Host notes",
-    "minSuffix": "min"
+    "minSuffix": "min",
+    "fieldCoPresenters": "Co-presenters"
   },
   "enums": {
     "venueType": {
@@ -250,6 +266,9 @@
       "classroom_visit": "Classroom Visit",
       "science_fair": "Science Fair",
       "public_lecture": "Public Lecture",
+      "colloquium": "Colloquium",
+      "seminar": "Seminar",
+      "conference": "Conference",
       "lab_tour": "Lab Tour",
       "career_day": "Career Day",
       "demo_booth": "Demo Booth",
@@ -312,7 +331,25 @@
     "tableTakenHeader": "Taken",
     "tableSizeHeader": "Size",
     "downloadButton": "Download",
-    "emptyState": "No backups found yet. One runs automatically each night."
+    "emptyState": "No backups found yet. One runs automatically each night.",
+    "restoreButton": "Restore",
+    "restoreUploadButton": "Restore uploaded file",
+    "chooseFileButton": "Choose .dump file",
+    "restoreModalTitle": "Restore database",
+    "restoreWarning": "This overwrites ALL current data with the backup's contents. Any changes made since that backup will be lost.",
+    "restoreFromBackup": "Restore from {{path}}?",
+    "restoreFromUpload": "Restore from the uploaded file {{name}}?",
+    "restoreSafetyNote": "A fresh pre-restore backup is taken first, so this can be undone.",
+    "typeToConfirm": "Type {{word}} to confirm",
+    "confirmRestoreButton": "Restore now",
+    "reloadApp": "Reload the app",
+    "restoreError": "The restore couldn't be started.",
+    "restoreState": {
+      "queued": "Restore queued",
+      "running": "Restore in progress",
+      "success": "Restore complete",
+      "failed": "Restore failed"
+    }
   },
   "dbToolsCard": {
     "title": "Export & import data",
@@ -482,7 +519,24 @@
     "tempPasswordModalTitle": "Temporary password",
     "tempPasswordBody": "Share this one-time password with <bold>{{name}}</bold> over a secure channel. They should log in and change it from their profile. It is shown only once.",
     "copyButton": "Copy",
-    "copiedButton": "Copied"
+    "copiedButton": "Copied",
+    "loginHistoryTitle": "Login history",
+    "loginHistorySubtitle": "Successful sign-ins over the last 30 days.",
+    "loginHistoryTotal": "{{formattedCount}} total",
+    "loginHistoryChartTitle": "Logins per day",
+    "loginHistoryLoginsLabel": "Logins",
+    "loginHistoryRecentTitle": "Recent logins",
+    "loginHistoryColUser": "User",
+    "loginHistoryColWhen": "When",
+    "loginHistoryEmpty": "No logins recorded yet.",
+    "radiusLabel": "Coverage radius (km)",
+    "bannerMessageLabel": "Site-wide banner",
+    "bannerMessageDescription": "Shown at the top of every page for signed-in users. Leave blank to hide.",
+    "bannerMessagePlaceholder": "e.g. Scheduled maintenance this Saturday, 9–11pm.",
+    "bannerLevelLabel": "Banner severity",
+    "bannerLevelInfo": "Info",
+    "bannerLevelWarning": "Warning",
+    "bannerLevelCritical": "Critical"
   },
   "dashboard": {
     "title": "Analysis",
@@ -510,8 +564,8 @@
     "overTimeHeading": "Over time",
     "breakdownsHeading": "Breakdowns",
     "leadersHeading": "Leaders",
-    "visitsPer6Months": "Visits per 6 months",
-    "peopleReachedPer6Months": "People reached per 6 months",
+    "visitsPer6Months": "Visits over time",
+    "peopleReachedPer6Months": "People reached over time",
     "visitsByVenueType": "Visits by venue type",
     "visitsByAudienceLevel": "Visits by audience level",
     "visitsByHostRelationship": "Visits by host relationship",
@@ -521,9 +575,15 @@
     "communicatorLeaderboard": "Communicator leaderboard",
     "colVenue": "Venue",
     "colCommunicator": "Communicator",
-    "includeSiblings": "Include sibling instances",
+    "includeSiblings": "Include sibling communities",
     "localOnlyNote": "Leaderboards and the host-relationship breakdown count this instance's activities only.",
-    "federatedCaveat": "Combined totals may count a communicator more than once if they take part through multiple sibling instances."
+    "federatedCaveat": "Combined totals may count a communicator more than once if they take part through multiple sibling communities.",
+    "completedVisits": "Completed",
+    "plannedVisits": "Scheduled",
+    "plannedCaption": "Solid: recorded · Dashed: scheduled",
+    "peopleSearchLabel": "Search people",
+    "peopleSearchPlaceholder": "Communicator or host name",
+    "siblingFilterCaveat": "Sibling-community entries carry limited detail — audience, tags, and host names aren’t shared, so those filters and the people search only partly apply to them."
   },
   "impact": {
     "unavailableTitle": "This page isn’t available",
@@ -544,21 +604,22 @@
     "recentActivityHeading": "Recent activity",
     "poweredByPrefix": "Powered by",
     "poweredBySuffix": "· free software under the GNU GPL v3",
-    "includeSiblings": "Include sibling instances",
-    "includingSiblings": "Numbers include activities across our sibling instances, which may overlap."
+    "includeSiblings": "Include sibling communities",
+    "includingSiblings": "Numbers include activities across our sibling communities, which may overlap."
   },
   "map": {
     "title": "Map",
-    "gapsPrefix": "Spot coverage gaps —",
+    "gapsPrefix": "See your coverage —",
     "institutionsInView_one": "{{formattedCount}} institution in view",
     "institutionsInView_other": "{{formattedCount}} institutions in view",
     "notYetReached_one": "{{formattedCount}} not yet reached",
     "notYetReached_other": "{{formattedCount}} not yet reached",
     "none": "None",
-    "gapsOnly": "Gaps only",
+    "gapsOnly": "Not yet visited",
     "reached": "Reached",
     "showMyVenues": "Show my venues",
-    "legendGap": "Gap",
+    "showOnlyMyVenues": "Show only my venues",
+    "legendGap": "Not yet visited",
     "legendReached": "Reached",
     "legendVenueNoVisits": "Venue (no visits yet)",
     "popupReached_one": "Reached — {{formattedCount}} visit",
@@ -572,11 +633,11 @@
     "unexpectedError": "Unexpected error",
     "institutionDataAttribution": "Institution data © OpenStreetMap contributors.",
     "importMoreRegionsPrefix": "Import more regions with",
-    "showSiblings": "Sibling activities",
-    "legendSibling": "Sibling activity",
+    "showSiblings": "Sibling community activities",
+    "legendSibling": "Sibling community activity",
     "fromSibling": "From {{name}}",
     "openOnPrimary": "Open on the primary instance",
-    "allSiblings": "All siblings"
+    "allSiblings": "All sibling communities"
   },
   "profile": {
     "title": "Profile",
@@ -606,7 +667,20 @@
       "nameRequired": "Name is required",
       "currentPasswordRequired": "Required",
       "passwordMin": "At least 8 characters"
-    }
+    },
+    "orcidLabel": "ORCID iD",
+    "orcidDescription": "Link your researcher identity. It travels with federated activity so partner communities can credit the right people.",
+    "orcidLinkedPrefix": "Linked:",
+    "affiliationPlaceholder": "University of Tennessee (optional)",
+    "rolesLabel": "Other roles",
+    "rolesDescription": "Other roles you hold, inside or outside your institution.",
+    "rolesEmpty": "No additional roles yet.",
+    "roleTitleLabel": "Role",
+    "roleTitlePlaceholder": "e.g. Board member",
+    "roleOrgLabel": "Organization",
+    "roleOrgPlaceholder": "e.g. City Science Museum (optional)",
+    "addRole": "Add role",
+    "removeRole": "Remove role"
   },
   "directory": {
     "title": "Directory",
@@ -622,7 +696,8 @@
     "colLanguages": "Languages",
     "noMembersMatch": "No members match these filters.",
     "memberCount_one": "{{formattedCount}} member",
-    "memberCount_other": "{{formattedCount}} members"
+    "memberCount_other": "{{formattedCount}} members",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "Reports",
@@ -659,12 +734,13 @@
     "colPresenter": "Presenter",
     "colCoverage": "Coverage",
     "emptyState": "No activities match these filters. Try “{{everyone}}” instead of “{{myActivities}}”, set Status to “{{all}}”, or widen the date range.",
-    "showingFirst": "Showing the first {{limit}} of {{total}} activities. The download includes all of them."
+    "showingFirst": "Showing the first {{limit}} of {{total}} activities. The download includes all of them.",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
-    "title": "Schedule",
+    "title": "Scheduler",
     "subtitle": "Upcoming planned events across the community. Mark one done to record attendance.",
-    "addToCalendar": "Add to calendar (.ics)",
+    "addToCalendar": "Export Events to Calendar (.ics)",
     "scheduleEvent": "Schedule an event",
     "fromLabel": "From",
     "toLabel": "To",
@@ -679,10 +755,12 @@
     "colVenue": "Venue",
     "colCommunicator": "Communicator",
     "colAudience": "Audience",
-    "overdue": "Overdue",
+    "overdue": "Needs report",
     "markDone": "Mark done",
     "emptyTitle": "Nothing scheduled",
-    "emptyDescription": "No upcoming planned events match these filters. Schedule one and it will appear here — ready to export to your calendar."
+    "emptyDescription": "No upcoming planned events match these filters. Schedule one and it will appear here — ready to export to your calendar.",
+    "addToCalendarTooltip": "Exports the events shown here, matching your current filters.",
+    "addToCalendarEmpty": "No events to export yet."
   },
   "venuePicker": {
     "venueLabel": "Venue",
@@ -711,7 +789,8 @@
     "validation": {
       "nameRequired": "Name is required",
       "typeRequired": "Type is required"
-    }
+    },
+    "mapHint": "You can also pick a venue from the Map — open it and choose “Log a visit here.”"
   },
   "connectionForm": {
     "editTitle": "Edit connection",
@@ -754,7 +833,8 @@
     "emptyTitle": "No venues found",
     "emptyDescription": "Add a school, college, museum, or library to start tracking outreach there.",
     "venueCount_one": "{{formattedCount}} venue",
-    "venueCount_other": "{{formattedCount}} venues"
+    "venueCount_other": "{{formattedCount}} venues",
+    "onlyWithEvents": "Only venues with events"
   },
   "venueDetail": {
     "mergeSuccess": "Venues merged",
@@ -805,22 +885,22 @@
   },
   "federationCard": {
     "title": "Federation",
-    "description": "Share this instance's activity feed with sibling instances, and pull their activities into your merged views.",
+    "description": "Share this instance's activity feed with sibling communities, and pull their activities into your merged views.",
     "publishSectionTitle": "Publishing (this instance's feed)",
     "publishToggle": "Publish to federation",
-    "publishToggleDescription": "Serve this instance's activity feed so sibling instances can subscribe to it.",
+    "publishToggleDescription": "Serve this instance's activity feed so sibling communities can subscribe to it.",
     "feedUrlLabel": "Your feed URL",
-    "feedUrlHelp": "Hand this URL to sibling instances so they can pull your activities. It contains a secret token, so share it privately and only over HTTPS.",
+    "feedUrlHelp": "Hand this URL to sibling communities so they can pull your activities. It contains a secret token, so share it privately and only over HTTPS.",
     "copy": "Copy",
     "copied": "Copied",
     "rotateToken": "Rotate token",
-    "tokenRotated": "Feed token rotated. Re-share the new URL with your siblings.",
-    "setSiteUrlHint": "Publishing is on, but your feed URL isn't absolute yet. Set this instance's Site URL in the site-address settings so siblings get a complete, linkable URL.",
-    "peersSectionTitle": "Sibling instances (feeds we pull from)",
-    "peersSectionDescription": "Subscribe to sibling instances' feeds. Their activities are merged into your map and stats.",
+    "tokenRotated": "Feed token rotated. Re-share the new URL with your sibling communities.",
+    "setSiteUrlHint": "Publishing is on, but your feed URL isn't absolute yet. Set this instance's Site URL in the site-address settings so sibling communities get a complete, linkable URL.",
+    "peersSectionTitle": "Sibling communities (feeds we pull from)",
+    "peersSectionDescription": "Subscribe to sibling communities' feeds. Their activities are merged into your map and stats.",
     "addPeer": "Add",
     "feedUrlPlaceholder": "https://sibling.example.edu/api/federation/activities?token=...",
-    "addFeedUrlLabel": "Sibling feed URL",
+    "addFeedUrlLabel": "Sibling community feed URL",
     "intervalLabel": "Sync every",
     "interval_hour": "Hour",
     "interval_day": "Day",
@@ -838,19 +918,19 @@
     "syncNow": "Sync now",
     "syncAll": "Sync all now",
     "remove": "Remove",
-    "confirmRemove": "Remove sibling instance \"{{label}}\"? Activities pulled from it will no longer appear in your merged views.",
-    "noPeers": "No sibling instances yet.",
-    "added": "Sibling instance added.",
-    "removed": "Sibling instance removed.",
+    "confirmRemove": "Remove sibling community \"{{label}}\"? Activities pulled from it will no longer appear in your merged views.",
+    "noPeers": "No sibling communities yet.",
+    "added": "Sibling community added.",
+    "removed": "Sibling community removed.",
     "synced": "Sync complete.",
     "saved": "Saved.",
     "couldNotSave": "Could not save",
     "rotateModalTitle": "Rotate the federation token?",
-    "rotateModalBody": "This immediately invalidates your current feed URL. Every sibling instance that reads your data will stop syncing and break until you send them the new URL and they update their setup. Only do this if the current token may have been exposed — it can't be undone.",
+    "rotateModalBody": "This immediately invalidates your current feed URL. Every sibling community that reads your data will stop syncing and break until you send them the new URL and they update their setup. Only do this if the current token may have been exposed — it can't be undone.",
     "rotateConfirm": "Yes, rotate the token",
     "rotateCancel": "Cancel",
     "publishPlannedToggle": "Publish planned events",
-    "publishPlannedDescription": "Also share upcoming (planned) events, so siblings can see your schedule. Off by default.",
+    "publishPlannedDescription": "Also share upcoming (planned) events, so sibling communities can see your schedule. Off by default.",
     "testFeed": "Test",
     "previewOk": "Reached {{name}} — {{formattedCount}} activities available.",
     "previewError": "Could not reach feed: {{error}}",
@@ -858,6 +938,24 @@
     "colNextSync": "Next sync",
     "paused": "Paused",
     "soon": "Soon",
-    "statusErrorCount": "Error ×{{count}}"
+    "statusErrorCount": "Error ×{{count}}",
+    "colTagFilter": "Filter tags",
+    "tagFilterAll": "All events",
+    "tagFilterLabel": "Only pull events tagged (optional)",
+    "tagFilterDescription": "Leave empty to pull all of this sibling's events. Add tags to pull only events carrying at least one of them.",
+    "tagFilterPlaceholder": "e.g. nsf-career"
+  },
+  "profileView": {
+    "totalVisits": "Visits",
+    "peopleReached": "People reached",
+    "languages": "Presents in",
+    "schools": "Schools attended",
+    "eventsTitle": "Events",
+    "colDate": "Date",
+    "colTitle": "Title",
+    "colVenue": "Venue",
+    "colType": "Type",
+    "colPeople": "People",
+    "noEvents": "No events yet."
   }
 }

@@ -1,7 +1,7 @@
 from enum import Enum
 
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from app.deps import CurrentUser, DbSession
 from app.models import (
@@ -10,6 +10,7 @@ from app.models import (
     Institution,
     InstitutionType,
     Venue,
+    VenueType,
     Visit,
     VisitStatus,
 )
@@ -17,6 +18,7 @@ from app.schemas import (
     FederatedMapPoint,
     InstitutionDetail,
     InstitutionPoint,
+    MapExtent,
     VenuePoint,
 )
 
@@ -29,6 +31,22 @@ class CoverageStatus(str, Enum):
     all = "all"
     covered = "covered"
     gap = "gap"
+
+
+# Venue types are finer-grained than institution types; collapse each venue
+# type down to the institution type the map's type filter speaks in, so the
+# venue layer honors the same type checkboxes as the institution layer (#21).
+_VENUE_TYPE_TO_INSTITUTION_TYPE = {
+    VenueType.elementary_school: InstitutionType.school,
+    VenueType.middle_school: InstitutionType.school,
+    VenueType.high_school: InstitutionType.school,
+    VenueType.community_college: InstitutionType.college,
+    VenueType.university: InstitutionType.university,
+    VenueType.museum: InstitutionType.museum,
+    VenueType.library: InstitutionType.library,
+    VenueType.community_center: InstitutionType.other,
+    VenueType.other: InstitutionType.other,
+}
 
 
 def _bbox(query, column_lat, column_lon, south, north, west, east):
@@ -95,11 +113,14 @@ def map_institutions(
 @router.get("/map/venues", response_model=list[VenuePoint])
 def map_venues(
     db: DbSession,
-    _user: CurrentUser,
+    user: CurrentUser,
     south: float | None = None,
     north: float | None = None,
     west: float | None = None,
     east: float | None = None,
+    types: str | None = Query(default=None, description="comma-separated institution types"),
+    status: CoverageStatus = CoverageStatus.all,
+    mine: bool = False,
 ):
     # Completed-visit count for the popup, and "visited" = has any visit that has
     # already happened (date today-or-earlier, any status). The latter drives the
@@ -107,9 +128,8 @@ def map_venues(
     visit_count = func.count(Visit.id).filter(Visit.status == VisitStatus.completed).label(
         "visit_count"
     )
-    visited = func.coalesce(
-        func.bool_or(Visit.visit_date <= func.current_date()), False
-    ).label("visited")
+    visited_expr = func.coalesce(func.bool_or(Visit.visit_date <= func.current_date()), False)
+    visited = visited_expr.label("visited")
     query = (
         select(Venue, visit_count, visited)
         .outerjoin(Visit, Visit.venue_id == Venue.id)
@@ -118,6 +138,31 @@ def map_venues(
         .limit(MAX_POINTS)
     )
     query = _bbox(query, Venue.latitude, Venue.longitude, south, north, west, east)
+
+    if mine:
+        # "Show my venues" = venues I added or have a visit at (issue #21). It
+        # is an explicit opt-in filter, no longer showing everyone's venues.
+        my_visit_venues = select(Visit.venue_id).where(Visit.author_id == user.id)
+        query = query.where(
+            or_(Venue.created_by_id == user.id, Venue.id.in_(my_visit_venues))
+        )
+
+    if types:
+        valid = {e.value for e in InstitutionType}
+        wanted = {InstitutionType(t.strip()) for t in types.split(",") if t.strip() in valid}
+        if wanted:
+            venue_types = [
+                vt for vt, it in _VENUE_TYPE_TO_INSTITUTION_TYPE.items() if it in wanted
+            ]
+            query = query.where(Venue.venue_type.in_(venue_types))
+
+    # The map's all/reached/not-yet-visited control constrains this layer too, so
+    # the filters aren't silently ignored on venues (issue #21).
+    if status is CoverageStatus.covered:
+        query = query.having(visited_expr)
+    elif status is CoverageStatus.gap:
+        query = query.having(~visited_expr)
+
     rows = db.execute(query).all()
     return [
         VenuePoint(
@@ -133,6 +178,26 @@ def map_venues(
         )
         for venue, count, visited_flag in rows
     ]
+
+
+@router.get("/map/extent", response_model=MapExtent)
+def map_extent(db: DbSession, _user: CurrentUser):
+    """Bounding box of every venue that has at least one visit (completed or
+    planned), so the map can open framed on the actual activity instead of a
+    fixed radius (#18). Returns has_data=False when there's nothing to frame."""
+    south, north, west, east = db.execute(
+        select(
+            func.min(Venue.latitude),
+            func.max(Venue.latitude),
+            func.min(Venue.longitude),
+            func.max(Venue.longitude),
+        )
+        .where(Venue.latitude.isnot(None), Venue.longitude.isnot(None))
+        .where(Venue.id.in_(select(Visit.venue_id)))
+    ).one()
+    if south is None:
+        return MapExtent(has_data=False)
+    return MapExtent(has_data=True, south=south, north=north, west=west, east=east)
 
 
 @router.get("/map/federated", response_model=list[FederatedMapPoint])

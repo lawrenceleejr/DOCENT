@@ -17,6 +17,21 @@ from app.schemas import (
 )
 
 
+def _can_manage_venue(venue: Venue, user, db) -> bool:
+    """Who may edit or delete a venue (issue #19): its creator, an admin, or
+    anyone who has a visit there — past or a future scheduled one."""
+    if user.is_admin or venue.created_by_id == user.id:
+        return True
+    return (
+        db.scalar(
+            select(Visit.id)
+            .where(Visit.venue_id == venue.id, Visit.author_id == user.id)
+            .limit(1)
+        )
+        is not None
+    )
+
+
 def _venue_detail(venue: Venue, db) -> VenueDetail:
     visit_count, last_visit_date = db.execute(
         select(func.count(Visit.id), func.max(Visit.visit_date)).where(
@@ -38,6 +53,7 @@ def list_venues(
     _user: CurrentUser,
     q: str | None = None,
     venue_type: VenueType | None = None,
+    has_visits: bool = False,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=50, ge=1, le=100),
 ):
@@ -47,6 +63,9 @@ def list_venues(
         filters.append(or_(Venue.name.ilike(pattern), Venue.city.ilike(pattern)))
     if venue_type:
         filters.append(Venue.venue_type == venue_type)
+    if has_visits:
+        # "Only venues with events" — venues that have at least one visit (#12).
+        filters.append(Venue.id.in_(select(Visit.venue_id)))
 
     total = db.scalar(select(func.count()).select_from(Venue).where(*filters)) or 0
     visit_count = func.count(Visit.id).label("visit_count")
@@ -158,10 +177,10 @@ def update_venue(venue_id: int, body: VenueUpdate, user: CurrentUser, db: DbSess
     venue = db.get(Venue, venue_id)
     if not venue:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venue not found")
-    if venue.created_by_id != user.id and not user.is_admin:
+    if not _can_manage_venue(venue, user, db):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only the venue creator or an admin can edit a venue",
+            detail="Only the venue creator, someone who has visited it, or an admin can edit a venue",
         )
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(venue, field, value)
@@ -182,10 +201,10 @@ def delete_venue(venue_id: int, user: CurrentUser, db: DbSession):
     venue = db.get(Venue, venue_id)
     if not venue:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venue not found")
-    if venue.created_by_id != user.id and not user.is_admin:
+    if not _can_manage_venue(venue, user, db):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only the venue creator or an admin can delete a venue",
+            detail="Only the venue creator, someone who has visited it, or an admin can delete a venue",
         )
     visit_count = db.scalar(
         select(func.count(Visit.id)).where(Visit.venue_id == venue_id)

@@ -29,6 +29,18 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // "Welcome back" only if there's client-side evidence of a prior visit;
+  // brand-new visitors get a plain "Welcome" (#4). Best-effort; storage may
+  // be unavailable (private mode), in which case we default to first-time.
+  const [returning] = useState(() => {
+    try {
+      const seen = localStorage.getItem('docent_visited') === '1';
+      localStorage.setItem('docent_visited', '1');
+      return seen;
+    } catch {
+      return false;
+    }
+  });
 
   const { data: config } = useQuery({
     queryKey: ['auth', 'config'],
@@ -67,7 +79,7 @@ export function LoginPage() {
               <Logo size={30} />
             </Box>
             <Title order={2} mt="xs">
-              {t('login.welcomeBack')}
+              {returning ? t('login.welcomeBack') : t('login.welcome')}
             </Title>
             <Text c="dimmed" size="sm">
               {config?.site_name

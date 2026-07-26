@@ -26,6 +26,24 @@ def normalize_tags(tags: list[str] | None) -> list[str]:
     return out[:MAX_TAGS]
 
 
+def normalize_orcid(value: str | None) -> str | None:
+    """Validate an ORCID iD and return it in canonical dashed form, or None if
+    blank. Accepts a bare 16-char id, a dashed id, or a full orcid.org URL."""
+    if value is None:
+        return None
+    s = value.strip()
+    if not s:
+        return None
+    for prefix in ("https://orcid.org/", "http://orcid.org/", "orcid.org/"):
+        if s.lower().startswith(prefix):
+            s = s[len(prefix):]
+            break
+    compact = s.replace("-", "").upper()
+    if not re.fullmatch(r"\d{15}[\dX]", compact):
+        raise ValueError("Invalid ORCID iD (expected 0000-0000-0000-0000)")
+    return f"{compact[0:4]}-{compact[4:8]}-{compact[8:12]}-{compact[12:16]}"
+
+
 class VisitLink(BaseModel):
     """An external link documenting coverage of a visit (press, social, …)."""
 
@@ -140,7 +158,47 @@ class AuthConfig(BaseModel):
     login_message: str | None
     map_center_lat: float
     map_center_lon: float
+    map_radius_km: float
+    banner_message: str | None
+    banner_level: str
     user_directory_visible: bool
+    # True when at least one enabled federation peer exists, so the UI can hide
+    # the "sibling instances" controls entirely on stand-alone instances (#6).
+    has_siblings: bool
+
+
+class LoginHistoryEntry(BaseModel):
+    """One successful login, for the admin login-history view (#30)."""
+
+    id: int
+    user_id: int
+    user_name: str
+    user_email: str
+    created_at: datetime
+
+
+class LoginHistoryDay(BaseModel):
+    """Per-day login totals for the login-history plot (zero-filled)."""
+
+    date: str
+    logins: int
+    active_users: int
+
+
+class LoginHistory(BaseModel):
+    total: int
+    recent: list[LoginHistoryEntry]
+    daily: list[LoginHistoryDay]
+
+
+class UserRole(BaseModel):
+    """One additional role a communicator holds, inside or outside their primary
+    institution (#22). The primary position/affiliation stay the headline role."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    title: str = Field(min_length=1, max_length=120)
+    organization: str | None = Field(default=None, max_length=255)
 
 
 class UserOut(BaseModel):
@@ -151,9 +209,11 @@ class UserOut(BaseModel):
     name: str
     affiliation: str | None
     position: str | None
+    orcid: str | None
     is_admin: bool
     is_active: bool
     languages_spoken: list[str]
+    roles: list[UserRole] = []
     created_at: datetime
 
 
@@ -164,11 +224,24 @@ class UserBrief(BaseModel):
     name: str
 
 
+class ContributorUser(BaseModel):
+    """A co-presenter resolved to their local account, for the visit form and
+    detail view (carries their ORCID so it can render as a link)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    orcid: str | None
+
+
 class UserUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     affiliation: str | None = Field(default=None, max_length=255)
     position: str | None = Field(default=None, max_length=255)
+    orcid: str | None = Field(default=None, max_length=64)
     languages_spoken: list[str] | None = None
+    roles: list[UserRole] | None = None
     current_password: str | None = None
     new_password: str | None = Field(default=None, min_length=8, max_length=128)
 
@@ -176,6 +249,25 @@ class UserUpdate(BaseModel):
     @classmethod
     def _clean_languages_spoken(cls, v: list[str] | None) -> list[str] | None:
         return None if v is None else clean_languages(v)
+
+    @field_validator("roles")
+    @classmethod
+    def _clean_roles(cls, v: list[UserRole] | None) -> list[UserRole] | None:
+        if v is None:
+            return None
+        cleaned: list[UserRole] = []
+        for role in v:
+            title = role.title.strip()
+            if not title:
+                continue  # drop blank rows the editor may submit
+            org = (role.organization or "").strip() or None
+            cleaned.append(UserRole(title=title, organization=org))
+        return cleaned[:25]  # a sane cap; nobody holds 25 roles
+
+    @field_validator("orcid")
+    @classmethod
+    def _clean_orcid(cls, v: str | None) -> str | None:
+        return normalize_orcid(v)
 
 
 class AdminUserUpdate(BaseModel):
@@ -256,6 +348,16 @@ class BackupList(BaseModel):
     last_backup_at: datetime | None
 
 
+class RestoreStatus(BaseModel):
+    """Progress of a database restore performed by the backup sidecar (#29)."""
+
+    # idle | queued | running | success | failed
+    state: str
+    detail: str | None = None
+    backup: str | None = None
+    at: datetime | None = None
+
+
 class DbImportResult(BaseModel):
     users_created: int
     institutions_created: int
@@ -273,6 +375,9 @@ class RegistrationSettings(BaseModel):
     login_message: str
     map_center_lat: float
     map_center_lon: float
+    map_radius_km: float
+    banner_message: str
+    banner_level: str
     user_directory_visible: bool
     # Federation publishing: whether this instance serves its activities feed,
     # whether it also shares planned (upcoming) events, and the full feed URL
@@ -291,6 +396,9 @@ class RegistrationSettingsUpdate(BaseModel):
     login_message: str | None = Field(default=None, max_length=2000)
     map_center_lat: float | None = Field(default=None, ge=-90, le=90)
     map_center_lon: float | None = Field(default=None, ge=-180, le=180)
+    map_radius_km: float | None = Field(default=None, gt=0, le=20000)
+    banner_message: str | None = Field(default=None, max_length=2000)
+    banner_level: Literal["info", "warning", "critical"] | None = None
     user_directory_visible: bool | None = None
     federation_publish: bool | None = None
     federation_publish_planned: bool | None = None
@@ -404,8 +512,41 @@ class DirectoryUserOut(BaseModel):
     name: str
     affiliation: str | None
     position: str | None
+    orcid: str | None
     languages_spoken: list[str]
+    roles: list[UserRole] = []
     schools: list[VenueBrief]
+
+
+class ProfileVisit(BaseModel):
+    """A member profile's visit row — factual fields only, never the private
+    ones (host contact/notes, reflection, rating)."""
+
+    id: int
+    visit_date: date
+    status: VisitStatus
+    title: str
+    event_type: EventType
+    audience_level: AudienceLevel | None
+    venue_name: str
+    venue_city: str | None
+    people_reached: int
+
+
+class UserProfileOut(BaseModel):
+    """Another member's viewable profile (#16): public details + their events."""
+
+    id: int
+    name: str
+    affiliation: str | None
+    position: str | None
+    orcid: str | None
+    languages_spoken: list[str]
+    roles: list[UserRole] = []
+    schools: list[VenueBrief]
+    total_visits: int
+    total_people_reached: int
+    visits: list[ProfileVisit]
 
 
 class DirectoryUserList(BaseModel):
@@ -518,6 +659,7 @@ class VisitCreate(BaseModel):
     reflection: str | None = None
     follow_up_planned: bool = False
     additional_presenters: str | None = Field(default=None, max_length=500)
+    co_presenter_user_ids: list[int] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
     links: list[VisitLink] = Field(default_factory=list)
 
@@ -560,6 +702,7 @@ class VisitUpdate(BaseModel):
     reflection: str | None = None
     follow_up_planned: bool | None = None
     additional_presenters: str | None = Field(default=None, max_length=500)
+    co_presenter_user_ids: list[int] | None = None
     tags: list[str] | None = None
     links: list[VisitLink] | None = None
 
@@ -606,6 +749,7 @@ class VisitOut(BaseModel):
     reflection: str | None
     follow_up_planned: bool
     additional_presenters: str | None
+    co_presenters: list[ContributorUser] = Field(default_factory=list)
     tags: list[str]
     links: list[VisitLink]
     created_at: datetime
@@ -665,6 +809,9 @@ class TimeseriesPoint(BaseModel):
     period: str
     visits: int
     people_reached: int
+    # Scheduled (not-yet-completed) visits in this bucket — drawn as a separate
+    # dotted series in the analysis plots (#28).
+    planned_visits: int = 0
 
 
 class BreakdownRow(BaseModel):
@@ -695,6 +842,9 @@ class PublicActivity(BaseModel):
 
 class PublicImpact(BaseModel):
     site_name: str | None
+    # Whether this instance pulls from any sibling community, so the public page
+    # only shows the sibling toggle when it does (#25).
+    has_siblings: bool = False
     total_visits: int
     total_people_reached: int
     distinct_venues: int
@@ -754,6 +904,14 @@ class VenuePoint(BaseModel):
 
 # --- Federation ---
 
+class Contributor(BaseModel):
+    """A person involved in an activity — the lead or a co-presenter — with
+    their ORCID where known, so a receiving community can link people (#9)."""
+
+    name: str
+    orcid: str | None = None
+
+
 class FederatedActivityOut(BaseModel):
     """A single limited-field activity in the feed this instance publishes to
     siblings. Never carries private fields (description, reflection, rating,
@@ -771,6 +929,11 @@ class FederatedActivityOut(BaseModel):
     event_type: str | None  # raw enum value
     audience_level: str | None  # raw enum value
     person_name: str | None
+    # Lead + co-presenters with ORCIDs where known (person_name stays for
+    # backward compatibility with older consumers).
+    contributors: list[Contributor] = Field(default_factory=list)
+    # The activity's tags, so subscribers can pull in only a tagged subset (#31).
+    tags: list[str] = Field(default_factory=list)
     people_reached: int
     permalink: str | None
 
@@ -799,6 +962,7 @@ class FederationPeerOut(BaseModel):
     last_error: str | None
     consecutive_failures: int
     activity_count: int
+    tag_filter: list[str] = []
     created_at: datetime
 
 
@@ -815,12 +979,38 @@ class FederationPeerPreview(BaseModel):
 class FederationPeerCreate(BaseModel):
     feed_url: str = Field(min_length=1, max_length=2000)
     interval: FederationInterval = FederationInterval.day
+    # Only pull this sibling's events whose tags overlap this list (#31);
+    # empty pulls everything.
+    tag_filter: list[str] = []
+
+    @field_validator("tag_filter")
+    @classmethod
+    def _clean_tag_filter(cls, v: list[str]) -> list[str]:
+        return normalize_tags(v)
 
 
 class FederationPeerUpdate(BaseModel):
     label: str | None = Field(default=None, max_length=255)
     interval: FederationInterval | None = None
     enabled: bool | None = None
+    tag_filter: list[str] | None = None
+
+    @field_validator("tag_filter")
+    @classmethod
+    def _clean_tag_filter(cls, v: list[str] | None) -> list[str] | None:
+        return None if v is None else normalize_tags(v)
+
+
+class MapExtent(BaseModel):
+    """Bounding box of venues that have any visit (completed or planned), so the
+    map opens framed to cover the actual activity rather than a fixed radius
+    (#18). has_data is False on a fresh instance with nothing to frame."""
+
+    has_data: bool
+    south: float | None = None
+    north: float | None = None
+    west: float | None = None
+    east: float | None = None
 
 
 class FederatedMapPoint(BaseModel):

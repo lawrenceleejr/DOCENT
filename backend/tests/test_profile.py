@@ -189,3 +189,101 @@ def test_user_merge_reassigns_schools_dedupes_collision(client, make_client):
 
     schools = {s["venue"]["id"] for s in client.get("/api/users/me/schools").json()}
     assert schools == {venue_a["id"], venue_b["id"]}
+
+
+def test_profile_orcid_normalize_validate_and_clear(client):
+    register(client, email="ada@example.com", name="Ada")
+
+    # A full orcid.org URL is accepted and normalized to the dashed id.
+    r = client.patch("/api/users/me", json={"orcid": "https://orcid.org/0000000218250097"})
+    assert r.status_code == 200, r.text
+    assert r.json()["orcid"] == "0000-0002-1825-0097"
+    assert client.get("/api/auth/me").json()["orcid"] == "0000-0002-1825-0097"
+
+    # A bare dashed id with a trailing checksum X is accepted.
+    r = client.patch("/api/users/me", json={"orcid": "0000-0002-1825-009X"})
+    assert r.status_code == 200
+    assert r.json()["orcid"] == "0000-0002-1825-009X"
+
+    # Garbage is rejected.
+    assert client.patch("/api/users/me", json={"orcid": "not-an-orcid"}).status_code == 422
+
+    # Sending an empty string clears it.
+    r = client.patch("/api/users/me", json={"orcid": ""})
+    assert r.status_code == 200
+    assert r.json()["orcid"] is None
+
+
+def test_user_profile_view(client, make_client):
+    register(client, email="admin@example.com", name="Admin")  # admin
+    client.patch("/api/admin/settings", json={"user_directory_visible": False})
+
+    ada = make_client()
+    ada_id = register(ada, email="ada@example.com", name="Ada", affiliation="Physics").json()["id"]
+    ada.patch("/api/users/me", json={"orcid": "0000-0002-1825-0097"})
+    venue = create_venue(ada)
+    create_visit(ada, venue["id"], title="Star party", people_reached=40,
+                 reflection="secret reflection", rating=5)
+
+    # Admin can view Ada's profile + events; private fields never appear.
+    prof = client.get(f"/api/users/{ada_id}/profile").json()
+    assert prof["name"] == "Ada"
+    assert prof["affiliation"] == "Physics"
+    assert prof["orcid"] == "0000-0002-1825-0097"
+    assert prof["total_visits"] == 1
+    assert prof["total_people_reached"] == 40
+    assert prof["visits"][0]["title"] == "Star party"
+    assert "rating" not in prof["visits"][0]
+    assert "reflection" not in prof["visits"][0]
+
+    # A non-admin is blocked while the directory is disabled, allowed once on.
+    other = make_client()
+    register(other, email="other@example.com")
+    assert other.get(f"/api/users/{ada_id}/profile").status_code == 403
+    client.patch("/api/admin/settings", json={"user_directory_visible": True})
+    assert other.get(f"/api/users/{ada_id}/profile").status_code == 200
+
+    assert client.get("/api/users/99999/profile").status_code == 404
+
+
+def test_profile_roles_roundtrip_and_clean(client, make_client):
+    """Additional roles round-trip through the profile; blank rows and stray
+    whitespace are cleaned, and they show on the member-directory profile (#22)."""
+    register(client, email="admin@example.com", name="Admin")  # admin
+    client.patch("/api/admin/settings", json={"user_directory_visible": True})
+
+    ada = make_client()
+    ada_id = register(
+        ada, email="ada@example.com", name="Ada",
+        position="Professor", affiliation="UTK Physics",
+    ).json()["id"]
+
+    r = ada.patch("/api/users/me", json={"roles": [
+        {"title": "  Board Member  ", "organization": "  City Science Museum "},
+        {"title": "Mentor", "organization": ""},
+        {"title": "   ", "organization": "dropped — blank title"},
+    ]})
+    assert r.status_code == 200, r.text
+    roles = r.json()["roles"]
+    assert roles == [
+        {"title": "Board Member", "organization": "City Science Museum"},
+        {"title": "Mentor", "organization": None},
+    ]
+    # Persisted, and visible on the member-directory profile view.
+    assert ada.get("/api/auth/me").json()["roles"] == roles
+    assert client.get(f"/api/users/{ada_id}/profile").json()["roles"] == roles
+    # Sending an empty list clears them.
+    assert ada.patch("/api/users/me", json={"roles": []}).json()["roles"] == []
+
+
+def test_meta_positions_and_institutions(client):
+    """The autocomplete reference endpoints are public and merge a curated base
+    list with values already in use (#22)."""
+    assert "Professor" in client.get("/api/meta/positions").json()  # curated base
+
+    register(
+        client, email="pat@example.com", name="Pat",
+        position="Planetarium Director", affiliation="Blue Ridge Observatory",
+    )
+    assert "Planetarium Director" in client.get("/api/meta/positions").json()
+    assert "Blue Ridge Observatory" in client.get("/api/meta/institutions").json()

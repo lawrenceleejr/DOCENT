@@ -11,7 +11,7 @@ from app.services import reports as R
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
-ReportFormat = Literal["json", "csv", "md", "pdf"]
+ReportFormat = Literal["json", "csv", "md", "pdf", "latex"]
 ReportScope = Literal["mine", "all"]
 StatusFilter = Literal["completed", "planned", "all"]
 
@@ -72,6 +72,8 @@ def activities_report(
         content = R.report_csv(report).encode("utf-8")
     elif format == "md":
         content = R.report_markdown(report).encode("utf-8")
+    elif format == "latex":
+        content = R.report_latex(report).encode("utf-8")
     else:
         content = R.report_pdf(report)
 

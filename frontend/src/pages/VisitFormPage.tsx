@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Anchor,
   Button,
   Card,
   Checkbox,
@@ -18,17 +19,24 @@ import {
   Textarea,
   TextInput,
   Title,
+  Tooltip,
   UnstyledButton,
 } from '@mantine/core';
 import { DateInput, TimeInput } from '@mantine/dates';
-import { IconChevronDown, IconChevronRight, IconPlus, IconTrash } from '@tabler/icons-react';
+import {
+  IconChevronDown,
+  IconChevronRight,
+  IconCircleOff,
+  IconPlus,
+  IconTrash,
+} from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import {
   AUDIENCE_LEVELS,
@@ -43,7 +51,9 @@ import {
   type VisitStatus,
 } from '../api/types';
 import { useEnumLabel } from '../i18n/enumLabels';
+import { CoPresenterPicker } from '../components/CoPresenterPicker';
 import { VenuePicker } from '../components/VenuePicker';
+import { confirmLeave, useUnsavedGuard } from '../components/useUnsavedGuard';
 import { toDateString } from './VisitListPage';
 
 interface FormValues {
@@ -69,6 +79,7 @@ interface FormValues {
   reflection: string;
   follow_up_planned: boolean;
   additional_presenters: string;
+  co_presenter_user_ids: number[];
   tags: string[];
   links: CoverageLink[];
 }
@@ -120,6 +131,7 @@ export function VisitFormPage() {
       reflection: '',
       follow_up_planned: false,
       additional_presenters: '',
+      co_presenter_user_ids: [] as number[],
       tags: [],
       links: [],
     },
@@ -171,9 +183,13 @@ export function VisitFormPage() {
         reflection: existing.reflection ?? '',
         follow_up_planned: existing.follow_up_planned,
         additional_presenters: existing.additional_presenters ?? '',
+        co_presenter_user_ids: (existing.co_presenters ?? []).map((u) => u.id),
         tags: existing.tags ?? [],
         links: (existing.links ?? []).map((l) => ({ ...l, label: l.label ?? '' })),
       });
+      // Loading an existing visit is not a user edit — rebaseline so the
+      // unsaved-changes guard only trips on real changes (#11).
+      form.resetDirty();
       if (
         existing.contact_name ||
         existing.contact_email ||
@@ -193,9 +209,13 @@ export function VisitFormPage() {
     const venueParam = searchParams.get('venue');
     if (!editing && venueParam) {
       form.setFieldValue('venue_id', Number(venueParam));
+      form.resetDirty();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, editing]);
+
+  // Warn before navigating away from a form with unsaved edits (#11).
+  useUnsavedGuard(form.isDirty());
 
   const save = useMutation({
     mutationFn: (values: FormValues) => {
@@ -222,6 +242,7 @@ export function VisitFormPage() {
         reflection: values.reflection.trim() || null,
         follow_up_planned: values.follow_up_planned,
         additional_presenters: values.additional_presenters.trim() || null,
+        co_presenter_user_ids: values.co_presenter_user_ids,
         tags: values.tags,
         links: values.links
           .filter((l) => l.url.trim())
@@ -280,6 +301,16 @@ export function VisitFormPage() {
         })}
       >
         <Stack>
+          {!editing && (
+            // Point people at the map as an alternative way to start an event (#8).
+            <Text size="sm" c="dimmed">
+              {t('visitForm.mapHintText')}{' '}
+              <Anchor component={Link} to="/map">
+                {t('visitForm.mapHintLink')}
+              </Anchor>
+              .
+            </Text>
+          )}
           <Fieldset legend={t('visitForm.statusVenueLegend')} radius="md">
             <Stack>
               <Input.Wrapper label={t('visitForm.statusLabel')}>
@@ -365,6 +396,11 @@ export function VisitFormPage() {
               data={LANGUAGES}
               {...form.getInputProps('language')}
             />
+            <CoPresenterPicker
+              value={form.values.co_presenter_user_ids}
+              onChange={(ids) => form.setFieldValue('co_presenter_user_ids', ids)}
+              initialUsers={existing?.co_presenters}
+            />
             <TextInput
               label={t('visitForm.additionalPresentersLabel')}
               placeholder={t('visitForm.additionalPresentersPlaceholder')}
@@ -436,7 +472,23 @@ export function VisitFormPage() {
           <Fieldset legend={t('visitForm.outcomeLegend')} radius="md">
             <Stack>
               <Input.Wrapper label={t('visitForm.howDidItGo')}>
-                <Rating size="lg" {...form.getInputProps('rating')} />
+                <Group gap="sm" align="center">
+                  <Rating size="lg" {...form.getInputProps('rating')} />
+                  {form.values.rating > 0 && (
+                    // A star rating can't be un-clicked, so offer an explicit
+                    // "no rating" reset via a slashed-circle icon (#10).
+                    <Tooltip label={t('common.clear')}>
+                      <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        aria-label={t('common.clear')}
+                        onClick={() => form.setFieldValue('rating', 0)}
+                      >
+                        <IconCircleOff size={18} />
+                      </ActionIcon>
+                    </Tooltip>
+                  )}
+                </Group>
               </Input.Wrapper>
               <Textarea
                 label={t('visitForm.reflectionLabel')}
@@ -547,7 +599,12 @@ export function VisitFormPage() {
           )}
 
           <Group justify="flex-end">
-            <Button variant="default" onClick={() => navigate(-1)}>
+            <Button
+              variant="default"
+              onClick={() => {
+                if (confirmLeave(form.isDirty(), t('common.unsavedConfirm'))) navigate(-1);
+              }}
+            >
               {t('common.cancel')}
             </Button>
             <Button type="submit" variant="gradient" loading={save.isPending}>

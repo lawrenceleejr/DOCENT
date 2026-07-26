@@ -3,13 +3,16 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentUser, DbSession
-from app.models import Connection, HostRelationship, User, UserSchool, Venue
+from app.models import Connection, HostRelationship, User, UserSchool, Venue, Visit
 from app.schemas import (
+    ContributorUser,
     DirectoryUserList,
     DirectoryUserOut,
+    ProfileVisit,
     SchoolCreate,
     SchoolOut,
     UserOut,
+    UserProfileOut,
     UserUpdate,
 )
 from app.security import hash_password, verify_password
@@ -26,8 +29,14 @@ def update_me(body: UserUpdate, user: CurrentUser, db: DbSession):
         user.affiliation = body.affiliation
     if body.position is not None:
         user.position = body.position
+    # Present-in-request (even as null) means "set it", so an ORCID can be cleared.
+    if "orcid" in body.model_fields_set:
+        user.orcid = body.orcid
     if body.languages_spoken is not None:
         user.languages_spoken = body.languages_spoken
+    # Present-in-request (even as []) means "set it", so all roles can be cleared.
+    if body.roles is not None:
+        user.roles = [r.model_dump() for r in body.roles]
 
     if body.new_password is not None:
         if not body.current_password or not verify_password(
@@ -43,6 +52,30 @@ def update_me(body: UserUpdate, user: CurrentUser, db: DbSession):
     db.commit()
     db.refresh(user)
     return user
+
+
+@router.get("/search", response_model=list[ContributorUser])
+def search_users(
+    user: CurrentUser,
+    db: DbSession,
+    q: str = Query(default="", max_length=100),
+    limit: int = Query(default=10, ge=1, le=25),
+):
+    """Targeted active-user search for linking co-presenters to accounts (#9).
+    Returns nothing for a blank query, and never lists the current user."""
+    if not q.strip():
+        return []
+    rows = db.scalars(
+        select(User)
+        .where(
+            User.is_active.is_(True),
+            User.id != user.id,
+            User.name.ilike(f"%{q.strip()}%"),
+        )
+        .order_by(User.name)
+        .limit(limit)
+    ).all()
+    return rows
 
 
 @router.get("/me/schools", response_model=list[SchoolOut])
@@ -156,9 +189,63 @@ def user_directory(
             name=u.name,
             affiliation=u.affiliation,
             position=u.position,
+            orcid=u.orcid,
             languages_spoken=u.languages_spoken,
+            roles=u.roles,
             schools=[s.venue for s in u.schools],
         )
         for u in users
     ]
     return DirectoryUserList(items=items, total=total, page=page, page_size=page_size)
+
+
+@router.get("/{user_id}/profile", response_model=UserProfileOut)
+def user_profile(user_id: int, user: CurrentUser, db: DbSession):
+    """Another member's profile and their events (#16). Available when the
+    member directory is enabled (admins always). Carries no private fields."""
+    if not user.is_admin and not user_directory_visible(db):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The member directory isn't enabled for this community",
+        )
+    target = db.get(
+        User,
+        user_id,
+        options=[joinedload(User.schools).joinedload(UserSchool.venue)],
+    )
+    if not target or not target.is_active:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    visits = db.scalars(
+        select(Visit)
+        .where(Visit.author_id == user_id)
+        .options(joinedload(Visit.venue))
+        .order_by(Visit.visit_date.desc(), Visit.id.desc())
+        .limit(500)
+    ).all()
+    return UserProfileOut(
+        id=target.id,
+        name=target.name,
+        affiliation=target.affiliation,
+        position=target.position,
+        orcid=target.orcid,
+        languages_spoken=target.languages_spoken,
+        roles=target.roles,
+        schools=[s.venue for s in target.schools],
+        total_visits=len(visits),
+        total_people_reached=sum(v.people_reached for v in visits),
+        visits=[
+            ProfileVisit(
+                id=v.id,
+                visit_date=v.visit_date,
+                status=v.status,
+                title=v.title,
+                event_type=v.event_type,
+                audience_level=v.audience_level,
+                venue_name=v.venue.name,
+                venue_city=v.venue.city,
+                people_reached=v.people_reached,
+            )
+            for v in visits
+        ],
+    )

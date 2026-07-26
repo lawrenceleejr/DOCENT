@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Autocomplete,
   Badge,
   Button,
   Card,
@@ -18,8 +19,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
-import { LANGUAGES, type School, type StatsSummary, type User } from '../api/types';
+import { useInstitutionOptions, usePositionOptions } from '../api/meta';
+import { LANGUAGES, type School, type StatsSummary, type User, type UserRole } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { OrcidLink } from '../components/OrcidLink';
+import { RolesEditor } from '../components/RolesEditor';
 import { VenuePicker } from '../components/VenuePicker';
 
 export function ProfilePage() {
@@ -27,6 +31,8 @@ export function ProfilePage() {
   const { user, refresh } = useAuth();
   const queryClient = useQueryClient();
   const [newSchoolId, setNewSchoolId] = useState<number | null>(null);
+  const positionOptions = usePositionOptions();
+  const institutionOptions = useInstitutionOptions();
 
   const { data: myStats } = useQuery({
     queryKey: ['stats', 'mine', user?.id],
@@ -54,7 +60,9 @@ export function ProfilePage() {
       name: user?.name ?? '',
       affiliation: user?.affiliation ?? '',
       position: user?.position ?? '',
+      orcid: user?.orcid ?? '',
       languages_spoken: user?.languages_spoken ?? [],
+      roles: user?.roles ?? [],
     },
     validate: { name: (v) => (v.trim().length > 0 ? null : t('profile.validation.nameRequired')) },
   });
@@ -72,17 +80,33 @@ export function ProfilePage() {
       name: string;
       affiliation: string;
       position: string;
+      orcid: string;
       languages_spoken: string[];
+      roles: UserRole[];
     }) =>
       api.patch<User>('/api/users/me', {
         name: values.name.trim(),
         affiliation: values.affiliation.trim(),
         position: values.position.trim(),
+        orcid: values.orcid.trim(),
         languages_spoken: values.languages_spoken,
+        // Drop blank rows and trim; the backend cleans again defensively.
+        roles: values.roles
+          .map((r) => ({
+            title: r.title.trim(),
+            organization: (r.organization ?? '').trim() || null,
+          }))
+          .filter((r) => r.title.length > 0),
       }),
     onSuccess: async () => {
       await refresh();
       notifications.show({ message: t('profile.profileUpdated') });
+    },
+    onError: (e) => {
+      notifications.show({
+        color: 'red',
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
+      });
     },
   });
 
@@ -155,15 +179,29 @@ export function ProfilePage() {
           <Stack>
             <TextInput label={t('profile.emailLabel')} value={user.email} disabled />
             <TextInput label={t('profile.fullNameLabel')} {...profileForm.getInputProps('name')} />
-            <TextInput
+            <Autocomplete
               label={t('profile.affiliationLabel')}
+              placeholder={t('profile.affiliationPlaceholder')}
+              data={institutionOptions}
               {...profileForm.getInputProps('affiliation')}
             />
-            <TextInput
+            <Autocomplete
               label={t('profile.positionLabel')}
               placeholder={t('profile.positionPlaceholder')}
+              data={positionOptions}
               {...profileForm.getInputProps('position')}
             />
+            <TextInput
+              label={t('profile.orcidLabel')}
+              description={t('profile.orcidDescription')}
+              placeholder="0000-0000-0000-0000"
+              {...profileForm.getInputProps('orcid')}
+            />
+            {user.orcid && (
+              <Text size="sm" c="dimmed">
+                {t('profile.orcidLinkedPrefix')} <OrcidLink orcid={user.orcid} />
+              </Text>
+            )}
             <MultiSelect
               label={t('profile.languagesLabel')}
               placeholder={t('profile.languagesPlaceholder')}
@@ -172,6 +210,20 @@ export function ProfilePage() {
               data={LANGUAGES}
               {...profileForm.getInputProps('languages_spoken')}
             />
+            <div>
+              <Text size="sm" fw={500}>
+                {t('profile.rolesLabel')}
+              </Text>
+              <Text size="xs" c="dimmed" mb="xs">
+                {t('profile.rolesDescription')}
+              </Text>
+              <RolesEditor
+                value={profileForm.values.roles}
+                onChange={(roles) => profileForm.setFieldValue('roles', roles)}
+                titleOptions={positionOptions}
+                organizationOptions={institutionOptions}
+              />
+            </div>
             <Group justify="flex-end">
               <Button type="submit" loading={saveProfile.isPending}>
                 {t('profile.saveProfile')}
@@ -216,7 +268,7 @@ export function ProfilePage() {
           )}
           <Group align="flex-end">
             <div style={{ flex: 1 }}>
-              <VenuePicker value={newSchoolId} onChange={setNewSchoolId} />
+              <VenuePicker value={newSchoolId} onChange={setNewSchoolId} educationalOnly />
             </div>
             <Button
               disabled={newSchoolId === null}

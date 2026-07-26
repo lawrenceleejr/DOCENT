@@ -36,20 +36,37 @@ def test_summary(seeded, client):
     assert january["total_people_reached"] == 55
 
 
-def test_timeseries_half_year_buckets(seeded, client):
-    # Seeded visits (Jan/Feb/Mar 2026) all fall in the first half of 2026.
-    points = client.get("/api/stats/timeseries").json()
-    assert points == [{"period": "2026 H1", "visits": 4, "people_reached": 200}]
+def test_timeseries_monthly_for_short_span(seeded, client):
+    # ~2 months of data → monthly buckets, not one coarse half-year bar (#27).
+    by = {p["period"]: p for p in client.get("/api/stats/timeseries").json()}
+    assert set(by) == {"2026-01", "2026-02", "2026-03"}
+    assert by["2026-01"]["visits"] == 2
+    assert by["2026-01"]["people_reached"] == 55
+    assert by["2026-02"]["visits"] == 1
+    assert by["2026-03"]["visits"] == 1
+    assert all(p["planned_visits"] == 0 for p in by.values())
 
-    # A July visit lands in the second half and forms its own bucket.
-    venue = create_venue(client, name="Oak Ridge HS", venue_type="high_school", city="Oak Ridge")
+
+def test_timeseries_includes_planned_series(seeded, client):
+    # A scheduled (planned) visit appears as planned_visits, kept separate from
+    # the completed count so the plot can draw it as a dotted line (#28).
+    venue = create_venue(client, name="Future School", city="Later")
     create_visit(
-        client, venue["id"], visit_date="2026-09-15", people_reached=60,
-        audience_level="high_school",
+        client, venue["id"], status="planned", visit_date="2026-12-01", people_reached=0
     )
-    points = client.get("/api/stats/timeseries").json()
-    assert [p["period"] for p in points] == ["2026 H1", "2026 H2"]
-    assert points[1] == {"period": "2026 H2", "visits": 1, "people_reached": 60}
+    by = {p["period"]: p for p in client.get("/api/stats/timeseries").json()}
+    assert by["2026-12"]["planned_visits"] == 1
+    assert by["2026-12"]["visits"] == 0
+
+
+def test_timeseries_half_year_for_wide_span(client):
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], visit_date="2018-02-01", people_reached=10)
+    create_visit(client, venue["id"], visit_date="2026-05-01", people_reached=20)
+    # An 8-year span falls back to half-year buckets.
+    periods = [p["period"] for p in client.get("/api/stats/timeseries").json()]
+    assert periods == ["2018 H1", "2026 H1"]
 
 
 def test_breakdowns(seeded, client):
@@ -107,3 +124,56 @@ def test_stats_filters(client):
     # audience filter feeds breakdown too
     b = client.get("/api/stats/breakdown", params={"by": "venue_type", "audience_level": "high_school"}).json()
     assert len(b) == 1 and b[0]["key"] == "high_school"
+
+
+def test_stats_multiselect_filters(client):
+    """Each category filter accepts several values at once, OR-ed together (#13);
+    a single value still works, and unknown values in the list are ignored."""
+    from tests.conftest import create_venue, create_visit, register
+
+    register(client)
+    school = create_venue(client, name="MS School", venue_type="high_school", city="Nashville")
+    museum = create_venue(client, name="MS Museum", venue_type="museum", city="Nashville")
+    library = create_venue(client, name="MS Library", venue_type="library", city="Nashville")
+    create_visit(client, school["id"], title="A", people_reached=10,
+                 event_type="classroom_visit", audience_level="high_school")
+    create_visit(client, museum["id"], title="B", people_reached=20,
+                 event_type="lab_tour", audience_level="general_public")
+    create_visit(client, library["id"], title="C", people_reached=30,
+                 event_type="public_lecture", audience_level="educators")
+
+    s = client.get("/api/stats/summary", params={"venue_type": "museum"}).json()
+    assert s["total_visits"] == 1 and s["total_people_reached"] == 20
+    s = client.get("/api/stats/summary", params={"venue_type": "museum,library"}).json()
+    assert s["total_visits"] == 2 and s["total_people_reached"] == 50
+    s = client.get("/api/stats/summary", params={"event_type": "classroom_visit,public_lecture"}).json()
+    assert s["total_visits"] == 2 and s["total_people_reached"] == 40
+    s = client.get("/api/stats/summary", params={"audience_level": "high_school,general_public"}).json()
+    assert s["total_visits"] == 2 and s["total_people_reached"] == 30
+    # Unknown values are dropped; the valid one still filters.
+    s = client.get("/api/stats/summary", params={"venue_type": "museum,bogus"}).json()
+    assert s["total_visits"] == 1
+
+    # The multi-select feeds the breakdowns too.
+    b = client.get("/api/stats/breakdown",
+                   params={"by": "venue_type", "venue_type": "museum,library"}).json()
+    assert {r["key"] for r in b} == {"museum", "library"}
+
+
+def test_stats_people_search(client):
+    """The analysis people search matches the communicator (author), the host,
+    and free-text additional presenters (#13)."""
+    from tests.conftest import create_venue, create_visit, register
+
+    register(client, name="Ada Author")
+    venue = create_venue(client, name="PS Venue")
+    create_visit(client, venue["id"], title="Talk", people_reached=15,
+                 contact_name="Bruno Host", additional_presenters="Carla Copresenter")
+    create_visit(client, venue["id"], title="Other", people_reached=5)
+
+    # Both visits share the same author.
+    assert client.get("/api/stats/summary", params={"q": "Ada"}).json()["total_visits"] == 2
+    # Host and additional-presenter names only match the first visit.
+    assert client.get("/api/stats/summary", params={"q": "bruno"}).json()["total_visits"] == 1
+    assert client.get("/api/stats/summary", params={"q": "Carla"}).json()["total_visits"] == 1
+    assert client.get("/api/stats/summary", params={"q": "Nobody"}).json()["total_visits"] == 0

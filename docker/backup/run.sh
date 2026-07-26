@@ -18,15 +18,22 @@ while true; do
         target=$(date -d "tomorrow ${BACKUP_HOUR}:00" +%s)
     fi
     echo "[run] next scheduled backup at $(date -d "@$target" -Is)"
-    # Poll until the scheduled time, honoring an on-demand request from the app
-    # (the backend drops a .run-now sentinel via the admin Backups panel).
+    # Poll until the scheduled time, honoring on-demand requests from the app:
+    # a .run-now sentinel (take a backup) or a .restore-request sentinel whose
+    # first line is the dump to restore — both dropped via the admin panel.
     while [ "$(date +%s)" -lt "$target" ]; do
+        if [ -f "$BACKUP_ROOT/.restore-request" ]; then
+            rel="$(head -n1 "$BACKUP_ROOT/.restore-request")"
+            echo "[run] restore requested: $rel"
+            rm -f "$BACKUP_ROOT/.restore-request"
+            /restore.sh "$rel" || echo "[run] restore FAILED" >&2
+        fi
         if [ -f "$BACKUP_ROOT/.run-now" ]; then
             echo "[run] on-demand backup requested"
             rm -f "$BACKUP_ROOT/.run-now"
             /backup.sh || echo "[run] on-demand backup FAILED" >&2
         fi
-        sleep 20
+        sleep 5
     done
     /backup.sh || echo "[run] backup FAILED" >&2
 done

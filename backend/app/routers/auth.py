@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import func, select
 
 from app.deps import CurrentUser, DbSession
-from app.models import User
+from app.models import LoginEvent, User
+from app.services.federation import has_enabled_peers
 from app.ratelimit import login_rate_limit, register_rate_limit
 from app.schemas import AuthConfig, LoginRequest, RegisterRequest, UserOut
 from app.security import (
@@ -16,8 +17,11 @@ from app.services.settings import (
     effective_contact_email,
     effective_invite_code,
     effective_login_message,
+    effective_banner_level,
+    effective_banner_message,
     effective_map_center_lat,
     effective_map_center_lon,
+    effective_map_radius_km,
     effective_site_name,
     public_page_enabled,
     user_directory_visible,
@@ -39,7 +43,11 @@ def auth_config(db: DbSession) -> AuthConfig:
         login_message=effective_login_message(db) or None,
         map_center_lat=effective_map_center_lat(db),
         map_center_lon=effective_map_center_lon(db),
+        map_radius_km=effective_map_radius_km(db),
+        banner_message=effective_banner_message(db) or None,
+        banner_level=effective_banner_level(db),
         user_directory_visible=user_directory_visible(db),
+        has_siblings=has_enabled_peers(db),
     )
 
 
@@ -101,6 +109,9 @@ def login(body: LoginRequest, request: Request, response: Response, db: DbSessio
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Account is deactivated"
         )
     set_auth_cookie(response, create_access_token(user.id), request)
+    # Record the successful login for the admin login-history view (#30).
+    db.add(LoginEvent(user_id=user.id))
+    db.commit()
     return user
 
 

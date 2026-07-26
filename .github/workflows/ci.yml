@@ -118,6 +118,17 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
+      # Footer version (#26): the release tag on a vX.Y.Z build, else the short
+      # commit SHA. Passed into the frontend image (its build context has no .git).
+      - name: Compute app version
+        id: appver
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build & push frontend
         uses: docker/build-push-action@v6
         with:
@@ -125,6 +136,8 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.tags.outputs.frontend }}
+          build-args: |
+            VITE_APP_VERSION=${{ steps.appver.outputs.version }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 

@@ -153,12 +153,18 @@ def _filtered_query(
     if author_id:
         query = query.where(Visit.author_id == author_id)
     if q:
-        pattern = f"%{q}%"
+        # The search box also matches the people involved — the communicator
+        # (author), the host, and free-text additional presenters — not just the
+        # title/notes, so "find events by person" works from here (#13).
+        pattern = f"%{q.strip()}%"
         query = query.where(
             or_(
                 Visit.title.ilike(pattern),
                 Visit.description.ilike(pattern),
                 Visit.reflection.ilike(pattern),
+                Visit.author.has(User.name.ilike(pattern)),
+                Visit.contact_name.ilike(pattern),
+                Visit.additional_presenters.ilike(pattern),
             )
         )
     return query
@@ -175,6 +181,14 @@ def _get_visit_or_404(visit_id: int, db) -> Visit:
     visit = db.get(Visit, visit_id, options=[joinedload(Visit.author), joinedload(Visit.venue)])
     if not visit:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Visit not found")
+    # Resolve linked co-presenters (preserving order, dropping any deleted) so
+    # VisitOut can show them with ORCID links (#9).
+    ids = visit.co_presenter_user_ids or []
+    if ids:
+        users = {u.id: u for u in db.scalars(select(User).where(User.id.in_(ids)))}
+        visit.co_presenters = [users[i] for i in ids if i in users]
+    else:
+        visit.co_presenters = []
     return visit
 
 

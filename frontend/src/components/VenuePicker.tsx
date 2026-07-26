@@ -29,13 +29,25 @@ import { useEnumLabel } from '../i18n/enumLabels';
 const CREATE_OPTION = '__create__';
 const CATALOG_PREFIX = 'inst:';
 
+// The "schools you attended" picker should list places of education, not
+// libraries/museums/community centers (#15).
+const EDUCATIONAL_VENUE_TYPES = new Set([
+  'elementary_school',
+  'middle_school',
+  'high_school',
+  'community_college',
+  'university',
+]);
+
 interface VenuePickerProps {
   value: number | null;
   onChange: (venueId: number | null) => void;
   error?: string;
+  /** Restrict results to schools/colleges/universities (hides libraries etc.). */
+  educationalOnly?: boolean;
 }
 
-export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
+export function VenuePicker({ value, onChange, error, educationalOnly }: VenuePickerProps) {
   const { t } = useTranslation();
   const enumLabel = useEnumLabel();
   const [search, setSearch] = useState('');
@@ -63,29 +75,35 @@ export function VenuePicker({ value, onChange, error }: VenuePickerProps) {
   });
 
   const options = useMemo(() => {
-    const venues = data?.items ?? [];
+    const venues = (data?.items ?? []).filter(
+      (v) => !educationalOnly || EDUCATIONAL_VENUE_TYPES.has(v.venue_type),
+    );
     const byId = new Map(venues.map((v) => [v.id, v]));
+    // Always keep the current selection resolvable, even if it's off-filter.
     if (selected && !byId.has(selected.id)) byId.set(selected.id, selected);
     const venueOpts = [...byId.values()].map((v) => ({
       value: String(v.id),
       label: `${v.name}${v.city ? ` — ${v.city}` : ''} (${enumLabel.venueType(v.venue_type)})`,
     }));
 
-    // Catalog entries whose name doesn't already match an existing venue option.
+    // The "schools you attended" picker lists only venues already in the
+    // database (plus the create option) — no OSM-catalog suggestions (#15).
     const existingNames = new Set([...byId.values()].map((v) => v.name.toLowerCase()));
-    const catalogOpts = (institutions ?? [])
-      .filter((i) => !existingNames.has(i.name.toLowerCase()))
-      .map((i) => ({
-        value: `${CATALOG_PREFIX}${i.id}`,
-        label: `＋ ${i.name}${i.city ? ` — ${i.city}` : ''} (${enumLabel.institutionType(i.institution_type)}) · ${t('venuePicker.fromCatalog')}`,
-      }));
+    const catalogOpts = educationalOnly
+      ? []
+      : (institutions ?? [])
+          .filter((i) => !existingNames.has(i.name.toLowerCase()))
+          .map((i) => ({
+            value: `${CATALOG_PREFIX}${i.id}`,
+            label: `＋ ${i.name}${i.city ? ` — ${i.city}` : ''} (${enumLabel.institutionType(i.institution_type)}) · ${t('venuePicker.fromCatalog')}`,
+          }));
 
     return [
       ...venueOpts,
       ...catalogOpts,
       { value: CREATE_OPTION, label: t('venuePicker.createNewVenue') },
     ];
-  }, [data, selected, institutions, enumLabel, t]);
+  }, [data, selected, institutions, enumLabel, t, educationalOnly]);
 
   const openFromCatalog = (institutionId: number) => {
     const inst = (institutions ?? []).find((i) => i.id === institutionId);

@@ -262,3 +262,119 @@ def test_backups_endpoints_and_traversal_guard(client, make_client):
     other = make_client()
     register(other, email="pleb@example.com")
     assert other.get("/api/admin/backups").status_code == 403
+
+
+def test_restore_from_existing_backup_queues_sentinel(client, make_client, tmp_path, monkeypatch):
+    """Restoring a server-side backup requires the typed confirmation and drops a
+    sentinel the backup sidecar polls; traversal and non-admins are refused (#29)."""
+    monkeypatch.setattr("app.routers.admin.BACKUP_ROOT", tmp_path)
+    (tmp_path / "daily").mkdir()
+    (tmp_path / "daily" / "docent-2026-07-25.dump").write_bytes(b"PGDMP\x00archive")
+    register(client, email="admin@example.com")
+
+    # Wrong confirmation → refused, no sentinel written.
+    r = client.post("/api/admin/backups/restore",
+                    data={"confirm": "please", "path": "daily/docent-2026-07-25.dump"})
+    assert r.status_code == 400
+    assert not (tmp_path / ".restore-request").exists()
+
+    # Correct confirmation → queued, sentinel + status written.
+    r = client.post("/api/admin/backups/restore",
+                    data={"confirm": "RESTORE", "path": "daily/docent-2026-07-25.dump"})
+    assert r.status_code == 202, r.text
+    assert r.json()["state"] == "queued"
+    assert (tmp_path / ".restore-request").read_text().strip() == "daily/docent-2026-07-25.dump"
+    status = client.get("/api/admin/backups/restore-status").json()
+    assert status["state"] == "queued" and status["backup"] == "daily/docent-2026-07-25.dump"
+
+    # Path traversal is refused.
+    assert client.post("/api/admin/backups/restore",
+                       data={"confirm": "RESTORE", "path": "../secrets.dump"}).status_code == 404
+    # Non-admins can't restore.
+    other = make_client()
+    register(other, email="pleb@example.com")
+    assert other.post("/api/admin/backups/restore",
+                      data={"confirm": "RESTORE", "path": "daily/docent-2026-07-25.dump"}).status_code == 403
+
+
+def test_restore_from_upload_validates_and_stages(client, tmp_path, monkeypatch):
+    """An uploaded .dump is magic-checked, staged under uploads/, and queued (#29)."""
+    monkeypatch.setattr("app.routers.admin.BACKUP_ROOT", tmp_path)
+    register(client, email="admin@example.com")
+
+    # Not a pg_dump archive → rejected before touching anything.
+    r = client.post("/api/admin/backups/restore", data={"confirm": "RESTORE"},
+                    files={"file": ("evil.dump", b"rm -rf /", "application/octet-stream")})
+    assert r.status_code == 400
+
+    # A valid-looking archive is staged and queued.
+    r = client.post("/api/admin/backups/restore", data={"confirm": "RESTORE"},
+                    files={"file": ("mine.dump", b"PGDMP\x00archive-bytes", "application/octet-stream")})
+    assert r.status_code == 202, r.text
+    rel = r.json()["backup"]
+    assert rel.startswith("uploads/") and rel.endswith(".dump")
+    assert (tmp_path / rel).read_bytes().startswith(b"PGDMP")
+    assert (tmp_path / ".restore-request").read_text().strip() == rel
+
+    # Neither a path nor a file → 400.
+    assert client.post("/api/admin/backups/restore", data={"confirm": "RESTORE"}).status_code == 400
+
+
+def test_login_history_records_and_lists(client):
+    register(client, email="admin@example.com", password="password123")  # admin
+    # Explicit logins are what get recorded (the auto-login on register is not).
+    for _ in range(2):
+        assert client.post(
+            "/api/auth/login",
+            json={"email": "admin@example.com", "password": "password123"},
+        ).status_code == 200
+
+    hist = client.get("/api/admin/login-history").json()
+    assert hist["total"] == 2
+    assert len(hist["recent"]) == 2
+    assert hist["recent"][0]["user_email"] == "admin@example.com"
+    # The daily series is zero-filled across the default 30-day window.
+    assert len(hist["daily"]) == 30
+    assert sum(d["logins"] for d in hist["daily"]) == 2
+
+
+def test_login_history_admin_only(client, make_client):
+    register(client, email="admin@example.com")  # admin
+    user = make_client()
+    register(user, email="user@example.com")
+    assert user.get("/api/admin/login-history").status_code == 403
+
+
+def test_map_radius_setting(client):
+    register(client, email="admin@example.com")  # admin
+    # The default surfaces in both admin settings and the public config.
+    assert client.get("/api/admin/settings").json()["map_radius_km"] == 80.0
+    assert client.get("/api/auth/config").json()["map_radius_km"] == 80.0
+
+    # An admin can change it, and the public config reflects it.
+    r = client.patch("/api/admin/settings", json={"map_radius_km": 25})
+    assert r.status_code == 200
+    assert r.json()["map_radius_km"] == 25.0
+    assert client.get("/api/auth/config").json()["map_radius_km"] == 25.0
+
+    # A non-positive radius is rejected.
+    assert client.patch("/api/admin/settings", json={"map_radius_km": 0}).status_code == 422
+
+
+def test_site_banner_setting(client):
+    register(client, email="admin@example.com")  # admin
+    # Off by default.
+    assert client.get("/api/auth/config").json()["banner_message"] is None
+    assert client.get("/api/admin/settings").json()["banner_level"] == "info"
+
+    r = client.patch(
+        "/api/admin/settings",
+        json={"banner_message": "  Maintenance tonight  ", "banner_level": "warning"},
+    )
+    assert r.status_code == 200
+    cfg = client.get("/api/auth/config").json()
+    assert cfg["banner_message"] == "Maintenance tonight"  # trimmed
+    assert cfg["banner_level"] == "warning"
+
+    # Invalid severity is rejected.
+    assert client.patch("/api/admin/settings", json={"banner_level": "boom"}).status_code == 422

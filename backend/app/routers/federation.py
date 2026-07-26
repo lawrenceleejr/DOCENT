@@ -11,6 +11,7 @@ detail by following the deep-link and authenticating on this instance.
 Reachable with a plain `curl` (no cookie) — the token in the query string is the
 only credential, so serve this over HTTPS.
 """
+import re
 from datetime import datetime, timezone
 from typing import Literal
 
@@ -19,8 +20,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from app.deps import DbSession
-from app.models import Visit, VisitStatus
-from app.schemas import FederatedActivityOut, FederationFeed
+from app.models import User, Visit, VisitStatus
+from app.schemas import Contributor, FederatedActivityOut, FederationFeed
 from app.services.settings import (
     effective_site_name,
     effective_site_url,
@@ -32,9 +33,41 @@ from app.services.settings import (
 router = APIRouter(prefix="/api/federation", tags=["federation"])
 
 # Bumped when the feed's shape changes so consumers can adapt.
-FEED_VERSION = 1
+# Bumped to 2 when `contributors` (per-person ORCIDs) was added to each activity,
+# and to 3 when `tags` were added so subscribers can pull a tagged subset (#31).
+FEED_VERSION = 3
 DEFAULT_LIMIT = 1000
 MAX_LIMIT = 5000
+
+
+def _split_presenters(text: str | None) -> list[str]:
+    """Split the free-text co-presenter field into individual names."""
+    if not text:
+        return []
+    return [p.strip() for p in re.split(r"[;,\n]", text) if p.strip()]
+
+
+def _build_contributors(v: Visit, linked: dict[int, User]) -> list[Contributor]:
+    """Everyone associated with the event — lead first, then linked co-presenters
+    (with ORCIDs), then any free-text names — deduped by name (#9)."""
+    out: list[Contributor] = []
+    seen: set[str] = set()
+
+    def add(name: str | None, orcid: str | None) -> None:
+        if not name or name.lower() in seen:
+            return
+        seen.add(name.lower())
+        out.append(Contributor(name=name, orcid=orcid))
+
+    if v.author:
+        add(v.author.name, v.author.orcid)
+    for uid in v.co_presenter_user_ids or []:
+        u = linked.get(uid)
+        if u:
+            add(u.name, u.orcid)
+    for name in _split_presenters(v.additional_presenters):
+        add(name, None)
+    return out
 
 
 @router.get("/activities", response_model=FederationFeed)
@@ -87,6 +120,14 @@ def federation_feed(
         )
         if updated_since is not None:
             query = query.where(Visit.updated_at > updated_since)
+        visits = db.scalars(query).all()
+        # Batch-load the linked co-presenters across this page for their ORCIDs.
+        copres_ids = {uid for v in visits for uid in (v.co_presenter_user_ids or [])}
+        linked = (
+            {u.id: u for u in db.scalars(select(User).where(User.id.in_(copres_ids)))}
+            if copres_ids
+            else {}
+        )
         activities = [
             FederatedActivityOut(
                 uid=v.uid,
@@ -101,10 +142,12 @@ def federation_feed(
                 event_type=v.event_type.value if v.event_type else None,
                 audience_level=v.audience_level.value if v.audience_level else None,
                 person_name=v.author.name if v.author else None,
+                contributors=_build_contributors(v, linked),
+                tags=list(v.tags or []),
                 people_reached=v.people_reached,
                 permalink=f"{base}/visits/{v.id}",
             )
-            for v in db.scalars(query).all()
+            for v in visits
         ]
 
     return FederationFeed(

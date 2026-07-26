@@ -1,9 +1,11 @@
-import { Badge, Card, Group, Select, Stack, Table, Text, TextInput, Title } from '@mantine/core';
+import { Anchor, Badge, Card, Group, Select, Stack, Table, Text, TextInput, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { LANGUAGES, type DirectoryUser, type Paginated } from '../api/types';
+import { OrcidLink } from '../components/OrcidLink';
 import { VenueFilterSelect } from '../components/VenueFilterSelect';
 
 export function DirectoryPage() {
@@ -67,6 +69,7 @@ export function DirectoryPage() {
                 <Table.Th>{t('directory.colName')}</Table.Th>
                 <Table.Th>{t('directory.colAffiliation')}</Table.Th>
                 <Table.Th>{t('directory.colPosition')}</Table.Th>
+                <Table.Th>{t('directory.colOrcid')}</Table.Th>
                 <Table.Th>{t('directory.colSchools')}</Table.Th>
                 <Table.Th>{t('directory.colLanguages')}</Table.Th>
               </Table.Tr>
@@ -74,9 +77,16 @@ export function DirectoryPage() {
             <Table.Tbody>
               {(data?.items ?? []).map((member) => (
                 <Table.Tr key={member.id}>
-                  <Table.Td>{member.name}</Table.Td>
+                  <Table.Td>
+                    <Anchor component={Link} to={`/directory/${member.id}`}>
+                      {member.name}
+                    </Anchor>
+                  </Table.Td>
                   <Table.Td>{member.affiliation ?? '—'}</Table.Td>
                   <Table.Td>{member.position ?? '—'}</Table.Td>
+                  <Table.Td>
+                    {member.orcid ? <OrcidLink orcid={member.orcid} /> : '—'}
+                  </Table.Td>
                   <Table.Td>
                     {member.schools.length > 0 ? (
                       <Group gap={4}>
@@ -97,7 +107,7 @@ export function DirectoryPage() {
               ))}
               {!isLoading && (data?.items.length ?? 0) === 0 && (
                 <Table.Tr>
-                  <Table.Td colSpan={5}>
+                  <Table.Td colSpan={6}>
                     <Text c="dimmed" ta="center" py="lg">
                       {t('directory.noMembersMatch')}
                     </Text>

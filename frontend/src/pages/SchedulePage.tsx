@@ -11,6 +11,7 @@ import {
   Table,
   Text,
   Title,
+  Tooltip,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { IconCalendarPlus, IconExternalLink } from '@tabler/icons-react';
@@ -25,6 +26,7 @@ import {
   isOverdue,
   VENUE_TYPES,
   type ActivityListItem,
+  type AuthConfig,
   type Paginated,
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
@@ -43,6 +45,15 @@ export function SchedulePage() {
   const [mineOnly, setMineOnly] = useState(false);
   const [showSiblings, setShowSiblings] = useState(true);
 
+  // Only offer the sibling-instances scope when this instance actually
+  // federates; otherwise the control is meaningless noise (#6).
+  const { data: config } = useQuery({
+    queryKey: ['auth', 'config'],
+    queryFn: () => api.get<AuthConfig>('/api/auth/config'),
+    staleTime: 5 * 60 * 1000,
+  });
+  const hasSiblings = !!config?.has_siblings;
+
   const update = (patch: Partial<VisitFilters>) => setFilters((f) => ({ ...f, ...patch }));
 
   const params = {
@@ -51,7 +62,7 @@ export function SchedulePage() {
     author_id: mineOnly ? user?.id : undefined,
     // Siblings that opt into publishing planned events appear here too; the
     // mine-only scope keeps them out (the feed can't satisfy an author filter).
-    include_federated: showSiblings && !mineOnly,
+    include_federated: showSiblings && !mineOnly && hasSiblings,
     sort: 'visit_date', // soonest first
     page_size: 100,
   };
@@ -66,7 +77,10 @@ export function SchedulePage() {
     queryFn: () => api.get<string[]>('/api/visits/tags'),
   });
 
-  // The .ics export mirrors what's on screen (scope + filters).
+  // The .ics export mirrors what's on screen (scope + filters). Siblings are
+  // never in the file (they live on other instances), so the local rows are
+  // what determines whether there's anything to export at all (issue #25).
+  const exportableCount = (data?.items ?? []).filter((it) => it.source === 'local').length;
   const icsHref = `/api/visits/calendar.ics${buildQuery({
     ...filterParams(filters),
     status: 'planned',
@@ -89,9 +103,23 @@ export function SchedulePage() {
           </Text>
         </div>
         <Group>
-          <Button component="a" href={icsHref} variant="default">
-            {t('schedule.addToCalendar')}
-          </Button>
+          <Tooltip
+            label={
+              exportableCount === 0
+                ? t('schedule.addToCalendarEmpty')
+                : t('schedule.addToCalendarTooltip')
+            }
+          >
+            <Button
+              component="a"
+              href={exportableCount === 0 ? undefined : icsHref}
+              variant="default"
+              disabled={exportableCount === 0}
+              leftSection={<IconCalendarPlus size={16} />}
+            >
+              {t('schedule.addToCalendar')}
+            </Button>
+          </Tooltip>
           <Button variant="gradient" onClick={() => navigate('/visits/new?status=planned')}>
             {t('schedule.scheduleEvent')}
           </Button>
@@ -158,7 +186,7 @@ export function SchedulePage() {
             onChange={(e) => setMineOnly(e.currentTarget.checked)}
             pb={8}
           />
-          {!mineOnly && (
+          {!mineOnly && hasSiblings && (
             <Switch
               label={t('visitList.includeSiblings')}
               checked={showSiblings}

@@ -19,6 +19,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.models import FederatedActivity, FederationInterval, FederationPeer
+from app.schemas import normalize_tags
 
 USER_AGENT = "DOCENT-outreach-tracker/0.1 (+https://github.com/lawrenceleejr/docent)"
 
@@ -117,6 +118,24 @@ def fetch_peer(feed_url: str, *, updated_since: datetime | None = None) -> dict[
     return envelope
 
 
+def _clean_contributors(raw: Any) -> list[dict[str, Any]]:
+    """Keep only well-formed {name, orcid} entries from a peer's feed (#9)."""
+    out: list[dict[str, Any]] = []
+    if not isinstance(raw, list):
+        return out
+    for c in raw[:50]:
+        if isinstance(c, dict) and c.get("name"):
+            orcid = c.get("orcid")
+            out.append({"name": str(c["name"])[:255], "orcid": str(orcid) if orcid else None})
+    return out
+
+
+def _clean_tags(raw: Any) -> list[str]:
+    """Normalize a peer's tags list the same way local tags are (#31); anything
+    that isn't a list is treated as no tags (older feeds omit the field)."""
+    return normalize_tags(raw) if isinstance(raw, list) else []
+
+
 def _coerce_row(raw: dict[str, Any]) -> dict[str, Any] | None:
     """Validate/normalize one feed activity; None if unusable."""
     visit_date = raw.get("visit_date")
@@ -144,6 +163,8 @@ def _coerce_row(raw: dict[str, Any]) -> dict[str, Any] | None:
         "event_type": raw.get("event_type"),
         "audience_level": raw.get("audience_level"),
         "person_name": raw.get("person_name"),
+        "contributors": _clean_contributors(raw.get("contributors")),
+        "tags": _clean_tags(raw.get("tags")),
         "people_reached": raw.get("people_reached") or 0,
         "permalink": raw.get("permalink"),
     }
@@ -155,6 +176,12 @@ def upsert_activities(
     """Upsert the feed's rows keyed by (peer, remote_uid). When `prune`, also
     delete cached rows the peer no longer publishes (full-reconcile only)."""
     parsed = [r for r in (_coerce_row(x) for x in envelope.get("activities") or []) if r]
+    # Per-sibling tag filter (#31): when set, only pull in this peer's events
+    # whose tags overlap it. Non-matching rows are simply not cached, and on a
+    # full reconcile they fall out of `seen` below and get pruned.
+    wanted_tags = set(peer.tag_filter or [])
+    if wanted_tags:
+        parsed = [r for r in parsed if wanted_tags & set(r["tags"])]
     existing = {
         a.remote_uid: a
         for a in db.scalars(
@@ -244,6 +271,18 @@ def next_sync_at(peer: FederationPeer) -> datetime | None:
     if last is None:
         return None
     return last + effective_delay(peer)
+
+
+def has_enabled_peers(db: Session) -> bool:
+    """True when at least one enabled sibling peer exists — used to hide the
+    sibling controls on instances that have none (#6, #25)."""
+    return bool(
+        db.scalar(
+            select(func.count())
+            .select_from(FederationPeer)
+            .where(FederationPeer.enabled.is_(True))
+        )
+    )
 
 
 def federated_query(

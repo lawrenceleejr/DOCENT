@@ -12,7 +12,7 @@ import {
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useQuery } from '@tanstack/react-query';
-import { divIcon } from 'leaflet';
+import { divIcon, type LatLngBoundsExpression } from 'leaflet';
 import { useMemo, useReducer, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import { useTranslation } from 'react-i18next';
@@ -25,11 +25,12 @@ import {
   type FederatedMapPoint,
   type InstitutionPoint,
   type InstitutionType,
+  type MapExtent,
   type Venue,
   type VenuePoint,
 } from '../api/types';
 import { FilterCard } from '../components/FilterCard';
-import { COLORS, coveredIcon, dotIcon, gapIcon, venueIcon } from '../components/mapIcons';
+import { COLORS, coveredIcon, dotIcon, gapIcon } from '../components/mapIcons';
 
 // Sibling-instance activities are a separate layer; give them a distinct grape
 // marker so they never read as local covered/gap/venue dots.
@@ -48,6 +49,30 @@ interface Bounds {
 function roundBounds(b: Bounds): Bounds {
   const r = (n: number) => Math.round(n * 100) / 100;
   return { south: r(b.south), north: r(b.north), west: r(b.west), east: r(b.east) };
+}
+
+// A lat/lon box roughly `km` in every direction from the center — the fallback
+// framing on a fresh instance that has no visited venues to fit to yet (#18).
+function radiusToBounds(lat: number, lon: number, km: number): LatLngBoundsExpression {
+  const dLat = km / 111.32;
+  const dLon = km / (111.32 * Math.cos((lat * Math.PI) / 180));
+  return [
+    [lat - dLat, lon - dLon],
+    [lat + dLat, lon + dLon],
+  ];
+}
+
+// Frame the map on the venues that actually have activity, with a little
+// padding, so every visited/scheduled venue is in view (#18). A single-venue
+// (zero-span) box is padded to a sane minimum so it doesn't zoom to the street.
+function extentToBounds(e: MapExtent): LatLngBoundsExpression | null {
+  if (e.south == null || e.north == null || e.west == null || e.east == null) return null;
+  const padLat = Math.max((e.north - e.south) * 0.15, 0.05);
+  const padLon = Math.max((e.east - e.west) * 0.15, 0.05);
+  return [
+    [e.south - padLat, e.west - padLon],
+    [e.north + padLat, e.east + padLon],
+  ];
 }
 
 function BoundsWatcher({ onChange }: { onChange: (b: Bounds) => void }) {
@@ -193,7 +218,7 @@ export function MapPage() {
   const [bounds, setBounds] = useState<Bounds | null>(null);
   const [types, setTypes] = useState<InstitutionType[]>(DEFAULT_TYPES);
   const [statusFilter, setStatusFilter] = useState<'all' | 'gap' | 'covered'>('all');
-  const [showVenues, setShowVenues] = useState(true);
+  const [mineOnly, setMineOnly] = useState(false);
   const [showSiblings, setShowSiblings] = useState(true);
   const [siblingSource, setSiblingSource] = useState<string | null>(null);
 
@@ -202,6 +227,14 @@ export function MapPage() {
   const { data: config } = useQuery({
     queryKey: ['auth', 'config'],
     queryFn: () => api.get<AuthConfig>('/api/auth/config'),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fit the initial view to the venues we actually have activity at (#18); the
+  // admin center/radius is only the fallback when there's nothing to frame.
+  const { data: extent } = useQuery({
+    queryKey: ['map', 'extent'],
+    queryFn: () => api.get<MapExtent>('/api/map/extent'),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -219,10 +252,18 @@ export function MapPage() {
     enabled: !!rounded && types.length > 0,
   });
 
+  // The venue layer always shows the venues in view; "only my venues" narrows
+  // it to the current user's (#21). Honors the same type/status filters.
   const { data: venues = [] } = useQuery({
-    queryKey: ['map', 'venues', rounded],
-    queryFn: () => api.get<VenuePoint[]>('/api/map/venues', { ...rounded! }),
-    enabled: !!rounded && showVenues,
+    queryKey: ['map', 'venues', rounded, typeParam, statusFilter, mineOnly],
+    queryFn: () =>
+      api.get<VenuePoint[]>('/api/map/venues', {
+        ...rounded!,
+        mine: mineOnly,
+        types: typeParam,
+        status: statusFilter,
+      }),
+    enabled: !!rounded && types.length > 0,
   });
 
   // Sibling-instance activities: a separate, read-only layer that never affects
@@ -230,7 +271,7 @@ export function MapPage() {
   const { data: federatedAll = [] } = useQuery({
     queryKey: ['map', 'federated', rounded],
     queryFn: () => api.get<FederatedMapPoint[]>('/api/map/federated', { ...rounded! }),
-    enabled: !!rounded && showSiblings,
+    enabled: !!rounded && showSiblings && !!config?.has_siblings,
   });
 
   // Distinct sibling labels present, for the source Select.
@@ -248,9 +289,9 @@ export function MapPage() {
   const activeFilterCount =
     (types.length !== DEFAULT_TYPES.length ? 1 : 0) +
     (statusFilter !== 'all' ? 1 : 0) +
-    (!showVenues ? 1 : 0) +
-    (!showSiblings ? 1 : 0) +
-    (siblingSource ? 1 : 0);
+    (mineOnly ? 1 : 0) +
+    (config?.has_siblings && !showSiblings ? 1 : 0) +
+    (config?.has_siblings && siblingSource ? 1 : 0);
 
   const logVisitHere = async (inst: InstitutionPoint) => {
     try {
@@ -347,43 +388,52 @@ export function MapPage() {
               ]}
             />
             <Checkbox
-              label={t('map.showMyVenues')}
-              checked={showVenues}
-              onChange={(e) => setShowVenues(e.currentTarget.checked)}
+              label={t('map.showOnlyMyVenues')}
+              checked={mineOnly}
+              onChange={(e) => setMineOnly(e.currentTarget.checked)}
             />
-            <Checkbox
-              label={t('map.showSiblings')}
-              checked={showSiblings}
-              onChange={(e) => setShowSiblings(e.currentTarget.checked)}
-            />
-            {showSiblings && siblingLabels.length > 1 && (
-              <Select
-                size="xs"
-                placeholder={t('map.allSiblings')}
-                clearable
-                data={siblingLabels}
-                value={siblingSource}
-                onChange={setSiblingSource}
-                w={170}
-              />
+            {/* Only meaningful when this instance actually federates (#6). */}
+            {config?.has_siblings && (
+              <>
+                <Checkbox
+                  label={t('map.showSiblings')}
+                  checked={showSiblings}
+                  onChange={(e) => setShowSiblings(e.currentTarget.checked)}
+                />
+                {showSiblings && siblingLabels.length > 1 && (
+                  <Select
+                    size="xs"
+                    placeholder={t('map.allSiblings')}
+                    clearable
+                    data={siblingLabels}
+                    value={siblingSource}
+                    onChange={setSiblingSource}
+                    w={170}
+                  />
+                )}
+              </>
             )}
           </Group>
           <Group gap="md">
             <LegendDot color={COLORS.gap} label={t('map.legendGap')} />
             <LegendDot color={COLORS.covered} label={t('map.legendReached')} />
-            <LegendDot color={COLORS.venue} label={t('map.legendVenueNoVisits')} />
-            <LegendDot color={SIBLING_COLOR} label={t('map.legendSibling')} />
+            {config?.has_siblings && (
+              <LegendDot color={SIBLING_COLOR} label={t('map.legendSibling')} />
+            )}
           </Group>
         </Group>
       </FilterCard>
 
       <Card withBorder p={0} style={{ overflow: 'hidden' }}>
-        {config && (
-          // center is only read on mount — wait for the admin-configured
-          // starting point so the map never flashes at the wrong location.
+        {config && extent && (
+          // bounds are only read on mount — wait for the venue extent (and the
+          // config fallback) so the map opens framed on the actual activity (#18).
           <MapContainer
-            center={[config.map_center_lat, config.map_center_lon]}
-            zoom={7}
+            bounds={
+              extentToBounds(extent) ??
+              radiusToBounds(config.map_center_lat, config.map_center_lon, config.map_radius_km)
+            }
+            boundsOptions={{ padding: [24, 24] }}
             style={{ height: '70vh', width: '100%' }}
             scrollWheelZoom
           >
@@ -397,15 +447,16 @@ export function MapPage() {
 
             <AdaptiveInstitutions institutions={institutions} onLog={logVisitHere} />
 
-            {/* Your venues are drawn as individual dots (never clustered into
-                summary bubbles) so every engagement is always visible. A venue
-                with a completed visit shows green (reached); otherwise blue. */}
-            {showVenues &&
-              venues.map((v) => (
+            {/* Venues are drawn as individual dots (never clustered) so every
+                one is always visible. A venue with a visit shows green
+                (reached); an un-visited one is "not yet visited" like a gap. */}
+            {venues.map((v) => (
                 <Marker
                   key={`v-${v.id}`}
                   position={[v.latitude, v.longitude]}
-                  icon={v.visited || v.visit_count > 0 ? coveredIcon : venueIcon}
+                  // An un-visited venue is the same "not yet visited" as a gap
+                  // institution — one marker, no separate colour (#20).
+                  icon={v.visited || v.visit_count > 0 ? coveredIcon : gapIcon}
                   // Visited (green) sits above a coincident sibling marker.
                   zIndexOffset={v.visited || v.visit_count > 0 ? 1000 : 0}
                 >

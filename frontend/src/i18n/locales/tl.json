@@ -10,7 +10,9 @@
     "any": "Kahit alin",
     "translationDisclaimer": "Awtomatikong ginawa ang pagsasaling ito at hindi pa nasusuri ng katutubong nagsasalita. Maaaring may mga pagkakamali — malugod naming tinatanggap ang mga boluntaryong makakatulong sa pagsusuri nito.",
     "filters": "Mga Filter",
-    "unexpectedError": "Hindi inaasahang error"
+    "unexpectedError": "Hindi inaasahang error",
+    "clear": "I-clear",
+    "unsavedConfirm": "May mga pagbabago kang hindi pa na-save. Aalis sa page na ito at itatapon ang mga ito?"
   },
   "layout": {
     "home": "Home ng DOCENT",
@@ -25,14 +27,20 @@
     "footerPrefix": "DOCENT {{version}} · © {{year}} Lawrence Lee · Libreng software sa ilalim ng",
     "nav": {
       "visits": "Mga Pagbisita",
-      "schedule": "Iskedyul",
+      "schedule": "Scheduler",
       "venues": "Mga Venue",
       "map": "Mapa",
       "analysis": "Analysis",
       "reports": "Mga Ulat",
       "admin": "Admin",
       "directory": "Direktoryo"
-    }
+    },
+    "completeProfileTitle": "Kumpletuhin ang iyong profile",
+    "completeProfileText": "Idagdag ang iyong affiliation, tungkulin, ORCID, at mga wikang ginagamit mo para mahanap ka ng mga kasamahan.",
+    "completeProfileLink": "Pumunta sa iyong profile",
+    "needsReportTitle": "{{count}} bisita ang kailangan ng ulat",
+    "needsReportText": "May mga nakaraang event kang dapat i-report — magsimula sa",
+    "needsReportMore": "at {{count}} pa."
   },
   "authShell": {
     "taglineBold": "Umabot.",
@@ -43,7 +51,7 @@
     "footerPrefix": "DOCENT · © 2026 Lawrence Lee · Libreng software sa ilalim ng"
   },
   "login": {
-    "welcomeBack": "Maligayang pagbabalik",
+    "welcome": "Maligayang pagdating",
     "loginToSite": "Mag-log in sa {{siteName}}.",
     "loginToDefault": "Mag-log in sa iyong DOCENT account.",
     "emailLabel": "Email",
@@ -60,7 +68,8 @@
     "viewImpactLink": "Tingnan ang aming pampublikong impact page",
     "noAccountNeededSuffix": "— hindi kailangan ng account.",
     "invalidEmail": "Hindi valid ang email",
-    "passwordRequired": "Kinakailangan ang password"
+    "passwordRequired": "Kinakailangan ang password",
+    "welcomeBack": "Maligayang pagbabalik"
   },
   "register": {
     "createAccount": "Gumawa ng iyong account",
@@ -99,7 +108,7 @@
     "exportCsv": "I-export bilang CSV",
     "logVisit": "Mag-log ng pagbisita",
     "searchLabel": "Maghanap",
-    "searchPlaceholder": "Pamagat o mga tala",
+    "searchPlaceholder": "Pamagat, tao, o mga tala",
     "statusLabel": "Status",
     "fromLabel": "Mula",
     "toLabel": "Hanggang",
@@ -117,15 +126,15 @@
     "colAudience": "Audience",
     "colPeopleReached": "Taong naabot",
     "colRating": "Rating",
-    "overdue": "Lampas na sa deadline",
+    "overdue": "Kailangan ng ulat",
     "emptyTitle": "Walang nahanap na pagbisita",
     "emptyDescription": "Walang pagbisitang tumutugma sa mga filter na ito. Mag-log ng iyong unang outreach visit para makapagsimula.",
     "emptyDescriptionShort": "Walang pagbisitang tumutugma sa mga filter na ito.",
     "reachedSuffix": "naabot",
     "visitCount_one": "{{formattedCount}} pagbisita",
     "visitCount_other": "{{formattedCount}} pagbisita",
-    "includeSiblings": "Isama ang mga sibling instance",
-    "siblingBadge": "Mula sa isang sibling instance",
+    "includeSiblings": "Isama ang mga sibling community",
+    "siblingBadge": "Mula sa isang sibling community",
     "siblingActivity": "Aktibidad",
     "sourceLabel": "Pinagmulan"
   },
@@ -205,7 +214,13 @@
       "peopleReachedTooLarge": "Mukhang sobrang laki nito (max {{max}}).",
       "peopleReachedTooLargeTypo": "Mukhang sobrang laki nito (max {{max}}). Suriin kung may typo.",
       "peopleReachedRequired": "Ilang tao ang naabot ninyo?"
-    }
+    },
+    "coPresentersLabel": "Mga co-presenter na may account",
+    "coPresentersDescription": "I-link ang mga kasamahang may account dito para ma-kredito sila at sumama ang kanilang ORCID sa federated na aktibidad.",
+    "coPresentersPlaceholder": "Maghanap ng tao ayon sa pangalan…",
+    "coPresentersNothing": "Walang tumugmang tao",
+    "mapHintText": "Puwede ka ring magsimula ng event mula sa",
+    "mapHintLink": "mapa"
   },
   "visitDetail": {
     "markCompleted": "Markahan bilang natapos",
@@ -232,7 +247,8 @@
     "fieldEmail": "Email",
     "fieldPhone": "Numero ng telepono",
     "fieldHostNotes": "Mga tala tungkol sa host",
-    "minSuffix": "min"
+    "minSuffix": "min",
+    "fieldCoPresenters": "Mga co-presenter"
   },
   "enums": {
     "venueType": {
@@ -250,6 +266,9 @@
       "classroom_visit": "Pagbisita sa Silid-aralan",
       "science_fair": "Science Fair",
       "public_lecture": "Pampublikong Lecture",
+      "colloquium": "Kolokyum",
+      "seminar": "Seminar",
+      "conference": "Kumperensya",
       "lab_tour": "Pag-tour sa Laboratoryo",
       "career_day": "Career Day",
       "demo_booth": "Demo Booth",
@@ -312,7 +331,25 @@
     "tableTakenHeader": "Kinuha",
     "tableSizeHeader": "Laki",
     "downloadButton": "I-download",
-    "emptyState": "Walang backup na nahanap pa. Awtomatikong tumatakbo ang isa gabi-gabi."
+    "emptyState": "Walang backup na nahanap pa. Awtomatikong tumatakbo ang isa gabi-gabi.",
+    "restoreButton": "I-restore",
+    "restoreUploadButton": "I-restore ang na-upload na file",
+    "chooseFileButton": "Pumili ng .dump file",
+    "restoreModalTitle": "I-restore ang database",
+    "restoreWarning": "Papalitan nito ang LAHAT ng kasalukuyang data ng nilalaman ng backup. Mawawala ang anumang pagbabagong ginawa mula noong backup na iyon.",
+    "restoreFromBackup": "I-restore mula sa {{path}}?",
+    "restoreFromUpload": "I-restore mula sa na-upload na file na {{name}}?",
+    "restoreSafetyNote": "Kukuha muna ng bagong pre-restore backup, kaya maaari itong i-undo.",
+    "typeToConfirm": "I-type ang {{word}} para kumpirmahin",
+    "confirmRestoreButton": "I-restore ngayon",
+    "reloadApp": "I-reload ang app",
+    "restoreError": "Hindi masimulan ang pag-restore.",
+    "restoreState": {
+      "queued": "Nakapila ang pag-restore",
+      "running": "Isinasagawa ang pag-restore",
+      "success": "Kumpleto na ang pag-restore",
+      "failed": "Nabigo ang pag-restore"
+    }
   },
   "dbToolsCard": {
     "title": "I-export at i-import ang datos",
@@ -482,7 +519,24 @@
     "tempPasswordModalTitle": "Pansamantalang password",
     "tempPasswordBody": "Ibahagi ang one-time password na ito sa <bold>{{name}}</bold> sa isang secure channel. Dapat mag-log in sila at palitan ito mula sa kanilang profile. Ipinapakita ito nang isang pagkakataon lang.",
     "copyButton": "Kopyahin",
-    "copiedButton": "Kinopya"
+    "copiedButton": "Kinopya",
+    "loginHistoryTitle": "Kasaysayan ng login",
+    "loginHistorySubtitle": "Mga matagumpay na pag-sign in sa nakaraang 30 araw.",
+    "loginHistoryTotal": "{{formattedCount}} lahat",
+    "loginHistoryChartTitle": "Mga login kada araw",
+    "loginHistoryLoginsLabel": "Mga login",
+    "loginHistoryRecentTitle": "Mga kamakailang login",
+    "loginHistoryColUser": "User",
+    "loginHistoryColWhen": "Kailan",
+    "loginHistoryEmpty": "Wala pang naitalang login.",
+    "radiusLabel": "Radius ng saklaw (km)",
+    "bannerMessageLabel": "Banner sa buong site",
+    "bannerMessageDescription": "Ipinapakita sa itaas ng bawat page para sa mga naka-sign in. Iwang blangko para itago.",
+    "bannerMessagePlaceholder": "hal. Nakaiskedyul na maintenance ngayong Sabado, 9–11pm.",
+    "bannerLevelLabel": "Antas ng banner",
+    "bannerLevelInfo": "Impormasyon",
+    "bannerLevelWarning": "Babala",
+    "bannerLevelCritical": "Kritikal"
   },
   "dashboard": {
     "title": "Analysis",
@@ -510,8 +564,8 @@
     "overTimeHeading": "Sa Paglipas ng Panahon",
     "breakdownsHeading": "Mga Breakdown",
     "leadersHeading": "Mga Lider",
-    "visitsPer6Months": "Mga pagbisita kada 6 na buwan",
-    "peopleReachedPer6Months": "Taong naabot kada 6 na buwan",
+    "visitsPer6Months": "Mga bisita sa paglipas ng panahon",
+    "peopleReachedPer6Months": "Mga naabot na tao sa paglipas ng panahon",
     "visitsByVenueType": "Mga pagbisita ayon sa uri ng venue",
     "visitsByAudienceLevel": "Mga pagbisita ayon sa antas ng audience",
     "visitsByHostRelationship": "Mga pagbisita ayon sa relasyon sa host",
@@ -521,9 +575,15 @@
     "communicatorLeaderboard": "Leaderboard ng Communicator",
     "colVenue": "Venue",
     "colCommunicator": "Communicator",
-    "includeSiblings": "Isama ang mga sibling instance",
+    "includeSiblings": "Isama ang mga sibling community",
     "localOnlyNote": "Binibilang lang ng mga leaderboard at ng breakdown ng relasyon sa host ang mga aktibidad ng instance na ito.",
-    "federatedCaveat": "Maaaring mabilang nang higit sa isang beses ang isang komunikador sa pinagsamang kabuuan kung sumasali sila sa pamamagitan ng maraming kapwa instance."
+    "federatedCaveat": "Maaaring mabilang nang higit sa isang beses ang isang komunikador sa pinagsamang kabuuan kung sumasali sila sa pamamagitan ng maraming kapwa community.",
+    "completedVisits": "Tapos na",
+    "plannedVisits": "Naka-iskedyul",
+    "plannedCaption": "Solid: naitala · Putol-putol: naka-iskedyul",
+    "peopleSearchLabel": "Maghanap ng tao",
+    "peopleSearchPlaceholder": "Pangalan ng communicator o host",
+    "siblingFilterCaveat": "Ang mga entry mula sa kapatid na komunidad ay may limitadong detalye — hindi ibinabahagi ang audience, mga tag, at pangalan ng host, kaya bahagya lamang naaangkop ang mga filter na iyon at ang paghahanap ng tao."
   },
   "impact": {
     "unavailableTitle": "Hindi available ang page na ito",
@@ -544,21 +604,22 @@
     "recentActivityHeading": "Kamakailang Aktibidad",
     "poweredByPrefix": "Pinapatakbo ng",
     "poweredBySuffix": "· libreng software sa ilalim ng GNU GPL v3",
-    "includeSiblings": "Isama ang mga sibling instance",
-    "includingSiblings": "Kasama sa mga bilang ang mga aktibidad sa aming mga kapwa instance, na maaaring magkasanib."
+    "includeSiblings": "Isama ang mga sibling community",
+    "includingSiblings": "Kasama sa mga bilang ang mga aktibidad sa aming mga kapwa community, na maaaring magkasanib."
   },
   "map": {
     "title": "Mapa",
-    "gapsPrefix": "Tukuyin ang mga coverage gap —",
+    "gapsPrefix": "Tingnan ang iyong saklaw —",
     "institutionsInView_one": "{{formattedCount}} institusyon na nakikita",
     "institutionsInView_other": "{{formattedCount}} institusyon na nakikita",
     "notYetReached_one": "{{formattedCount}} hindi pa naabot",
     "notYetReached_other": "{{formattedCount}} hindi pa naabot",
     "none": "Wala",
-    "gapsOnly": "Gaps lang",
+    "gapsOnly": "Hindi pa napupuntahan",
     "reached": "Naabot",
     "showMyVenues": "Ipakita ang mga venue ko",
-    "legendGap": "Gap",
+    "showOnlyMyVenues": "Ipakita lang ang mga venue ko",
+    "legendGap": "Hindi pa napupuntahan",
     "legendReached": "Naabot",
     "legendVenueNoVisits": "Venue (walang pagbisita pa)",
     "popupReached_one": "Naabot — {{formattedCount}} pagbisita",
@@ -572,11 +633,11 @@
     "unexpectedError": "Hindi inaasahang error",
     "institutionDataAttribution": "Datos ng institusyon © OpenStreetMap contributors.",
     "importMoreRegionsPrefix": "Mag-import ng mas maraming rehiyon gamit ang",
-    "showSiblings": "Mga aktibidad ng sibling",
-    "legendSibling": "Aktibidad ng sibling",
+    "showSiblings": "Mga aktibidad ng sibling community",
+    "legendSibling": "Aktibidad ng sibling community",
     "fromSibling": "Mula kay {{name}}",
     "openOnPrimary": "Buksan sa primary instance",
-    "allSiblings": "Lahat ng kapwa instance"
+    "allSiblings": "Lahat ng kapwa community"
   },
   "profile": {
     "title": "Profile",
@@ -606,7 +667,20 @@
       "nameRequired": "Kinakailangan ang pangalan",
       "currentPasswordRequired": "Kinakailangan",
       "passwordMin": "Hindi bababa sa 8 karakter"
-    }
+    },
+    "orcidLabel": "ORCID iD",
+    "orcidDescription": "I-link ang iyong researcher identity. Sumasama ito sa federated na aktibidad para ma-kredito ng mga partner community ang tamang tao.",
+    "orcidLinkedPrefix": "Naka-link:",
+    "affiliationPlaceholder": "University of Tennessee (opsyonal)",
+    "rolesLabel": "Iba pang mga tungkulin",
+    "rolesDescription": "Iba pang mga tungkuling ginagampanan mo, sa loob o labas ng iyong institusyon.",
+    "rolesEmpty": "Wala pang karagdagang tungkulin.",
+    "roleTitleLabel": "Tungkulin",
+    "roleTitlePlaceholder": "hal. Miyembro ng lupon",
+    "roleOrgLabel": "Organisasyon",
+    "roleOrgPlaceholder": "hal. City Science Museum (opsyonal)",
+    "addRole": "Magdagdag ng tungkulin",
+    "removeRole": "Alisin ang tungkulin"
   },
   "directory": {
     "title": "Direktoryo",
@@ -622,7 +696,8 @@
     "colLanguages": "Mga Wika",
     "noMembersMatch": "Walang miyembrong tumutugma sa mga filter na ito.",
     "memberCount_one": "{{formattedCount}} miyembro",
-    "memberCount_other": "{{formattedCount}} miyembro"
+    "memberCount_other": "{{formattedCount}} miyembro",
+    "colOrcid": "ORCID"
   },
   "reports": {
     "title": "Mga Ulat",
@@ -659,12 +734,13 @@
     "colPresenter": "Presenter",
     "colCoverage": "Coverage",
     "emptyState": "Walang aktibidad na tumutugma sa mga filter na ito. Subukang gamitin ang “{{everyone}}” sa halip ng “{{myActivities}}”, itakda ang Status sa “{{all}}”, o palawakin ang saklaw ng petsa.",
-    "showingFirst": "Ipinapakita ang unang {{limit}} sa {{total}} na aktibidad. Kasama sa download ang lahat nito."
+    "showingFirst": "Ipinapakita ang unang {{limit}} sa {{total}} na aktibidad. Kasama sa download ang lahat nito.",
+    "formatLatex": "LaTeX"
   },
   "schedule": {
-    "title": "Iskedyul",
+    "title": "Scheduler",
     "subtitle": "Mga darating na naka-planong event sa buong komunidad. Markahan ang isa bilang tapos para itala ang attendance.",
-    "addToCalendar": "Idagdag sa kalendaryo (.ics)",
+    "addToCalendar": "I-export ang mga Event sa Kalendaryo (.ics)",
     "scheduleEvent": "Mag-iskedyul ng event",
     "fromLabel": "Mula",
     "toLabel": "Hanggang",
@@ -679,10 +755,12 @@
     "colVenue": "Venue",
     "colCommunicator": "Communicator",
     "colAudience": "Audience",
-    "overdue": "Lampas na sa deadline",
+    "overdue": "Kailangan ng ulat",
     "markDone": "Markahan bilang tapos",
     "emptyTitle": "Walang naka-iskedyul",
-    "emptyDescription": "Walang darating na naka-planong event na tumutugma sa mga filter na ito. Mag-iskedyul ng isa at lalabas ito rito — handa na para i-export sa inyong kalendaryo."
+    "emptyDescription": "Walang darating na naka-planong event na tumutugma sa mga filter na ito. Mag-iskedyul ng isa at lalabas ito rito — handa na para i-export sa inyong kalendaryo.",
+    "addToCalendarTooltip": "I-export ang mga eventong ipinapakita rito, ayon sa iyong mga filter.",
+    "addToCalendarEmpty": "Wala pang eventong maie-export."
   },
   "venuePicker": {
     "venueLabel": "Venue",
@@ -711,7 +789,8 @@
     "validation": {
       "nameRequired": "Kinakailangan ang pangalan",
       "typeRequired": "Kinakailangan ang uri"
-    }
+    },
+    "mapHint": "Puwede mo ring piliin ang lugar mula sa Mapa — buksan ito at piliin ang “Mag-log ng bisita rito.”"
   },
   "connectionForm": {
     "editTitle": "I-edit ang connection",
@@ -754,7 +833,8 @@
     "emptyTitle": "Walang nahanap na venue",
     "emptyDescription": "Magdagdag ng paaralan, kolehiyo, museo, o aklatan para magsimulang mag-track ng outreach dito.",
     "venueCount_one": "{{formattedCount}} venue",
-    "venueCount_other": "{{formattedCount}} venue"
+    "venueCount_other": "{{formattedCount}} venue",
+    "onlyWithEvents": "Mga lugar na may event lang"
   },
   "venueDetail": {
     "mergeSuccess": "Na-merge ang mga venue",
@@ -805,22 +885,22 @@
   },
   "federationCard": {
     "title": "Federation",
-    "description": "Ibahagi ang activity feed ng instance na ito sa mga sibling instance, at hilahin ang kanilang mga aktibidad papasok sa iyong pinagsamang mga view.",
+    "description": "Ibahagi ang activity feed ng instance na ito sa mga sibling community, at hilahin ang kanilang mga aktibidad papasok sa iyong pinagsamang mga view.",
     "publishSectionTitle": "Paglalathala (feed ng instance na ito)",
     "publishToggle": "Ilathala sa federation",
-    "publishToggleDescription": "Ihain ang activity feed ng instance na ito para makapag-subscribe dito ang mga sibling instance.",
+    "publishToggleDescription": "Ihain ang activity feed ng instance na ito para makapag-subscribe dito ang mga sibling community.",
     "feedUrlLabel": "Ang iyong feed URL",
-    "feedUrlHelp": "Ibigay ang URL na ito sa mga sibling instance para mahila nila ang iyong mga aktibidad. May lihim na token ito, kaya ibahagi ito nang pribado at sa pamamagitan lang ng HTTPS.",
+    "feedUrlHelp": "Ibigay ang URL na ito sa mga sibling community para mahila nila ang iyong mga aktibidad. May lihim na token ito, kaya ibahagi ito nang pribado at sa pamamagitan lang ng HTTPS.",
     "copy": "Kopyahin",
     "copied": "Kinopya",
     "rotateToken": "I-rotate ang token",
     "tokenRotated": "Na-rotate ang feed token. Ibahagi ulit ang bagong URL sa iyong mga sibling.",
     "setSiteUrlHint": "Naka-on ang paglalathala, pero hindi pa absolute ang iyong feed URL. Itakda ang Site URL ng instance na ito sa mga setting ng site-address para makakuha ang mga sibling ng kumpleto at nalilinkang URL.",
-    "peersSectionTitle": "Mga sibling instance (mga feed na hinihila natin)",
-    "peersSectionDescription": "Mag-subscribe sa mga feed ng sibling instance. Isinasama ang kanilang mga aktibidad sa iyong mapa at stats.",
+    "peersSectionTitle": "Mga sibling community (mga feed na hinihila natin)",
+    "peersSectionDescription": "Mag-subscribe sa mga feed ng sibling community. Isinasama ang kanilang mga aktibidad sa iyong mapa at stats.",
     "addPeer": "Idagdag",
     "feedUrlPlaceholder": "https://sibling.example.edu/api/federation/activities?token=...",
-    "addFeedUrlLabel": "Feed URL ng sibling",
+    "addFeedUrlLabel": "Feed URL ng sibling community",
     "intervalLabel": "Mag-sync tuwing",
     "interval_hour": "Oras",
     "interval_day": "Araw",
@@ -838,19 +918,19 @@
     "syncNow": "Mag-sync ngayon",
     "syncAll": "I-sync lahat ngayon",
     "remove": "Alisin",
-    "confirmRemove": "Alisin ang sibling instance na \"{{label}}\"? Hindi na lalabas sa iyong pinagsamang mga view ang mga aktibidad na hinila mula rito.",
-    "noPeers": "Wala pang sibling instance.",
-    "added": "Naidagdag ang sibling instance.",
-    "removed": "Naalis ang sibling instance.",
+    "confirmRemove": "Alisin ang sibling community na \"{{label}}\"? Hindi na lalabas sa iyong pinagsamang mga view ang mga aktibidad na hinila mula rito.",
+    "noPeers": "Wala pang sibling community.",
+    "added": "Naidagdag ang sibling community.",
+    "removed": "Naalis ang sibling community.",
     "synced": "Tapos na ang pag-sync.",
     "saved": "Na-save.",
     "couldNotSave": "Hindi na-save",
     "rotateModalTitle": "I-rotate ang federation token?",
-    "rotateModalBody": "Agad nitong mawawalan ng bisa ang iyong kasalukuyang feed URL. Titigil sa pag-sync at masisira ang bawat sibling instance na nagbabasa ng iyong data hanggang maipadala mo sa kanila ang bagong URL at ma-update nila ang kanilang setup. Gawin lang ito kung maaaring na-expose ang kasalukuyang token — hindi ito maaaring bawiin.",
+    "rotateModalBody": "Agad nitong mawawalan ng bisa ang iyong kasalukuyang feed URL. Titigil sa pag-sync at masisira ang bawat sibling community na nagbabasa ng iyong data hanggang maipadala mo sa kanila ang bagong URL at ma-update nila ang kanilang setup. Gawin lang ito kung maaaring na-expose ang kasalukuyang token — hindi ito maaaring bawiin.",
     "rotateConfirm": "Oo, i-rotate ang token",
     "rotateCancel": "Kanselahin",
     "publishPlannedToggle": "I-publish ang mga nakaplanong kaganapan",
-    "publishPlannedDescription": "Ibahagi rin ang mga paparating (nakaplanong) kaganapan, para makita ng mga kapwa instance ang iyong iskedyul. Naka-off bilang default.",
+    "publishPlannedDescription": "Ibahagi rin ang mga paparating (nakaplanong) kaganapan, para makita ng mga kapwa community ang iyong iskedyul. Naka-off bilang default.",
     "testFeed": "Subukan",
     "previewOk": "Naabot ang {{name}} — {{formattedCount}} aktibidad ang available.",
     "previewError": "Hindi maabot ang feed: {{error}}",
@@ -858,6 +938,24 @@
     "colNextSync": "Susunod na sync",
     "paused": "Naka-pause",
     "soon": "Malapit na",
-    "statusErrorCount": "Error ×{{count}}"
+    "statusErrorCount": "Error ×{{count}}",
+    "colTagFilter": "Mga filter tag",
+    "tagFilterAll": "Lahat ng event",
+    "tagFilterLabel": "Kunin lang ang mga event na may ganitong tag (opsyonal)",
+    "tagFilterDescription": "Iwanang blangko para kunin ang lahat ng event ng kapatid na komunidad na ito. Magdagdag ng tag para kunin lang ang mga event na may kahit isa sa mga ito.",
+    "tagFilterPlaceholder": "hal. nsf-career"
+  },
+  "profileView": {
+    "totalVisits": "Mga bisita",
+    "peopleReached": "Naabot na tao",
+    "languages": "Nagpre-present sa",
+    "schools": "Mga paaralang pinasukan",
+    "eventsTitle": "Mga event",
+    "colDate": "Petsa",
+    "colTitle": "Pamagat",
+    "colVenue": "Lugar",
+    "colType": "Uri",
+    "colPeople": "Tao",
+    "noEvents": "Wala pang event."
   }
 }

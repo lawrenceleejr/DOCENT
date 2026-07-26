@@ -2,12 +2,12 @@ import json
 import os
 import re
 import secrets
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 import httpx
-from fastapi import APIRouter, Body, HTTPException, Query, status
+from fastapi import APIRouter, Body, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse, Response
 from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.orm import joinedload
@@ -17,6 +17,7 @@ from app.models import (
     FederatedActivity,
     FederationPeer,
     Institution,
+    LoginEvent,
     User,
     UserSchool,
     Venue,
@@ -29,6 +30,7 @@ from app.schemas import (
     BackupItem,
     BackupList,
     DbImportResult,
+    RestoreStatus,
     FederationPeerCreate,
     FederationPeerOut,
     FederationPeerPreview,
@@ -40,6 +42,9 @@ from app.schemas import (
     InstitutionImportRequest,
     InstitutionImportResult,
     InstitutionUpdate,
+    LoginHistory,
+    LoginHistoryDay,
+    LoginHistoryEntry,
     PasswordResetResult,
     RegistrationSettings,
     RegistrationSettingsUpdate,
@@ -53,6 +58,8 @@ from app.services.geocode import geocode, to_meters
 from app.services.institution_import import upsert_institutions
 from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
 from app.services.settings import (
+    BANNER_LEVEL_KEY,
+    BANNER_MESSAGE_KEY,
     CONTACT_EMAIL_KEY,
     FEDERATION_PUBLISH_KEY,
     FEDERATION_PUBLISH_PLANNED_KEY,
@@ -60,15 +67,19 @@ from app.services.settings import (
     LOGIN_MESSAGE_KEY,
     MAP_CENTER_LAT_KEY,
     MAP_CENTER_LON_KEY,
+    MAP_RADIUS_KM_KEY,
     PUBLIC_PAGE_KEY,
     SITE_NAME_KEY,
     SITE_URL_KEY,
     USER_DIRECTORY_KEY,
+    effective_banner_level,
+    effective_banner_message,
     effective_contact_email,
     effective_invite_code,
     effective_login_message,
     effective_map_center_lat,
     effective_map_center_lon,
+    effective_map_radius_km,
     effective_site_name,
     effective_site_url,
     ensure_federation_token,
@@ -174,6 +185,9 @@ def _settings_out(db) -> RegistrationSettings:
         login_message=effective_login_message(db),
         map_center_lat=effective_map_center_lat(db),
         map_center_lon=effective_map_center_lon(db),
+        map_radius_km=effective_map_radius_km(db),
+        banner_message=effective_banner_message(db),
+        banner_level=effective_banner_level(db),
         user_directory_visible=user_directory_visible(db),
         federation_publish=federation_publish_enabled(db),
         federation_publish_planned=federation_publish_planned_enabled(db),
@@ -206,6 +220,12 @@ def update_registration_settings(
         set_setting(db, MAP_CENTER_LAT_KEY, str(body.map_center_lat))
     if body.map_center_lon is not None:
         set_setting(db, MAP_CENTER_LON_KEY, str(body.map_center_lon))
+    if body.map_radius_km is not None:
+        set_setting(db, MAP_RADIUS_KM_KEY, str(body.map_radius_km))
+    if body.banner_message is not None:
+        set_setting(db, BANNER_MESSAGE_KEY, body.banner_message.strip())
+    if body.banner_level is not None:
+        set_setting(db, BANNER_LEVEL_KEY, body.banner_level)
     if body.user_directory_visible is not None:
         set_setting(db, USER_DIRECTORY_KEY, "1" if body.user_directory_visible else "")
     if body.federation_publish is not None:
@@ -251,6 +271,7 @@ def _peer_out(peer: FederationPeer) -> FederationPeerOut:
         last_error=peer.last_error,
         consecutive_failures=peer.consecutive_failures,
         activity_count=peer.activity_count,
+        tag_filter=peer.tag_filter,
         created_at=peer.created_at,
     )
 
@@ -295,7 +316,7 @@ def add_federation_peer(body: FederationPeerCreate, _admin: CurrentAdmin, db: Db
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Feed URL must start with http:// or https://",
         )
-    peer = FederationPeer(feed_url=url, interval=body.interval)
+    peer = FederationPeer(feed_url=url, interval=body.interval, tag_filter=body.tag_filter)
     db.add(peer)
     db.commit()
     db.refresh(peer)
@@ -315,8 +336,17 @@ def update_federation_peer(
         peer.interval = body.interval
     if body.enabled is not None:
         peer.enabled = body.enabled
+    resync = False
+    if body.tag_filter is not None and body.tag_filter != (peer.tag_filter or []):
+        peer.tag_filter = body.tag_filter
+        resync = True
     db.commit()
     db.refresh(peer)
+    # A changed tag filter changes what should be cached — re-pull with a full
+    # reconcile so newly-included events arrive and excluded ones are pruned (#31).
+    if resync and peer.enabled:
+        fed.sync_peer(db, peer, force_full=True)
+        db.refresh(peer)
     return _peer_out(peer)
 
 
@@ -660,6 +690,61 @@ def run_backup(_admin: CurrentAdmin):
     return {"requested": True}
 
 
+@router.get("/login-history", response_model=LoginHistory)
+def login_history(
+    db: DbSession,
+    _admin: CurrentAdmin,
+    days: int = Query(default=30, ge=1, le=365),
+    limit: int = Query(default=50, ge=1, le=200),
+):
+    """Successful-login history for the admin panel (#30): a per-day series for
+    the plot plus the most recent individual logins."""
+    total = db.scalar(select(func.count(LoginEvent.id))) or 0
+
+    recent_rows = db.execute(
+        select(LoginEvent.id, LoginEvent.user_id, LoginEvent.created_at, User.name, User.email)
+        .join(User, User.id == LoginEvent.user_id)
+        .order_by(LoginEvent.created_at.desc())
+        .limit(limit)
+    ).all()
+    recent = [
+        LoginHistoryEntry(
+            id=row.id,
+            user_id=row.user_id,
+            user_name=row.name,
+            user_email=row.email,
+            created_at=row.created_at,
+        )
+        for row in recent_rows
+    ]
+
+    # Per-day counts over the window, then zero-fill so the plot has a
+    # continuous time axis instead of gaps on quiet days.
+    today = datetime.now(timezone.utc).date()
+    start = today - timedelta(days=days - 1)
+    day = func.date(LoginEvent.created_at)
+    grouped = db.execute(
+        select(
+            day.label("day"),
+            func.count(LoginEvent.id).label("logins"),
+            func.count(func.distinct(LoginEvent.user_id)).label("active_users"),
+        )
+        .where(func.date(LoginEvent.created_at) >= start)
+        .group_by(day)
+    ).all()
+    by_day = {row.day: (row.logins, row.active_users) for row in grouped}
+    daily: list[LoginHistoryDay] = []
+    cursor = start
+    while cursor <= today:
+        logins, active = by_day.get(cursor, (0, 0))
+        daily.append(
+            LoginHistoryDay(date=cursor.isoformat(), logins=logins, active_users=active)
+        )
+        cursor += timedelta(days=1)
+
+    return LoginHistory(total=total, recent=recent, daily=daily)
+
+
 @router.get("/backups/download")
 def download_backup(_admin: CurrentAdmin, path: str = Query(min_length=1)):
     root = BACKUP_ROOT.resolve()
@@ -669,4 +754,118 @@ def download_backup(_admin: CurrentAdmin, path: str = Query(min_length=1)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Backup not found")
     return FileResponse(
         target, filename=target.name, media_type="application/octet-stream"
+    )
+
+
+def _restore_status_file() -> Path:
+    return BACKUP_ROOT / ".restore-status"
+
+
+def _write_restore_status(
+    state: str, *, backup: str | None = None, detail: str | None = None
+) -> None:
+    lines = [
+        f"state={state}",
+        f"at={datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}",
+    ]
+    if backup:
+        lines.append(f"backup={backup}")
+    if detail:
+        lines.append(f"detail={detail}")
+    _restore_status_file().write_text("\n".join(lines) + "\n")
+
+
+@router.post(
+    "/backups/restore",
+    status_code=status.HTTP_202_ACCEPTED,
+    response_model=RestoreStatus,
+)
+async def restore_backup(
+    _admin: CurrentAdmin,
+    confirm: str = Form(...),
+    path: str | None = Form(default=None),
+    file: UploadFile | None = File(default=None),
+):
+    """Restore the database from a server-side backup or an uploaded .dump (#29).
+
+    Destructive — it overwrites all current data — so it requires typing RESTORE
+    to confirm, and the backup sidecar takes a fresh pre-restore backup first so
+    a mistaken restore is always recoverable. The pg_restore itself runs in the
+    sidecar (which ships the Postgres tools); here we only stage the file and
+    drop the sentinel it polls for."""
+    if not BACKUP_ROOT.exists():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Backups volume is not mounted on the backend.",
+        )
+    if confirm.strip().upper() != "RESTORE":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Type RESTORE to confirm — this overwrites all current data.",
+        )
+
+    has_upload = file is not None and bool((file.filename or "").strip())
+    has_path = bool(path and path.strip())
+    if has_upload == has_path:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Choose either an existing backup or an uploaded .dump file.",
+        )
+
+    root = BACKUP_ROOT.resolve()
+    if has_upload:
+        # pg_dump custom-format archives start with the magic bytes "PGDMP";
+        # reject anything else before it ever reaches pg_restore.
+        head = await file.read(5)
+        if head != b"PGDMP":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="That file isn't a DOCENT backup (expected a .dump archive).",
+            )
+        uploads = BACKUP_ROOT / "uploads"
+        uploads.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        target = uploads / f"upload-{stamp}.dump"
+        with target.open("wb") as out:
+            out.write(head)
+            while chunk := await file.read(1024 * 1024):
+                out.write(chunk)
+        rel = str(target.relative_to(root))
+    else:
+        target = (root / path).resolve()
+        # Same path-traversal guard as the download endpoint.
+        if root not in target.parents or target.suffix != ".dump" or not target.is_file():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Backup not found"
+            )
+        rel = str(target.relative_to(root))
+
+    detail = "Waiting for the backup service to start."
+    _write_restore_status("queued", backup=rel, detail=detail)
+    (BACKUP_ROOT / ".restore-request").write_text(rel + "\n")
+    return RestoreStatus(state="queued", backup=rel, detail=detail)
+
+
+@router.get("/backups/restore-status", response_model=RestoreStatus)
+def restore_backup_status(_admin: CurrentAdmin):
+    """Progress of the most recent restore, written by the backup sidecar (#29)."""
+    path = _restore_status_file()
+    if not path.exists():
+        return RestoreStatus(state="idle")
+    data: dict[str, str] = {}
+    for line in path.read_text().splitlines():
+        if "=" in line:
+            key, value = line.split("=", 1)
+            data[key.strip()] = value.strip()
+    at = None
+    if data.get("at"):
+        try:
+            at = datetime.fromisoformat(data["at"].replace("Z", "+00:00"))
+        except ValueError:
+            at = None
+    return RestoreStatus(
+        state=data.get("state") or "idle",
+        detail=data.get("detail") or None,
+        backup=data.get("backup") or None,
+        at=at,
     )
