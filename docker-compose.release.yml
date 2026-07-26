@@ -41,7 +41,9 @@ services:
       ACCESS_TOKEN_DAYS: ${ACCESS_TOKEN_DAYS:-7}
       COOKIE_SECURE: ${COOKIE_SECURE:-auto}
     volumes:
-      - backups:/backups
+      # Host bind mount (see BACKUP_DIR in .env) so dumps survive container and
+      # volume deletion — never a Docker-managed volume.
+      - ${BACKUP_DIR:-./backups}:/backups
     depends_on:
       db:
         condition: service_healthy
@@ -88,7 +90,9 @@ services:
       PGDATABASE: ${POSTGRES_DB:-docent}
       BACKUP_HOUR: ${BACKUP_HOUR:-02}
     volumes:
-      - backups:/backups
+      # Host bind mount (see BACKUP_DIR in .env) so dumps survive container and
+      # volume deletion — never a Docker-managed volume.
+      - ${BACKUP_DIR:-./backups}:/backups
     depends_on:
       db:
         condition: service_healthy
@@ -96,6 +100,5 @@ services:
 
 volumes:
   pgdata: {}
-  backups: {}
   caddy_data: {}
   caddy_config: {}

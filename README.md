@@ -326,19 +326,27 @@ That's it — a free, self-hosted, HTTPS DOCENT. Take backups off-box periodical
 | `HTTP_PORT` | `8080` | Host port for the web UI (reverse-proxy forwards here) |
 | `BIND_HOST` | `127.0.0.1` | Interface the port binds to; `0.0.0.0` only for a trusted LAN |
 | `BACKUP_HOUR` | `02` | Hour (UTC, 00–23) of the nightly backup |
+| `BACKUP_DIR` | `./backups` | Host directory backups are written to (a bind mount, so dumps survive container/volume deletion); relative paths resolve against the DOCENT directory |
 | `OVERPASS_URL` | overpass-api.de | OpenStreetMap Overpass endpoint used by the institution importer |
 
 Changes to `.env` take effect after `./scripts/start.sh` (or `docker compose up -d`).
 
 ## Backups
 
-The `backup` service dumps the database every night at `BACKUP_HOUR:00` UTC into the `backups` Docker volume, verifies each dump with `pg_restore --list`, and rotates:
+The `backup` service dumps the database every night at `BACKUP_HOUR:00` UTC into `BACKUP_DIR` on the host (default `./backups` inside the DOCENT directory), verifies each dump with `pg_restore --list`, and rotates:
 
 | Tier | Kept | Created |
 |---|---|---|
 | `daily/` | 7 | every night (plus once on first startup) |
 | `weekly/` | 4 | hardlinked each Sunday |
 | `monthly/` | 12 | hardlinked on the 1st |
+
+`BACKUP_DIR` is a **host bind mount**, not a Docker-managed volume, so your dumps
+are ordinary files on the host that survive `docker compose down -v`,
+`docker volume prune`, and any container or volume deletion — the failure modes
+that would wipe a managed volume along with the containers. Point it at a
+separate disk or an external mount (e.g. `BACKUP_DIR=/mnt/backups/docent`) for
+even better isolation from the database's own storage.
 
 Use the helper scripts (they wrap the `backup` container):
 

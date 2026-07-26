@@ -4,6 +4,17 @@ All notable changes to DOCENT are documented here. This project uses
 [semantic versioning](https://semver.org/); tagged releases publish container
 images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
+## Unreleased
+
+### Changed
+- **Backups now live on the host, not in a Docker volume.** The nightly dumps
+  are written to a configurable host directory (`BACKUP_DIR`, default `./backups`
+  inside the DOCENT directory) via a bind mount instead of a Docker-managed
+  volume, so they survive `docker compose down -v`, `docker volume prune`, and
+  container/volume deletions. Point `BACKUP_DIR` at a separate disk or mount for
+  extra isolation. Existing dumps in the old `backups` volume can be copied over
+  once with `./scripts/download-backups.sh` before switching.
+
 ## v0.1.0 — first tagged release
 
 The initial public release. **Reach out**, track it, and prove your **Broad
