@@ -36,7 +36,9 @@ services:
       REQUESTS_CA_BUNDLE: ${REQUESTS_CA_BUNDLE:-}
     volumes:
       # Read the backup catalog and drop the "run now" sentinel the sidecar polls.
-      - backups:/backups
+      # Host bind mount (see BACKUP_DIR in .env) so dumps survive container and
+      # volume deletion — never a Docker-managed volume.
+      - ${BACKUP_DIR:-./backups}:/backups
     depends_on:
       db:
         condition: service_healthy
@@ -94,7 +96,9 @@ services:
       PGDATABASE: ${POSTGRES_DB:-docent}
       BACKUP_HOUR: ${BACKUP_HOUR:-02}
     volumes:
-      - backups:/backups
+      # Host bind mount (see BACKUP_DIR in .env) so dumps survive container and
+      # volume deletion — never a Docker-managed volume.
+      - ${BACKUP_DIR:-./backups}:/backups
     depends_on:
       db:
         condition: service_healthy
@@ -102,6 +106,5 @@ services:
 
 volumes:
   pgdata: {}
-  backups: {}
   caddy_data: {}
   caddy_config: {}
