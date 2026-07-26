@@ -23,6 +23,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { isOverdue, type ActivityListItem, type AuthConfig, type Paginated } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { GITHUB_CONTRIBUTING_URL, GITHUB_README_URL } from '../links';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { Logo } from './Logo';
 import { TranslationDisclaimer } from './TranslationDisclaimer';
@@ -347,9 +348,3 @@ const COPYRIGHT_YEAR = 2026;
 // The footer version: the git tag when this commit is tagged, otherwise the
 // short commit hash. Injected at build time — see vite.config.ts (#26).
 const APP_VERSION = __APP_VERSION__;
-
-// Footer links back to the project home and its contribution guide (#34).
-const GITHUB_README_URL =
-  'https://github.com/lawrenceleejr/DOCENT?tab=readme-ov-file#docent--reach-out-track-it-prove-your-broad-impact';
-const GITHUB_CONTRIBUTING_URL =
-  'https://github.com/lawrenceleejr/DOCENT?tab=contributing-ov-file#contributing-to-docent';

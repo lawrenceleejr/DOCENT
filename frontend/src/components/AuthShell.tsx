@@ -6,8 +6,10 @@ import {
 } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { GITHUB_CONTRIBUTING_URL, GITHUB_README_URL } from '../links';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { LogoReveal } from './LogoReveal';
+import { MobileSplash } from './MobileSplash';
 import { TranslationDisclaimer } from './TranslationDisclaimer';
 
 /**
@@ -23,6 +25,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
   ];
   return (
     <Box className="auth-grid" style={{ position: 'relative' }}>
+      <MobileSplash />
       <Box pos="absolute" top="1rem" right="1rem" style={{ zIndex: 1 }}>
         <LanguageSwitcher />
       </Box>
@@ -100,6 +103,12 @@ export function AuthShell({ children }: { children: ReactNode }) {
             underline="always"
           >
             GNU GPL v3
+          </Anchor>{' · '}
+          <Anchor href={GITHUB_README_URL} target="_blank" rel="noreferrer" c="dimmed" underline="always">
+            {t('layout.footerGithub')}
+          </Anchor>{' · '}
+          <Anchor href={GITHUB_CONTRIBUTING_URL} target="_blank" rel="noreferrer" c="dimmed" underline="always">
+            {t('layout.footerSuggestions')}
           </Anchor>
         </Text>
       </Box>

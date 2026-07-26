@@ -76,9 +76,12 @@ export function LogoReveal({
         </div>
 
         {showTagline && (
+          // Plain spaces (not &nbsp;) so the definition wraps to multiple lines
+          // on a narrow panel instead of overflowing and getting clipped (#33).
+          // The inter-word gap is restored via `word-spacing` in the CSS.
           <div className="dc-tagline">
-            <b>D</b>istributed&nbsp;&nbsp;<b>O</b>utreach&nbsp;&amp;&nbsp;<b>C</b>ommunity&nbsp;&nbsp;
-            <b>E</b>ngagement&nbsp;&nbsp;<b>N</b>etwork&nbsp;&nbsp;<b>T</b>racker
+            <b>D</b>istributed <b>O</b>utreach &amp; <b>C</b>ommunity{' '}
+            <b>E</b>ngagement <b>N</b>etwork <b>T</b>racker
           </div>
         )}
       </div>

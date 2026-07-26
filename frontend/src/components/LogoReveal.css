@@ -35,10 +35,15 @@
   font-family: 'Inter Variable', Inter, sans-serif;
   font-size: 13px;
   letter-spacing: 0.26em;
+  /* Wider gap between words (previously hard-coded as double &nbsp;), now via
+     word-spacing so the words can still line-break when space is tight (#33). */
+  word-spacing: 0.35em;
+  line-height: 1.5;
   text-transform: uppercase;
   font-weight: 500;
   color: #6d6d80;
   text-align: center;
+  overflow-wrap: break-word;
   animation: dcFade 0.8s ease-out 2.15s both;
 }
 .dc-tagline b {
