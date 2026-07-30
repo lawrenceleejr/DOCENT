@@ -471,7 +471,7 @@ export function MapPage() {
                       formattedCount: v.visit_count.toLocaleString(),
                     })}
                     <br />
-                    <Button size="compact-xs" mt={6} variant="light" onClick={() => navigate(`/venues/${v.id}`)}>
+                    <Button size="compact-xs" mt={6} variant="filled" onClick={() => navigate(`/venues/${v.id}`)}>
                       {t('map.openVenue')}
                     </Button>
                   </Popup>
