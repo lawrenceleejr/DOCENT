@@ -4,7 +4,34 @@ All notable changes to DOCENT are documented here. This project uses
 [semantic versioning](https://semver.org/); tagged releases publish container
 images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
-## Unreleased
+## v0.1.4
+
+### Added
+- **Account creation now shows up in the admin login history** alongside
+  sign-ins. Each entry is tagged as a login or a registration, and the per-day
+  chart breaks the two out — so a new account is visible immediately instead of
+  only after its first sign-in.
+
+### Fixed
+- **Adding a venue no longer blanks the page.** When the address search
+  returned several results that reduced to the same display label (common for
+  a street-level query), the autocomplete threw mid-render and unmounted the
+  app. Suggestions are now de-duplicated by label before rendering, and
+  unnamed results lead with their street address so the list stays useful.
+- The map popup's **"Open venue"** button is now solid purple instead of a
+  hard-to-read washed-out tint, matching the "Log a visit here" button.
+
+### Security
+- The backend **refuses to start when `POSTGRES_PASSWORD` is left at the
+  `.env.example` placeholder** (`change-me`), mirroring the existing
+  `SECRET_KEY` guard — a forgotten edit now fails loudly instead of quietly
+  running with a well-known database credential.
+
+### Changed
+- Oxford comma in the login page's "every school, college, museum, and
+  library you reach" tagline.
+
+## v0.1.3
 
 ### Changed
 - **Backups now live on the host, not in a Docker volume.** The nightly dumps
