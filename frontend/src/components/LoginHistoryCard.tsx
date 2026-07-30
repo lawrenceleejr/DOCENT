@@ -8,13 +8,20 @@ import {
   useComputedColorScheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconChevronDown, IconChevronUp, IconHistory } from '@tabler/icons-react';
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconHistory,
+  IconLogin2,
+  IconUserPlus,
+} from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -112,12 +119,27 @@ export function LoginHistoryCard() {
                       borderRadius: 8,
                     }}
                     labelFormatter={(d: string) => d}
-                    formatter={(value: number) => [
+                    formatter={(value: number, name: string) => [
                       value.toLocaleString(),
-                      t('admin.loginHistoryLoginsLabel'),
+                      name === 'registrations'
+                        ? t('admin.loginHistoryRegistrationsLabel')
+                        : t('admin.loginHistoryLoginsLabel'),
                     ]}
                   />
-                  <Bar dataKey="logins" fill={viz.series1} radius={[3, 3, 0, 0]} />
+                  <Legend
+                    formatter={(name: string) =>
+                      name === 'registrations'
+                        ? t('admin.loginHistoryRegistrationsLabel')
+                        : t('admin.loginHistoryLoginsLabel')
+                    }
+                  />
+                  <Bar dataKey="logins" stackId="events" fill={viz.series1} radius={[0, 0, 0, 0]} />
+                  <Bar
+                    dataKey="registrations"
+                    stackId="events"
+                    fill={viz.series2}
+                    radius={[3, 3, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
 
@@ -129,6 +151,7 @@ export function LoginHistoryCard() {
                   <Table.Thead>
                     <Table.Tr>
                       <Table.Th>{t('admin.loginHistoryColUser')}</Table.Th>
+                      <Table.Th>{t('admin.loginHistoryColEvent')}</Table.Th>
                       <Table.Th>{t('admin.loginHistoryColWhen')}</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
@@ -142,6 +165,24 @@ export function LoginHistoryCard() {
                           <Text size="xs" c="dimmed">
                             {entry.user_email}
                           </Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Badge
+                            variant="light"
+                            size="sm"
+                            color={entry.event_type === 'register' ? 'teal' : 'blue'}
+                            leftSection={
+                              entry.event_type === 'register' ? (
+                                <IconUserPlus size={12} />
+                              ) : (
+                                <IconLogin2 size={12} />
+                              )
+                            }
+                          >
+                            {entry.event_type === 'register'
+                              ? t('admin.loginHistoryEventRegister')
+                              : t('admin.loginHistoryEventLogin')}
+                          </Badge>
                         </Table.Td>
                         <Table.Td>
                           <Text size="sm" className="tabular-nums">

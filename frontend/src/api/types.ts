@@ -614,12 +614,14 @@ export interface LoginHistoryEntry {
   user_id: number;
   user_name: string;
   user_email: string;
+  event_type: 'login' | 'register';
   created_at: string;
 }
 
 export interface LoginHistoryDay {
   date: string;
   logins: number;
+  registrations: number;
   active_users: number;
 }
 

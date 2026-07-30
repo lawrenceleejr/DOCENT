@@ -84,6 +84,11 @@ class FederationInterval(str, enum.Enum):
     week = "week"
 
 
+class LoginEventType(str, enum.Enum):
+    login = "login"
+    register = "register"
+
+
 class HostRelationship(str, enum.Enum):
     teacher_faculty = "teacher_faculty"
     administrator = "administrator"
@@ -447,16 +452,23 @@ class FederatedActivity(Base):
 
 
 class LoginEvent(Base):
-    """A successful login, recorded for the admin login-history view (#30).
+    """A successful login or new-account registration, recorded for the admin
+    login-history view (#30).
 
-    Deliberately minimal — user + timestamp only, no IP address or user-agent
-    — so it stays a lightweight activity log rather than a tracking record."""
+    Deliberately minimal — user + timestamp + event type only, no IP address
+    or user-agent — so it stays a lightweight activity log rather than a
+    tracking record."""
 
     __tablename__ = "login_events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    event_type: Mapped[LoginEventType] = mapped_column(
+        Enum(LoginEventType, name="login_event_type"),
+        nullable=False,
+        server_default=LoginEventType.login.value,
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), index=True

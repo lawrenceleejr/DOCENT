@@ -322,20 +322,24 @@ def test_restore_from_upload_validates_and_stages(client, tmp_path, monkeypatch)
 
 def test_login_history_records_and_lists(client):
     register(client, email="admin@example.com", password="password123")  # admin
-    # Explicit logins are what get recorded (the auto-login on register is not).
+    # Registration itself is recorded as a "register" event...
     for _ in range(2):
         assert client.post(
             "/api/auth/login",
             json={"email": "admin@example.com", "password": "password123"},
         ).status_code == 200
+    # ...alongside the two explicit "login" events.
 
     hist = client.get("/api/admin/login-history").json()
-    assert hist["total"] == 2
-    assert len(hist["recent"]) == 2
+    assert hist["total"] == 3
+    assert len(hist["recent"]) == 3
     assert hist["recent"][0]["user_email"] == "admin@example.com"
+    assert {entry["event_type"] for entry in hist["recent"]} == {"login", "register"}
+    assert sum(1 for e in hist["recent"] if e["event_type"] == "register") == 1
     # The daily series is zero-filled across the default 30-day window.
     assert len(hist["daily"]) == 30
     assert sum(d["logins"] for d in hist["daily"]) == 2
+    assert sum(d["registrations"] for d in hist["daily"]) == 1
 
 
 def test_login_history_admin_only(client, make_client):

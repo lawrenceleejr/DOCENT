@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import func, select
 
 from app.deps import CurrentUser, DbSession
-from app.models import LoginEvent, User
+from app.models import LoginEvent, LoginEventType, User
 from app.services.federation import has_enabled_peers
 from app.ratelimit import login_rate_limit, register_rate_limit
 from app.schemas import AuthConfig, LoginRequest, RegisterRequest, UserOut
@@ -93,6 +93,9 @@ def register(body: RegisterRequest, request: Request, response: Response, db: Db
     db.refresh(user)
 
     set_auth_cookie(response, create_access_token(user.id), request)
+    # Record the new account for the admin login-history view (#30).
+    db.add(LoginEvent(user_id=user.id, event_type=LoginEventType.register))
+    db.commit()
     return user
 
 
@@ -110,7 +113,7 @@ def login(body: LoginRequest, request: Request, response: Response, db: DbSessio
         )
     set_auth_cookie(response, create_access_token(user.id), request)
     # Record the successful login for the admin login-history view (#30).
-    db.add(LoginEvent(user_id=user.id))
+    db.add(LoginEvent(user_id=user.id, event_type=LoginEventType.login))
     db.commit()
     return user
 

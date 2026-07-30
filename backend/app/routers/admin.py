@@ -18,6 +18,7 @@ from app.models import (
     FederationPeer,
     Institution,
     LoginEvent,
+    LoginEventType,
     User,
     UserSchool,
     Venue,
@@ -697,12 +698,19 @@ def login_history(
     days: int = Query(default=30, ge=1, le=365),
     limit: int = Query(default=50, ge=1, le=200),
 ):
-    """Successful-login history for the admin panel (#30): a per-day series for
-    the plot plus the most recent individual logins."""
+    """Login/registration history for the admin panel (#30): a per-day series
+    for the plot plus the most recent individual events."""
     total = db.scalar(select(func.count(LoginEvent.id))) or 0
 
     recent_rows = db.execute(
-        select(LoginEvent.id, LoginEvent.user_id, LoginEvent.created_at, User.name, User.email)
+        select(
+            LoginEvent.id,
+            LoginEvent.user_id,
+            LoginEvent.event_type,
+            LoginEvent.created_at,
+            User.name,
+            User.email,
+        )
         .join(User, User.id == LoginEvent.user_id)
         .order_by(LoginEvent.created_at.desc())
         .limit(limit)
@@ -713,6 +721,7 @@ def login_history(
             user_id=row.user_id,
             user_name=row.name,
             user_email=row.email,
+            event_type=row.event_type,
             created_at=row.created_at,
         )
         for row in recent_rows
@@ -723,22 +732,32 @@ def login_history(
     today = datetime.now(timezone.utc).date()
     start = today - timedelta(days=days - 1)
     day = func.date(LoginEvent.created_at)
+    is_login = LoginEvent.event_type == LoginEventType.login
+    is_register = LoginEvent.event_type == LoginEventType.register
     grouped = db.execute(
         select(
             day.label("day"),
-            func.count(LoginEvent.id).label("logins"),
+            func.count().filter(is_login).label("logins"),
+            func.count().filter(is_register).label("registrations"),
             func.count(func.distinct(LoginEvent.user_id)).label("active_users"),
         )
         .where(func.date(LoginEvent.created_at) >= start)
         .group_by(day)
     ).all()
-    by_day = {row.day: (row.logins, row.active_users) for row in grouped}
+    by_day = {
+        row.day: (row.logins, row.registrations, row.active_users) for row in grouped
+    }
     daily: list[LoginHistoryDay] = []
     cursor = start
     while cursor <= today:
-        logins, active = by_day.get(cursor, (0, 0))
+        logins, registrations, active = by_day.get(cursor, (0, 0, 0))
         daily.append(
-            LoginHistoryDay(date=cursor.isoformat(), logins=logins, active_users=active)
+            LoginHistoryDay(
+                date=cursor.isoformat(),
+                logins=logins,
+                registrations=registrations,
+                active_users=active,
+            )
         )
         cursor += timedelta(days=1)
 
