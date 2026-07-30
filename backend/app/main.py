@@ -4,6 +4,7 @@
 import asyncio
 
 from fastapi import FastAPI
+from sqlalchemy.engine import make_url
 
 from app.config import get_settings
 from app.routers import (
@@ -23,6 +24,7 @@ from app.routers import (
 )
 
 INSECURE_SECRET = "dev-secret-do-not-use-in-production"
+INSECURE_POSTGRES_PASSWORD = "change-me"
 
 app = FastAPI(
     title="DOCENT API",
@@ -40,6 +42,21 @@ def _require_real_secret_key() -> None:
         raise RuntimeError(
             "SECRET_KEY is unset, a placeholder, or too short. Set a strong "
             "value in .env (openssl rand -hex 32 gives a good 64-char key)."
+        )
+
+
+@app.on_event("startup")
+def _require_real_postgres_password() -> None:
+    # Postgres will happily start with the '.env.example' placeholder password,
+    # so a forgotten edit here would otherwise boot up successfully with a
+    # well-known credential instead of failing loudly. `scripts/start.sh`
+    # generates a strong one automatically.
+    password = make_url(get_settings().database_url).password
+    if password and INSECURE_POSTGRES_PASSWORD in password:
+        raise RuntimeError(
+            "POSTGRES_PASSWORD is still the '.env.example' placeholder "
+            "('change-me'). Set a strong value in .env (openssl rand -hex 16 "
+            "gives a good one), then recreate the containers."
         )
 
 
