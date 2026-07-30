@@ -63,12 +63,35 @@ def test_parse_falls_back_to_address_when_unnamed():
     bare = results[1]
     assert bare.name is None
     assert bare.address == "42 Oak Ave"
-    # No name, so the label falls back to city/state.
-    assert bare.label == "Maryville, Tennessee"
+    # No name, so the label leads with the street address (not a bare
+    # city/state) so a street-level search shows the street the user typed.
+    assert bare.label == "42 Oak Ave, Maryville, Tennessee"
 
 
 def test_parse_handles_missing_features_key():
     assert parse_photon_response({}) == []
+
+
+def test_parse_can_produce_duplicate_labels():
+    """Distinct results (different coords) can still reduce to the same label —
+    e.g. two unnamed points with no street on the same city block. The dropdown
+    that consumes these must dedupe by label; this documents that the parser
+    does not guarantee uniqueness."""
+    collide = {
+        "features": [
+            {
+                "geometry": {"type": "Point", "coordinates": [-83.9, 35.9]},
+                "properties": {"city": "Knoxville", "state": "Tennessee"},
+            },
+            {
+                "geometry": {"type": "Point", "coordinates": [-83.8, 35.8]},
+                "properties": {"city": "Knoxville", "state": "Tennessee"},
+            },
+        ]
+    }
+    results = parse_photon_response(collide)
+    assert len(results) == 2
+    assert results[0].label == results[1].label == "Knoxville, Tennessee"
 
 
 def test_geocode_search_endpoint(client, monkeypatch):

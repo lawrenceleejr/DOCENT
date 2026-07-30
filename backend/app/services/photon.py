@@ -30,8 +30,14 @@ class PlaceSuggestion:
     longitude: float
 
 
-def _display_label(name: str | None, city: str | None, state: str | None) -> str:
-    parts = [p for p in (name, city, state) if p]
+def _display_label(
+    name: str | None, address: str | None, city: str | None, state: str | None
+) -> str:
+    # Lead with the place name when there is one, otherwise the street address,
+    # so a street-level search ("800 world's fair park dr") shows the street the
+    # user typed instead of collapsing every nearby result to a bare "City,
+    # State". This also keeps distinct results distinguishable in the dropdown.
+    parts = [p for p in (name or address, city, state) if p]
     return ", ".join(parts) if parts else "Unnamed place"
 
 
@@ -57,7 +63,7 @@ def parse_photon_response(data: dict) -> list[PlaceSuggestion]:
 
         suggestions.append(
             PlaceSuggestion(
-                label=_display_label(name, city, state),
+                label=_display_label(name, address, city, state),
                 name=name,
                 address=address,
                 city=city,

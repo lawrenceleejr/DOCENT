@@ -209,11 +209,19 @@ export function VenueFormModal({
       api.get<PlaceSuggestion[]>('/api/geocode/search', { q: debouncedAddressQuery }),
     enabled: debouncedAddressQuery.trim().length >= 2,
   });
+  // Mantine's Autocomplete uses each option's label as its value and throws
+  // ("Duplicate options are not supported") mid-render if two share one —
+  // which crashes the whole page. Photon readily returns several results that
+  // reduce to the same label (e.g. multiple unnamed points on one street), so
+  // key by label and keep the first (best-ranked) suggestion for each.
   const suggestionByLabel = useMemo(() => {
     const map = new Map<string, PlaceSuggestion>();
-    for (const s of suggestions ?? []) map.set(s.label, s);
+    for (const s of suggestions ?? []) {
+      if (!map.has(s.label)) map.set(s.label, s);
+    }
     return map;
   }, [suggestions]);
+  const addressOptions = useMemo(() => [...suggestionByLabel.keys()], [suggestionByLabel]);
 
   const form = useForm({
     initialValues: {
@@ -289,7 +297,7 @@ export function VenueFormModal({
             label={t('venuePicker.addressSearchLabel')}
             description={t('venuePicker.addressSearchDescription')}
             placeholder={t('venuePicker.addressSearchPlaceholder')}
-            data={(suggestions ?? []).map((s) => s.label)}
+            data={addressOptions}
             value={addressQuery}
             onChange={setAddressQuery}
             onOptionSubmit={(label) => {
