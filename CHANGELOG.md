@@ -4,6 +4,30 @@ All notable changes to DOCENT are documented here. This project uses
 [semantic versioning](https://semver.org/); tagged releases publish container
 images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
+## v0.2.0
+
+### Added
+- **Every exported report now carries the full Analysis breakdowns** — activity
+  by year and by venue type, event type, audience level, and host relationship,
+  plus top venues and a communicator leaderboard — across JSON, CSV, Markdown,
+  LaTeX, and PDF, and in the Reports page preview. The figures are computed over
+  exactly the report's filtered activities, so they always reconcile with the
+  rows. Aggregate-only: no descriptions, reflections, ratings, or host contact
+  details.
+- **PDF reports now include an activity map.** Your report's venues are plotted
+  on the same map basemap the web app uses, sized by activity count — a
+  citywide report gets street-level detail, a spread-out one a world view. When
+  the server can't reach the tile provider it falls back to a dependency-free
+  vector coverage map, so report generation never fails or hangs.
+
+### Changed
+- **A more native feel on phones.** The layout honors safe-area insets on
+  notched devices, adds subtle page-transition fades and loading skeletons, and
+  stops iOS from auto-zooming when a form field is focused. The federation
+  "add peer" form stacks cleanly on narrow screens.
+- **The map now opens at the admin-configured center and coverage radius**
+  instead of zooming to fit every venue.
+
 ## v0.1.4
 
 ### Added
