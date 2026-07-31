@@ -16,8 +16,21 @@ from datetime import date, timedelta
 
 from app.database import SessionLocal
 from app.services.dbtransfer import import_data
+from app.services.settings import (
+    MAP_CENTER_LAT_KEY,
+    MAP_CENTER_LON_KEY,
+    MAP_RADIUS_KM_KEY,
+    set_setting,
+)
 
 TODAY = date.today()
+
+# Center the map on the demo venue cluster (Knoxville area) with a radius that
+# frames it — modeling how a real admin sets their coverage area. The map opens
+# at this center and zoom; it no longer auto-fits to the venues.
+DEMO_MAP_CENTER_LAT = 35.90
+DEMO_MAP_CENTER_LON = -84.05
+DEMO_MAP_RADIUS_KM = 35.0
 
 USERS = [
     {"email": "demo.ada@example.org", "name": "Ada Alvarez", "affiliation": "Dept. of Physics"},
@@ -131,6 +144,11 @@ def main() -> None:
     db = SessionLocal()
     try:
         counts = import_data(db, build_payload())
+        # Point the map at the demo venues so it opens framed on them.
+        set_setting(db, MAP_CENTER_LAT_KEY, str(DEMO_MAP_CENTER_LAT))
+        set_setting(db, MAP_CENTER_LON_KEY, str(DEMO_MAP_CENTER_LON))
+        set_setting(db, MAP_RADIUS_KM_KEY, str(DEMO_MAP_RADIUS_KM))
+        db.commit()
         print("Demo data seeded (merge-import, re-running never duplicates):")
         for key, value in counts.items():
             print(f"  {key}: {value}")

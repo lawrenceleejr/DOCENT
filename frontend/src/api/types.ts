@@ -497,16 +497,6 @@ export interface VenuePoint {
   institution_id: number | null;
 }
 
-// Bounding box of venues with any visit, so the map opens framed on the actual
-// activity rather than a fixed radius (#18).
-export interface MapExtent {
-  has_data: boolean;
-  south: number | null;
-  north: number | null;
-  west: number | null;
-  east: number | null;
-}
-
 // Best-effort mapping from a catalog institution to venue-create defaults.
 // OSM can't tell elementary/middle/high apart, so we guess K-12 grade from the
 // name and leave the rest for the user to confirm in the form.

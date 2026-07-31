@@ -89,32 +89,6 @@ def test_map_venues_endpoint(client):
     assert names["Mapped Venue"]["visit_count"] == 1
 
 
-def test_map_extent(client):
-    """The extent is the bounding box of venues with any visit (completed or
-    planned); un-visited venues don't stretch it, and a fresh instance has none
-    (#18)."""
-    register(client)
-    assert client.get("/api/map/extent").json()["has_data"] is False
-
-    a = client.post("/api/venues", json={
-        "name": "A", "venue_type": "museum", "city": "K", "latitude": 35.9, "longitude": -84.0,
-    }).json()
-    b = client.post("/api/venues", json={
-        "name": "B", "venue_type": "library", "city": "K", "latitude": 36.1, "longitude": -83.8,
-    }).json()
-    # Has coordinates but no visit — must NOT widen the extent.
-    client.post("/api/venues", json={
-        "name": "C", "venue_type": "high_school", "city": "K", "latitude": 30.0, "longitude": -90.0,
-    })
-    create_visit(client, a["id"])
-    create_visit(client, b["id"], status="planned", visit_date="2027-01-01")
-
-    e = client.get("/api/map/extent").json()
-    assert e["has_data"] is True
-    assert e["south"] == 35.9 and e["north"] == 36.1
-    assert e["west"] == -84.0 and e["east"] == -83.8
-
-
 def test_create_venue_with_bad_institution_404(client):
     register(client)
     r = client.post(

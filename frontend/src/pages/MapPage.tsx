@@ -25,7 +25,6 @@ import {
   type FederatedMapPoint,
   type InstitutionPoint,
   type InstitutionType,
-  type MapExtent,
   type Venue,
   type VenuePoint,
 } from '../api/types';
@@ -51,27 +50,14 @@ function roundBounds(b: Bounds): Bounds {
   return { south: r(b.south), north: r(b.north), west: r(b.west), east: r(b.east) };
 }
 
-// A lat/lon box roughly `km` in every direction from the center — the fallback
-// framing on a fresh instance that has no visited venues to fit to yet (#18).
+// A lat/lon box roughly `km` in every direction from the admin-configured
+// center — this sets the map's starting zoom from the coverage radius (#18).
 function radiusToBounds(lat: number, lon: number, km: number): LatLngBoundsExpression {
   const dLat = km / 111.32;
   const dLon = km / (111.32 * Math.cos((lat * Math.PI) / 180));
   return [
     [lat - dLat, lon - dLon],
     [lat + dLat, lon + dLon],
-  ];
-}
-
-// Frame the map on the venues that actually have activity, with a little
-// padding, so every visited/scheduled venue is in view (#18). A single-venue
-// (zero-span) box is padded to a sane minimum so it doesn't zoom to the street.
-function extentToBounds(e: MapExtent): LatLngBoundsExpression | null {
-  if (e.south == null || e.north == null || e.west == null || e.east == null) return null;
-  const padLat = Math.max((e.north - e.south) * 0.15, 0.05);
-  const padLon = Math.max((e.east - e.west) * 0.15, 0.05);
-  return [
-    [e.south - padLat, e.west - padLon],
-    [e.north + padLat, e.east + padLon],
   ];
 }
 
@@ -227,14 +213,6 @@ export function MapPage() {
   const { data: config } = useQuery({
     queryKey: ['auth', 'config'],
     queryFn: () => api.get<AuthConfig>('/api/auth/config'),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Fit the initial view to the venues we actually have activity at (#18); the
-  // admin center/radius is only the fallback when there's nothing to frame.
-  const { data: extent } = useQuery({
-    queryKey: ['map', 'extent'],
-    queryFn: () => api.get<MapExtent>('/api/map/extent'),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -425,14 +403,15 @@ export function MapPage() {
       </FilterCard>
 
       <Card withBorder p={0} style={{ overflow: 'hidden' }}>
-        {config && extent && (
-          // bounds are only read on mount — wait for the venue extent (and the
-          // config fallback) so the map opens framed on the actual activity (#18).
+        {config && (
+          // bounds are only read on mount — wait for the config so the map opens
+          // framed to the admin-configured center and coverage radius (#18).
           <MapContainer
-            bounds={
-              extentToBounds(extent) ??
-              radiusToBounds(config.map_center_lat, config.map_center_lon, config.map_radius_km)
-            }
+            bounds={radiusToBounds(
+              config.map_center_lat,
+              config.map_center_lon,
+              config.map_radius_km,
+            )}
             boundsOptions={{ padding: [24, 24] }}
             style={{ height: '70vh', width: '100%' }}
             scrollWheelZoom
