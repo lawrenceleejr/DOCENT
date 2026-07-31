@@ -6,6 +6,7 @@ import {
   Card,
   CopyButton,
   Divider,
+  Flex,
   Group,
   Modal,
   Select,
@@ -324,7 +325,14 @@ export function FederationCard() {
         {t('federationCard.peersSectionDescription')}
       </Text>
 
-      <Group align="flex-end" mb="xs" wrap="nowrap">
+      {/* Column on mobile so the long feed-URL field gets a full row instead of
+          being crushed next to the select + buttons; inline row on desktop. */}
+      <Flex
+        direction={{ base: 'column', sm: 'row' }}
+        align={{ base: 'stretch', sm: 'flex-end' }}
+        gap="sm"
+        mb="xs"
+      >
         <TextInput
           label={t('federationCard.addFeedUrlLabel')}
           placeholder={t('federationCard.feedUrlPlaceholder')}
@@ -335,31 +343,33 @@ export function FederationCard() {
           }}
           style={{ flex: 1 }}
         />
-        <Select
-          label={t('federationCard.intervalLabel')}
-          data={intervalOptions}
-          value={interval}
-          onChange={(v) => v && setInterval(v as FederationInterval)}
-          w={120}
-          allowDeselect={false}
-        />
-        <Button
-          variant="default"
-          loading={testFeed.isPending}
-          disabled={feedUrl.trim().length === 0}
-          onClick={() => testFeed.mutate()}
-        >
-          {t('federationCard.testFeed')}
-        </Button>
-        <Button
-          variant="gradient"
-          loading={add.isPending}
-          disabled={feedUrl.trim().length === 0}
-          onClick={() => add.mutate()}
-        >
-          {t('federationCard.addPeer')}
-        </Button>
-      </Group>
+        <Group align="flex-end" gap="sm" wrap="wrap">
+          <Select
+            label={t('federationCard.intervalLabel')}
+            data={intervalOptions}
+            value={interval}
+            onChange={(v) => v && setInterval(v as FederationInterval)}
+            w={120}
+            allowDeselect={false}
+          />
+          <Button
+            variant="default"
+            loading={testFeed.isPending}
+            disabled={feedUrl.trim().length === 0}
+            onClick={() => testFeed.mutate()}
+          >
+            {t('federationCard.testFeed')}
+          </Button>
+          <Button
+            variant="gradient"
+            loading={add.isPending}
+            disabled={feedUrl.trim().length === 0}
+            onClick={() => add.mutate()}
+          >
+            {t('federationCard.addPeer')}
+          </Button>
+        </Group>
+      </Flex>
 
       <TagsInput
         label={t('federationCard.tagFilterLabel')}
