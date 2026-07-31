@@ -607,24 +607,235 @@ def _pdf_table(pdf: Any, table: dict[str, Any], usable_w: float) -> None:
         fill = not fill
 
 
-def _pdf_map(pdf: Any, points: list[dict[str, Any]], usable_w: float) -> None:
-    """A dependency-free 'coverage map': venue coordinates projected
-    (equirectangular, aspect-corrected) into a framed panel as dots sized by
-    activity count. No basemap tiles — reliable and offline."""
+# CARTO "light" raster basemap — the very tiles the web map uses (see
+# frontend/src/pages/MapPage.tsx) — stitched into a static image behind the PDF
+# activity map. Fetched at report time; if the backend can't reach the tile
+# server we fall back to the dependency-free vector coverage map below.
+_BASEMAP_TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+_BASEMAP_SUBDOMAINS = ("a", "b", "c", "d")
+_BASEMAP_TILE_PX = 512  # @2x retina tiles for print-quality output
+_BASEMAP_MAX_TILES = 30
+_BASEMAP_ATTRIBUTION = "(c) OpenStreetMap  (c) CARTO"
+
+
+def _mercator_px(lat: float, lon: float, z: int, tile_px: int) -> tuple[float, float]:
+    """Web-Mercator global pixel coordinate at zoom `z` (origin top-left), the
+    projection the slippy-map tiles are drawn in."""
     import math
 
+    n = tile_px * (2 ** z)
+    lat = max(min(lat, 85.05112878), -85.05112878)
+    lat_rad = math.radians(lat)
+    x = (lon + 180.0) / 360.0 * n
+    y = (1.0 - math.log(math.tan(lat_rad) + 1.0 / math.cos(lat_rad)) / math.pi) / 2.0 * n
+    return x, y
+
+
+def _pick_basemap_zoom(
+    min_lat: float, max_lat: float, min_lon: float, max_lon: float,
+    tile_px: int, target_w: float, target_h: float, max_tiles: int,
+) -> int:
+    """Largest zoom whose pixel bbox fits the target image and tile budget — so a
+    citywide report gets street detail and a transatlantic one gets a world view."""
+    import math
+
+    for z in range(16, -1, -1):
+        left = _mercator_px(0.0, min_lon, z, tile_px)[0]
+        right = _mercator_px(0.0, max_lon, z, tile_px)[0]
+        top = _mercator_px(max_lat, 0.0, z, tile_px)[1]
+        bottom = _mercator_px(min_lat, 0.0, z, tile_px)[1]
+        w, h = right - left, bottom - top
+        if w <= 0 or h <= 0:
+            continue
+        tx_min, tx_max = math.floor(left / tile_px), math.floor((right - 1e-6) / tile_px)
+        ty_min, ty_max = math.floor(top / tile_px), math.floor((bottom - 1e-6) / tile_px)
+        tiles = (tx_max - tx_min + 1) * (ty_max - ty_min + 1)
+        if w <= target_w and h <= target_h and tiles <= max_tiles:
+            return z
+    return 0
+
+
+def _fetch_basemap(coords: list[dict[str, Any]]):
+    """Stitch CARTO tiles covering the venue bbox into one image. Returns
+    (PIL image, project(lat, lon)->(px, py), (width, height)) or raises if the
+    tiles can't be fetched (offline / restricted backend)."""
+    import io
+    import math
+    from concurrent.futures import ThreadPoolExecutor
+
+    import httpx
+    from PIL import Image
+
+    lats = [c["latitude"] for c in coords]
+    lons = [c["longitude"] for c in coords]
+    min_lat, max_lat, min_lon, max_lon = min(lats), max(lats), min(lons), max(lons)
+    # Pad so a single venue still gets surrounding context, and clamp to the
+    # projectable world.
+    lat_span = max(max_lat - min_lat, 0.02)
+    lon_span = max(max_lon - min_lon, 0.02)
+    min_lat = max(min_lat - lat_span * 0.12, -85.0)
+    max_lat = min(max_lat + lat_span * 0.12, 85.0)
+    min_lon = max(min_lon - lon_span * 0.12, -180.0)
+    max_lon = min(max_lon + lon_span * 0.12, 180.0)
+
+    tile_px = _BASEMAP_TILE_PX
+    z = _pick_basemap_zoom(min_lat, max_lat, min_lon, max_lon, tile_px, 1600, 1000, _BASEMAP_MAX_TILES)
+    n_tiles = 2 ** z
+    left = _mercator_px(0.0, min_lon, z, tile_px)[0]
+    right = _mercator_px(0.0, max_lon, z, tile_px)[0]
+    top = _mercator_px(max_lat, 0.0, z, tile_px)[1]
+    bottom = _mercator_px(min_lat, 0.0, z, tile_px)[1]
+    tx_min, tx_max = math.floor(left / tile_px), math.floor((right - 1e-6) / tile_px)
+    ty_min, ty_max = math.floor(top / tile_px), math.floor((bottom - 1e-6) / tile_px)
+
+    retina = "@2x" if tile_px == 512 else ""
+    headers = {"User-Agent": "DOCENT-report/1.0 (+https://github.com/lawrenceleejr/docent)"}
+    timeout = httpx.Timeout(6.0, connect=3.0)
+
+    def fetch(client: Any, tx: int, ty: int):
+        if ty < 0 or ty >= n_tiles:  # above north / below south pole: blank
+            return tx, ty, None
+        x = tx % n_tiles  # wrap longitude
+        s = _BASEMAP_SUBDOMAINS[(tx + ty) % len(_BASEMAP_SUBDOMAINS)]
+        url = _BASEMAP_TILE_URL.format(s=s, z=z, x=x, y=ty, r=retina)
+        resp = client.get(url)
+        resp.raise_for_status()
+        return tx, ty, Image.open(io.BytesIO(resp.content)).convert("RGB")
+
+    canvas = Image.new(
+        "RGB",
+        ((tx_max - tx_min + 1) * tile_px, (ty_max - ty_min + 1) * tile_px),
+        (245, 245, 247),
+    )
+    total = failures = 0
+    with httpx.Client(timeout=timeout, headers=headers, follow_redirects=True) as client:
+        with ThreadPoolExecutor(max_workers=6) as pool:
+            jobs = [
+                pool.submit(fetch, client, tx, ty)
+                for ty in range(ty_min, ty_max + 1)
+                for tx in range(tx_min, tx_max + 1)
+            ]
+            for job in jobs:
+                total += 1
+                try:
+                    tx, ty, img = job.result()
+                except Exception:
+                    failures += 1
+                    continue
+                if img is not None:
+                    canvas.paste(img, ((tx - tx_min) * tile_px, (ty - ty_min) * tile_px))
+    if total == 0 or failures > total * 0.4:
+        raise RuntimeError("basemap tiles unavailable")
+
+    origin_x, origin_y = tx_min * tile_px, ty_min * tile_px
+    crop = canvas.crop((
+        round(left - origin_x), round(top - origin_y),
+        round(right - origin_x), round(bottom - origin_y),
+    ))
+
+    def project(lat: float, lon: float) -> tuple[float, float]:
+        px, py = _mercator_px(lat, lon, z, tile_px)
+        return px - left, py - top
+
+    return crop, project, crop.size
+
+
+def _draw_map_dots(pdf: Any, coords: list[dict[str, Any]], project, panel: tuple[float, float, float, float], crop_size: tuple[int, int]) -> None:
+    """Draw venue dots (sized by activity count) onto a placed map panel, using
+    the panel's own projection so the dots land exactly on their coordinates."""
+    import math
+
+    panel_x, panel_y, panel_w, panel_h = panel
+    crop_w, crop_h = crop_size
+    sx, sy = panel_w / crop_w, panel_h / crop_h
+    pdf.set_fill_color(*_BRAND_RGB)
+    pdf.set_draw_color(255, 255, 255)
+    pdf.set_line_width(0.3)
+    for c in coords:
+        fx, fy = project(c["latitude"], c["longitude"])
+        px, py = panel_x + fx * sx, panel_y + fy * sy
+        r = min(1.2 + 0.55 * math.sqrt(max(c["visits"] - 1, 0)), 3.4)
+        pdf.ellipse(px - r, py - r, 2 * r, 2 * r, style="FD")
+
+
+def _pdf_map(pdf: Any, points: list[dict[str, Any]], usable_w: float, basemap: bool = True) -> None:
+    """Activity map for the PDF: a real CARTO basemap (matching the web map) with
+    venue dots on top, or the offline vector coverage map when basemaps are
+    disabled or the tiles can't be fetched."""
     coords = [p for p in points if p.get("latitude") is not None and p.get("longitude") is not None]
 
     pdf.ln(3)
-    pdf.set_font("Helvetica", "B", 11)
-    pdf.set_text_color(20, 20, 20)
-    pdf.cell(0, 7, "Activity map", new_x="LMARGIN", new_y="NEXT")
-
     if not coords:
+        _pdf_map_heading(pdf)
         pdf.set_font("Helvetica", "I", 9)
         pdf.set_text_color(120, 120, 120)
         pdf.cell(0, 6, "No venues with coordinates to map.", new_x="LMARGIN", new_y="NEXT")
         return
+
+    # Try to fetch a real basemap; on any failure fall through to the vector map.
+    crop = project = None
+    crop_w = crop_h = 0
+    if basemap:
+        try:
+            crop, project, (crop_w, crop_h) = _fetch_basemap(coords)
+        except Exception:
+            crop = None
+
+    # Decide the panel height BEFORE printing the heading so a tall map never
+    # orphans its title on the previous page. Cap the height so the map still
+    # shares page one with the summary.
+    if crop is not None:
+        max_h = 120.0
+        panel_w = usable_w
+        panel_h = panel_w * crop_h / crop_w
+        if panel_h > max_h:
+            panel_h = max_h
+            panel_w = panel_h * crop_w / crop_h
+    else:
+        panel_h = 84.0
+    if pdf.get_y() + 7 + panel_h + 8 > pdf.h - pdf.b_margin:
+        pdf.add_page()
+    _pdf_map_heading(pdf)
+
+    if crop is None:
+        _pdf_vector_map(pdf, coords, usable_w)  # offline / restricted fallback
+        return
+
+    import io
+
+    panel_x = pdf.l_margin + (usable_w - panel_w) / 2
+    panel_y = pdf.get_y()
+    buf = io.BytesIO()
+    crop.save(buf, format="PNG")
+    buf.seek(0)
+    pdf.image(buf, x=panel_x, y=panel_y, w=panel_w, h=panel_h)
+    pdf.set_draw_color(200, 198, 210)
+    pdf.set_line_width(0.3)
+    pdf.rect(panel_x, panel_y, panel_w, panel_h)
+
+    _draw_map_dots(pdf, coords, project, (panel_x, panel_y, panel_w, panel_h), (crop_w, crop_h))
+
+    pdf.set_xy(pdf.l_margin, panel_y + panel_h + 1)
+    pdf.set_font("Helvetica", "I", 8)
+    pdf.set_text_color(120, 120, 120)
+    caption = (
+        f"{len(coords)} mapped venue{'s' if len(coords) != 1 else ''}  |  "
+        f"dot size scales with activity count  |  {_BASEMAP_ATTRIBUTION}"
+    )
+    pdf.cell(0, 5, _pdf_safe(caption), new_x="LMARGIN", new_y="NEXT")
+
+
+def _pdf_map_heading(pdf: Any) -> None:
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_text_color(20, 20, 20)
+    pdf.cell(0, 7, "Activity map", new_x="LMARGIN", new_y="NEXT")
+
+
+def _pdf_vector_map(pdf: Any, coords: list[dict[str, Any]], usable_w: float) -> None:
+    """Dependency-free offline fallback: venue coordinates projected
+    (equirectangular, aspect-corrected) into a framed panel as dots sized by
+    activity count. No basemap tiles — used when tile fetching fails."""
+    import math
 
     lats = [c["latitude"] for c in coords]
     lons = [c["longitude"] for c in coords]
@@ -641,12 +852,12 @@ def _pdf_map(pdf: Any, points: list[dict[str, Any]], usable_w: float) -> None:
     data_h = max_lat - min_lat
 
     # Size the panel to the data's aspect (bounded) so the frame hugs the points
-    # instead of stranding a tight cluster in a wide, mostly-empty box.
+    # instead of stranding a tight cluster in a wide, mostly-empty box. Placement
+    # (page-break, heading) is handled by the caller so the height must match the
+    # 84.0 the caller reserved.
     pad = 6.0
     panel_h = 84.0
     panel_w = min(max(panel_h * (data_w / data_h), 96.0), usable_w)
-    if pdf.get_y() + panel_h + 12 > 200:
-        pdf.add_page()
     panel_x = pdf.l_margin + (usable_w - panel_w) / 2
     panel_y = pdf.get_y()
 
@@ -683,7 +894,7 @@ def _pdf_map(pdf: Any, points: list[dict[str, Any]], usable_w: float) -> None:
     pdf.cell(0, 5, _pdf_safe(caption), new_x="LMARGIN", new_y="NEXT")
 
 
-def report_pdf(report: dict[str, Any]) -> bytes:
+def report_pdf(report: dict[str, Any], *, basemap: bool = True) -> bytes:
     from fpdf import FPDF
 
     s = report["summary"]
@@ -726,7 +937,7 @@ def report_pdf(report: dict[str, Any]) -> bytes:
     usable_w = pdf.w - pdf.l_margin - pdf.r_margin
 
     # Map of the selected activities, then the same breakdowns as the dashboard.
-    _pdf_map(pdf, report.get("map", {}).get("points", []), usable_w)
+    _pdf_map(pdf, report.get("map", {}).get("points", []), usable_w, basemap=basemap)
     for table in _analysis_tables(report):
         _pdf_table(pdf, table, usable_w)
 

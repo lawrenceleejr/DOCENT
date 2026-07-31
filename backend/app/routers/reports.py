@@ -4,6 +4,7 @@ from typing import Literal
 from fastapi import APIRouter, Query, Response
 from sqlalchemy.orm import joinedload
 
+from app.config import get_settings
 from app.deps import CurrentUser, DbSession
 from app.models import AudienceLevel, EventType, VenueType, Visit, VisitStatus
 from app.routers.visits import _apply_sort, _filtered_query, _parse_tags
@@ -75,7 +76,7 @@ def activities_report(
     elif format == "latex":
         content = R.report_latex(report).encode("utf-8")
     else:
-        content = R.report_pdf(report)
+        content = R.report_pdf(report, basemap=get_settings().report_basemap_enabled)
 
     filename = R.report_filename(format, generated_at)
     return Response(

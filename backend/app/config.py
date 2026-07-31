@@ -48,6 +48,10 @@ class Settings(BaseSettings):
     # Run the in-process background loop that pulls activities from federation
     # peers. Disabled in the test suite. Interval/enablement is per-peer (DB).
     federation_sync_enabled: bool = True
+    # Fetch a real basemap (the same CARTO tiles the web map uses) behind the PDF
+    # report's activity map. Requires outbound network at report time; when off,
+    # or when tiles can't be reached, the PDF falls back to a vector coverage map.
+    report_basemap_enabled: bool = True
     overpass_url: str = "https://overpass-api.de/api/interpreter"
     nominatim_url: str = "https://nominatim.openstreetmap.org/search"
     # Photon (komoot) — free, keyless, OSM-based, built for type-ahead search

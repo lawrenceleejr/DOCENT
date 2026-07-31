@@ -182,6 +182,82 @@ def test_pdf_map_uses_venue_coordinates(client):
     assert len(pdf.content) > 500
 
 
+def test_pdf_basemap_math():
+    """Web-Mercator projection and zoom selection back the PDF basemap: a citywide
+    bbox picks a high (street-level) zoom, a transatlantic one a low (world) zoom,
+    and north is up (higher latitude -> smaller pixel y)."""
+    from app.services.reports import _mercator_px, _pick_basemap_zoom
+
+    tile_px = 512
+    # North is up.
+    _, y_north = _mercator_px(48.0, 0.0, 4, tile_px)
+    _, y_south = _mercator_px(30.0, 0.0, 4, tile_px)
+    assert y_north < y_south
+    # East is right.
+    x_west, _ = _mercator_px(0.0, -120.0, 4, tile_px)
+    x_east, _ = _mercator_px(0.0, 10.0, 4, tile_px)
+    assert x_west < x_east
+
+    citywide = _pick_basemap_zoom(35.95, 35.97, -83.93, -83.91, tile_px, 1600, 1000, 30)
+    transatlantic = _pick_basemap_zoom(30.0, 55.7, -122.3, 18.0, tile_px, 1600, 1000, 30)
+    assert citywide > transatlantic
+    assert transatlantic >= 0
+
+
+def test_pdf_basemap_embeds_image(monkeypatch):
+    """When basemaps are enabled and tiles are reachable, the PDF embeds the
+    stitched basemap image (larger output) instead of the vector fallback."""
+    from PIL import Image
+
+    from app.services import reports as R
+
+    # Stub the network fetch with a synthetic image + projection so the basemap
+    # drawing path runs deterministically, without hitting the tile server.
+    def fake_fetch(coords):
+        # A gradient (not a flat fill) so the embedded PNG has real, incompressible
+        # content — proving the raster path ran, not just a tiny solid block.
+        img = Image.new("RGB", (400, 240))
+        px = img.load()
+        for y in range(img.height):
+            for x in range(img.width):
+                px[x, y] = ((x * 7) % 256, (y * 11) % 256, ((x + y) * 5) % 256)
+        lats = [c["latitude"] for c in coords]
+        lons = [c["longitude"] for c in coords]
+        min_lat, max_lat = min(lats), max(lats)
+        min_lon, max_lon = min(lons), max(lons)
+
+        def project(lat, lon):
+            fx = (lon - min_lon) / max(max_lon - min_lon, 1e-6) * img.width
+            fy = (max_lat - lat) / max(max_lat - min_lat, 1e-6) * img.height
+            return fx, fy
+
+        return img, project, img.size
+
+    monkeypatch.setattr(R, "_fetch_basemap", fake_fetch)
+
+    report = R.build_report(
+        [
+            R.ReportVisit(
+                visit_date=__import__("datetime").date(2026, 1, 1), title="Star party",
+                event_type=None, audience_level=None, language=None, people_reached=40,
+                duration_minutes=None, status=None, venue_name="Observatory",
+                venue_city="Knoxville", venue_state="TN", venue_type=None,
+                latitude=35.96, longitude=-83.92, host_relationship=None,
+                presenter="Ada", additional_presenters=None, host_name=None,
+                host_role=None, tags=[], links=[],
+            )
+        ],
+        scope="all",
+        generated_at=__import__("datetime").datetime(2026, 7, 31, 12, 0),
+    )
+    with_basemap = R.report_pdf(report, basemap=True)
+    without_basemap = R.report_pdf(report, basemap=False)
+    assert with_basemap[:5] == b"%PDF-"
+    # The embedded raster makes the basemap PDF materially larger than the
+    # vector-only fallback.
+    assert len(with_basemap) > len(without_basemap) + 5000
+
+
 def test_requires_auth(client):
     assert client.get("/api/reports/activities").status_code == 401
 
