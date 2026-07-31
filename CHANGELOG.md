@@ -4,7 +4,7 @@ All notable changes to DOCENT are documented here. This project uses
 [semantic versioning](https://semver.org/); tagged releases publish container
 images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
-## v0.2.0
+## v0.1.5
 
 ### Added
 - **Every exported report now carries the full Analysis breakdowns** — activity
