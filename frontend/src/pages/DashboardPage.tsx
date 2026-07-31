@@ -7,6 +7,7 @@ import {
   MultiSelect,
   SegmentedControl,
   SimpleGrid,
+  Skeleton,
   Stack,
   Switch,
   Text,
@@ -611,50 +612,60 @@ export function DashboardPage() {
       </Title>
       {/* Two measures, two panels — never a dual-axis chart. */}
       <SimpleGrid cols={{ base: 1, md: 2 }}>
-        <TimePanel
-          title={t('dashboard.visitsPer6Months')}
-          data={chartData}
-          ticks={periodTicks}
-          lines={[{ key: 'pastVisits' }, { key: 'futureVisits', dashed: true }]}
-          color={viz.series1}
-          viz={viz}
-          caption={t('dashboard.plannedCaption')}
-        />
-        <TimePanel
-          title={t('dashboard.peopleReachedPer6Months')}
-          data={chartData}
-          ticks={periodTicks}
-          lines={[{ key: 'people_reached' }]}
-          color={viz.series2}
-          viz={viz}
-        />
+        <Skeleton visible={timeseries === undefined}>
+          <TimePanel
+            title={t('dashboard.visitsPer6Months')}
+            data={chartData}
+            ticks={periodTicks}
+            lines={[{ key: 'pastVisits' }, { key: 'futureVisits', dashed: true }]}
+            color={viz.series1}
+            viz={viz}
+            caption={t('dashboard.plannedCaption')}
+          />
+        </Skeleton>
+        <Skeleton visible={timeseries === undefined}>
+          <TimePanel
+            title={t('dashboard.peopleReachedPer6Months')}
+            data={chartData}
+            ticks={periodTicks}
+            lines={[{ key: 'people_reached' }]}
+            color={viz.series2}
+            viz={viz}
+          />
+        </Skeleton>
       </SimpleGrid>
 
       <Title order={3} mt="sm">
         {t('dashboard.breakdownsHeading')}
       </Title>
       <SimpleGrid cols={{ base: 1, md: 2 }}>
-        <BreakdownPanel
-          title={t('dashboard.visitsByVenueType')}
-          data={byVenueType ?? []}
-          by="venueType"
-          color={viz.series1}
-          viz={viz}
-        />
-        <BreakdownPanel
-          title={t('dashboard.visitsByAudienceLevel')}
-          data={byAudience ?? []}
-          by="audienceLevel"
-          color={viz.series1}
-          viz={viz}
-        />
-        <BreakdownPanel
-          title={t('dashboard.visitsByHostRelationship')}
-          data={byRelationship ?? []}
-          by="hostRelationship"
-          color={viz.series2}
-          viz={viz}
-        />
+        <Skeleton visible={byVenueType === undefined}>
+          <BreakdownPanel
+            title={t('dashboard.visitsByVenueType')}
+            data={byVenueType ?? []}
+            by="venueType"
+            color={viz.series1}
+            viz={viz}
+          />
+        </Skeleton>
+        <Skeleton visible={byAudience === undefined}>
+          <BreakdownPanel
+            title={t('dashboard.visitsByAudienceLevel')}
+            data={byAudience ?? []}
+            by="audienceLevel"
+            color={viz.series1}
+            viz={viz}
+          />
+        </Skeleton>
+        <Skeleton visible={byRelationship === undefined}>
+          <BreakdownPanel
+            title={t('dashboard.visitsByHostRelationship')}
+            data={byRelationship ?? []}
+            by="hostRelationship"
+            color={viz.series2}
+            viz={viz}
+          />
+        </Skeleton>
       </SimpleGrid>
 
       <Title order={3} mt="sm">
@@ -665,6 +676,7 @@ export function DashboardPage() {
       </Text>
       <Grid>
         <Grid.Col span={{ base: 12, md: 6 }}>
+          <Skeleton visible={topVenues === undefined}>
           <Card withBorder p="md">
             <Text fw={600} mb="xs">
               {t('dashboard.topVenues')}
@@ -711,8 +723,10 @@ export function DashboardPage() {
               </Table.Tbody>
             </Table>
           </Card>
+          </Skeleton>
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 6 }}>
+          <Skeleton visible={leaderboard === undefined}>
           <Card withBorder p="md">
             <Text fw={600} mb="xs">
               {t('dashboard.communicatorLeaderboard')}
@@ -749,6 +763,7 @@ export function DashboardPage() {
               </Table.Tbody>
             </Table>
           </Card>
+          </Skeleton>
         </Grid.Col>
       </Grid>
     </Stack>

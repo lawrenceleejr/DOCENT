@@ -317,7 +317,11 @@ export function Layout({ children }: { children: ReactNode }) {
             </Alert>
           )}
           <TranslationDisclaimer />
-          {children}
+          {/* Keyed by path so React remounts on navigation, replaying the
+              subtle fade-in (see .app-route-fade in styles.css). */}
+          <div key={location.pathname} className="app-route-fade">
+            {children}
+          </div>
         </Container>
         <Container size="xl" py="lg">
           <Text size="xs" c="dimmed" ta="center">

@@ -5,6 +5,7 @@ import {
   Group,
   SegmentedControl,
   Select,
+  Skeleton,
   Stack,
   Text,
   Title,
@@ -403,6 +404,7 @@ export function MapPage() {
       </FilterCard>
 
       <Card withBorder p={0} style={{ overflow: 'hidden' }}>
+        {!config && <Skeleton height="70vh" radius={0} />}
         {config && (
           // bounds are only read on mount — wait for the config so the map opens
           // framed to the admin-configured center and coverage radius (#18).

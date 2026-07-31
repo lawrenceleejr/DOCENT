@@ -8,6 +8,7 @@ import {
   MultiSelect,
   Pagination,
   Select,
+  Skeleton,
   Stack,
   Switch,
   Table,
@@ -274,6 +275,14 @@ export function VisitListPage() {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
+            {isLoading &&
+              Array.from({ length: 6 }).map((_, i) => (
+                <Table.Tr key={`sk-${i}`}>
+                  <Table.Td colSpan={8}>
+                    <Skeleton height={20} />
+                  </Table.Td>
+                </Table.Tr>
+              ))}
             {(data?.items ?? []).map((it) => {
               const isLocal = it.source === 'local';
               return (
@@ -379,6 +388,10 @@ export function VisitListPage() {
 
       {/* Mobile: stacked cards instead of a horizontally-scrolled table. */}
       <Stack hiddenFrom="sm" gap="sm">
+        {isLoading &&
+          Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={`sk-${i}`} height={92} radius="md" />
+          ))}
         {(data?.items ?? []).map((it) => (
           <VisitCard
             key={`${it.source}-${it.id ?? it.external_url}`}

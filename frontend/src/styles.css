@@ -5,6 +5,30 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Don't let iOS resize text on landscape rotation — keeps type stable. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* App-like scrolling: no rubber-band bounce and no pull-to-refresh reload, so
+     the page feels fixed rather than like a document you can drag off its edges. */
+  overscroll-behavior-y: none;
+}
+
+/* Remove the gray flash iOS/Android paint over tapped controls; Mantine's own
+   :active/hover states already provide press feedback, so this just makes taps
+   feel native instead of web-y. Scoped to interactive elements so selectable
+   text is unaffected. */
+a,
+button,
+[role='button'],
+[role='tab'],
+[role='menuitem'],
+label,
+summary,
+.mantine-ActionIcon-root,
+.mantine-Button-root,
+.mantine-UnstyledButton-root,
+.mantine-Tabs-tab {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Tabular figures for data-dense numeric contexts (stat tiles, tables). */
@@ -111,4 +135,44 @@ body {
     rgba(109, 65, 236, 0.06) 0%,
     rgba(109, 65, 236, 0) 55%
   );
+}
+
+/* Safe-area handling for notched phones, especially when launched full-screen.
+   `viewport-fit=cover` (index.html) lets content extend under the notch/status
+   bar and home indicator; these insets keep the fixed header and page content
+   clear of them. Every inset is 0 on non-notched screens and desktop, so this
+   is inert there. AppShell.Main derives its top offset from
+   --app-shell-header-height, so growing that var keeps the two in sync. */
+:root {
+  --app-shell-header-height: calc(60px + env(safe-area-inset-top)) !important;
+}
+.mantine-AppShell-header {
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.mantine-AppShell-main {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Subtle fade on route changes so navigation feels like an app transitioning
+   between screens, not a hard document swap. Applied via a pathname-keyed
+   wrapper in Layout (React remounts it, replaying the animation). Suppressed
+   under reduced-motion, matching LogoReveal/MobileSplash. */
+@media (prefers-reduced-motion: no-preference) {
+  .app-route-fade {
+    animation: appFadeIn 160ms ease-out both;
+  }
+}
+@keyframes appFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
