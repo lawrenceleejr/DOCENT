@@ -12,6 +12,26 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* App-like feel on touch devices: iOS Safari auto-zooms whenever a focused
+   form control's text is smaller than 16px, and never zooms back out — so
+   tapping a field, select, or date/time picker leaves the whole page stuck
+   magnified. Mantine's default input text (sm ≈ 14px, xs ≈ 12px) trips this
+   everywhere. Force controls to 16px on coarse-pointer (touch) devices so
+   focusing a field no longer triggers the zoom; manual pinch-zoom still works,
+   so this costs nothing for accessibility (unlike disabling zoom in the
+   viewport meta). `.mantine-Input-input` covers every text field, select,
+   autocomplete, tags input, and date/time picker; the element selectors catch
+   any native controls. Loaded after Mantine's styles, so the equal-specificity
+   override wins. */
+@media (pointer: coarse) {
+  .mantine-Input-input,
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 /* Badges carry short status/category labels — never truncate them. Letting the
    label render at full width also lets auto-layout table cells grow to fit,
    which fixes "COMPLET…" / "GENERAL PUB…" clipping in the visits table. */
