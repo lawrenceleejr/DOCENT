@@ -8,9 +8,8 @@ body {
   /* Don't let iOS resize text on landscape rotation — keeps type stable. */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* App-like scrolling: no rubber-band bounce and no pull-to-refresh reload, so
-     the page feels fixed rather than like a document you can drag off its edges. */
-  overscroll-behavior-y: none;
+  /* Leave vertical overscroll at its default so mobile browsers keep their
+     native pull-to-refresh gesture (and the accompanying rubber-band scroll). */
 }
 
 /* Remove the gray flash iOS/Android paint over tapped controls; Mantine's own
