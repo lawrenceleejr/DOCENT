@@ -541,10 +541,57 @@ export interface ReportSummary {
   total_activities: number;
   total_people_reached: number;
   distinct_venues: number;
+  active_communicators: number;
+  avg_people_per_activity: number;
   first_activity: string | null;
   last_activity: string | null;
   activities_with_coverage: number;
   coverage_counts: Record<string, number>;
+}
+
+export interface ReportBreakdownRow {
+  key: string;
+  label: string;
+  visits: number;
+  people_reached: number;
+}
+
+export interface ReportTimelineRow {
+  period: string;
+  visits: number;
+  people_reached: number;
+}
+
+export interface ReportTopVenueRow {
+  venue: string;
+  city: string;
+  visits: number;
+  people_reached: number;
+}
+
+export interface ReportLeaderboardRow {
+  name: string;
+  visits: number;
+  people_reached: number;
+}
+
+export interface ReportAnalysis {
+  by_venue_type: ReportBreakdownRow[];
+  by_event_type: ReportBreakdownRow[];
+  by_audience_level: ReportBreakdownRow[];
+  by_host_relationship: ReportBreakdownRow[];
+  timeline: ReportTimelineRow[];
+  top_venues: ReportTopVenueRow[];
+  leaderboard: ReportLeaderboardRow[];
+}
+
+export interface ReportMapPoint {
+  name: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  visits: number;
+  people_reached: number;
 }
 
 export interface ReportRow {
@@ -579,6 +626,8 @@ export interface ActivityReport {
   date_from: string | null;
   date_to: string | null;
   summary: ReportSummary;
+  analysis: ReportAnalysis;
+  map: { points: ReportMapPoint[] };
   rows: ReportRow[];
 }
 

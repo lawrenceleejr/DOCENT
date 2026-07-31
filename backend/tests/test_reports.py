@@ -91,8 +91,13 @@ def test_csv_format(seeded, client):
     assert "attachment" in resp.headers["content-disposition"]
     assert resp.headers["content-disposition"].endswith(".csv")
     lines = resp.text.strip().splitlines()
+    # The activity block leads: header + Ada's 2 completed visits (newest first).
     assert lines[0].startswith("Date,Activity,Event type")
-    assert len(lines) == 3  # header + 2 rows
+    assert lines[1].startswith("2026-02-20")
+    assert lines[2].startswith("2026-01-10")
+    # Analysis breakdowns are appended as labeled sections after the rows.
+    assert "By venue type" in resp.text
+    assert "Activity by year" in resp.text
 
 
 def test_language_column_and_filter(client):
@@ -132,6 +137,49 @@ def test_pdf_format(seeded, client):
     assert "attachment" in resp.headers["content-disposition"]
     assert resp.content[:5] == b"%PDF-"
     assert len(resp.content) > 500
+
+
+def test_report_includes_analysis(seeded, client):
+    """Every report carries the same breakdowns as the Analysis dashboard,
+    computed over exactly the report's rows so the figures reconcile."""
+    j = _get(client, format="json", scope="all").json()
+    a = j["analysis"]
+    # Breakdown totals reconcile with the row count / people total.
+    assert sum(r["visits"] for r in a["by_venue_type"]) == j["summary"]["total_activities"]
+    assert sum(r["people_reached"] for r in a["by_venue_type"]) == j["summary"]["total_people_reached"]
+    # Two venue types among the three completed community activities.
+    labels = {r["label"] for r in a["by_venue_type"]}
+    assert "Elementary School" in labels and "Community College" in labels
+    # Timeline is by year; all seeded completed activities fall in 2026.
+    assert a["timeline"] == [{"period": "2026", "visits": 3, "people_reached": 100}]
+    # Leaderboard names both communicators (internal report — names allowed).
+    assert {r["name"] for r in a["leaderboard"]} == {"Ada Lovelace", "Grace Hopper"}
+    assert j["summary"]["active_communicators"] == 2
+
+    md = _get(client, format="md", scope="all").text
+    assert "## By venue type" in md and "## Activity by year" in md and "## Top venues" in md
+    tex = _get(client, format="latex", scope="all").text
+    assert r"\subsection*{By venue type}" in tex
+
+
+def test_pdf_map_uses_venue_coordinates(client):
+    """PDF map points come from geolocated venues; venues without coordinates
+    are simply omitted, and the PDF still renders."""
+    register(client)
+    mapped = create_venue(client, name="Observatory", latitude=35.96, longitude=-83.92)
+    unmapped = create_venue(client, name="Mystery Hall", venue_type="other")
+    create_visit(client, mapped["id"], title="Star party", people_reached=40)
+    create_visit(client, unmapped["id"], title="Hidden talk", people_reached=10)
+
+    j = _get(client, format="json", scope="all").json()
+    names = {p["name"] for p in j["map"]["points"]}
+    assert names == {"Observatory"}  # unmapped venue excluded
+    point = j["map"]["points"][0]
+    assert point["latitude"] == 35.96 and point["longitude"] == -83.92
+
+    pdf = _get(client, format="pdf", scope="all")
+    assert pdf.content[:5] == b"%PDF-"
+    assert len(pdf.content) > 500
 
 
 def test_requires_auth(client):

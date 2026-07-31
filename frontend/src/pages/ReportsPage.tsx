@@ -40,6 +40,53 @@ import { toDateString } from './VisitListPage';
 
 const PREVIEW_LIMIT = 50;
 
+type MiniRow = { label: string; visits: number; people_reached: number };
+
+/** A compact breakdown table for the on-page report preview — mirrors a section
+ * of the downloadable report so the preview shows the same analysis. */
+function MiniTable({
+  title,
+  rows,
+  visitsLabel,
+  peopleLabel,
+}: {
+  title: string;
+  rows: MiniRow[];
+  visitsLabel: string;
+  peopleLabel: string;
+}) {
+  if (rows.length === 0) return null;
+  return (
+    <Card withBorder p="md">
+      <Text fw={600} mb="xs">
+        {title}
+      </Text>
+      <Table>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th />
+            <Table.Th ta="right">{visitsLabel}</Table.Th>
+            <Table.Th ta="right">{peopleLabel}</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {rows.map((r, i) => (
+            <Table.Tr key={i}>
+              <Table.Td>{r.label}</Table.Td>
+              <Table.Td ta="right" className="tabular-nums">
+                {r.visits.toLocaleString()}
+              </Table.Td>
+              <Table.Td ta="right" className="tabular-nums">
+                {r.people_reached.toLocaleString()}
+              </Table.Td>
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </Card>
+  );
+}
+
 export function ReportsPage() {
   const { t } = useTranslation();
   const enumLabel = useEnumLabel();
@@ -234,6 +281,54 @@ export function ReportsPage() {
           color="teal"
         />
       </SimpleGrid>
+
+      {data?.analysis && rows.length > 0 && (
+        <Stack gap="sm">
+          <Title order={4}>{t('dashboard.breakdownsHeading')}</Title>
+          <SimpleGrid cols={{ base: 1, md: 2 }}>
+            <MiniTable
+              title={t('dashboard.visitsByVenueType')}
+              rows={data.analysis.by_venue_type}
+              visitsLabel={t('dashboard.statVisits')}
+              peopleLabel={t('dashboard.statPeopleReached')}
+            />
+            <MiniTable
+              title={t('dashboard.visitsByAudienceLevel')}
+              rows={data.analysis.by_audience_level}
+              visitsLabel={t('dashboard.statVisits')}
+              peopleLabel={t('dashboard.statPeopleReached')}
+            />
+            <MiniTable
+              title={t('dashboard.visitsByHostRelationship')}
+              rows={data.analysis.by_host_relationship}
+              visitsLabel={t('dashboard.statVisits')}
+              peopleLabel={t('dashboard.statPeopleReached')}
+            />
+            <MiniTable
+              title={t('dashboard.topVenues')}
+              rows={data.analysis.top_venues.map((v) => ({
+                label: v.city ? `${v.venue}, ${v.city}` : v.venue,
+                visits: v.visits,
+                people_reached: v.people_reached,
+              }))}
+              visitsLabel={t('dashboard.statVisits')}
+              peopleLabel={t('dashboard.statPeopleReached')}
+            />
+            {data.analysis.leaderboard.length > 1 && (
+              <MiniTable
+                title={t('dashboard.communicatorLeaderboard')}
+                rows={data.analysis.leaderboard.map((l) => ({
+                  label: l.name,
+                  visits: l.visits,
+                  people_reached: l.people_reached,
+                }))}
+                visitsLabel={t('dashboard.statVisits')}
+                peopleLabel={t('dashboard.statPeopleReached')}
+              />
+            )}
+          </SimpleGrid>
+        </Stack>
+      )}
 
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={720}>

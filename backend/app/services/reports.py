@@ -87,6 +87,14 @@ class ReportVisit:
     venue_name: str
     venue_city: str | None
     venue_state: str | None
+    venue_type: Any
+    # Venue coordinates power the PDF activity map. Not private — the venue's
+    # location is inherent to a public-facing activity record.
+    latitude: float | None
+    longitude: float | None
+    # The host *relationship category* (e.g. "alumnus") drives an aggregate
+    # breakdown only — not the host's contact details, which stay excluded.
+    host_relationship: Any
     presenter: str
     additional_presenters: str | None
     host_name: str | None
@@ -108,6 +116,10 @@ class ReportVisit:
             venue_name=v.venue.name,
             venue_city=v.venue.city,
             venue_state=v.venue.state,
+            venue_type=v.venue.venue_type,
+            latitude=v.venue.latitude,
+            longitude=v.venue.longitude,
+            host_relationship=v.host_relationship,
             presenter=v.author.name,
             additional_presenters=v.additional_presenters,
             host_name=v.contact_name,
@@ -152,6 +164,108 @@ class ReportVisit:
         }
 
 
+def _enum_value(value: Any) -> Any:
+    return getattr(value, "value", value)
+
+
+def _breakdown(report_visits: list[ReportVisit], key_fn) -> list[dict[str, Any]]:
+    """Aggregate visits + people reached by some category, most-active first."""
+    agg: dict[Any, list[int]] = {}
+    for rv in report_visits:
+        key = key_fn(rv)
+        if key is None:
+            continue
+        entry = agg.setdefault(key, [0, 0])
+        entry[0] += 1
+        entry[1] += rv.people_reached
+    rows = [
+        {"key": key, "label": _label(key), "visits": v, "people_reached": p}
+        for key, (v, p) in agg.items()
+    ]
+    rows.sort(key=lambda r: (-r["visits"], -r["people_reached"], r["label"]))
+    return rows
+
+
+def build_analysis(report_visits: list[ReportVisit]) -> dict[str, Any]:
+    """The same breakdowns the Analysis dashboard shows, computed over exactly
+    the activities in this report so the figures always reconcile with the rows.
+    Aggregate-only: no ratings, notes, or contact details."""
+    # Activity by calendar year — a compact, grant-friendly time series.
+    years: dict[int, list[int]] = {}
+    for rv in report_visits:
+        entry = years.setdefault(rv.visit_date.year, [0, 0])
+        entry[0] += 1
+        entry[1] += rv.people_reached
+    timeline = [
+        {"period": str(y), "visits": v, "people_reached": p}
+        for y, (v, p) in sorted(years.items())
+    ]
+
+    venue_agg: dict[tuple[str, str | None], list[int]] = {}
+    for rv in report_visits:
+        entry = venue_agg.setdefault((rv.venue_name, rv.venue_city), [0, 0])
+        entry[0] += 1
+        entry[1] += rv.people_reached
+    top_venues = sorted(
+        (
+            {"venue": name, "city": city or "", "visits": v, "people_reached": p}
+            for (name, city), (v, p) in venue_agg.items()
+        ),
+        key=lambda r: (-r["visits"], -r["people_reached"], r["venue"]),
+    )[:10]
+
+    presenter_agg: dict[str, list[int]] = {}
+    for rv in report_visits:
+        entry = presenter_agg.setdefault(rv.presenter, [0, 0])
+        entry[0] += 1
+        entry[1] += rv.people_reached
+    leaderboard = sorted(
+        (
+            {"name": name, "visits": v, "people_reached": p}
+            for name, (v, p) in presenter_agg.items()
+        ),
+        key=lambda r: (-r["visits"], -r["people_reached"], r["name"]),
+    )[:20]
+
+    return {
+        "by_venue_type": _breakdown(report_visits, lambda rv: _enum_value(rv.venue_type)),
+        "by_event_type": _breakdown(report_visits, lambda rv: _enum_value(rv.event_type)),
+        "by_audience_level": _breakdown(
+            report_visits, lambda rv: _enum_value(rv.audience_level)
+        ),
+        "by_host_relationship": _breakdown(
+            report_visits, lambda rv: _enum_value(rv.host_relationship)
+        ),
+        "timeline": timeline,
+        "top_venues": top_venues,
+        "leaderboard": leaderboard,
+    }
+
+
+def build_map_points(report_visits: list[ReportVisit]) -> list[dict[str, Any]]:
+    """One entry per distinct geolocated venue, for the PDF activity map. Venues
+    without coordinates (e.g. added by hand, never geocoded) are omitted."""
+    agg: dict[tuple[str, str | None], dict[str, Any]] = {}
+    for rv in report_visits:
+        if rv.latitude is None or rv.longitude is None:
+            continue
+        key = (rv.venue_name, rv.venue_city)
+        point = agg.get(key)
+        if point is None:
+            agg[key] = {
+                "name": rv.venue_name,
+                "city": rv.venue_city or "",
+                "latitude": rv.latitude,
+                "longitude": rv.longitude,
+                "visits": 1,
+                "people_reached": rv.people_reached,
+            }
+        else:
+            point["visits"] += 1
+            point["people_reached"] += rv.people_reached
+    return list(agg.values())
+
+
 def build_report(
     visits: Iterable[Any],
     *,
@@ -160,7 +274,7 @@ def build_report(
     date_from: date | None = None,
     date_to: date | None = None,
 ) -> dict[str, Any]:
-    """Assemble the report data structure (rows + summary + metadata)."""
+    """Assemble the report data structure (rows + summary + analysis + metadata)."""
     report_visits = [
         v if isinstance(v, ReportVisit) else ReportVisit.from_visit(v) for v in visits
     ]
@@ -168,6 +282,7 @@ def build_report(
 
     total_people = sum(rv.people_reached for rv in report_visits)
     venues = {rv.venue_name for rv in report_visits}
+    presenters = {rv.presenter for rv in report_visits}
     dates = [rv.visit_date for rv in report_visits]
 
     # How many activities got each kind of coverage (press / social / …).
@@ -190,11 +305,15 @@ def build_report(
             "total_activities": len(rows),
             "total_people_reached": total_people,
             "distinct_venues": len(venues),
+            "active_communicators": len(presenters),
+            "avg_people_per_activity": round(total_people / len(rows)) if rows else 0,
             "first_activity": min(dates).isoformat() if dates else None,
             "last_activity": max(dates).isoformat() if dates else None,
             "activities_with_coverage": activities_with_coverage,
             "coverage_counts": coverage_counts,
         },
+        "analysis": build_analysis(report_visits),
+        "map": {"points": build_map_points(report_visits)},
         "rows": rows,
     }
 
@@ -211,6 +330,48 @@ def _range_label(report: dict[str, Any]) -> str:
     return "All dates"
 
 
+def _analysis_tables(report: dict[str, Any]) -> list[dict[str, Any]]:
+    """Flatten the structured `analysis` block into simple titled tables that
+    every text/PDF serializer renders the same way. Empty sections are dropped;
+    the single-communicator leaderboard (scope=mine) is omitted as redundant."""
+    a = report.get("analysis") or {}
+    tables: list[dict[str, Any]] = []
+
+    def add(title: str, headers: list[str], rows: list[list[Any]]) -> None:
+        if rows:
+            tables.append({"title": title, "headers": headers, "rows": rows})
+
+    add(
+        "Activity by year",
+        ["Year", "Activities", "People reached"],
+        [[t["period"], t["visits"], t["people_reached"]] for t in a.get("timeline", [])],
+    )
+    for key, title, label in (
+        ("by_venue_type", "By venue type", "Venue type"),
+        ("by_event_type", "By event type", "Event type"),
+        ("by_audience_level", "By audience level", "Audience"),
+        ("by_host_relationship", "By host relationship", "Host relationship"),
+    ):
+        add(
+            title,
+            [label, "Activities", "People reached"],
+            [[r["label"], r["visits"], r["people_reached"]] for r in a.get(key, [])],
+        )
+    add(
+        "Top venues",
+        ["Venue", "City", "Activities", "People reached"],
+        [[r["venue"], r["city"], r["visits"], r["people_reached"]] for r in a.get("top_venues", [])],
+    )
+    leaderboard = a.get("leaderboard", [])
+    if len(leaderboard) > 1:
+        add(
+            "Communicators",
+            ["Communicator", "Activities", "People reached"],
+            [[r["name"], r["visits"], r["people_reached"]] for r in leaderboard],
+        )
+    return tables
+
+
 # --------------------------------------------------------------------------- #
 # Serializers
 # --------------------------------------------------------------------------- #
@@ -225,6 +386,14 @@ def report_csv(report: dict[str, Any]) -> str:
     writer.writerow([header for _, header in REPORT_COLUMNS])
     for row in report["rows"]:
         writer.writerow([row.get(key, "") for key, _ in REPORT_COLUMNS])
+    # Analysis summaries follow the row data as separate labeled blocks, so a
+    # single CSV carries both the raw activities and the breakdowns.
+    for table in _analysis_tables(report):
+        writer.writerow([])
+        writer.writerow([table["title"]])
+        writer.writerow(table["headers"])
+        for r in table["rows"]:
+            writer.writerow(r)
     return buffer.getvalue()
 
 
@@ -243,6 +412,10 @@ def report_markdown(report: dict[str, Any]) -> str:
         f"- **People reached:** {s['total_people_reached']:,}",
         f"- **Distinct venues:** {s['distinct_venues']:,}",
     ]
+    if s.get("active_communicators"):
+        lines.append(f"- **Communicators:** {s['active_communicators']:,}")
+    if s.get("total_activities"):
+        lines.append(f"- **Avg. people per activity:** {s['avg_people_per_activity']:,}")
     cc = s.get("coverage_counts") or {}
     if s.get("activities_with_coverage"):
         parts = [f"{COVERAGE_LABELS[c]}: {n}" for c, n in cc.items() if n]
@@ -250,6 +423,15 @@ def report_markdown(report: dict[str, Any]) -> str:
             f"- **Activities with coverage:** {s['activities_with_coverage']:,} "
             f"({', '.join(parts)})"
         )
+
+    for table in _analysis_tables(report):
+        lines += ["", f"## {table['title']}", ""]
+        lines.append("| " + " | ".join(table["headers"]) + " |")
+        lines.append("| " + " | ".join("---" for _ in table["headers"]) + " |")
+        for r in table["rows"]:
+            cells = [str(c).replace("|", "\\|") for c in r]
+            lines.append("| " + " | ".join(cells) + " |")
+
     lines += ["", "## Activities", ""]
     if not report["rows"]:
         lines.append("_No activities match the selected filters._")
@@ -331,6 +513,19 @@ def report_latex(report: dict[str, Any]) -> str:
         r"\bigskip",
     ]
 
+    for table in _analysis_tables(report):
+        colspec = "".join(
+            "r" if h in ("Activities", "People reached") else "l" for h in table["headers"]
+        )
+        lines.append(r"\subsection*{" + esc(table["title"]) + "}")
+        lines.append(r"\begin{tabular}{" + colspec + "}")
+        lines.append(r"\toprule")
+        lines.append(" & ".join(r"\textbf{" + esc(h) + "}" for h in table["headers"]) + r" \\")
+        lines.append(r"\midrule")
+        for r in table["rows"]:
+            lines.append(" & ".join(esc(c) for c in r) + r" \\")
+        lines += [r"\bottomrule", r"\end{tabular}", r"\medskip", ""]
+
     if not report["rows"]:
         lines.append(r"\emph{No activities match the selected filters.}")
         lines.append(r"\end{document}")
@@ -368,6 +563,126 @@ def _pdf_safe(text: Any) -> str:
     return s.encode("latin-1", "replace").decode("latin-1")
 
 
+_BRAND_RGB = (109, 65, 236)
+_NUMERIC_HEADERS = {"Activities", "People reached"}
+
+
+def _pdf_table(pdf: Any, table: dict[str, Any], usable_w: float) -> None:
+    """Render one analysis breakdown as a compact table matching the report's
+    house style (purple header, zebra rows)."""
+    headers = table["headers"]
+    fixed = {"Activities": 26, "People reached": 34}
+    text_cols = [h for h in headers if h not in _NUMERIC_HEADERS]
+    text_w = (usable_w - sum(fixed[h] for h in headers if h in fixed)) / max(1, len(text_cols))
+    widths = [fixed.get(h, text_w) for h in headers]
+
+    if pdf.get_y() > 175:  # keep a title + a couple of rows together
+        pdf.add_page()
+    pdf.ln(2)
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_text_color(20, 20, 20)
+    pdf.cell(0, 7, _pdf_safe(table["title"]), new_x="LMARGIN", new_y="NEXT")
+
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_fill_color(*_BRAND_RGB)
+    pdf.set_text_color(255, 255, 255)
+    for h, w in zip(headers, widths):
+        pdf.cell(w, 7, _pdf_safe(h), border=0, fill=True,
+                 align="R" if h in _NUMERIC_HEADERS else "L")
+    pdf.ln()
+
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(20, 20, 20)
+    fill = False
+    for r in table["rows"]:
+        pdf.set_fill_color(240, 238, 250) if fill else pdf.set_fill_color(255, 255, 255)
+        for h, value, w in zip(headers, r, widths):
+            numeric = h in _NUMERIC_HEADERS
+            text = _pdf_safe(f"{value:,}" if numeric and isinstance(value, int) else value)
+            max_chars = max(4, int(w / 1.6))
+            if len(text) > max_chars:
+                text = _pdf_safe(text[: max_chars - 1].rstrip() + "…")
+            pdf.cell(w, 6, text, border="B", fill=True, align="R" if numeric else "L")
+        pdf.ln()
+        fill = not fill
+
+
+def _pdf_map(pdf: Any, points: list[dict[str, Any]], usable_w: float) -> None:
+    """A dependency-free 'coverage map': venue coordinates projected
+    (equirectangular, aspect-corrected) into a framed panel as dots sized by
+    activity count. No basemap tiles — reliable and offline."""
+    import math
+
+    coords = [p for p in points if p.get("latitude") is not None and p.get("longitude") is not None]
+
+    pdf.ln(3)
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_text_color(20, 20, 20)
+    pdf.cell(0, 7, "Activity map", new_x="LMARGIN", new_y="NEXT")
+
+    if not coords:
+        pdf.set_font("Helvetica", "I", 9)
+        pdf.set_text_color(120, 120, 120)
+        pdf.cell(0, 6, "No venues with coordinates to map.", new_x="LMARGIN", new_y="NEXT")
+        return
+
+    lats = [c["latitude"] for c in coords]
+    lons = [c["longitude"] for c in coords]
+    min_lat, max_lat, min_lon, max_lon = min(lats), max(lats), min(lons), max(lons)
+    # Pad so a single venue (or a colinear set) still projects sensibly.
+    lat_span = max(max_lat - min_lat, 0.02)
+    lon_span = max(max_lon - min_lon, 0.02)
+    min_lat -= lat_span * 0.08
+    max_lat += lat_span * 0.08
+    min_lon -= lon_span * 0.08
+    max_lon += lon_span * 0.08
+    cos_lat = max(math.cos(math.radians((min_lat + max_lat) / 2)), 0.1)
+    data_w = (max_lon - min_lon) * cos_lat
+    data_h = max_lat - min_lat
+
+    # Size the panel to the data's aspect (bounded) so the frame hugs the points
+    # instead of stranding a tight cluster in a wide, mostly-empty box.
+    pad = 6.0
+    panel_h = 84.0
+    panel_w = min(max(panel_h * (data_w / data_h), 96.0), usable_w)
+    if pdf.get_y() + panel_h + 12 > 200:
+        pdf.add_page()
+    panel_x = pdf.l_margin + (usable_w - panel_w) / 2
+    panel_y = pdf.get_y()
+
+    # Frame.
+    pdf.set_draw_color(200, 198, 210)
+    pdf.set_fill_color(249, 248, 253)
+    pdf.set_line_width(0.3)
+    pdf.rect(panel_x, panel_y, panel_w, panel_h, style="DF")
+
+    inner_w, inner_h = panel_w - 2 * pad, panel_h - 2 * pad
+    scale = min(inner_w / data_w, inner_h / data_h)
+    draw_w, draw_h = data_w * scale, data_h * scale
+    off_x = panel_x + pad + (inner_w - draw_w) / 2
+    off_y = panel_y + pad + (inner_h - draw_h) / 2
+
+    pdf.set_fill_color(*_BRAND_RGB)
+    pdf.set_draw_color(255, 255, 255)
+    pdf.set_line_width(0.2)
+    for c in coords:
+        fx = (c["longitude"] - min_lon) * cos_lat * scale
+        fy = (c["latitude"] - min_lat) * scale
+        px = off_x + fx
+        py = off_y + (draw_h - fy)  # invert so north is up
+        r = min(1.1 + 0.5 * math.sqrt(max(c["visits"] - 1, 0)), 3.2)
+        pdf.ellipse(px - r, py - r, 2 * r, 2 * r, style="FD")
+
+    pdf.set_xy(pdf.l_margin, panel_y + panel_h + 1)
+    pdf.set_font("Helvetica", "I", 8)
+    pdf.set_text_color(120, 120, 120)
+    caption = (
+        f"{len(coords)} mapped venue{'s' if len(coords) != 1 else ''}  |  "
+        f"dot size scales with activity count"
+    )
+    pdf.cell(0, 5, _pdf_safe(caption), new_x="LMARGIN", new_y="NEXT")
+
+
 def report_pdf(report: dict[str, Any]) -> bytes:
     from fpdf import FPDF
 
@@ -395,7 +710,30 @@ def report_pdf(report: dict[str, Any]) -> bytes:
     pdf.set_font("Helvetica", "B", 11)
     pdf.set_text_color(20, 20, 20)
     pdf.cell(0, 8, _pdf_safe(summary), new_x="LMARGIN", new_y="NEXT")
+    if s.get("active_communicators"):
+        pdf.set_font("Helvetica", "", 10)
+        pdf.set_text_color(90, 90, 90)
+        pdf.cell(
+            0, 6,
+            _pdf_safe(
+                f"Communicators: {s['active_communicators']:,}    "
+                f"Avg. people per activity: {s['avg_people_per_activity']:,}"
+            ),
+            new_x="LMARGIN", new_y="NEXT",
+        )
     pdf.ln(2)
+
+    usable_w = pdf.w - pdf.l_margin - pdf.r_margin
+
+    # Map of the selected activities, then the same breakdowns as the dashboard.
+    _pdf_map(pdf, report.get("map", {}).get("points", []), usable_w)
+    for table in _analysis_tables(report):
+        _pdf_table(pdf, table, usable_w)
+
+    pdf.ln(3)
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.set_text_color(20, 20, 20)
+    pdf.cell(0, 8, "Activities", new_x="LMARGIN", new_y="NEXT")
 
     # Relative column widths for the landscape table.
     widths = {
