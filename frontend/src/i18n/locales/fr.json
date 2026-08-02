@@ -405,7 +405,28 @@
     "dnsRequestSignoff": "Merci beaucoup!",
     "envSnippetComment": "dans votre fichier .env sur le serveur, puis relancez ./scripts/start.sh"
   },
-  "institutionImportCard": {
+  "analyticsCard": {
+    "title": "Statistiques du site web",
+    "statusActive": "Activées",
+    "statusOff": "Désactivées",
+    "collapsedSubtitle": "— comptage des visites respectueux de la vie privée via Cloudflare (facultatif)",
+    "description": "Voyez combien de personnes visitent votre site — y compris la page d'impact publique — sans cookies ni profils personnels. DOCENT prend en charge <cfLink>Cloudflare Web Analytics</cfLink>, gratuit et respectueux de la vie privée. Collez ci-dessous l'extrait fourni par Cloudflare : il se charge sur toutes les pages. Laissez le champ vide pour désactiver les statistiques.",
+    "howToTitle": "Comment obtenir votre extrait (environ 2 minutes)",
+    "step1": "Ouvrez <dashLink>Cloudflare Web Analytics</dashLink> et connectez-vous (créez un compte Cloudflare gratuit si vous n'en avez pas — sans carte bancaire, et sans avoir à transférer votre DNS vers Cloudflare).",
+    "step2": "Cliquez sur « Add a site », saisissez l'adresse de votre DOCENT (p. ex. docent.votre-organisation.edu) et choisissez l'option « Manual setup » / extrait JS.",
+    "step3": "Cloudflare affiche un court extrait <script …>. Copiez-le en entier.",
+    "step4": "Collez-le dans le champ ci-dessous et cliquez sur Enregistrer. Vos statistiques de visites apparaissent ensuite dans le tableau de bord Cloudflare en quelques minutes.",
+    "snippetLabel": "Extrait Cloudflare Web Analytics",
+    "snippetDescription": "Collez l'extrait complet fourni par Cloudflare (ou juste le token). Seul le token est stocké et utilisé — le reste est ignoré.",
+    "tokenDetected": "Token détecté — les statistiques sont actives sur toutes les pages.",
+    "tokenNotFound": "Impossible de trouver un token Cloudflare dans cet extrait. Collez le <script … data-cf-beacon='{\"token\": \"…\"}'></script> complet fourni par Cloudflare, ou seulement le token.",
+    "privacyNote": "La balise (beacon) fonctionne sans cookies et ne collecte aucune donnée personnelle. DOCENT construit lui-même la balise à partir de votre token (il n'exécute jamais le HTML collé) et ignore les visiteurs qui envoient <code>Do Not Track</code>.",
+    "saveButton": "Enregistrer",
+    "saveSuccessMessage": "Paramètres de statistiques enregistrés",
+    "saveErrorTitle": "Impossible d'enregistrer",
+    "unexpectedError": "Erreur inattendue"
+  },
+    "institutionImportCard": {
     "title": "Importer des institutions près d'un lieu",
     "description": "Récupérez des écoles, collèges, musées et bibliothèques depuis OpenStreetMap dans un rayon autour d'un lieu, afin qu'ils apparaissent sur la Carte comme cibles de couverture.",
     "locationLabel": "Lieu",

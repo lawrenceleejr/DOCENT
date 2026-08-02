@@ -405,7 +405,28 @@
     "dnsRequestSignoff": "¡Muchas gracias!",
     "envSnippetComment": "en tu .env en el servidor, luego vuelve a ejecutar ./scripts/start.sh"
   },
-  "institutionImportCard": {
+  "analyticsCard": {
+    "title": "Analítica del sitio web",
+    "statusActive": "Activa",
+    "statusOff": "Desactivada",
+    "collapsedSubtitle": "— recuento de visitas respetuoso con la privacidad mediante Cloudflare (opcional)",
+    "description": "Consulta cuántas personas visitan tu sitio —incluida la página pública de impacto— sin cookies ni perfiles personales. DOCENT es compatible con <cfLink>Cloudflare Web Analytics</cfLink>, que es gratuito y prioriza la privacidad. Pega abajo el fragmento que te da Cloudflare y se cargará en todas las páginas. Déjalo vacío para desactivar la analítica.",
+    "howToTitle": "Cómo obtener tu fragmento (unos 2 minutos)",
+    "step1": "Abre <dashLink>Cloudflare Web Analytics</dashLink> e inicia sesión (crea una cuenta gratuita de Cloudflare si no tienes una: sin tarjeta de crédito, y no necesitas mover tu DNS a Cloudflare).",
+    "step2": "Haz clic en «Add a site», introduce la dirección de tu DOCENT (p. ej. docent.tu-organizacion.edu) y elige la opción «Manual setup» / fragmento JS.",
+    "step3": "Cloudflare muestra un breve fragmento <script …>. Cópialo por completo.",
+    "step4": "Pégalo en el cuadro de abajo y pulsa Guardar. Tus estadísticas de visitas aparecerán en el panel de Cloudflare en unos minutos.",
+    "snippetLabel": "Fragmento de Cloudflare Web Analytics",
+    "snippetDescription": "Pega el fragmento completo que te da Cloudflare (o solo el token). Solo se almacena y se usa el token; el resto se ignora.",
+    "tokenDetected": "Token detectado: la analítica está activa en todas las páginas.",
+    "tokenNotFound": "No se encontró ningún token de Cloudflare en ese fragmento. Pega el <script … data-cf-beacon='{\"token\": \"…\"}'></script> completo que te dio Cloudflare, o solo el token.",
+    "privacyNote": "La baliza (beacon) no usa cookies ni recopila datos personales. DOCENT crea la etiqueta a partir de tu token (nunca ejecuta el HTML pegado) y omite a los visitantes que envían <code>Do Not Track</code>.",
+    "saveButton": "Guardar",
+    "saveSuccessMessage": "Configuración de analítica guardada",
+    "saveErrorTitle": "No se pudo guardar",
+    "unexpectedError": "Error inesperado"
+  },
+    "institutionImportCard": {
     "title": "Importar instituciones cerca de una ubicación",
     "description": "Trae escuelas, institutos, museos y bibliotecas desde OpenStreetMap dentro de un radio alrededor de un lugar, para que aparezcan en el Mapa como objetivos de cobertura.",
     "locationLabel": "Ubicación",

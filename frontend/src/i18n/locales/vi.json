@@ -405,7 +405,28 @@
     "dnsRequestSignoff": "Xin cảm ơn rất nhiều!",
     "envSnippetComment": "trong .env trên máy chủ, sau đó chạy lại ./scripts/start.sh"
   },
-  "institutionImportCard": {
+  "analyticsCard": {
+    "title": "Phân tích trang web",
+    "statusActive": "Đang bật",
+    "statusOff": "Đã tắt",
+    "collapsedSubtitle": "— đếm lượt truy cập tôn trọng quyền riêng tư qua Cloudflare (tùy chọn)",
+    "description": "Xem có bao nhiêu người truy cập trang của bạn — bao gồm cả trang tác động công khai — mà không dùng cookie hay hồ sơ cá nhân. DOCENT hỗ trợ <cfLink>Cloudflare Web Analytics</cfLink>, miễn phí và ưu tiên quyền riêng tư. Dán đoạn mã Cloudflare cung cấp vào bên dưới và nó sẽ tải trên mọi trang. Để trống để tắt phân tích.",
+    "howToTitle": "Cách lấy đoạn mã của bạn (khoảng 2 phút)",
+    "step1": "Mở <dashLink>Cloudflare Web Analytics</dashLink> và đăng nhập (tạo tài khoản Cloudflare miễn phí nếu bạn chưa có — không cần thẻ tín dụng, và bạn không cần chuyển DNS sang Cloudflare).",
+    "step2": "Nhấp vào “Add a site”, nhập địa chỉ DOCENT của bạn (ví dụ docent.to-chuc-cua-ban.edu), rồi chọn tùy chọn “Manual setup” / đoạn mã JS.",
+    "step3": "Cloudflare hiển thị một đoạn mã <script …> ngắn. Sao chép toàn bộ.",
+    "step4": "Dán vào ô bên dưới và nhấn Lưu. Số liệu truy cập của bạn sẽ xuất hiện trở lại trên bảng điều khiển Cloudflare trong vài phút.",
+    "snippetLabel": "Đoạn mã Cloudflare Web Analytics",
+    "snippetDescription": "Dán toàn bộ đoạn mã Cloudflare cung cấp (hoặc chỉ token). Chỉ token được lưu và sử dụng — phần còn lại bị bỏ qua.",
+    "tokenDetected": "Đã phát hiện token — phân tích đang hoạt động trên mọi trang.",
+    "tokenNotFound": "Không tìm thấy token Cloudflare trong đoạn mã đó. Hãy dán toàn bộ <script … data-cf-beacon='{\"token\": \"…\"}'></script> mà Cloudflare đã cung cấp, hoặc chỉ riêng token.",
+    "privacyNote": "Beacon không dùng cookie và không thu thập dữ liệu cá nhân. DOCENT tự tạo thẻ từ token của bạn (không bao giờ chạy HTML đã dán) và bỏ qua những khách gửi tín hiệu <code>Do Not Track</code>.",
+    "saveButton": "Lưu",
+    "saveSuccessMessage": "Đã lưu cài đặt phân tích",
+    "saveErrorTitle": "Không thể lưu",
+    "unexpectedError": "Lỗi không mong muốn"
+  },
+    "institutionImportCard": {
     "title": "Nhập tổ chức gần một vị trí",
     "description": "Lấy dữ liệu trường học, trường cao đẳng, viện bảo tàng và thư viện từ OpenStreetMap trong bán kính xung quanh một địa điểm, để chúng xuất hiện trên Bản đồ như các mục tiêu cần tiếp cận.",
     "locationLabel": "Vị trí",

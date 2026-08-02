@@ -405,7 +405,28 @@
     "dnsRequestSignoff": "Maraming salamat!",
     "envSnippetComment": "sa inyong .env sa server, tapos i-run muli ang ./scripts/start.sh"
   },
-  "institutionImportCard": {
+  "analyticsCard": {
+    "title": "Analytics ng website",
+    "statusActive": "Aktibo",
+    "statusOff": "Naka-off",
+    "collapsedSubtitle": "— pagbibilang ng bisita na magalang sa privacy sa pamamagitan ng Cloudflare (opsyonal)",
+    "description": "Tingnan kung ilang tao ang bumibisita sa iyong site — kasama ang pampublikong impact page — nang walang cookies o personal na profile. Sinusuportahan ng DOCENT ang <cfLink>Cloudflare Web Analytics</cfLink>, na libre at nauuna ang privacy. I-paste sa ibaba ang snippet na ibinigay ng Cloudflare at mag-lo-load ito sa bawat pahina. Iwanang blangko para i-off ang analytics.",
+    "howToTitle": "Paano makuha ang iyong snippet (mga 2 minuto)",
+    "step1": "Buksan ang <dashLink>Cloudflare Web Analytics</dashLink> at mag-sign in (gumawa ng libreng Cloudflare account kung wala ka pa — walang credit card, at hindi mo kailangang ilipat ang iyong DNS sa Cloudflare).",
+    "step2": "I-click ang “Add a site”, ilagay ang address ng iyong DOCENT (hal. docent.your-org.edu), at piliin ang opsyong “Manual setup” / JS snippet.",
+    "step3": "Nagpapakita ang Cloudflare ng maikling snippet na <script …>. Kopyahin ang buong ito.",
+    "step4": "I-paste ito sa kahon sa ibaba at pindutin ang I-save. Lilitaw ang iyong mga istatistika ng bisita sa Cloudflare dashboard sa loob ng ilang minuto.",
+    "snippetLabel": "Snippet ng Cloudflare Web Analytics",
+    "snippetDescription": "I-paste ang buong snippet na ibinigay ng Cloudflare (o ang token lang). Ang token lang ang iniimbak at ginagamit — hindi pinapansin ang iba.",
+    "tokenDetected": "Natukoy ang token — aktibo ang analytics sa bawat pahina.",
+    "tokenNotFound": "Walang nakitang Cloudflare token sa snippet na iyon. I-paste ang buong <script … data-cf-beacon='{\"token\": \"…\"}'></script> na ibinigay ng Cloudflare, o ang token mismo.",
+    "privacyNote": "Ang beacon ay walang cookie at walang kinokolektang personal na datos. Ginagawa mismo ng DOCENT ang tag mula sa iyong token (hindi nito kailanman pinapatakbo ang naka-paste na HTML) at nilalaktawan ang mga bisitang nagpapadala ng <code>Do Not Track</code>.",
+    "saveButton": "I-save",
+    "saveSuccessMessage": "Na-save ang mga setting ng analytics",
+    "saveErrorTitle": "Hindi na-save",
+    "unexpectedError": "Hindi inaasahang error"
+  },
+    "institutionImportCard": {
     "title": "Mag-import ng institusyon malapit sa isang lokasyon",
     "description": "Kunin ang mga paaralan, kolehiyo, museo, at aklatan mula sa OpenStreetMap sa loob ng radius ng isang lugar, para lumabas ito sa Mapa bilang mga coverage target.",
     "locationLabel": "Lokasyon",

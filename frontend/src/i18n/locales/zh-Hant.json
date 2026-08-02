@@ -405,7 +405,28 @@
     "dnsRequestSignoff": "非常感謝！",
     "envSnippetComment": "加入伺服器上的 .env 檔案，然後重新執行 ./scripts/start.sh"
   },
-  "institutionImportCard": {
+  "analyticsCard": {
+    "title": "網站分析",
+    "statusActive": "已啟用",
+    "statusOff": "已關閉",
+    "collapsedSubtitle": "— 透過 Cloudflare 進行注重隱私的訪客統計（選用）",
+    "description": "了解有多少人造訪您的網站（包含公開影響力頁面），且不使用 Cookie 或個人檔案。DOCENT 支援 <cfLink>Cloudflare Web Analytics</cfLink>，它免費且以隱私為優先。將 Cloudflare 提供的程式碼片段貼到下方，即可在每個頁面載入。留空即可關閉分析。",
+    "howToTitle": "如何取得您的程式碼片段（約 2 分鐘）",
+    "step1": "開啟 <dashLink>Cloudflare Web Analytics</dashLink> 並登入（若沒有帳戶，請建立免費的 Cloudflare 帳戶——不需信用卡，也不需要將您的 DNS 轉移到 Cloudflare）。",
+    "step2": "點選「Add a site」，輸入您的 DOCENT 網址（例如 docent.your-org.edu），並選擇「Manual setup」／JS 程式碼片段選項。",
+    "step3": "Cloudflare 會顯示一段簡短的 <script …> 程式碼片段。請整段複製。",
+    "step4": "將它貼到下方欄位並按「儲存」。幾分鐘後，您的訪客統計就會出現在 Cloudflare 儀表板上。",
+    "snippetLabel": "Cloudflare Web Analytics 程式碼片段",
+    "snippetDescription": "貼上 Cloudflare 提供的完整程式碼片段（或僅貼上 token）。系統只會儲存並使用 token，其餘內容會被忽略。",
+    "tokenDetected": "已偵測到 token——分析已在每個頁面上運作。",
+    "tokenNotFound": "在該程式碼片段中找不到 Cloudflare token。請貼上 Cloudflare 提供的完整 <script … data-cf-beacon='{\"token\": \"…\"}'></script>，或僅貼上 token 本身。",
+    "privacyNote": "此信標（beacon）不使用 Cookie，也不會收集個人資料。DOCENT 會自行以您的 token 建立標籤（絕不會執行貼上的 HTML），並略過傳送 <code>Do Not Track</code> 的訪客。",
+    "saveButton": "儲存",
+    "saveSuccessMessage": "已儲存分析設定",
+    "saveErrorTitle": "無法儲存",
+    "unexpectedError": "發生未預期的錯誤"
+  },
+    "institutionImportCard": {
     "title": "匯入指定地點附近的機構",
     "description": "從 OpenStreetMap 擷取指定地點特定半徑範圍內的學校、學院、博物館與圖書館，使其顯示於地圖上作為推廣目標。",
     "locationLabel": "地點",
