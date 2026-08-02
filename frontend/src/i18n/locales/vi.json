@@ -262,6 +262,10 @@
       "museum": "Viện Bảo tàng",
       "library": "Thư viện",
       "community_center": "Trung tâm Cộng đồng",
+      "youtube_channel": "Kênh YouTube",
+      "podcast": "Podcast",
+      "social_media": "Mạng xã hội",
+      "blog": "Blog",
       "other": "Khác"
     },
     "eventType": {
@@ -426,7 +430,7 @@
     "saveErrorTitle": "Không thể lưu",
     "unexpectedError": "Lỗi không mong muốn"
   },
-    "institutionImportCard": {
+  "institutionImportCard": {
     "title": "Nhập tổ chức gần một vị trí",
     "description": "Lấy dữ liệu trường học, trường cao đẳng, viện bảo tàng và thư viện từ OpenStreetMap trong bán kính xung quanh một địa điểm, để chúng xuất hiện trên Bản đồ như các mục tiêu cần tiếp cận.",
     "locationLabel": "Vị trí",
@@ -801,7 +805,7 @@
     "namePlaceholder": "Lincoln Elementary",
     "typeLabel": "Loại",
     "addressSearchLabel": "Tìm địa chỉ",
-    "addressSearchDescription": "Không bắt buộc — tìm một địa điểm để tự động điền các trường dưới đây. Không bao giờ thay đổi tên hoặc loại ở trên.",
+    "addressSearchDescription": "Không bắt buộc — tìm một địa điểm để điền tên và địa chỉ bên dưới (bạn vẫn có thể chỉnh sửa). Không bao giờ đặt loại địa điểm.",
     "addressSearchPlaceholder": "Bắt đầu nhập địa chỉ hoặc địa điểm…",
     "streetAddressLabel": "Địa chỉ đường",
     "cityLabel": "Thành phố",
@@ -809,6 +813,8 @@
     "countryLabel": "Quốc gia",
     "latitudeLabel": "Vĩ độ",
     "longitudeLabel": "Kinh độ",
+    "urlLabel": "Trang web / URL",
+    "urlDescription": "Liên kết trang chủ, kênh hoặc hồ sơ — địa chỉ chính của một địa điểm trực tuyến.",
     "notesLabel": "Ghi chú",
     "createVenueButton": "Tạo địa điểm",
     "couldNotSaveVenue": "Không thể lưu địa điểm",

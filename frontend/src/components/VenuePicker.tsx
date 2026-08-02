@@ -233,6 +233,7 @@ export function VenueFormModal({
       country: venue?.country ?? prefill?.country ?? 'USA',
       latitude: (venue?.latitude ?? prefill?.latitude ?? '') as number | '',
       longitude: (venue?.longitude ?? prefill?.longitude ?? '') as number | '',
+      url: venue?.url ?? '',
       notes: venue?.notes ?? '',
     },
     validate: {
@@ -252,6 +253,7 @@ export function VenueFormModal({
         country: values.country.trim() || 'USA',
         latitude: values.latitude === '' ? null : values.latitude,
         longitude: values.longitude === '' ? null : values.longitude,
+        url: values.url.trim() || null,
         notes: values.notes.trim() || null,
         ...(editing ? {} : { institution_id: prefill?.institution_id ?? null }),
       };
@@ -303,6 +305,16 @@ export function VenueFormModal({
             onOptionSubmit={(label) => {
               const s = suggestionByLabel.get(label);
               if (!s) return;
+              // Auto-fill the venue name from the chosen result so you don't
+              // have to retype it (you can still edit it after). Prefer the
+              // place's own name; if the result is a bare street address with
+              // no place name, only fall back to the label when the name field
+              // is still empty — never clobber a name you typed on purpose.
+              if (s.name) {
+                form.setFieldValue('name', s.name);
+              } else if (!form.values.name.trim()) {
+                form.setFieldValue('name', s.label);
+              }
               form.setFieldValue('address', s.address ?? form.values.address);
               form.setFieldValue('city', s.city ?? form.values.city);
               form.setFieldValue('state', s.state ?? form.values.state);
@@ -333,6 +345,13 @@ export function VenueFormModal({
               {...form.getInputProps('longitude')}
             />
           </Group>
+          <TextInput
+            label={t('venuePicker.urlLabel')}
+            description={t('venuePicker.urlDescription')}
+            placeholder="https://…"
+            inputMode="url"
+            {...form.getInputProps('url')}
+          />
           <Textarea label={t('venuePicker.notesLabel')} autosize minRows={2} {...form.getInputProps('notes')} />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>

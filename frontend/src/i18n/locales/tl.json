@@ -262,6 +262,10 @@
       "museum": "Museo",
       "library": "Aklatan",
       "community_center": "Sentrong Pang-komunidad",
+      "youtube_channel": "YouTube Channel",
+      "podcast": "Podcast",
+      "social_media": "Social Media",
+      "blog": "Blog",
       "other": "Iba pa"
     },
     "eventType": {
@@ -426,7 +430,7 @@
     "saveErrorTitle": "Hindi na-save",
     "unexpectedError": "Hindi inaasahang error"
   },
-    "institutionImportCard": {
+  "institutionImportCard": {
     "title": "Mag-import ng institusyon malapit sa isang lokasyon",
     "description": "Kunin ang mga paaralan, kolehiyo, museo, at aklatan mula sa OpenStreetMap sa loob ng radius ng isang lugar, para lumabas ito sa Mapa bilang mga coverage target.",
     "locationLabel": "Lokasyon",
@@ -801,7 +805,7 @@
     "namePlaceholder": "Lincoln Elementary",
     "typeLabel": "Uri",
     "addressSearchLabel": "Maghanap ng address",
-    "addressSearchDescription": "Opsyonal — maghanap ng lugar para awtomatikong mapunan ang mga field sa ibaba. Kailanman ay hindi babaguhin ang pangalan o uri sa itaas.",
+    "addressSearchDescription": "Opsyonal — maghanap ng lugar para punan ang pangalan at address sa ibaba (puwede mo pa ring i-edit). Hindi nito itinatakda ang uri ng venue.",
     "addressSearchPlaceholder": "Magsimulang mag-type ng address o lugar…",
     "streetAddressLabel": "Address",
     "cityLabel": "Lungsod",
@@ -809,6 +813,8 @@
     "countryLabel": "Bansa",
     "latitudeLabel": "Latitude",
     "longitudeLabel": "Longitude",
+    "urlLabel": "Website / URL",
+    "urlDescription": "Link ng homepage, channel, o profile — ang pangunahing address ng isang online na venue.",
     "notesLabel": "Mga Tala",
     "createVenueButton": "Gumawa ng venue",
     "couldNotSaveVenue": "Hindi na-save ang venue",

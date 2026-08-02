@@ -44,6 +44,12 @@ _VENUE_TYPE_TO_INSTITUTION_TYPE = {
     VenueType.museum: InstitutionType.museum,
     VenueType.library: InstitutionType.library,
     VenueType.community_center: InstitutionType.other,
+    # Online venues have no physical institution counterpart; group them under
+    # "other" so the type filter stays exhaustive over every VenueType.
+    VenueType.youtube_channel: InstitutionType.other,
+    VenueType.podcast: InstitutionType.other,
+    VenueType.social_media: InstitutionType.other,
+    VenueType.blog: InstitutionType.other,
     VenueType.other: InstitutionType.other,
 }
 

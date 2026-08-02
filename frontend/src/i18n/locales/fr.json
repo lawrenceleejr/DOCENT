@@ -262,6 +262,10 @@
       "museum": "Musée",
       "library": "Bibliothèque",
       "community_center": "Centre communautaire",
+      "youtube_channel": "Chaîne YouTube",
+      "podcast": "Podcast",
+      "social_media": "Réseaux sociaux",
+      "blog": "Blog",
       "other": "Autre"
     },
     "eventType": {
@@ -426,7 +430,7 @@
     "saveErrorTitle": "Impossible d'enregistrer",
     "unexpectedError": "Erreur inattendue"
   },
-    "institutionImportCard": {
+  "institutionImportCard": {
     "title": "Importer des institutions près d'un lieu",
     "description": "Récupérez des écoles, collèges, musées et bibliothèques depuis OpenStreetMap dans un rayon autour d'un lieu, afin qu'ils apparaissent sur la Carte comme cibles de couverture.",
     "locationLabel": "Lieu",
@@ -801,7 +805,7 @@
     "namePlaceholder": "École primaire Lincoln",
     "typeLabel": "Type",
     "addressSearchLabel": "Rechercher une adresse",
-    "addressSearchDescription": "Facultatif — recherchez un lieu pour préremplir les champs ci-dessous. Ne change jamais le nom ou le type ci-dessus.",
+    "addressSearchDescription": "Facultatif — recherchez un lieu pour remplir le nom et l'adresse ci-dessous (vous pouvez toujours les modifier). Ne définit jamais le type de lieu.",
     "addressSearchPlaceholder": "Commencez à saisir une adresse ou un lieu…",
     "streetAddressLabel": "Adresse",
     "cityLabel": "Ville",
@@ -809,6 +813,8 @@
     "countryLabel": "Pays",
     "latitudeLabel": "Latitude",
     "longitudeLabel": "Longitude",
+    "urlLabel": "Site web / URL",
+    "urlDescription": "Lien vers la page d'accueil, la chaîne ou le profil — l'adresse principale d'un lieu en ligne.",
     "notesLabel": "Notes",
     "createVenueButton": "Créer le lieu",
     "couldNotSaveVenue": "Impossible d'enregistrer le lieu",

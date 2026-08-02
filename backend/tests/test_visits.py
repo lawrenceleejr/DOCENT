@@ -438,3 +438,44 @@ def test_visit_search_matches_people(client):
     assert client.get("/api/visits", params={"q": "Hank"}).json()["total"] == 1
     assert client.get("/api/visits", params={"q": "Iris"}).json()["total"] == 1
     assert client.get("/api/visits", params={"q": "nobody-here"}).json()["total"] == 0
+
+
+def test_venue_url_and_online_type(client):
+    register(client)
+    # An online venue: a YouTube channel identified by its URL, no coordinates.
+    venue = create_venue(
+        client,
+        name="Fermilab Outreach",
+        venue_type="youtube_channel",
+        city=None,
+        url="https://youtube.com/@fermilab",
+    )
+    assert venue["venue_type"] == "youtube_channel"
+    assert venue["url"] == "https://youtube.com/@fermilab"
+
+    fetched = client.get(f"/api/venues/{venue['id']}").json()
+    assert fetched["url"] == "https://youtube.com/@fermilab"
+
+    # URL is editable and clearable.
+    updated = client.patch(
+        f"/api/venues/{venue['id']}", json={"url": "https://youtube.com/@fermilabnew"}
+    ).json()
+    assert updated["url"] == "https://youtube.com/@fermilabnew"
+    cleared = client.patch(f"/api/venues/{venue['id']}", json={"url": None}).json()
+    assert cleared["url"] is None
+
+
+def test_all_online_venue_types_accepted(client):
+    register(client)
+    for i, vt in enumerate(("youtube_channel", "podcast", "social_media", "blog")):
+        v = create_venue(client, name=f"Online {vt}", venue_type=vt, city=f"c{i}")
+        assert v["venue_type"] == vt
+
+
+def test_venue_url_length_capped(client):
+    register(client)
+    r = client.post(
+        "/api/venues",
+        json={"name": "Too Long", "venue_type": "blog", "url": "https://x/" + "a" * 500},
+    )
+    assert r.status_code == 422

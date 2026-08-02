@@ -321,6 +321,13 @@ export function VenueDetailPage() {
             </Badge>
           </Group>
           <Text c="dimmed">{address || t('venueDetail.noAddress')}</Text>
+          {venue.url && (
+            <Text size="sm" mt={2}>
+              <Anchor href={venue.url} target="_blank" rel="noreferrer">
+                {venue.url}
+              </Anchor>
+            </Text>
+          )}
         </div>
         {canManage && (
           <Group>

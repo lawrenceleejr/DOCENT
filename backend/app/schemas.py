@@ -454,6 +454,7 @@ class VenueCreate(BaseModel):
     country: str = Field(default="USA", max_length=120)
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
+    url: str | None = Field(default=None, max_length=500)
     notes: str | None = None
     institution_id: int | None = None
 
@@ -467,6 +468,7 @@ class VenueUpdate(BaseModel):
     country: str | None = Field(default=None, max_length=120)
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
+    url: str | None = Field(default=None, max_length=500)
     notes: str | None = None
 
 
@@ -482,6 +484,7 @@ class VenueOut(BaseModel):
     country: str
     latitude: float | None
     longitude: float | None
+    url: str | None
     notes: str | None
     created_by_id: int | None
     institution_id: int | None
@@ -584,9 +587,10 @@ class VenueList(BaseModel):
 
 
 class PlaceSuggestion(BaseModel):
-    """One address/place autocomplete result — prefills a new venue's
-    address fields, never its name or type (a geocoder can't reliably tell
-    a middle school from a museum)."""
+    """One address/place autocomplete result — prefills a new venue's address
+    fields, and (when the result is a named place) its name, so the communicator
+    doesn't have to retype it. It never sets the venue type: a geocoder can't
+    reliably tell a middle school from a museum."""
 
     label: str
     name: str | None

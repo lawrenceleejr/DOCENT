@@ -33,6 +33,11 @@ class VenueType(str, enum.Enum):
     museum = "museum"
     library = "library"
     community_center = "community_center"
+    # Online / distributed outreach channels — no physical location.
+    youtube_channel = "youtube_channel"
+    podcast = "podcast"
+    social_media = "social_media"
+    blog = "blog"
     other = "other"
 
 
@@ -153,6 +158,9 @@ class Venue(Base):
     country: Mapped[str] = mapped_column(String(120), default="USA")
     latitude: Mapped[float | None] = mapped_column(Float)
     longitude: Mapped[float | None] = mapped_column(Float)
+    # Homepage / channel / profile link — the primary identifier for an online
+    # venue (a YouTube channel, podcast, blog, or social account).
+    url: Mapped[str | None] = mapped_column(String(500))
     notes: Mapped[str | None] = mapped_column(Text)
     created_by_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL")

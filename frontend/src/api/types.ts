@@ -7,6 +7,10 @@ export const VENUE_TYPES = [
   'museum',
   'library',
   'community_center',
+  'youtube_channel',
+  'podcast',
+  'social_media',
+  'blog',
   'other',
 ] as const;
 export type VenueType = (typeof VENUE_TYPES)[number];
@@ -279,6 +283,7 @@ export interface Venue {
   country: string;
   latitude: number | null;
   longitude: number | null;
+  url: string | null;
   notes: string | null;
   created_by_id: number | null;
   created_at: string;

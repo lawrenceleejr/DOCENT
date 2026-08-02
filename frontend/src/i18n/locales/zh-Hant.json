@@ -262,6 +262,10 @@
       "museum": "博物館",
       "library": "圖書館",
       "community_center": "社區中心",
+      "youtube_channel": "YouTube 頻道",
+      "podcast": "Podcast",
+      "social_media": "社群媒體",
+      "blog": "部落格",
       "other": "其他"
     },
     "eventType": {
@@ -426,7 +430,7 @@
     "saveErrorTitle": "無法儲存",
     "unexpectedError": "發生未預期的錯誤"
   },
-    "institutionImportCard": {
+  "institutionImportCard": {
     "title": "匯入指定地點附近的機構",
     "description": "從 OpenStreetMap 擷取指定地點特定半徑範圍內的學校、學院、博物館與圖書館，使其顯示於地圖上作為推廣目標。",
     "locationLabel": "地點",
@@ -801,7 +805,7 @@
     "namePlaceholder": "Lincoln Elementary",
     "typeLabel": "類型",
     "addressSearchLabel": "搜尋地址",
-    "addressSearchDescription": "選填——查詢地點以自動填入下方欄位。不會變更上方的名稱或類型。",
+    "addressSearchDescription": "選填——搜尋地點以填入下方的名稱和地址（之後仍可編輯）。不會設定場所類型。",
     "addressSearchPlaceholder": "開始輸入地址或地名…",
     "streetAddressLabel": "街道地址",
     "cityLabel": "城市",
@@ -809,6 +813,8 @@
     "countryLabel": "國家",
     "latitudeLabel": "緯度",
     "longitudeLabel": "經度",
+    "urlLabel": "網站／網址",
+    "urlDescription": "首頁、頻道或個人檔案連結——線上場所的主要網址。",
     "notesLabel": "備註",
     "createVenueButton": "建立場地",
     "couldNotSaveVenue": "無法儲存場地",

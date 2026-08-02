@@ -262,6 +262,10 @@
       "museum": "Museum",
       "library": "Library",
       "community_center": "Community Center",
+      "youtube_channel": "YouTube Channel",
+      "podcast": "Podcast",
+      "social_media": "Social Media",
+      "blog": "Blog",
       "other": "Other"
     },
     "eventType": {
@@ -801,7 +805,7 @@
     "namePlaceholder": "Lincoln Elementary",
     "typeLabel": "Type",
     "addressSearchLabel": "Search for an address",
-    "addressSearchDescription": "Optional — look up a place to prefill the fields below. Never changes the name or type above.",
+    "addressSearchDescription": "Optional — look up a place to fill in the name and address below (you can still edit them). It never sets the venue type.",
     "addressSearchPlaceholder": "Start typing an address or place…",
     "streetAddressLabel": "Street address",
     "cityLabel": "City",
@@ -809,6 +813,8 @@
     "countryLabel": "Country",
     "latitudeLabel": "Latitude",
     "longitudeLabel": "Longitude",
+    "urlLabel": "Website / URL",
+    "urlDescription": "Homepage, channel, or profile link — the main address for an online venue.",
     "notesLabel": "Notes",
     "createVenueButton": "Create venue",
     "couldNotSaveVenue": "Could not save venue",
