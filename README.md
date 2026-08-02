@@ -418,6 +418,38 @@ Registration**, or via `SITE_NAME` / `PUBLIC_PAGE` in `.env`.
 
 ![Public impact page](docs/screenshots/08-impact.png)
 
+## Analytics (optional)
+
+Want to know how many people visit your site — including the public impact page?
+DOCENT has built-in support for **[Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/)**,
+a **free**, **cookieless**, privacy-first alternative to Google Analytics. It
+counts visits and page views without tracking cookies or building personal
+profiles, so it fits DOCENT's privacy posture — no consent banner needed.
+
+There's **nothing to install and no `.env` change** — an admin just pastes the
+snippet Cloudflare gives them into **Admin → Website analytics**, and it loads on
+every page. The panel on that page walks through the setup; the short version:
+
+1. Open [Cloudflare Web Analytics](https://dash.cloudflare.com/?to=/:account/web-analytics)
+   and sign in. Create a free Cloudflare account if you don't have one — no
+   credit card, and **you do not need to move your DNS to Cloudflare**.
+2. Click **Add a site**, enter your DOCENT address (e.g. `docent.your-org.edu`),
+   and pick the **Manual setup** / JS-snippet option.
+3. Copy the whole `<script … data-cf-beacon='{"token": "…"}'></script>` snippet
+   Cloudflare shows you.
+4. Paste it into **Admin → Website analytics** and press **Save**. Your stats
+   appear back on the Cloudflare dashboard within a few minutes.
+
+![Website analytics setup](docs/screenshots/09-analytics.png)
+
+Only the beacon **token** is stored and used — DOCENT builds the script tag
+itself from the token rather than running the pasted HTML, and it skips visitors
+who send the `Do Not Track` signal. Clear the box and Save to turn analytics off.
+
+> Prefer to self-host your analytics? The token box accepts any Cloudflare Web
+> Analytics token; for other tools (Umami, Plausible, Matomo, GoatCounter) you'd
+> add their snippet to `frontend/index.html` and rebuild.
+
 ## Federation (show sibling instances' activities)
 
 Communicators often work with more than one outreach group — each running its own

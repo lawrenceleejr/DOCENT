@@ -14,6 +14,7 @@ from app.security import (
     verify_password,
 )
 from app.services.settings import (
+    cf_analytics_token,
     effective_contact_email,
     effective_invite_code,
     effective_login_message,
@@ -48,6 +49,7 @@ def auth_config(db: DbSession) -> AuthConfig:
         banner_level=effective_banner_level(db),
         user_directory_visible=user_directory_visible(db),
         has_siblings=has_enabled_peers(db),
+        cf_analytics_token=cf_analytics_token(db),
     )
 
 

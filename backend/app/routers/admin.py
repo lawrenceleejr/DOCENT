@@ -61,6 +61,7 @@ from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
 from app.services.settings import (
     BANNER_LEVEL_KEY,
     BANNER_MESSAGE_KEY,
+    CF_ANALYTICS_KEY,
     CONTACT_EMAIL_KEY,
     FEDERATION_PUBLISH_KEY,
     FEDERATION_PUBLISH_PLANNED_KEY,
@@ -75,6 +76,7 @@ from app.services.settings import (
     USER_DIRECTORY_KEY,
     effective_banner_level,
     effective_banner_message,
+    effective_cf_analytics_snippet,
     effective_contact_email,
     effective_invite_code,
     effective_login_message,
@@ -193,6 +195,7 @@ def _settings_out(db) -> RegistrationSettings:
         federation_publish=federation_publish_enabled(db),
         federation_publish_planned=federation_publish_planned_enabled(db),
         federation_feed_url=federation_feed_url(db),
+        cf_analytics_snippet=effective_cf_analytics_snippet(db),
     )
 
 
@@ -239,6 +242,8 @@ def update_registration_settings(
         set_setting(
             db, FEDERATION_PUBLISH_PLANNED_KEY, "1" if body.federation_publish_planned else ""
         )
+    if body.cf_analytics_snippet is not None:
+        set_setting(db, CF_ANALYTICS_KEY, body.cf_analytics_snippet.strip())
     db.commit()
     return _settings_out(db)
 

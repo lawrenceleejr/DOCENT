@@ -382,3 +382,48 @@ def test_site_banner_setting(client):
 
     # Invalid severity is rejected.
     assert client.patch("/api/admin/settings", json={"banner_level": "boom"}).status_code == 422
+
+
+def test_admin_sets_cf_analytics_snippet(client):
+    register(client, email="admin@example.com")  # admin
+    # Off by default: no snippet stored, no token exposed publicly.
+    assert client.get("/api/admin/settings").json()["cf_analytics_snippet"] == ""
+    assert client.get("/api/auth/config").json()["cf_analytics_token"] is None
+
+    token = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+    snippet = (
+        '<!-- Cloudflare Web Analytics --><script defer '
+        'src="https://static.cloudflareinsights.com/beacon.min.js" '
+        f"data-cf-beacon='{{\"token\": \"{token}\"}}'></script>"
+    )
+    r = client.patch("/api/admin/settings", json={"cf_analytics_snippet": f"  {snippet}  "})
+    assert r.status_code == 200
+    # The raw snippet round-trips (trimmed) for the admin form...
+    assert r.json()["cf_analytics_snippet"] == snippet
+    # ...while the public config exposes only the parsed token.
+    assert client.get("/api/auth/config").json()["cf_analytics_token"] == token
+
+    # A bare token pastes through too.
+    client.patch("/api/admin/settings", json={"cf_analytics_snippet": token})
+    assert client.get("/api/auth/config").json()["cf_analytics_token"] == token
+
+    # Clearing it turns analytics back off.
+    client.patch("/api/admin/settings", json={"cf_analytics_snippet": ""})
+    assert client.get("/api/admin/settings").json()["cf_analytics_snippet"] == ""
+    assert client.get("/api/auth/config").json()["cf_analytics_token"] is None
+
+
+def test_cf_analytics_snippet_without_token_exposes_no_token(client):
+    register(client, email="admin@example.com")
+    # A non-empty snippet with nothing token-shaped in it: stored, but nothing
+    # is injected (no token), so we never echo arbitrary markup onto the page.
+    junk = "<script>alert('nope')</script>"
+    client.patch("/api/admin/settings", json={"cf_analytics_snippet": junk})
+    assert client.get("/api/admin/settings").json()["cf_analytics_snippet"] == junk
+    assert client.get("/api/auth/config").json()["cf_analytics_token"] is None
+
+
+def test_cf_analytics_snippet_length_capped(client):
+    register(client, email="admin@example.com")
+    r = client.patch("/api/admin/settings", json={"cf_analytics_snippet": "a" * 2001})
+    assert r.status_code == 422

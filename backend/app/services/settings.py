@@ -4,6 +4,7 @@ An admin can change these from the UI without editing `.env` or redeploying.
 The DB value wins when a row exists (even if empty — e.g. clearing the invite
 code closes registration); otherwise we fall back to the env-configured value.
 """
+import re
 import secrets
 
 from sqlalchemy.orm import Session
@@ -27,6 +28,14 @@ USER_DIRECTORY_KEY = "user_directory_visible"
 FEDERATION_PUBLISH_KEY = "federation_publish"
 FEDERATION_PUBLISH_PLANNED_KEY = "federation_publish_planned"
 FEDERATION_TOKEN_KEY = "federation_token"
+CF_ANALYTICS_KEY = "cf_analytics_snippet"
+
+# The admin pastes the whole Cloudflare Web Analytics snippet
+# (<script … data-cf-beacon='{"token":"…"}'></script>) — or just the bare
+# token. We only ever pull the token out and inject our own canonical beacon,
+# so admin-entered HTML is never echoed back onto the page or the wire.
+_CF_TOKEN_RE = re.compile(r"""token["']?\s*:\s*["']([0-9a-fA-F]{6,64})["']""")
+_BARE_TOKEN_RE = re.compile(r"^[0-9a-fA-F]{6,64}$")
 
 
 def get_setting(db: Session, key: str) -> str | None:
@@ -152,3 +161,24 @@ def federation_feed_url(db: Session) -> str:
         return ""
     base = (effective_site_url(db) or "").rstrip("/")
     return f"{base}/api/federation/activities?token={token}"
+
+
+def effective_cf_analytics_snippet(db: Session) -> str:
+    """The raw Cloudflare Web Analytics snippet the admin pasted (empty if
+    unset). Stored verbatim so the admin form round-trips what they entered."""
+    return get_setting(db, CF_ANALYTICS_KEY) or ""
+
+
+def cf_analytics_token(db: Session) -> str | None:
+    """The Cloudflare beacon token parsed from the stored snippet, or None when
+    nothing usable is configured. Only the token is ever exposed publicly (and
+    injected) — never the raw HTML the admin pasted."""
+    snippet = (get_setting(db, CF_ANALYTICS_KEY) or "").strip()
+    if not snippet:
+        return None
+    match = _CF_TOKEN_RE.search(snippet)
+    if match:
+        return match.group(1)
+    if _BARE_TOKEN_RE.match(snippet):
+        return snippet
+    return None

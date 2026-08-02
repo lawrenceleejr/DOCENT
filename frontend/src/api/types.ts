@@ -646,6 +646,8 @@ export interface AuthConfig {
   banner_level: string;
   user_directory_visible: boolean;
   has_siblings: boolean;
+  /** Cloudflare Web Analytics beacon token, or null when not configured. */
+  cf_analytics_token: string | null;
 }
 
 export interface LoginHistoryEntry {
@@ -747,6 +749,8 @@ export interface RegistrationSettings {
   federation_publish: boolean;
   federation_publish_planned: boolean;
   federation_feed_url: string;
+  /** Raw Cloudflare Web Analytics snippet the admin pasted (round-trips). */
+  cf_analytics_snippet: string;
 }
 
 export interface DbImportResult {

@@ -405,6 +405,27 @@
     "dnsRequestSignoff": "Thanks very much!",
     "envSnippetComment": "in your .env on the server, then re-run ./scripts/start.sh"
   },
+  "analyticsCard": {
+    "title": "Website analytics",
+    "statusActive": "Active",
+    "statusOff": "Off",
+    "collapsedSubtitle": "— privacy-friendly visitor counts via Cloudflare (optional)",
+    "description": "See how many people visit your site — including the public impact page — without cookies or personal profiles. DOCENT supports <cfLink>Cloudflare Web Analytics</cfLink>, which is free and privacy-first. Paste the snippet Cloudflare gives you below and it loads on every page. Leave it empty to turn analytics off.",
+    "howToTitle": "How to get your snippet (about 2 minutes)",
+    "step1": "Open <dashLink>Cloudflare Web Analytics</dashLink> and sign in (create a free Cloudflare account if you don't have one — no credit card, and you do not need to move your DNS to Cloudflare).",
+    "step2": "Click “Add a site”, enter your DOCENT address (e.g. docent.your-org.edu), and choose the “Manual setup” / JS snippet option.",
+    "step3": "Cloudflare shows a short <script …> snippet. Copy the whole thing.",
+    "step4": "Paste it into the box below and press Save. Your visitor stats then appear back on the Cloudflare dashboard within a few minutes.",
+    "snippetLabel": "Cloudflare Web Analytics snippet",
+    "snippetDescription": "Paste the full snippet Cloudflare gives you (or just the token). Only the token is stored and used — the rest is ignored.",
+    "tokenDetected": "Token detected — analytics is live on every page.",
+    "tokenNotFound": "Couldn't find a Cloudflare token in that snippet. Paste the full <script … data-cf-beacon='{\"token\": \"…\"}'></script> Cloudflare gave you, or just the token itself.",
+    "privacyNote": "The beacon is cookieless and collects no personal data. DOCENT builds the tag itself from your token (it never runs the pasted HTML) and skips visitors who send <code>Do Not Track</code>.",
+    "saveButton": "Save",
+    "saveSuccessMessage": "Analytics settings saved",
+    "saveErrorTitle": "Could not save",
+    "unexpectedError": "Unexpected error"
+  },
   "institutionImportCard": {
     "title": "Import institutions near a location",
     "description": "Pull schools, colleges, museums and libraries from OpenStreetMap within a radius of a place, so they appear on the Map as coverage targets.",

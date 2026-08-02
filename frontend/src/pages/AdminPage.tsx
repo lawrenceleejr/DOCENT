@@ -50,6 +50,7 @@ import { LoginHistoryCard } from '../components/LoginHistoryCard';
 import { InstitutionImportCard } from '../components/InstitutionImportCard';
 import { InstitutionManagerCard } from '../components/InstitutionManagerCard';
 import { SiteSetupCard } from '../components/SiteSetupCard';
+import { AnalyticsCard } from '../components/AnalyticsCard';
 import { DbToolsCard } from '../components/DbToolsCard';
 import { FederationCard } from '../components/FederationCard';
 import { VenueFilterSelect } from '../components/VenueFilterSelect';
@@ -497,6 +498,7 @@ export function AdminPage() {
       <Title order={2}>{t('admin.title')}</Title>
       <RegistrationCard />
       <SiteSetupCard />
+      <AnalyticsCard />
       <DbToolsCard />
       <FederationCard />
       <BackupsCard />

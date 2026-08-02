@@ -165,6 +165,10 @@ class AuthConfig(BaseModel):
     # True when at least one enabled federation peer exists, so the UI can hide
     # the "sibling instances" controls entirely on stand-alone instances (#6).
     has_siblings: bool
+    # Cloudflare Web Analytics beacon token (parsed from the admin-pasted
+    # snippet), or None when analytics isn't configured. Public so the beacon
+    # can load on every page, including the login and public impact pages.
+    cf_analytics_token: str | None
 
 
 class LoginHistoryEntry(BaseModel):
@@ -388,6 +392,9 @@ class RegistrationSettings(BaseModel):
     federation_publish: bool
     federation_publish_planned: bool
     federation_feed_url: str
+    # The raw Cloudflare Web Analytics snippet, returned verbatim so the admin
+    # form round-trips exactly what was pasted.
+    cf_analytics_snippet: str
 
 
 class RegistrationSettingsUpdate(BaseModel):
@@ -405,6 +412,7 @@ class RegistrationSettingsUpdate(BaseModel):
     user_directory_visible: bool | None = None
     federation_publish: bool | None = None
     federation_publish_planned: bool | None = None
+    cf_analytics_snippet: str | None = Field(default=None, max_length=2000)
 
 
 
