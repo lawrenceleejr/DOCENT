@@ -49,6 +49,8 @@ interface VenuePickerProps {
    * picker re-seeds whenever this changes and nothing is selected yet. */
   initialSearch?: string;
   disabled?: boolean;
+  /** Show the required-field asterisk on the label. */
+  required?: boolean;
 }
 
 export function VenuePicker({
@@ -58,6 +60,7 @@ export function VenuePicker({
   educationalOnly,
   initialSearch,
   disabled,
+  required,
 }: VenuePickerProps) {
   const { t } = useTranslation();
   const enumLabel = useEnumLabel();
@@ -148,6 +151,7 @@ export function VenuePicker({
         searchable
         clearable
         disabled={disabled}
+        withAsterisk={required}
         data={options}
         // Results are already filtered server-side by `search`; disable Mantine's
         // own filtering so the "＋ Create new venue…" and catalog options are

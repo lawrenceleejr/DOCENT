@@ -107,6 +107,7 @@
   },
   "visitList": {
     "title": "Visitas",
+    "importCsv": "Importar CSV",
     "exportCsv": "Exportar CSV",
     "logVisit": "Registrar una visita",
     "searchLabel": "Buscar",
@@ -512,7 +513,6 @@
     "nextButton": "Siguiente",
     "rowCounter": "Fila {{current}} de {{total}}",
     "kbdHint": "navegar entre filas",
-    "untitledRow": "(sin título)",
     "draftHeading": "Borrador del evento",
     "importedBadge": "Importado",
     "skippedBadge": "Omitido",
@@ -775,10 +775,7 @@
     "roleOrgLabel": "Organización",
     "roleOrgPlaceholder": "p. ej., Museo de Ciencias de la Ciudad (opcional)",
     "addRole": "Agregar cargo",
-    "removeRole": "Eliminar cargo",
-    "importTitle": "Importar eventos pasados",
-    "importDescription": "Trae tu historial de divulgación desde una hoja de cálculo: un CSV general o una exportación de Symplectic Elements. Revisarás cada fila, la ajustarás y la importarás como evento (o la omitirás).",
-    "importButton": "Importar desde CSV"
+    "removeRole": "Eliminar cargo"
   },
   "directory": {
     "title": "Directorio",

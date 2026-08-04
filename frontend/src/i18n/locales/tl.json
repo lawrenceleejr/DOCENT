@@ -107,6 +107,7 @@
   },
   "visitList": {
     "title": "Mga Pagbisita",
+    "importCsv": "Mag-import ng CSV",
     "exportCsv": "I-export bilang CSV",
     "logVisit": "Mag-log ng pagbisita",
     "searchLabel": "Maghanap",
@@ -512,7 +513,6 @@
     "nextButton": "Susunod",
     "rowCounter": "Row {{current}} ng {{total}}",
     "kbdHint": "mag-navigate sa mga row",
-    "untitledRow": "(walang pamagat)",
     "draftHeading": "Draft ng event",
     "importedBadge": "Na-import",
     "skippedBadge": "Nilaktawan",
@@ -775,10 +775,7 @@
     "roleOrgLabel": "Organisasyon",
     "roleOrgPlaceholder": "hal. City Science Museum (opsyonal)",
     "addRole": "Magdagdag ng tungkulin",
-    "removeRole": "Alisin ang tungkulin",
-    "importTitle": "Mag-import ng mga nakaraang event",
-    "importDescription": "Ilipat ang iyong outreach history mula sa spreadsheet — pangkalahatang CSV o export mula sa Symplectic Elements. Rerepasuhin mo ang bawat row, aayusin, at ii-import bilang event (o lalaktawan).",
-    "importButton": "Mag-import mula sa CSV"
+    "removeRole": "Alisin ang tungkulin"
   },
   "directory": {
     "title": "Direktoryo",

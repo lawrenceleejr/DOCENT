@@ -388,8 +388,8 @@ map coverage, so planning ahead never inflates your impact numbers.
 ## Import your event history from a CSV
 
 Already have years of outreach logged in a spreadsheet — or in **Symplectic
-Elements**? **Profile → Import past events** walks you through bringing it in
-without retyping everything:
+Elements**? The **Import CSV** button on the Visits page (right next to
+Export CSV) walks you through bringing it in without retyping everything:
 
 - **Any reasonable CSV works.** DOCENT sniffs the delimiter and encoding,
   auto-maps common column names (title, date, venue, attendance, audience,

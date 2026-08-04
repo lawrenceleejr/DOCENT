@@ -107,6 +107,7 @@
   },
   "visitList": {
     "title": "Visits",
+    "importCsv": "Import CSV",
     "exportCsv": "Export CSV",
     "logVisit": "Log a visit",
     "searchLabel": "Search",
@@ -512,7 +513,6 @@
     "nextButton": "Next",
     "rowCounter": "Row {{current}} of {{total}}",
     "kbdHint": "navigate rows",
-    "untitledRow": "(untitled)",
     "draftHeading": "Event draft",
     "importedBadge": "Imported",
     "skippedBadge": "Skipped",
@@ -775,10 +775,7 @@
     "roleOrgLabel": "Organization",
     "roleOrgPlaceholder": "e.g. City Science Museum (optional)",
     "addRole": "Add role",
-    "removeRole": "Remove role",
-    "importTitle": "Import past events",
-    "importDescription": "Bring your outreach history in from a spreadsheet — a general CSV or a Symplectic Elements export. You'll review each row, tweak it, and import it as an event (or skip it).",
-    "importButton": "Import from CSV"
+    "removeRole": "Remove role"
   },
   "directory": {
     "title": "Directory",

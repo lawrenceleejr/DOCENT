@@ -19,11 +19,12 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { IconClipboardList, IconExternalLink } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { EmptyState } from '../components/EmptyState';
+import { EventImportWizard } from '../components/EventImportWizard';
 import { FilterCard } from '../components/FilterCard';
 import { buildQuery } from '../api/client';
 import { api } from '../api/client';
@@ -49,6 +50,8 @@ export function VisitListPage() {
   const enumLabel = useEnumLabel();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [importOpen, setImportOpen] = useState(false);
   const [filters, setFilters] = useState<VisitFilters>({});
   const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -117,6 +120,9 @@ export function VisitListPage() {
       <Group justify="space-between">
         <Title order={2}>{t('visitList.title')}</Title>
         <Group>
+          <Button variant="default" onClick={() => setImportOpen(true)}>
+            {t('visitList.importCsv')}
+          </Button>
           <Button component="a" href={exportHref} variant="default">
             {t('visitList.exportCsv')}
           </Button>
@@ -125,6 +131,15 @@ export function VisitListPage() {
           </Button>
         </Group>
       </Group>
+
+      <EventImportWizard
+        opened={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={() => {
+          queryClient.invalidateQueries({ queryKey: ['visits'] });
+          queryClient.invalidateQueries({ queryKey: ['stats'] });
+        }}
+      />
 
       <FilterCard activeCount={activeFilterCount}>
         <Group align="flex-end">

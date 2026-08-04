@@ -107,6 +107,7 @@
   },
   "visitList": {
     "title": "Lượt ghé thăm",
+    "importCsv": "Nhập CSV",
     "exportCsv": "Xuất CSV",
     "logVisit": "Ghi nhận lượt ghé thăm",
     "searchLabel": "Tìm kiếm",
@@ -512,7 +513,6 @@
     "nextButton": "Sau",
     "rowCounter": "Dòng {{current}} / {{total}}",
     "kbdHint": "chuyển dòng",
-    "untitledRow": "(không tiêu đề)",
     "draftHeading": "Bản nháp sự kiện",
     "importedBadge": "Đã nhập",
     "skippedBadge": "Đã bỏ qua",
@@ -775,10 +775,7 @@
     "roleOrgLabel": "Tổ chức",
     "roleOrgPlaceholder": "ví dụ: Bảo tàng Khoa học Thành phố (không bắt buộc)",
     "addRole": "Thêm vai trò",
-    "removeRole": "Xóa vai trò",
-    "importTitle": "Nhập sự kiện đã qua",
-    "importDescription": "Đưa lịch sử hoạt động của bạn vào từ bảng tính — CSV thông thường hoặc tệp xuất từ Symplectic Elements. Bạn sẽ xem lại từng dòng, chỉnh sửa rồi nhập thành sự kiện (hoặc bỏ qua).",
-    "importButton": "Nhập từ CSV"
+    "removeRole": "Xóa vai trò"
   },
   "directory": {
     "title": "Danh bạ",

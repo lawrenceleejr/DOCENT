@@ -14,7 +14,6 @@ import {
   Modal,
   NumberInput,
   Progress,
-  ScrollArea,
   Select,
   SimpleGrid,
   Stack,
@@ -538,26 +537,6 @@ export function EventImportWizard({
             </Progress.Section>
           </Progress.Root>
 
-          {/* Row chips — jump anywhere, see status at a glance */}
-          <ScrollArea type="auto" offsetScrollbars>
-            <Group gap={4} wrap="nowrap">
-              {rows.map((r, i) => (
-                <Tooltip key={i} label={r.title || t('importWizard.untitledRow')} withArrow>
-                  <Badge
-                    style={{ cursor: 'pointer', flexShrink: 0 }}
-                    variant={i === current ? 'filled' : 'light'}
-                    color={
-                      r.status === 'imported' ? 'teal' : r.status === 'skipped' ? 'gray' : 'violet'
-                    }
-                    onClick={() => goTo(i)}
-                  >
-                    {i + 1}
-                  </Badge>
-                </Tooltip>
-              ))}
-            </Group>
-          </ScrollArea>
-
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
             {/* Left: the editable draft */}
             <Stack gap="xs">
@@ -585,6 +564,7 @@ export function EventImportWizard({
 
               <TextInput
                 label={t('importWizard.titleLabel')}
+                withAsterisk
                 value={row.title}
                 disabled={row.status === 'imported'}
                 onChange={(e) => patchRow(current, { title: e.currentTarget.value })}
@@ -592,6 +572,7 @@ export function EventImportWizard({
               <Group grow>
                 <DateInput
                   label={t('importWizard.dateLabel')}
+                  withAsterisk
                   valueFormat="YYYY-MM-DD"
                   placeholder="YYYY-MM-DD"
                   popoverProps={{ withinPortal: true }}
@@ -601,6 +582,7 @@ export function EventImportWizard({
                 />
                 <Select
                   label={t('importWizard.eventTypeLabel')}
+                  withAsterisk
                   data={EVENT_TYPES.map((v) => ({ value: v, label: enumLabel.eventType(v) }))}
                   value={row.event_type}
                   disabled={row.status === 'imported'}
@@ -611,6 +593,7 @@ export function EventImportWizard({
               <Group grow>
                 <Select
                   label={t('importWizard.audienceLabel')}
+                  withAsterisk
                   data={AUDIENCE_LEVELS.map((v) => ({ value: v, label: enumLabel.audienceLevel(v) }))}
                   value={row.audience_level}
                   disabled={row.status === 'imported'}
@@ -633,6 +616,7 @@ export function EventImportWizard({
                   onChange={(venueId) => patchRow(current, { venue_id: venueId })}
                   initialSearch={venueSeed}
                   disabled={row.status === 'imported'}
+                  required
                 />
                 {row.draft.venue_name && row.venue_id === null && (
                   <Text size="xs" c="dimmed" mt={2}>

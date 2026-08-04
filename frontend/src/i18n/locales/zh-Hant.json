@@ -107,6 +107,7 @@
   },
   "visitList": {
     "title": "到訪紀錄",
+    "importCsv": "匯入 CSV",
     "exportCsv": "匯出 CSV",
     "logVisit": "記錄到訪",
     "searchLabel": "搜尋",
@@ -512,7 +513,6 @@
     "nextButton": "下一列",
     "rowCounter": "第 {{current}} 列，共 {{total}} 列",
     "kbdHint": "切換列",
-    "untitledRow": "（無標題）",
     "draftHeading": "活動草稿",
     "importedBadge": "已匯入",
     "skippedBadge": "已略過",
@@ -775,10 +775,7 @@
     "roleOrgLabel": "組織",
     "roleOrgPlaceholder": "例如：城市科學博物館（選填）",
     "addRole": "新增角色",
-    "removeRole": "移除角色",
-    "importTitle": "匯入過往活動",
-    "importDescription": "從試算表匯入您的外展紀錄——一般 CSV 或 Symplectic Elements 匯出檔皆可。您將逐列檢視、調整，並將其匯入為活動（或略過）。",
-    "importButton": "從 CSV 匯入"
+    "removeRole": "移除角色"
   },
   "directory": {
     "title": "會員名錄",

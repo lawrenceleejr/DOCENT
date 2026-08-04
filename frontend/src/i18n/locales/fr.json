@@ -107,6 +107,7 @@
   },
   "visitList": {
     "title": "Visites",
+    "importCsv": "Importer un CSV",
     "exportCsv": "Exporter en CSV",
     "logVisit": "Consigner une visite",
     "searchLabel": "Rechercher",
@@ -512,7 +513,6 @@
     "nextButton": "Suivant",
     "rowCounter": "Ligne {{current}} sur {{total}}",
     "kbdHint": "naviguer entre les lignes",
-    "untitledRow": "(sans titre)",
     "draftHeading": "Brouillon d'événement",
     "importedBadge": "Importé",
     "skippedBadge": "Ignoré",
@@ -775,10 +775,7 @@
     "roleOrgLabel": "Organisation",
     "roleOrgPlaceholder": "p. ex. Musée des sciences de la ville (facultatif)",
     "addRole": "Ajouter un rôle",
-    "removeRole": "Supprimer le rôle",
-    "importTitle": "Importer des événements passés",
-    "importDescription": "Importez votre historique de médiation depuis un tableur — un CSV général ou un export Symplectic Elements. Vous passerez chaque ligne en revue, l'ajusterez et l'importerez comme événement (ou l'ignorerez).",
-    "importButton": "Importer depuis un CSV"
+    "removeRole": "Supprimer le rôle"
   },
   "directory": {
     "title": "Annuaire",
