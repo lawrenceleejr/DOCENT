@@ -4,6 +4,45 @@ All notable changes to DOCENT are documented here. This project uses
 [semantic versioning](https://semver.org/); tagged releases publish container
 images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
+## v0.1.6
+
+### Added
+- **Import your event history from a CSV.** A new **Import CSV** button on the
+  Visits page (next to Export CSV) opens a step-through wizard: upload any
+  reasonable CSV — the delimiter, encoding, and common column names are
+  detected automatically, and **Symplectic Elements** exports are recognised
+  (including their day-first dates) — confirm the column mapping, then review
+  each row, edit it, and import it as an event or skip it. Dates get special
+  care: many spellings parse, ambiguous ones follow the detected convention,
+  and an unreadable date is flagged for manual entry rather than guessed. A
+  side panel lists every event already recorded on the same day (tagging ones
+  just imported) so duplicates are caught before they happen. The whole review
+  works from the keyboard: ←/→/↑/↓ move between rows, **S** skips, **Enter**
+  imports and advances. Nothing is written until you import a row.
+- **Website analytics (optional).** Admins can enable
+  [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) — a
+  free, cookieless, privacy-first alternative to Google Analytics — by pasting
+  the Cloudflare snippet into the new **Admin → Website analytics** panel,
+  which includes step-by-step setup instructions. Only the beacon token is
+  stored and used (pasted HTML is never executed), visitors sending
+  `Do Not Track` are skipped, and clearing the box turns analytics off. The
+  bundled nginx CSP allows exactly the two Cloudflare endpoints.
+- **Online venue types & venue URLs.** Venues can now be a **YouTube Channel,
+  Podcast, Social Media, or Blog** — fitting distributed outreach — and every
+  venue has an optional **Website / URL** field, shown as a link on the venue
+  page.
+
+### Changed
+- **Creating a venue from an address search now auto-fills the name** from the
+  place you pick (still editable), so you only retitle it if you want to.
+- The venue form marks its required fields, and the new-venue dialog's
+  address-search help text reflects the name auto-fill.
+
+### Fixed
+- Import wizard: column-mapping corrections are now always applied when the
+  review starts — previously they only took effect after a separate re-parse
+  step that was easy to miss.
+
 ## v0.1.5
 
 ### Added
