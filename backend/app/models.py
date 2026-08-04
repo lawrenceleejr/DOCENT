@@ -70,6 +70,12 @@ class AudienceLevel(str, enum.Enum):
     mixed = "mixed"
 
 
+# One shared Enum instance for both the scalar `audience_level` and the
+# `audience_levels` array column, so metadata.create_all emits the native enum
+# type exactly once (#42).
+_audience_level_enum = Enum(AudienceLevel, name="audience_level")
+
+
 class InstitutionType(str, enum.Enum):
     school = "school"
     college = "college"
@@ -261,8 +267,15 @@ class Visit(Base):
     host_relationship_detail: Mapped[str | None] = mapped_column(String(500))
     host_notes: Mapped[str | None] = mapped_column(Text)
     people_reached: Mapped[int] = mapped_column(Integer)
-    audience_level: Mapped[AudienceLevel] = mapped_column(
-        Enum(AudienceLevel, name="audience_level")
+    # Primary audience level — kept as a single value for back-compat (federation
+    # feed, CSV/DB export, a one-badge display) and always equal to the first of
+    # `audience_levels`.
+    audience_level: Mapped[AudienceLevel] = mapped_column(_audience_level_enum)
+    # An event can target several audience levels at once (#42). Source of truth
+    # for the form, filtering (match any), and the audience breakdown (an event
+    # is counted once in each level it targets). `audience_level` mirrors [0].
+    audience_levels: Mapped[list[AudienceLevel]] = mapped_column(
+        ARRAY(_audience_level_enum), nullable=False, server_default=text("'{}'")
     )
     # Free-ish text, but constrained to app.languages.LANGUAGE_SET at the
     # Pydantic layer — plain String rather than a Postgres enum so the central

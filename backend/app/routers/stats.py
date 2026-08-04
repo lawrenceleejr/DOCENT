@@ -169,7 +169,9 @@ def _apply_filters(
         query = query.where(Visit.event_type.in_(event_types))
     audience_levels = _parse_enum_list(audience_level, AudienceLevel)
     if audience_levels:
-        query = query.where(Visit.audience_level.in_(audience_levels))
+        # An event matches if its audience multi-select overlaps the requested
+        # levels (#42).
+        query = query.where(Visit.audience_levels.overlap(audience_levels))
     parsed_tags = _parse_tags(tags)
     if parsed_tags:
         query = query.where(Visit.tags.overlap(parsed_tags))

@@ -127,6 +127,7 @@ def export_data(db: Session) -> dict[str, Any]:
                 "host_notes": v.host_notes,
                 "people_reached": v.people_reached,
                 "audience_level": v.audience_level.value,
+                "audience_levels": [a.value for a in v.audience_levels],
                 "language": v.language,
                 "duration_minutes": v.duration_minutes,
                 "rating": v.rating,
@@ -274,6 +275,12 @@ def import_data(db: Session, payload: dict[str, Any]) -> dict[str, int]:
             host_notes=row.get("host_notes"),
             people_reached=row.get("people_reached", 0),
             audience_level=AudienceLevel(row["audience_level"]),
+            # Fall back to the single primary for exports predating the
+            # multi-select (#42).
+            audience_levels=[
+                AudienceLevel(a)
+                for a in (row.get("audience_levels") or [row["audience_level"]])
+            ],
             language=row.get("language") if row.get("language") in LANGUAGE_SET else None,
             duration_minutes=row.get("duration_minutes"),
             rating=row.get("rating"),

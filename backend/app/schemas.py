@@ -2,7 +2,7 @@ import re
 from datetime import date, datetime, time
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 MAX_TAGS = 30
 MAX_TAG_LEN = 50
@@ -130,6 +130,29 @@ def clean_languages(values: list[str] | None) -> list[str]:
             seen.add(v)
             out.append(v)
     return out
+
+
+def _resolve_audience_levels(
+    levels: "list[AudienceLevel] | None",
+    primary: "AudienceLevel | None",
+    *,
+    required: bool,
+) -> "list[AudienceLevel] | None":
+    """Normalise the audience multi-select (#42): fall back to the single
+    `primary` when the list is absent, dedupe order-preserving, and enforce at
+    least one when `required`. Returns None only for an omitted optional update."""
+    source = levels if levels is not None else ([primary] if primary else None)
+    if source is None:
+        if required:
+            raise ValueError("at least one audience level is required")
+        return None
+    deduped: list = []
+    for lv in source:
+        if lv is not None and lv not in deduped:
+            deduped.append(lv)
+    if not deduped:
+        raise ValueError("at least one audience level is required")
+    return deduped
 
 
 # --- Auth / users ---
@@ -668,7 +691,11 @@ class VisitCreate(BaseModel):
     host_notes: str | None = None
     # Optional so a *planned* event can be scheduled before attendance is known.
     people_reached: int = Field(default=0, ge=0, le=MAX_PEOPLE_REACHED)
-    audience_level: AudienceLevel
+    # An event can target several audience levels (#42). `audience_levels` is the
+    # multi-select; `audience_level` is the single primary (first of the list) and
+    # is accepted on its own for back-compat. At least one must be given.
+    audience_level: AudienceLevel | None = None
+    audience_levels: list[AudienceLevel] | None = None
     language: str | None = None
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)
@@ -679,6 +706,14 @@ class VisitCreate(BaseModel):
     co_presenter_user_ids: list[int] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
     links: list[VisitLink] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _resolve_audiences(self) -> "VisitCreate":
+        self.audience_levels = _resolve_audience_levels(
+            self.audience_levels, self.audience_level, required=True
+        )
+        self.audience_level = self.audience_levels[0]
+        return self
 
     @field_validator("language")
     @classmethod
@@ -713,6 +748,7 @@ class VisitUpdate(BaseModel):
     host_notes: str | None = None
     people_reached: int | None = Field(default=None, ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel | None = None
+    audience_levels: list[AudienceLevel] | None = None
     language: str | None = None
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)
@@ -723,6 +759,16 @@ class VisitUpdate(BaseModel):
     co_presenter_user_ids: list[int] | None = None
     tags: list[str] | None = None
     links: list[VisitLink] | None = None
+
+    @model_validator(mode="after")
+    def _dedupe_audiences(self) -> "VisitUpdate":
+        # Only normalise when the client actually sent an audience field; the
+        # router keeps the scalar primary in step with the list (#42).
+        if self.audience_levels is not None or self.audience_level is not None:
+            self.audience_levels = _resolve_audience_levels(
+                self.audience_levels, self.audience_level, required=False
+            )
+        return self
 
     @field_validator("language")
     @classmethod
@@ -761,6 +807,7 @@ class VisitOut(BaseModel):
     host_notes: str | None
     people_reached: int
     audience_level: AudienceLevel
+    audience_levels: list[AudienceLevel]
     language: str | None
     duration_minutes: int | None
     rating: int | None

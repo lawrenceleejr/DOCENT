@@ -516,3 +516,54 @@ def test_reached_out_host_relationship(client):
     assert v["host_relationship"] == "reached_out"
     got = client.get(f"/api/visits/{v['id']}").json()
     assert got["host_relationship"] == "reached_out"
+
+
+def test_audience_multi_select(client):
+    """Audience is a multi-select: the scalar primary mirrors the first level,
+    duplicates are dropped, and filtering matches any level (#42)."""
+    register(client)
+    venue = create_venue(client)
+    v = create_visit(
+        client,
+        venue["id"],
+        audience_level=None,
+        audience_levels=["elementary", "middle_school", "elementary"],
+    )
+    assert v["audience_levels"] == ["elementary", "middle_school"]  # deduped, ordered
+    assert v["audience_level"] == "elementary"  # primary == first
+
+    got = client.get(f"/api/visits/{v['id']}").json()
+    assert got["audience_levels"] == ["elementary", "middle_school"]
+
+    # Filtering by a *secondary* level still surfaces the event.
+    listed = client.get("/api/visits", params={"audience_level": "middle_school"}).json()
+    assert any(it["id"] == v["id"] for it in listed["items"])
+    # A level it doesn't target excludes it.
+    other = client.get("/api/visits", params={"audience_level": "graduate"}).json()
+    assert all(it["id"] != v["id"] for it in other["items"])
+
+    # Updating the list re-syncs the primary.
+    upd = client.patch(
+        f"/api/visits/{v['id']}", json={"audience_levels": ["graduate", "educators"]}
+    )
+    assert upd.status_code == 200, upd.text
+    assert upd.json()["audience_levels"] == ["graduate", "educators"]
+    assert upd.json()["audience_level"] == "graduate"
+
+
+def test_audience_at_least_one_required(client):
+    """An empty audience multi-select is rejected (#42)."""
+    register(client)
+    venue = create_venue(client)
+    resp = client.post(
+        "/api/visits",
+        json={
+            "venue_id": venue["id"],
+            "visit_date": "2026-03-14",
+            "event_type": "classroom_visit",
+            "title": "No audience",
+            "people_reached": 10,
+            "audience_levels": [],
+        },
+    )
+    assert resp.status_code == 422, resp.text

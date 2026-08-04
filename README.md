@@ -32,7 +32,7 @@ institution deploys and configures it.)*
 
 ![Events list](docs/screenshots/01-visits.png)
 
-**Log / schedule an event** — one form for both. Toggle *Completed* vs *Planned*, pick or create a venue (searchable, catalog-backed), add host details, attendance, rating, and notes. Flag a podcast, livestream, or other broadcast as **remote / broadcast** reach so its audience is counted apart from in-person attendance.
+**Log / schedule an event** — one form for both. Toggle *Completed* vs *Planned*, pick or create a venue (searchable, catalog-backed), add host details, one or more audience levels, attendance, rating, and notes. Flag a podcast, livestream, or other broadcast as **remote / broadcast** reach so its audience is counted apart from in-person attendance.
 
 ![Log an event](docs/screenshots/05-visit-form.png)
 

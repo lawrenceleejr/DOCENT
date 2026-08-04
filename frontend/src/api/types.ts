@@ -355,6 +355,7 @@ export interface Visit {
   host_notes: string | null;
   people_reached: number;
   audience_level: AudienceLevel;
+  audience_levels: AudienceLevel[];
   language: string | null;
   duration_minutes: number | null;
   rating: number | null;

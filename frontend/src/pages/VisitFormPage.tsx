@@ -9,6 +9,7 @@ import {
   Fieldset,
   Group,
   Input,
+  MultiSelect,
   NumberInput,
   Rating,
   SegmentedControl,
@@ -75,7 +76,7 @@ interface FormValues {
   event_type: string;
   title: string;
   description: string;
-  audience_level: string;
+  audience_levels: string[];
   language: string | null;
   people_reached: number | '';
   duration_minutes: number | '';
@@ -131,7 +132,7 @@ export function VisitFormPage() {
       event_type: 'classroom_visit',
       title: '',
       description: '',
-      audience_level: '',
+      audience_levels: [],
       language: null,
       people_reached: '',
       duration_minutes: '',
@@ -156,7 +157,8 @@ export function VisitFormPage() {
       visit_date: (v) => (v ? null : t('visitForm.validation.dateRequired')),
       title: (v) => (v.trim().length > 0 ? null : t('visitForm.validation.titleRequired')),
       event_type: (v) => (v ? null : t('visitForm.validation.eventTypeRequired')),
-      audience_level: (v) => (v ? null : t('visitForm.validation.audienceRequired')),
+      audience_levels: (v: string[]) =>
+        v && v.length > 0 ? null : t('visitForm.validation.audienceRequired'),
       // Attendance is only required for a completed visit; a planned event may
       // leave it blank until it happens.
       people_reached: (v, values) => {
@@ -184,7 +186,7 @@ export function VisitFormPage() {
         event_type: existing.event_type,
         title: existing.title,
         description: existing.description ?? '',
-        audience_level: existing.audience_level,
+        audience_levels: existing.audience_levels ?? [existing.audience_level],
         language: existing.language,
         people_reached: existing.people_reached,
         duration_minutes: existing.duration_minutes ?? '',
@@ -245,7 +247,7 @@ export function VisitFormPage() {
         event_type: values.event_type,
         title: values.title.trim(),
         description: values.description.trim() || null,
-        audience_level: values.audience_level,
+        audience_levels: values.audience_levels,
         language: values.language || null,
         people_reached: values.people_reached === '' ? 0 : values.people_reached,
         duration_minutes: values.duration_minutes === '' ? null : values.duration_minutes,
@@ -391,11 +393,17 @@ export function VisitFormPage() {
               {...form.getInputProps('description')}
             />
             <SimpleGrid cols={{ base: 1, sm: isPlanned ? 2 : 3 }}>
-              <Select
+              <MultiSelect
                 label={t('visitForm.audienceLevelLabel')}
-                placeholder={t('visitForm.audienceLevelPlaceholder')}
+                placeholder={
+                  form.values.audience_levels.length === 0
+                    ? t('visitForm.audienceLevelPlaceholder')
+                    : undefined
+                }
                 data={AUDIENCE_LEVELS.map((v) => ({ value: v, label: enumLabel.audienceLevel(v) }))}
-                {...form.getInputProps('audience_level')}
+                searchable
+                clearable
+                {...form.getInputProps('audience_levels')}
               />
               {/* Attendance isn't known until the event happens — hidden while planned. */}
               {!isPlanned && (
