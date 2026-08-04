@@ -500,3 +500,19 @@ def test_venue_url_length_capped(client):
         json={"name": "Too Long", "venue_type": "blog", "url": "https://x/" + "a" * 500},
     )
     assert r.status_code == 422
+
+
+def test_reached_out_host_relationship(client):
+    """The new 'reached_out' host relationship roundtrips (#40)."""
+    register(client)
+    venue = create_venue(client)
+    v = create_visit(
+        client,
+        venue["id"],
+        contact_name="Dr. Vance",
+        host_relationship="reached_out",
+        host_relationship_detail="emailed the department seminar organizer",
+    )
+    assert v["host_relationship"] == "reached_out"
+    got = client.get(f"/api/visits/{v['id']}").json()
+    assert got["host_relationship"] == "reached_out"

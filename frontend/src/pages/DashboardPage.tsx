@@ -36,6 +36,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -84,6 +85,8 @@ export interface TimeRow {
   label: string; // e.g. "2026-03", "2026 Q1", or "2026 H1"
   visits: number;
   people_reached: number;
+  people_reached_remote: number;
+  people_reached_in_person: number;
   planned_visits: number;
 }
 
@@ -128,6 +131,7 @@ export function buildTimeSeries(points: TimeseriesPoint[]): TimeRow[] {
         gran: pr.gran,
         visits: p.visits,
         people_reached: p.people_reached,
+        people_reached_remote: p.people_reached_remote ?? 0,
         planned_visits: p.planned_visits ?? 0,
       };
     })
@@ -149,6 +153,8 @@ export function buildTimeSeries(points: TimeseriesPoint[]): TimeRow[] {
       label: labelForDate(t, gran),
       visits: hit?.visits ?? 0,
       people_reached: hit?.people_reached ?? 0,
+      people_reached_remote: hit?.people_reached_remote ?? 0,
+      people_reached_in_person: (hit?.people_reached ?? 0) - (hit?.people_reached_remote ?? 0),
       planned_visits: hit?.planned_visits ?? 0,
     });
     if (t >= endT) break;
@@ -177,9 +183,11 @@ function TimePanel({
   title: string;
   data: TimeRow[];
   ticks: number[];
-  // One or more series to draw in the same color; `dashed` renders it as a
-  // dashed segment (used for the future/scheduled tail — #28).
-  lines: { key: string; dashed?: boolean }[];
+  // One or more series. A line uses `color` unless it sets its own; `dashed`
+  // renders it as a dashed segment (the future/scheduled tail — #28). When a
+  // line sets `name`, a legend is shown and the tooltip labels each series (the
+  // in-person vs remote split — #38).
+  lines: { key: string; dashed?: boolean; color?: string; name?: string }[];
   color: string;
   viz: typeof VIZ_LIGHT;
   caption?: string;
@@ -221,18 +229,25 @@ function TimePanel({
           <Tooltip
             contentStyle={tooltipStyle(viz)}
             labelFormatter={(t: number) => labelFor(t)}
-            formatter={(value: number) => [Number(value).toLocaleString(), title]}
+            formatter={(value: number, name: string) => [
+              Number(value).toLocaleString(),
+              name && name !== title ? name : title,
+            ]}
           />
+          {lines.some((ln) => ln.name) && (
+            <Legend wrapperStyle={{ fontSize: 12, color: viz.mutedInk }} />
+          )}
           {lines.map((ln) => (
             <Line
               key={ln.key}
               type="monotone"
               dataKey={ln.key}
-              stroke={color}
+              name={ln.name}
+              stroke={ln.color ?? color}
               strokeWidth={2}
               strokeDasharray={ln.dashed ? '5 4' : undefined}
               strokeOpacity={ln.dashed ? 0.75 : 1}
-              dot={ln.dashed ? false : { r: 3, fill: color, strokeWidth: 0 }}
+              dot={ln.dashed ? false : { r: 3, fill: ln.color ?? color, strokeWidth: 0 }}
               activeDot={{ r: 5, stroke: viz.tooltipBg, strokeWidth: 2 }}
               connectNulls={false}
               isAnimationActive={false}
@@ -579,9 +594,18 @@ export function DashboardPage() {
           icon={IconUsers}
           color="grape"
           sub={
-            avgPerVisit != null
-              ? t('dashboard.avgPerVisit', { formattedCount: avgPerVisit.toLocaleString() })
-              : undefined
+            [
+              avgPerVisit != null
+                ? t('dashboard.avgPerVisit', { formattedCount: avgPerVisit.toLocaleString() })
+                : null,
+              (summary?.total_people_reached_remote ?? 0) > 0
+                ? t('dashboard.remoteReachSub', {
+                    formattedCount: summary!.total_people_reached_remote.toLocaleString(),
+                  })
+                : null,
+            ]
+              .filter(Boolean)
+              .join(' · ') || undefined
           }
         />
         <StatTile
@@ -628,7 +652,25 @@ export function DashboardPage() {
             title={t('dashboard.peopleReachedPer6Months')}
             data={chartData}
             ticks={periodTicks}
-            lines={[{ key: 'people_reached' }]}
+            // Split in-person vs remote/broadcast reach when any remote reach
+            // exists, otherwise a single combined line (#38).
+            lines={
+              (summary?.total_people_reached_remote ?? 0) > 0
+                ? [
+                    {
+                      key: 'people_reached_in_person',
+                      name: t('dashboard.peopleInPerson'),
+                      color: viz.series2,
+                    },
+                    {
+                      key: 'people_reached_remote',
+                      name: t('dashboard.peopleRemote'),
+                      color: viz.series1,
+                      dashed: true,
+                    },
+                  ]
+                : [{ key: 'people_reached' }]
+            }
             color={viz.series2}
             viz={viz}
           />

@@ -26,6 +26,7 @@ export const EVENT_TYPES = [
   'career_day',
   'demo_booth',
   'workshop',
+  'interview',
   'other',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
@@ -359,6 +360,7 @@ export interface Visit {
   rating: number | null;
   reflection: string | null;
   follow_up_planned: boolean;
+  is_broadcast: boolean;
   additional_presenters: string | null;
   co_presenters: ContributorUser[];
   tags: string[];
@@ -420,6 +422,7 @@ export interface Paginated<T> {
 export interface StatsSummary {
   total_visits: number;
   total_people_reached: number;
+  total_people_reached_remote: number;
   distinct_venues: number;
   active_communicators: number;
   avg_rating: number | null;
@@ -430,12 +433,14 @@ export interface TimeseriesPoint {
   visits: number;
   people_reached: number;
   planned_visits: number;
+  people_reached_remote: number;
 }
 
 export interface BreakdownRow {
   key: string;
   visits: number;
   people_reached: number;
+  people_reached_remote: number;
 }
 
 export interface TopVenueRow {
@@ -733,6 +738,7 @@ export interface PublicImpact {
   has_siblings: boolean;
   total_visits: number;
   total_people_reached: number;
+  total_people_reached_remote: number;
   distinct_venues: number;
   active_communicators: number;
   timeseries: TimeseriesPoint[];

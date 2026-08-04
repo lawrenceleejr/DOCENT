@@ -52,6 +52,9 @@ class EventType(str, enum.Enum):
     career_day = "career_day"
     demo_booth = "demo_booth"
     workshop = "workshop"
+    # A media/press interview — e.g. a podcast or radio appearance — that isn't
+    # a "visit" in the usual sense (#39).
+    interview = "interview"
     other = "other"
 
 
@@ -269,6 +272,12 @@ class Visit(Base):
     rating: Mapped[int | None] = mapped_column(Integer)
     reflection: Mapped[str | None] = mapped_column(Text)
     follow_up_planned: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Remote/broadcast reach (a podcast, video, livestream, …) rather than an
+    # in-person audience. Kept separate in accounting so a huge broadcast number
+    # doesn't swamp in-person figures (#38). Default off.
+    is_broadcast: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
     additional_presenters: Mapped[str | None] = mapped_column(String(500))
     # Co-presenters who have accounts here — links them (and their ORCIDs) to
     # the event so those ORCIDs can travel with federation (#9).
@@ -455,6 +464,12 @@ class FederatedActivity(Base):
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
     )
     people_reached: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    # Whether the sibling marked this as remote/broadcast reach (#38); older
+    # peers on an earlier feed version don't send it, so it defaults to false
+    # (counted as in-person) until they upgrade.
+    is_broadcast: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
     permalink: Mapped[str | None] = mapped_column(Text)
     fetched_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

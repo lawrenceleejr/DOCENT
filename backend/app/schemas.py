@@ -674,6 +674,7 @@ class VisitCreate(BaseModel):
     rating: int | None = Field(default=None, ge=1, le=5)
     reflection: str | None = None
     follow_up_planned: bool = False
+    is_broadcast: bool = False
     additional_presenters: str | None = Field(default=None, max_length=500)
     co_presenter_user_ids: list[int] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
@@ -717,6 +718,7 @@ class VisitUpdate(BaseModel):
     rating: int | None = Field(default=None, ge=1, le=5)
     reflection: str | None = None
     follow_up_planned: bool | None = None
+    is_broadcast: bool | None = None
     additional_presenters: str | None = Field(default=None, max_length=500)
     co_presenter_user_ids: list[int] | None = None
     tags: list[str] | None = None
@@ -764,6 +766,7 @@ class VisitOut(BaseModel):
     rating: int | None
     reflection: str | None
     follow_up_planned: bool
+    is_broadcast: bool
     additional_presenters: str | None
     co_presenters: list[ContributorUser] = Field(default_factory=list)
     tags: list[str]
@@ -816,6 +819,8 @@ class ActivitySource(BaseModel):
 class StatsSummary(BaseModel):
     total_visits: int
     total_people_reached: int
+    # Of total_people_reached, the share from remote/broadcast events (#38).
+    total_people_reached_remote: int = 0
     distinct_venues: int
     active_communicators: int
     avg_rating: float | None
@@ -825,6 +830,9 @@ class TimeseriesPoint(BaseModel):
     period: str
     visits: int
     people_reached: int
+    # Of people_reached in this bucket, the remote/broadcast share (#38); the
+    # in-person share is people_reached - people_reached_remote.
+    people_reached_remote: int = 0
     # Scheduled (not-yet-completed) visits in this bucket — drawn as a separate
     # dotted series in the analysis plots (#28).
     planned_visits: int = 0
@@ -834,6 +842,7 @@ class BreakdownRow(BaseModel):
     key: str
     visits: int
     people_reached: int
+    people_reached_remote: int = 0
 
 
 class TopVenueRow(BaseModel):
@@ -863,6 +872,7 @@ class PublicImpact(BaseModel):
     has_siblings: bool = False
     total_visits: int
     total_people_reached: int
+    total_people_reached_remote: int = 0
     distinct_venues: int
     active_communicators: int
     timeseries: list[TimeseriesPoint]
@@ -951,6 +961,9 @@ class FederatedActivityOut(BaseModel):
     # The activity's tags, so subscribers can pull in only a tagged subset (#31).
     tags: list[str] = Field(default_factory=list)
     people_reached: int
+    # Whether this activity is remote/broadcast reach (#38). Feed v4+; absent
+    # from older peers, where the consumer defaults it to false (in-person).
+    is_broadcast: bool = False
     permalink: str | None
 
 

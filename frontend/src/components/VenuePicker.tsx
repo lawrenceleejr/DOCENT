@@ -23,6 +23,7 @@ import {
   type Paginated,
   type PlaceSuggestion,
   type Venue,
+  type VenueType,
 } from '../api/types';
 import { useEnumLabel } from '../i18n/enumLabels';
 
@@ -41,7 +42,9 @@ const EDUCATIONAL_VENUE_TYPES = new Set([
 
 interface VenuePickerProps {
   value: number | null;
-  onChange: (venueId: number | null) => void;
+  /** The venue's type is passed too when known (e.g. to prefill a form from an
+   * online venue) — callers that don't need it can ignore the second arg. */
+  onChange: (venueId: number | null, venueType?: VenueType) => void;
   error?: string;
   /** Restrict results to schools/colleges/universities (hides libraries etc.). */
   educationalOnly?: boolean;
@@ -168,8 +171,13 @@ export function VenuePicker({
             setCreating(true);
           } else if (picked?.startsWith(CATALOG_PREFIX)) {
             openFromCatalog(Number(picked.slice(CATALOG_PREFIX.length)));
+          } else if (picked) {
+            const v =
+              (data?.items ?? []).find((x) => String(x.id) === picked) ??
+              (selected && String(selected.id) === picked ? selected : undefined);
+            onChange(Number(picked), v?.venue_type);
           } else {
-            onChange(picked ? Number(picked) : null);
+            onChange(null);
           }
         }}
       />
@@ -181,7 +189,7 @@ export function VenuePicker({
         prefill={prefill}
         onSaved={(venue) => {
           queryClient.invalidateQueries({ queryKey: ['venues'] });
-          onChange(venue.id);
+          onChange(venue.id, venue.venue_type);
           setCreating(false);
         }}
       />

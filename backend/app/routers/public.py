@@ -9,7 +9,7 @@ list of recent activities with factual fields only — never notes, ratings,
 host contacts, or communicator identities.
 """
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy import Integer, cast, func, select
+from sqlalchemy import Integer, case, cast, func, select
 
 from app.deps import DbSession
 from app.models import Venue, Visit, VisitStatus
@@ -41,6 +41,9 @@ def public_impact(db: DbSession, include_federated: bool = False) -> PublicImpac
             func.coalesce(func.sum(Visit.people_reached), 0),
             func.count(func.distinct(Visit.venue_id)),
             func.count(func.distinct(Visit.author_id)),
+            func.coalesce(
+                func.sum(case((Visit.is_broadcast, Visit.people_reached), else_=0)), 0
+            ),
         ).where(completed)
     ).one()
 
@@ -51,6 +54,9 @@ def public_impact(db: DbSession, include_federated: bool = False) -> PublicImpac
             period.label("period"),
             func.count(Visit.id),
             func.coalesce(func.sum(Visit.people_reached), 0),
+            func.coalesce(
+                func.sum(case((Visit.is_broadcast, Visit.people_reached), else_=0)), 0
+            ),
         )
         .where(completed)
         .group_by("period")
@@ -80,7 +86,8 @@ def public_impact(db: DbSession, include_federated: bool = False) -> PublicImpac
     total_visits, total_people, distinct_venues, active_communicators = (
         totals[0], totals[1], totals[2], totals[3]
     )
-    series_buckets: dict[str, list[int]] = {r[0]: [r[1], r[2]] for r in series}
+    total_people_remote = totals[4]
+    series_buckets: dict[str, list[int]] = {r[0]: [r[1], r[2], r[3]] for r in series}
     vtype_buckets: dict[str, list[int]] = {r[0].value: [r[1], r[2]] for r in breakdown}
 
     # Optionally fold in the wider federation network — aggregate numbers only,
@@ -90,12 +97,15 @@ def public_impact(db: DbSession, include_federated: bool = False) -> PublicImpac
         if fed_rows:
             total_visits += len(fed_rows)
             total_people += sum(a.people_reached for a in fed_rows)
+            total_people_remote += sum(a.people_reached for a in fed_rows if a.is_broadcast)
             distinct_venues += len({(a.venue_name, a.venue_city) for a in fed_rows})
             active_communicators += len({a.person_name for a in fed_rows if a.person_name})
             for a in fed_rows:
-                sb = series_buckets.setdefault(_half_year_period(a.visit_date), [0, 0])
+                sb = series_buckets.setdefault(_half_year_period(a.visit_date), [0, 0, 0])
                 sb[0] += 1
                 sb[1] += a.people_reached
+                if a.is_broadcast:
+                    sb[2] += a.people_reached
                 if a.venue_type:
                     vb = vtype_buckets.setdefault(a.venue_type, [0, 0])
                     vb[0] += 1
@@ -106,11 +116,12 @@ def public_impact(db: DbSession, include_federated: bool = False) -> PublicImpac
         has_siblings=has_enabled_peers(db),
         total_visits=total_visits,
         total_people_reached=total_people,
+        total_people_reached_remote=total_people_remote,
         distinct_venues=distinct_venues,
         active_communicators=active_communicators,
         timeseries=[
-            TimeseriesPoint(period=p, visits=v, people_reached=pr)
-            for p, (v, pr) in sorted(series_buckets.items())
+            TimeseriesPoint(period=p, visits=v, people_reached=pr, people_reached_remote=rm)
+            for p, (v, pr, rm) in sorted(series_buckets.items())
         ],
         by_venue_type=[
             BreakdownRow(key=k, visits=v, people_reached=pr)

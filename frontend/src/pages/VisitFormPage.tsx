@@ -14,6 +14,7 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Switch,
   TagsInput,
   Text,
   Textarea,
@@ -34,7 +35,7 @@ import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
@@ -49,12 +50,21 @@ import {
   type CoverageLink,
   type Visit,
   type VisitStatus,
+  type VenueType,
 } from '../api/types';
 import { useEnumLabel } from '../i18n/enumLabels';
 import { CoPresenterPicker } from '../components/CoPresenterPicker';
 import { VenuePicker } from '../components/VenuePicker';
 import { confirmLeave, useUnsavedGuard } from '../components/useUnsavedGuard';
 import { toDateString } from './VisitListPage';
+
+// Online venue types default to remote/broadcast reach on the form (#38).
+const ONLINE_VENUE_TYPES = new Set<VenueType>([
+  'youtube_channel',
+  'podcast',
+  'social_media',
+  'blog',
+]);
 
 interface FormValues {
   venue_id: number | null;
@@ -78,6 +88,7 @@ interface FormValues {
   rating: number;
   reflection: string;
   follow_up_planned: boolean;
+  is_broadcast: boolean;
   additional_presenters: string;
   co_presenter_user_ids: number[];
   tags: string[];
@@ -107,6 +118,9 @@ export function VisitFormPage() {
     queryFn: () => api.get<string[]>('/api/visits/tags'),
   });
 
+  // Once the user toggles the broadcast switch, stop auto-prefilling it
+  // from the venue type (#38).
+  const broadcastTouched = useRef(false);
   const form = useForm<FormValues>({
     initialValues: {
       venue_id: null,
@@ -130,6 +144,7 @@ export function VisitFormPage() {
       rating: 0,
       reflection: '',
       follow_up_planned: false,
+      is_broadcast: false,
       additional_presenters: '',
       co_presenter_user_ids: [] as number[],
       tags: [],
@@ -182,11 +197,13 @@ export function VisitFormPage() {
         rating: existing.rating ?? 0,
         reflection: existing.reflection ?? '',
         follow_up_planned: existing.follow_up_planned,
+        is_broadcast: existing.is_broadcast,
         additional_presenters: existing.additional_presenters ?? '',
         co_presenter_user_ids: (existing.co_presenters ?? []).map((u) => u.id),
         tags: existing.tags ?? [],
         links: (existing.links ?? []).map((l) => ({ ...l, label: l.label ?? '' })),
       });
+      broadcastTouched.current = true;
       // Loading an existing visit is not a user edit — rebaseline so the
       // unsaved-changes guard only trips on real changes (#11).
       form.resetDirty();
@@ -241,6 +258,7 @@ export function VisitFormPage() {
         rating: values.rating || null,
         reflection: values.reflection.trim() || null,
         follow_up_planned: values.follow_up_planned,
+        is_broadcast: values.is_broadcast,
         additional_presenters: values.additional_presenters.trim() || null,
         co_presenter_user_ids: values.co_presenter_user_ids,
         tags: values.tags,
@@ -326,7 +344,14 @@ export function VisitFormPage() {
               </Input.Wrapper>
               <VenuePicker
                 value={form.values.venue_id}
-                onChange={(venueId) => form.setFieldValue('venue_id', venueId)}
+                onChange={(venueId, venueType) => {
+                  form.setFieldValue('venue_id', venueId);
+                  // Prefill the broadcast flag from an online venue type, unless
+                  // the user has already set it by hand (#38).
+                  if (!broadcastTouched.current && venueType) {
+                    form.setFieldValue('is_broadcast', ONLINE_VENUE_TYPES.has(venueType));
+                  }
+                }}
                 error={form.errors.venue_id as string | undefined}
               />
             </Stack>
@@ -395,6 +420,15 @@ export function VisitFormPage() {
               clearable
               data={LANGUAGES}
               {...form.getInputProps('language')}
+            />
+            <Switch
+              label={t('visitForm.broadcastLabel')}
+              description={t('visitForm.broadcastDescription')}
+              checked={form.values.is_broadcast}
+              onChange={(e) => {
+                broadcastTouched.current = true;
+                form.setFieldValue('is_broadcast', e.currentTarget.checked);
+              }}
             />
             <CoPresenterPicker
               value={form.values.co_presenter_user_ids}

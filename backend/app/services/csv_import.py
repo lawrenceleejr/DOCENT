@@ -144,6 +144,9 @@ _EVENT_TYPE_KEYWORDS: list[tuple[str, EventType]] = [
     ("booth", EventType.demo_booth),
     ("outreach stand", EventType.demo_booth),
     ("workshop", EventType.workshop),
+    ("interview", EventType.interview),
+    ("podcast", EventType.interview),
+    ("radio", EventType.interview),
 ]
 
 _AUDIENCE_KEYWORDS: list[tuple[str, AudienceLevel]] = [

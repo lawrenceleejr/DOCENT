@@ -78,6 +78,11 @@ export function VisitDetailPage() {
             >
               {isOverdue(visit) ? t('visitList.overdue') : enumLabel.visitStatus(visit.status)}
             </Badge>
+            {visit.is_broadcast && (
+              <Badge variant="light" size="lg" color="grape">
+                {t('visitDetail.broadcastBadge')}
+              </Badge>
+            )}
           </Group>
           <Text c="dimmed">
             {visit.visit_date}

@@ -177,3 +177,37 @@ def test_stats_people_search(client):
     assert client.get("/api/stats/summary", params={"q": "bruno"}).json()["total_visits"] == 1
     assert client.get("/api/stats/summary", params={"q": "Carla"}).json()["total_visits"] == 1
     assert client.get("/api/stats/summary", params={"q": "Nobody"}).json()["total_visits"] == 0
+
+
+def test_remote_reach_split(client):
+    """is_broadcast splits people-reached in the summary and timeseries (#38)."""
+    from tests.conftest import create_venue, create_visit, register
+    register(client)
+    venue = create_venue(client)
+    # 100 in person + 5,000 remote (a podcast) on the same month.
+    create_visit(client, venue["id"], visit_date="2026-03-10", people_reached=100)
+    create_visit(
+        client, venue["id"], visit_date="2026-03-12", people_reached=5000, is_broadcast=True
+    )
+
+    summary = client.get("/api/stats/summary").json()
+    assert summary["total_people_reached"] == 5100
+    assert summary["total_people_reached_remote"] == 5000
+
+    ts = client.get("/api/stats/timeseries").json()
+    march = next(p for p in ts if p["period"].startswith("2026"))
+    assert march["people_reached"] == 5100
+    assert march["people_reached_remote"] == 5000
+
+
+def test_is_broadcast_roundtrips(client):
+    from tests.conftest import create_venue, create_visit, register
+    register(client)
+    venue = create_venue(client)
+    v = create_visit(client, venue["id"], is_broadcast=True)
+    assert v["is_broadcast"] is True
+    got = client.get(f"/api/visits/{v['id']}").json()
+    assert got["is_broadcast"] is True
+    # Toggle off via PATCH.
+    upd = client.patch(f"/api/visits/{v['id']}", json={"is_broadcast": False}).json()
+    assert upd["is_broadcast"] is False
