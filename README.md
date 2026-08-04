@@ -174,9 +174,9 @@ Run from the repo root:
 
 | Script | What it does |
 |---|---|
-| `./scripts/start.sh` | Build + start everything (creates `.env` with random secrets on first run). Also the way to **deploy updates** after `git pull`. |
+| `./scripts/start.sh` | Build + start everything (creates `.env` with random secrets on first run). Also a way to **deploy updates** after `git pull`. |
 | `./scripts/stop.sh` | Stop the stack (data volumes preserved). |
-| `./scripts/restart.sh` | Restart the running containers (no rebuild). |
+| `./scripts/restart.sh` | Rebuild + restart, so `git pull` picks up new code. Pass `--no-build` (or `--fast`) to just bounce the containers without rebuilding. |
 | `./scripts/backup.sh` | Take a database backup right now. |
 | `./scripts/list-backups.sh` | List backups held in the volume. |
 | `./scripts/download-backups.sh [dir]` | Copy all backups onto the host (for off-site storage). |
