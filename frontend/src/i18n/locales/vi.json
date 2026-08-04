@@ -490,9 +490,8 @@
     "detectedSymplectic": "Đã nhận ra tệp xuất Symplectic Elements với {{count}} dòng. Ngày được đọc theo kiểu ngày-trước (kiểu Anh).",
     "detectedGeneric": "Đã đọc {{count}} dòng. Kiểm tra ánh xạ cột bên dưới rồi bắt đầu xem lại.",
     "mappingHeading": "Ánh xạ cột",
-    "mappingHelp": "Mỗi trường sự kiện đã được khớp tự động với một cột CSV — sửa những chỗ đoán sai rồi phân tích lại. Trường chưa ánh xạ sẽ để trống ở mọi dòng (bạn vẫn có thể điền cho từng sự kiện).",
+    "mappingHelp": "Mỗi trường sự kiện đã được khớp tự động với một cột CSV — sửa những chỗ đoán sai. Ánh xạ của bạn được áp dụng khi bắt đầu xem lại. Trường chưa ánh xạ sẽ để trống ở mọi dòng (bạn vẫn có thể điền cho từng sự kiện).",
     "notMapped": "Chưa ánh xạ",
-    "reparseButton": "Phân tích lại với ánh xạ này",
     "startReviewButton": "Xem lại {{count}} dòng",
     "field": {
       "title": "Tiêu đề",

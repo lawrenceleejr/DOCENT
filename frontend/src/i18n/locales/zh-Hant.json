@@ -490,9 +490,8 @@
     "detectedSymplectic": "已辨識出 Symplectic Elements 匯出檔，共 {{count}} 列。日期以「日在前」（英式）解讀。",
     "detectedGeneric": "已讀取 {{count}} 列。請檢查下方的欄位對應，然後開始檢視。",
     "mappingHeading": "欄位對應",
-    "mappingHelp": "每個活動欄位都已自動對應到 CSV 欄——若猜錯請修正並重新解析。未對應的欄位在每列都會留空（您仍可在各活動中填寫）。",
+    "mappingHelp": "每個活動欄位都已自動對應到 CSV 欄——若猜錯請修正。開始檢視時就會套用您的對應。未對應的欄位在每列都會留空（您仍可在各活動中填寫）。",
     "notMapped": "未對應",
-    "reparseButton": "以此對應重新解析",
     "startReviewButton": "檢視 {{count}} 列",
     "field": {
       "title": "標題",

@@ -490,9 +490,8 @@
     "detectedSymplectic": "Export Symplectic Elements reconnu, {{count}} lignes. Les dates sont lues jour d'abord (style britannique).",
     "detectedGeneric": "{{count}} lignes lues. Vérifiez la correspondance des colonnes ci-dessous, puis lancez la revue.",
     "mappingHeading": "Correspondance des colonnes",
-    "mappingHelp": "Chaque champ a été associé automatiquement à une colonne du CSV — corrigez ceux qui ont été mal devinés et relancez l'analyse. Les champs non associés restent vides sur chaque ligne (vous pourrez les remplir par événement).",
+    "mappingHelp": "Chaque champ a été associé automatiquement à une colonne du CSV — corrigez ceux qui ont été mal devinés. Votre correspondance est appliquée au lancement de la revue. Les champs non associés restent vides sur chaque ligne (vous pourrez les remplir par événement).",
     "notMapped": "Non associé",
-    "reparseButton": "Réanalyser avec cette correspondance",
     "startReviewButton": "Passer en revue {{count}} lignes",
     "field": {
       "title": "Titre",

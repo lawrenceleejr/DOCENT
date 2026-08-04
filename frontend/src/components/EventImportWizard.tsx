@@ -94,6 +94,12 @@ function toWorking(draft: ImportDraftRow): WorkingRow {
   };
 }
 
+/** Same field→column assignments, treating a missing field and '' alike. */
+function mappingsEqual(a: Record<string, string>, b: Record<string, string>): boolean {
+  const fields = new Set([...Object.keys(a), ...Object.keys(b)]);
+  return [...fields].every((f) => (a[f] ?? '') === (b[f] ?? ''));
+}
+
 function isoDate(d: Date | null): string | null {
   if (!d) return null;
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -229,6 +235,9 @@ export function EventImportWizard({
   const [file, setFile] = useState<File | null>(null);
   const [parsed, setParsed] = useState<ImportParseResponse | null>(null);
   const [mapping, setMapping] = useState<Record<string, string>>({});
+  // The mapping the current `parsed.rows` were actually built with — compared
+  // against `mapping` so edits in the dropdowns always trigger a re-parse.
+  const [appliedMapping, setAppliedMapping] = useState<Record<string, string>>({});
   const [rows, setRows] = useState<WorkingRow[]>([]);
   const [current, setCurrent] = useState(0);
   // IDs of visits created in this session — so the same-day panel can tag them.
@@ -240,6 +249,7 @@ export function EventImportWizard({
     setFile(null);
     setParsed(null);
     setMapping({});
+    setAppliedMapping({});
     setRows([]);
     setCurrent(0);
     setCreatedIds(new Set());
@@ -254,7 +264,9 @@ export function EventImportWizard({
     },
     onSuccess: (resp, args) => {
       setParsed(resp);
-      setMapping(args.mappingOverride ?? resp.suggested_mapping);
+      const applied = args.mappingOverride ?? resp.suggested_mapping;
+      setMapping(applied);
+      setAppliedMapping(applied);
       if (resp.rows.length === 0) {
         notifications.show({ color: 'yellow', message: t('importWizard.noRows') });
       }
@@ -268,9 +280,20 @@ export function EventImportWizard({
     },
   });
 
-  const startReview = () => {
-    if (!parsed) return;
-    setRows(parsed.rows.map(toWorking));
+  const startReview = async () => {
+    if (!parsed || !file) return;
+    // The mapping dropdowns edit local state only — if they differ from the
+    // mapping the current rows were parsed with, re-parse first so edits
+    // always take effect (no separate "re-parse" step to forget).
+    let resp = parsed;
+    if (!mappingsEqual(mapping, appliedMapping)) {
+      try {
+        resp = await parse.mutateAsync({ f: file, mappingOverride: mapping });
+      } catch {
+        return; // parse.onError already showed the notification
+      }
+    }
+    setRows(resp.rows.map(toWorking));
     setCurrent(0);
   };
 
@@ -398,10 +421,6 @@ export function EventImportWizard({
     setMapping(next);
   };
 
-  const applyRemap = () => {
-    if (file) parse.mutate({ f: file, mappingOverride: mapping });
-  };
-
   return (
     <Modal
       opened={opened}
@@ -473,11 +492,12 @@ export function EventImportWizard({
                   />
                 ))}
               </SimpleGrid>
-              <Group justify="space-between">
-                <Button variant="subtle" size="xs" onClick={applyRemap} loading={parse.isPending}>
-                  {t('importWizard.reparseButton')}
-                </Button>
-                <Button onClick={startReview} disabled={parsed.rows.length === 0}>
+              <Group justify="flex-end">
+                <Button
+                  onClick={startReview}
+                  disabled={parsed.rows.length === 0}
+                  loading={parse.isPending}
+                >
                   {t('importWizard.startReviewButton', { count: parsed.rows.length })}
                 </Button>
               </Group>

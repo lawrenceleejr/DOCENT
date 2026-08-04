@@ -490,9 +490,8 @@
     "detectedSymplectic": "Recognised a Symplectic Elements export with {{count}} rows. Dates are read day-first (UK style).",
     "detectedGeneric": "Read {{count}} rows. Check the column mapping below, then start the review.",
     "mappingHeading": "Column mapping",
-    "mappingHelp": "Each event field was matched to a CSV column automatically — fix any that were guessed wrong and re-parse. Unmapped fields are simply left blank on every row (you can still fill them in per event).",
+    "mappingHelp": "Each event field was matched to a CSV column automatically — fix any that were guessed wrong. Your mapping is applied when you start the review. Unmapped fields are simply left blank on every row (you can still fill them in per event).",
     "notMapped": "Not mapped",
-    "reparseButton": "Re-parse with this mapping",
     "startReviewButton": "Review {{count}} rows",
     "field": {
       "title": "Title",

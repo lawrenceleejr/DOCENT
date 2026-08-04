@@ -490,9 +490,8 @@
     "detectedSymplectic": "Se reconoció una exportación de Symplectic Elements con {{count}} filas. Las fechas se leen con el día primero (estilo británico).",
     "detectedGeneric": "Se leyeron {{count}} filas. Revisa el mapeo de columnas y comienza la revisión.",
     "mappingHeading": "Mapeo de columnas",
-    "mappingHelp": "Cada campo se emparejó automáticamente con una columna del CSV: corrige los que se adivinaron mal y vuelve a analizar. Los campos sin mapear quedan en blanco en cada fila (puedes completarlos por evento).",
+    "mappingHelp": "Cada campo se emparejó automáticamente con una columna del CSV: corrige los que se adivinaron mal. Tu mapeo se aplica al comenzar la revisión. Los campos sin mapear quedan en blanco en cada fila (puedes completarlos por evento).",
     "notMapped": "Sin mapear",
-    "reparseButton": "Reanalizar con este mapeo",
     "startReviewButton": "Revisar {{count}} filas",
     "field": {
       "title": "Título",

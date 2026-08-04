@@ -490,9 +490,8 @@
     "detectedSymplectic": "已识别出 Symplectic Elements 导出文件，共 {{count}} 行。日期按“日在前”（英式）解析。",
     "detectedGeneric": "已读取 {{count}} 行。请检查下方的列映射，然后开始审阅。",
     "mappingHeading": "列映射",
-    "mappingHelp": "每个活动字段都已自动匹配到 CSV 列——如有猜错请修正并重新解析。未映射的字段在每行都会留空（您仍可在各活动中填写）。",
+    "mappingHelp": "每个活动字段都已自动匹配到 CSV 列——如有猜错请修正。开始审阅时会应用您的映射。未映射的字段在每行都会留空（您仍可在各活动中填写）。",
     "notMapped": "未映射",
-    "reparseButton": "按此映射重新解析",
     "startReviewButton": "审阅 {{count}} 行",
     "field": {
       "title": "标题",

@@ -490,9 +490,8 @@
     "detectedSymplectic": "Nakilala ang export ng Symplectic Elements na may {{count}} row. Binabasa ang mga petsa nang day-first (UK style).",
     "detectedGeneric": "Nabasa ang {{count}} row. Suriin ang column mapping sa ibaba, saka simulan ang pagrepaso.",
     "mappingHeading": "Column mapping",
-    "mappingHelp": "Bawat field ng event ay awtomatikong itinugma sa isang CSV column — ayusin ang mga maling hula at i-parse muli. Ang mga hindi na-map na field ay mananatiling blangko sa bawat row (puwede mo pa ring punan bawat event).",
+    "mappingHelp": "Bawat field ng event ay awtomatikong itinugma sa isang CSV column — ayusin ang mga maling hula. Ilalapat ang iyong mapping kapag sinimulan ang pagrepaso. Ang mga hindi na-map na field ay mananatiling blangko sa bawat row (puwede mo pa ring punan bawat event).",
     "notMapped": "Hindi naka-map",
-    "reparseButton": "I-parse muli gamit ang mapping na ito",
     "startReviewButton": "Repasuhin ang {{count}} row",
     "field": {
       "title": "Pamagat",
