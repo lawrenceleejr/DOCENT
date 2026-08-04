@@ -530,10 +530,11 @@ export function institutionVenueType(inst: {
   }
 }
 
-// Mirror of the backend's MAX_PEOPLE_REACHED sanity ceiling.
-export const MAX_PEOPLE_REACHED = 100_000;
-// Above this we ask the user to confirm, to catch a stray extra zero.
-export const PEOPLE_REACHED_CONFIRM_THRESHOLD = 2_000;
+// Mirror of the backend's MAX_PEOPLE_REACHED sanity ceiling (#41).
+export const MAX_PEOPLE_REACHED = 500_000_000;
+// Above this we ask the user to confirm, to catch a stray extra zero — set
+// above any realistic in-person headcount so large-media reach isn't nagged.
+export const PEOPLE_REACHED_CONFIRM_THRESHOLD = 100_000;
 
 // ---- Reports (grant-ready activity exports) ----
 export const REPORT_SCOPES = ['mine', 'all'] as const;

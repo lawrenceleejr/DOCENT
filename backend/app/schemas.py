@@ -644,8 +644,9 @@ class ConnectionOut(BaseModel):
 
 
 # Sanity ceiling for a single outreach event's headcount — catches fat-finger
-# entries (e.g. an extra zero) that would otherwise skew community totals.
-MAX_PEOPLE_REACHED = 100_000
+# entries (e.g. an extra zero) while still allowing large-scale media reach
+# (podcasts, viral video) up to half a billion (#41). Fits a Postgres int.
+MAX_PEOPLE_REACHED = 500_000_000
 
 
 # --- Visits ---
