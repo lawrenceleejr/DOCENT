@@ -41,6 +41,7 @@ export const HOST_RELATIONSHIPS = [
   'community_partner',
   'family_friend',
   'cold_outreach',
+  'reached_out',
   'other',
 ] as const;
 export type HostRelationship = (typeof HOST_RELATIONSHIPS)[number];

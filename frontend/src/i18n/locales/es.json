@@ -315,6 +315,7 @@
       "community_partner": "Socio comunitario",
       "family_friend": "Familiar o amigo",
       "cold_outreach": "Contacto sin relación previa",
+      "reached_out": "Contactó proactivamente",
       "other": "Otro"
     },
     "institutionType": {
