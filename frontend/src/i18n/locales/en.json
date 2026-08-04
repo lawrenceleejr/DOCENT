@@ -225,7 +225,8 @@
     "mapHintText": "You can also start an event from the",
     "mapHintLink": "map",
     "broadcastLabel": "Remote / broadcast reach",
-    "broadcastDescription": "For a podcast, video, livestream, or other broadcast audience — counted separately from in-person reach."
+    "broadcastDescription": "For a podcast, video, livestream, or other broadcast audience — counted separately from in-person reach.",
+    "broadcastTooltip": "Turn this on when your audience wasn't physically with you — a podcast, livestream, or media hit. Those people are counted as remote reach, kept separate from in-person attendance."
   },
   "visitDetail": {
     "markCompleted": "Mark as completed",

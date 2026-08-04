@@ -225,7 +225,8 @@
     "mapHintText": "Puwede ka ring magsimula ng event mula sa",
     "mapHintLink": "mapa",
     "broadcastLabel": "Remote / broadcast na abot",
-    "broadcastDescription": "Para sa podcast, video, livestream, o iba pang broadcast na audience — hiwalay na binibilang sa in-person na abot."
+    "broadcastDescription": "Para sa podcast, video, livestream, o iba pang broadcast na audience — hiwalay na binibilang sa in-person na abot.",
+    "broadcastTooltip": "I-on ito kapag hindi pisikal na kasama ang iyong audience — isang podcast, livestream, o pagkakalathala sa media. Ang mga taong iyon ay binibilang bilang remote na abot, hiwalay sa in-person na abot."
   },
   "visitDetail": {
     "markCompleted": "Markahan bilang natapos",

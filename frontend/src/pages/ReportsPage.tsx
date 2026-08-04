@@ -273,6 +273,13 @@ export function ReportsPage() {
           value={data?.summary.total_people_reached.toLocaleString() ?? '—'}
           icon={IconUsers}
           color="grape"
+          sub={
+            (data?.summary.total_people_reached_remote ?? 0) > 0
+              ? t('dashboard.remoteReachSub', {
+                  formattedCount: data!.summary.total_people_reached_remote.toLocaleString(),
+                })
+              : undefined
+          }
         />
         <StatTile
           label={t('reports.statDistinctVenues')}

@@ -225,7 +225,8 @@
     "mapHintText": "你也可以從地圖開始建立活動：",
     "mapHintLink": "地圖",
     "broadcastLabel": "遠端／廣播觸及",
-    "broadcastDescription": "適用於 Podcast、影片、直播或其他廣播受眾——與現場觸及分開計算。"
+    "broadcastDescription": "適用於 Podcast、影片、直播或其他廣播受眾——與現場觸及分開計算。",
+    "broadcastTooltip": "當受眾並非親臨現場時開啟——例如 Podcast、直播或媒體報導。這些人數會計入遠端觸及，與現場觸及分開統計。"
   },
   "visitDetail": {
     "markCompleted": "標記為已完成",

@@ -552,6 +552,7 @@ export type ReportStatusFilter = (typeof REPORT_STATUS)[number];
 export interface ReportSummary {
   total_activities: number;
   total_people_reached: number;
+  total_people_reached_remote: number;
   distinct_venues: number;
   active_communicators: number;
   avg_people_per_activity: number;

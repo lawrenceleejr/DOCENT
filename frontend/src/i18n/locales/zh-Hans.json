@@ -225,7 +225,8 @@
     "mapHintText": "你也可以从地图开始创建活动：",
     "mapHintLink": "地图",
     "broadcastLabel": "远程／广播触及",
-    "broadcastDescription": "适用于播客、视频、直播或其他广播受众——与现场触及分开计算。"
+    "broadcastDescription": "适用于播客、视频、直播或其他广播受众——与现场触及分开计算。",
+    "broadcastTooltip": "当受众并非亲临现场时开启——例如播客、直播或媒体报道。这些人数计入远程触及，与现场触及分开统计。"
   },
   "visitDetail": {
     "markCompleted": "标记为已完成",

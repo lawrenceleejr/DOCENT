@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Anchor,
+  Box,
   Button,
   Card,
   Checkbox,
@@ -421,15 +422,26 @@ export function VisitFormPage() {
               data={LANGUAGES}
               {...form.getInputProps('language')}
             />
-            <Switch
-              label={t('visitForm.broadcastLabel')}
-              description={t('visitForm.broadcastDescription')}
-              checked={form.values.is_broadcast}
-              onChange={(e) => {
-                broadcastTouched.current = true;
-                form.setFieldValue('is_broadcast', e.currentTarget.checked);
-              }}
-            />
+            <Tooltip
+              label={t('visitForm.broadcastTooltip')}
+              multiline
+              w={300}
+              withArrow
+              position="top-start"
+              events={{ hover: true, focus: true, touch: true }}
+            >
+              <Box w="fit-content">
+                <Switch
+                  label={t('visitForm.broadcastLabel')}
+                  description={t('visitForm.broadcastDescription')}
+                  checked={form.values.is_broadcast}
+                  onChange={(e) => {
+                    broadcastTouched.current = true;
+                    form.setFieldValue('is_broadcast', e.currentTarget.checked);
+                  }}
+                />
+              </Box>
+            </Tooltip>
             <CoPresenterPicker
               value={form.values.co_presenter_user_ids}
               onChange={(ids) => form.setFieldValue('co_presenter_user_ids', ids)}

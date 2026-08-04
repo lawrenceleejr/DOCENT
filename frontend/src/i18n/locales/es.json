@@ -225,7 +225,8 @@
     "mapHintText": "También puedes iniciar un evento desde el",
     "mapHintLink": "mapa",
     "broadcastLabel": "Alcance remoto / difusión",
-    "broadcastDescription": "Para un pódcast, video, transmisión en vivo u otro público de difusión: se contabiliza aparte del alcance presencial."
+    "broadcastDescription": "Para un pódcast, video, transmisión en vivo u otro público de difusión: se contabiliza aparte del alcance presencial.",
+    "broadcastTooltip": "Actívalo cuando tu público no estuvo físicamente contigo: un pódcast, una transmisión en vivo o una aparición en medios. Esas personas se contabilizan como alcance remoto, aparte del alcance presencial."
   },
   "visitDetail": {
     "markCompleted": "Marcar como completada",

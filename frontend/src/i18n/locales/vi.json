@@ -225,7 +225,8 @@
     "mapHintText": "Bạn cũng có thể bắt đầu một sự kiện từ",
     "mapHintLink": "bản đồ",
     "broadcastLabel": "Tiếp cận từ xa / phát sóng",
-    "broadcastDescription": "Dành cho podcast, video, phát trực tiếp hoặc khán giả phát sóng khác — được tính riêng với tiếp cận trực tiếp."
+    "broadcastDescription": "Dành cho podcast, video, phát trực tiếp hoặc khán giả phát sóng khác — được tính riêng với tiếp cận trực tiếp.",
+    "broadcastTooltip": "Bật tùy chọn này khi khán giả không có mặt trực tiếp với bạn — podcast, phát trực tiếp hoặc lên báo đài. Những người đó được tính là tiếp cận từ xa, tách biệt với tiếp cận trực tiếp."
   },
   "visitDetail": {
     "markCompleted": "Đánh dấu là đã hoàn thành",

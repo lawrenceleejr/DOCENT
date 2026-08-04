@@ -225,7 +225,8 @@
     "mapHintText": "Vous pouvez aussi créer un événement depuis la",
     "mapHintLink": "carte",
     "broadcastLabel": "Portée à distance / diffusion",
-    "broadcastDescription": "Pour un podcast, une vidéo, un direct ou tout autre public diffusé — comptabilisé séparément de la portée en personne."
+    "broadcastDescription": "Pour un podcast, une vidéo, un direct ou tout autre public diffusé — comptabilisé séparément de la portée en personne.",
+    "broadcastTooltip": "Activez cette option lorsque votre public n'était pas physiquement présent : un podcast, un direct ou une couverture médiatique. Ces personnes sont comptabilisées comme portée à distance, séparément de la portée en personne."
   },
   "visitDetail": {
     "markCompleted": "Marquer comme terminée",
