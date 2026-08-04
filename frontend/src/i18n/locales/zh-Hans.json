@@ -512,6 +512,8 @@
     "nextButton": "下一行",
     "rowCounter": "第 {{current}} 行，共 {{total}} 行",
     "kbdHint": "切换行",
+    "kbdHintSkip": "跳过",
+    "kbdHintImport": "导入",
     "draftHeading": "活动草稿",
     "importedBadge": "已导入",
     "skippedBadge": "已跳过",

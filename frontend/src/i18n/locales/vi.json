@@ -512,6 +512,8 @@
     "nextButton": "Sau",
     "rowCounter": "Dòng {{current}} / {{total}}",
     "kbdHint": "chuyển dòng",
+    "kbdHintSkip": "bỏ qua",
+    "kbdHintImport": "nhập",
     "draftHeading": "Bản nháp sự kiện",
     "importedBadge": "Đã nhập",
     "skippedBadge": "Đã bỏ qua",

@@ -512,6 +512,8 @@
     "nextButton": "下一列",
     "rowCounter": "第 {{current}} 列，共 {{total}} 列",
     "kbdHint": "切換列",
+    "kbdHintSkip": "略過",
+    "kbdHintImport": "匯入",
     "draftHeading": "活動草稿",
     "importedBadge": "已匯入",
     "skippedBadge": "已略過",

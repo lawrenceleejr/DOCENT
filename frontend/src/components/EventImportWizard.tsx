@@ -375,9 +375,11 @@ export function EventImportWizard({
   };
   const unskip = () => patchRow(current, { status: 'pending' });
 
-  // Keyboard navigation: ← / → (and ↑ / ↓) move between rows without leaving
-  // the keyboard — but never while typing in a field, so arrows keep their
-  // normal cursor behavior inside inputs.
+  // Keyboard shortcuts for the review step — never while typing in a field
+  // (arrows keep their cursor behavior; Enter keeps submitting selects):
+  //   ← / → (and ↑ / ↓)  move between rows
+  //   S                   skip the current row
+  //   Enter               import the current row and move to the next
   useEffect(() => {
     if (!opened || step !== 'review') return;
     const handler = (e: KeyboardEvent) => {
@@ -392,11 +394,28 @@ export function EventImportWizard({
       } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
         goTo(current + 1);
+      } else if (
+        e.key.toLowerCase() === 's' &&
+        !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat
+      ) {
+        if (row && row.status === 'pending') {
+          e.preventDefault();
+          skip();
+        }
+      } else if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat) {
+        // A focused button/link should keep its native Enter activation —
+        // otherwise Enter would both click it and import, double-acting.
+        if (tag === 'BUTTON' || tag === 'A') return;
+        if (row && row.status === 'pending' && rowValid && !createVisit.isPending) {
+          e.preventDefault();
+          createVisit.mutate(row);
+        }
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [opened, step, current, goTo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened, step, current, goTo, row, rowValid, createVisit.isPending]);
 
   const currentDateIso = row ? isoDate(row.visit_date) : null;
 
@@ -538,6 +557,14 @@ export function EventImportWizard({
               <Kbd size="xs">→</Kbd>
               <Text size="xs" c="dimmed">
                 {t('importWizard.kbdHint')}
+              </Text>
+              <Kbd size="xs">S</Kbd>
+              <Text size="xs" c="dimmed">
+                {t('importWizard.kbdHintSkip')}
+              </Text>
+              <Kbd size="xs">↵</Kbd>
+              <Text size="xs" c="dimmed">
+                {t('importWizard.kbdHintImport')}
               </Text>
             </Group>
           </Group>

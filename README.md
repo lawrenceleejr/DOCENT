@@ -402,9 +402,10 @@ Export CSV) walks you through bringing it in without retyping everything:
   silently mis-dated.
 - **You review every row** in a step-through wizard: edit any field, pick or
   create the venue (pre-searched with the venue name from the CSV), then
-  **Import as event** or **Skip**. Move freely with Prev/Next or the
-  **arrow keys** (←/→/↑/↓); a chip strip shows every row's status and lets you
-  jump anywhere. Nothing is written until you import that row.
+  **Import as event** or **Skip**. Work it entirely from the keyboard: the
+  **arrow keys** (←/→/↑/↓) move between rows, **S** skips the current row, and
+  **Enter** imports it and moves to the next. Nothing is written until you
+  import that row.
 - **Duplicate spotting built in:** while you review a row, a side panel lists
   every event already in DOCENT on that same day — including ones you just
   imported — so double entries are caught before they happen.
