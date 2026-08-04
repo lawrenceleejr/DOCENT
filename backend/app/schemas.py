@@ -1029,3 +1029,37 @@ class FederatedMapPoint(BaseModel):
     people_reached: int
     permalink: str | None
     source_label: str | None
+
+
+# --- CSV event import (own-profile bulk import wizard) ---
+
+class ImportDraftRow(BaseModel):
+    """One CSV row mapped to a best-effort draft event. Every field is optional
+    and freely editable in the wizard — the raw row is kept so the communicator
+    can see anything that wasn't mapped."""
+
+    index: int
+    raw: dict[str, str]
+    title: str | None = None
+    visit_date: str | None = None  # ISO yyyy-mm-dd when parseable, else None
+    date_raw: str | None = None
+    event_type: str | None = None
+    audience_level: str | None = None
+    people_reached: int | None = None
+    venue_name: str | None = None
+    venue_city: str | None = None
+    description: str | None = None
+    start_time: str | None = None
+    duration_minutes: int | None = None
+    language: str | None = None
+    presenters: str | None = None
+    url: str | None = None
+    warnings: list[str] = Field(default_factory=list)
+
+
+class ImportParseResponse(BaseModel):
+    format: Literal["symplectic", "generic"]
+    columns: list[str]
+    mappable_fields: list[str]
+    suggested_mapping: dict[str, str]
+    rows: list[ImportDraftRow]

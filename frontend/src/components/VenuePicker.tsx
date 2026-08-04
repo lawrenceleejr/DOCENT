@@ -13,7 +13,7 @@ import { useForm } from '@mantine/form';
 import { useDebouncedValue } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
 import {
@@ -45,15 +45,33 @@ interface VenuePickerProps {
   error?: string;
   /** Restrict results to schools/colleges/universities (hides libraries etc.). */
   educationalOnly?: boolean;
+  /** Seed the search box (e.g. a venue name from an imported CSV row). The
+   * picker re-seeds whenever this changes and nothing is selected yet. */
+  initialSearch?: string;
+  disabled?: boolean;
 }
 
-export function VenuePicker({ value, onChange, error, educationalOnly }: VenuePickerProps) {
+export function VenuePicker({
+  value,
+  onChange,
+  error,
+  educationalOnly,
+  initialSearch,
+  disabled,
+}: VenuePickerProps) {
   const { t } = useTranslation();
   const enumLabel = useEnumLabel();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch ?? '');
   const [creating, setCreating] = useState(false);
   const [prefill, setPrefill] = useState<VenuePrefill | undefined>();
   const queryClient = useQueryClient();
+
+  // When the seed changes (the import wizard moved to another row) and no venue
+  // is selected, restart the search from the new seed.
+  useEffect(() => {
+    if (value === null) setSearch(initialSearch ?? '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSearch]);
 
   const { data } = useQuery({
     queryKey: ['venues', 'picker', search],
@@ -129,6 +147,7 @@ export function VenuePicker({ value, onChange, error, educationalOnly }: VenuePi
         placeholder={t('venuePicker.searchPlaceholder')}
         searchable
         clearable
+        disabled={disabled}
         data={options}
         // Results are already filtered server-side by `search`; disable Mantine's
         // own filtering so the "＋ Create new venue…" and catalog options are

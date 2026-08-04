@@ -24,13 +24,18 @@ export function buildQuery(params?: Query): string {
 async function request<T>(
   method: string,
   path: string,
-  options: { body?: unknown; params?: Query } = {},
+  options: { body?: unknown; params?: Query; form?: FormData } = {},
 ): Promise<T> {
   const response = await fetch(path + buildQuery(options.params), {
     method,
     credentials: 'include',
-    headers: options.body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    // FormData sets its own multipart Content-Type (with boundary); only JSON
+    // bodies get an explicit header.
+    headers:
+      options.body !== undefined && !options.form
+        ? { 'Content-Type': 'application/json' }
+        : undefined,
+    body: options.form ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
   });
 
   if (response.status === 401 && !path.startsWith('/api/auth/')) {
@@ -56,6 +61,7 @@ async function request<T>(
 export const api = {
   get: <T>(path: string, params?: Query) => request<T>('GET', path, { params }),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, { body }),
+  postForm: <T>(path: string, form: FormData) => request<T>('POST', path, { form }),
   patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, { body }),
   delete: <T>(path: string) => request<T>('DELETE', path),
 };

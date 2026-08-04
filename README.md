@@ -385,6 +385,32 @@ map coverage, so planning ahead never inflates your impact numbers.
   Times are "floating" — shown in each viewer's local timezone. Events without a
   start time export as all-day.
 
+## Import your event history from a CSV
+
+Already have years of outreach logged in a spreadsheet — or in **Symplectic
+Elements**? **Profile → Import past events** walks you through bringing it in
+without retyping everything:
+
+- **Any reasonable CSV works.** DOCENT sniffs the delimiter and encoding,
+  auto-maps common column names (title, date, venue, attendance, audience,
+  description, …), and shows you the mapping to correct before anything happens.
+  **Symplectic Elements exports are recognised automatically** — including their
+  day-first dates.
+- **Dates get special care.** ISO, verbose ("1 May 2024"), and numeric forms all
+  parse; ambiguous `05/06/2024`-style dates follow the detected convention, and
+  a date the parser can't read is flagged so you pick it by hand — nothing is
+  silently mis-dated.
+- **You review every row** in a step-through wizard: edit any field, pick or
+  create the venue (pre-searched with the venue name from the CSV), then
+  **Import as event** or **Skip**. Move freely with Prev/Next or the
+  **arrow keys** (←/→/↑/↓); a chip strip shows every row's status and lets you
+  jump anywhere. Nothing is written until you import that row.
+- **Duplicate spotting built in:** while you review a row, a side panel lists
+  every event already in DOCENT on that same day — including ones you just
+  imported — so double entries are caught before they happen.
+
+![CSV import wizard](docs/screenshots/10-import.png)
+
 ## Reports (grant-ready exports)
 
 The **Reports** tab exports a shareable summary of outreach activity — the kind

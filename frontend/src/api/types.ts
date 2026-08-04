@@ -798,3 +798,33 @@ export interface RestoreStatus {
   backup: string | null;
   at: string | null;
 }
+
+// --- CSV event import (own-profile bulk import wizard) ---
+
+export interface ImportDraftRow {
+  index: number;
+  raw: Record<string, string>;
+  title: string | null;
+  visit_date: string | null;
+  date_raw: string | null;
+  event_type: string | null;
+  audience_level: string | null;
+  people_reached: number | null;
+  venue_name: string | null;
+  venue_city: string | null;
+  description: string | null;
+  start_time: string | null;
+  duration_minutes: number | null;
+  language: string | null;
+  presenters: string | null;
+  url: string | null;
+  warnings: string[];
+}
+
+export interface ImportParseResponse {
+  format: 'symplectic' | 'generic';
+  columns: string[];
+  mappable_fields: string[];
+  suggested_mapping: Record<string, string>;
+  rows: ImportDraftRow[];
+}

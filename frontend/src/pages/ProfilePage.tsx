@@ -13,7 +13,7 @@ import {
   Title,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconTrash } from '@tabler/icons-react';
+import { IconFileSpreadsheet, IconTrash } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -22,6 +22,7 @@ import { api, ApiError } from '../api/client';
 import { useInstitutionOptions, usePositionOptions } from '../api/meta';
 import { LANGUAGES, type School, type StatsSummary, type User, type UserRole } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { EventImportWizard } from '../components/EventImportWizard';
 import { OrcidLink } from '../components/OrcidLink';
 import { RolesEditor } from '../components/RolesEditor';
 import { VenuePicker } from '../components/VenuePicker';
@@ -31,6 +32,7 @@ export function ProfilePage() {
   const { user, refresh } = useAuth();
   const queryClient = useQueryClient();
   const [newSchoolId, setNewSchoolId] = useState<number | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   const positionOptions = usePositionOptions();
   const institutionOptions = useInstitutionOptions();
 
@@ -173,6 +175,33 @@ export function ProfilePage() {
           </Text>
         </Card>
       </Group>
+
+      <Card withBorder p="lg">
+        <Group justify="space-between" align="flex-start" wrap="wrap">
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <Title order={4}>{t('profile.importTitle')}</Title>
+            <Text size="sm" c="dimmed">
+              {t('profile.importDescription')}
+            </Text>
+          </div>
+          <Button
+            leftSection={<IconFileSpreadsheet size={16} />}
+            variant="light"
+            onClick={() => setImportOpen(true)}
+          >
+            {t('profile.importButton')}
+          </Button>
+        </Group>
+      </Card>
+
+      <EventImportWizard
+        opened={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={() => {
+          queryClient.invalidateQueries({ queryKey: ['visits'] });
+          queryClient.invalidateQueries({ queryKey: ['stats'] });
+        }}
+      />
 
       <Card withBorder p="lg">
         <form onSubmit={profileForm.onSubmit((values) => saveProfile.mutate(values))}>
