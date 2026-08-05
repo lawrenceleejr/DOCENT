@@ -9,8 +9,28 @@
 - All work happens on the designated feature branch; never push elsewhere.
 - Run `cd backend && pytest` (against real Postgres — never SQLite) and
   `cd frontend && npm run build` before every commit that touches code.
+## Migrations & upgrades
+
 - Schema changes need a hand-written Alembic migration in
-  `backend/alembic/versions/` (create native enums explicitly before use).
+  `backend/alembic/versions/`. The backend runs `alembic upgrade head` in a
+  **single transaction** on startup, so every migration must apply cleanly *in
+  one batch from any supported starting point* — a brand-new empty database and
+  the previous release alike.
+- Create native enums explicitly before use, and **never use a just-added enum
+  value in a data statement in the same upgrade**: Postgres rejects a
+  not-yet-committed `ALTER TYPE … ADD VALUE` ("unsafe use of new value" — this
+  crash-looped a live instance once). Cast the column instead
+  (`col::text IN (…)`), or split the add and the use across releases.
+- Migrations aren't exercised by `pytest` (it builds the schema with
+  `create_all`), so before shipping one run `alembic upgrade head` against
+  **both** a fresh empty database and a copy at the previous release tag.
+- **Upgrades must be self-diagnosing, never crash-looping.** The startup/upgrade
+  path should preflight the DB's current revision against head; when a plain
+  `alembic upgrade head` can't run cleanly (a breaking or multi-step change), it
+  must fail fast and print an ordered, copy-pasteable upgrade for the admin to
+  run by hand (e.g. `alembic upgrade <rev>` → optional data step →
+  `alembic upgrade head`, plus how to verify) rather than restart-looping. Put
+  the same steps in that release's `CHANGELOG.md` entry.
 
 ## Product language
 
