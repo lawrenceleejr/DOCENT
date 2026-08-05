@@ -320,7 +320,7 @@
       "community_partner": "Socio comunitario",
       "family_friend": "Familiar o amigo",
       "cold_outreach": "Contacto sin relación previa",
-      "reached_out": "Contactó proactivamente",
+      "reached_out": "El anfitrión nos contactó",
       "other": "Otro"
     },
     "institutionType": {
@@ -656,6 +656,8 @@
     "clearFilters": "Borrar filtros",
     "statVisits": "Eventos",
     "statPeopleReached": "Personas alcanzadas",
+    "statPeopleInPerson": "Alcance presencial",
+    "statPeopleRemote": "Alcance remoto",
     "statVenuesVisited": "Sedes alcanzadas",
     "statActiveCommunicators": "Comunicadores activos",
     "statAvgRating": "Calificación prom.",
@@ -688,7 +690,8 @@
     "siblingFilterCaveat": "Las entradas de las comunidades hermanas tienen detalles limitados: no se comparten la audiencia, las etiquetas ni los nombres de los anfitriones, por lo que esos filtros y la búsqueda de personas solo se aplican en parte.",
     "peopleInPerson": "Presencial",
     "peopleRemote": "Remoto / difusión",
-    "remoteReachSub": "{{formattedCount}} remoto"
+    "remoteReachSub": "{{formattedCount}} remoto",
+    "remoteReachTileSub": "difusión y en línea"
   },
   "impact": {
     "unavailableTitle": "Esta página no está disponible",
@@ -832,6 +835,8 @@
     "formatJson": "JSON",
     "statActivities": "Actividades",
     "statPeopleReached": "Personas alcanzadas",
+    "statPeopleInPerson": "Alcance presencial",
+    "statPeopleRemote": "Alcance remoto",
     "statDistinctVenues": "Sedes distintas",
     "colDate": "Fecha",
     "colActivity": "Actividad",

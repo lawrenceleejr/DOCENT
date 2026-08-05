@@ -320,7 +320,7 @@
       "community_partner": "Community Partner",
       "family_friend": "Family Friend",
       "cold_outreach": "Cold Outreach",
-      "reached_out": "Reached out proactively",
+      "reached_out": "Host reached out to us",
       "other": "Other"
     },
     "institutionType": {
@@ -656,6 +656,8 @@
     "clearFilters": "Clear filters",
     "statVisits": "Events",
     "statPeopleReached": "People reached",
+    "statPeopleInPerson": "In-person reach",
+    "statPeopleRemote": "Remote reach",
     "statVenuesVisited": "Venues reached",
     "statActiveCommunicators": "Active communicators",
     "statAvgRating": "Avg. rating",
@@ -688,7 +690,8 @@
     "siblingFilterCaveat": "Sibling-community entries carry limited detail — audience, tags, and host names aren’t shared, so those filters and the people search only partly apply to them.",
     "peopleInPerson": "In person",
     "peopleRemote": "Remote / broadcast",
-    "remoteReachSub": "{{formattedCount}} remote"
+    "remoteReachSub": "{{formattedCount}} remote",
+    "remoteReachTileSub": "broadcast & online"
   },
   "impact": {
     "unavailableTitle": "This page isn’t available",
@@ -832,6 +835,8 @@
     "formatJson": "JSON",
     "statActivities": "Activities",
     "statPeopleReached": "People reached",
+    "statPeopleInPerson": "In-person reach",
+    "statPeopleRemote": "Remote reach",
     "statDistinctVenues": "Distinct venues",
     "colDate": "Date",
     "colActivity": "Activity",

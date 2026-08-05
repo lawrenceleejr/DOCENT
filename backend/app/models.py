@@ -117,8 +117,9 @@ class HostRelationship(str, enum.Enum):
     community_partner = "community_partner"
     family_friend = "family_friend"
     cold_outreach = "cold_outreach"
-    # The host proactively reached out to the communicator or their
-    # organization to invite them (#40). Use host_relationship_detail to note
+    # The mirror of cold_outreach: the *host* reached out to the communicator
+    # (or their organization) to invite them, rather than the communicator
+    # cold-contacting the host (#40). Use host_relationship_detail to note
     # whether it was the speaker directly or their department/organization.
     reached_out = "reached_out"
     other = "other"

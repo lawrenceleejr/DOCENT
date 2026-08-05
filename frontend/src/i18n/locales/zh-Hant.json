@@ -320,7 +320,7 @@
       "community_partner": "社區夥伴",
       "family_friend": "親友",
       "cold_outreach": "陌生聯繫",
-      "reached_out": "主動聯繫",
+      "reached_out": "主辦方主動聯繫我們",
       "other": "其他"
     },
     "institutionType": {
@@ -656,6 +656,8 @@
     "clearFilters": "清除篩選條件",
     "statVisits": "活動",
     "statPeopleReached": "觸及人數",
+    "statPeopleInPerson": "現場觸及",
+    "statPeopleRemote": "遠端觸及",
     "statVenuesVisited": "已觸及場地數",
     "statActiveCommunicators": "活躍推廣人員",
     "statAvgRating": "平均評分",
@@ -688,7 +690,8 @@
     "siblingFilterCaveat": "姊妹社群的項目所含細節有限——不會共享受眾、標籤與主辦人姓名，因此這些篩選條件與人員搜尋僅部分適用。",
     "peopleInPerson": "現場",
     "peopleRemote": "遠端／廣播",
-    "remoteReachSub": "{{formattedCount}} 遠端"
+    "remoteReachSub": "{{formattedCount}} 遠端",
+    "remoteReachTileSub": "廣播與線上"
   },
   "impact": {
     "unavailableTitle": "此頁面目前無法使用",
@@ -832,6 +835,8 @@
     "formatJson": "JSON",
     "statActivities": "活動數",
     "statPeopleReached": "觸及人數",
+    "statPeopleInPerson": "現場觸及",
+    "statPeopleRemote": "遠端觸及",
     "statDistinctVenues": "不同場地數",
     "colDate": "日期",
     "colActivity": "活動",

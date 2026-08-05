@@ -320,7 +320,7 @@
       "community_partner": "社区合作伙伴",
       "family_friend": "家人 / 朋友",
       "cold_outreach": "主动联系",
-      "reached_out": "主动联系",
+      "reached_out": "主办方主动联系我们",
       "other": "其他"
     },
     "institutionType": {
@@ -656,6 +656,8 @@
     "clearFilters": "清除筛选条件",
     "statVisits": "活动数",
     "statPeopleReached": "触达人数",
+    "statPeopleInPerson": "现场触及",
+    "statPeopleRemote": "远程触及",
     "statVenuesVisited": "触及场地数",
     "statActiveCommunicators": "活跃推广人",
     "statAvgRating": "平均评分",
@@ -688,7 +690,8 @@
     "siblingFilterCaveat": "姊妹社区的条目所含细节有限——不会共享受众、标签和主办人姓名，因此这些筛选条件与人员搜索仅部分适用。",
     "peopleInPerson": "现场",
     "peopleRemote": "远程／广播",
-    "remoteReachSub": "{{formattedCount}} 远程"
+    "remoteReachSub": "{{formattedCount}} 远程",
+    "remoteReachTileSub": "广播与线上"
   },
   "impact": {
     "unavailableTitle": "此页面不可用",
@@ -832,6 +835,8 @@
     "formatJson": "JSON",
     "statActivities": "活动数",
     "statPeopleReached": "触达人数",
+    "statPeopleInPerson": "现场触及",
+    "statPeopleRemote": "远程触及",
     "statDistinctVenues": "不同场地数",
     "colDate": "日期",
     "colActivity": "活动名称",

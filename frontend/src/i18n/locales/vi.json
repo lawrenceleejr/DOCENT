@@ -320,7 +320,7 @@
       "community_partner": "Đối tác cộng đồng",
       "family_friend": "Người thân / Bạn bè",
       "cold_outreach": "Kết nối lần đầu",
-      "reached_out": "Chủ động liên hệ",
+      "reached_out": "Bên tổ chức chủ động liên hệ",
       "other": "Khác"
     },
     "institutionType": {
@@ -656,6 +656,8 @@
     "clearFilters": "Xóa bộ lọc",
     "statVisits": "Sự kiện",
     "statPeopleReached": "Số người tiếp cận",
+    "statPeopleInPerson": "Tiếp cận trực tiếp",
+    "statPeopleRemote": "Tiếp cận từ xa",
     "statVenuesVisited": "Địa điểm đã tiếp cận",
     "statActiveCommunicators": "Người kết nối hoạt động",
     "statAvgRating": "Đánh giá trung bình",
@@ -688,7 +690,8 @@
     "siblingFilterCaveat": "Các mục từ cộng đồng anh em chỉ mang thông tin hạn chế — đối tượng, thẻ và tên người tổ chức không được chia sẻ, nên các bộ lọc đó và tìm kiếm theo người chỉ áp dụng một phần.",
     "peopleInPerson": "Trực tiếp",
     "peopleRemote": "Từ xa / phát sóng",
-    "remoteReachSub": "{{formattedCount}} từ xa"
+    "remoteReachSub": "{{formattedCount}} từ xa",
+    "remoteReachTileSub": "phát sóng & trực tuyến"
   },
   "impact": {
     "unavailableTitle": "Trang này không khả dụng",
@@ -832,6 +835,8 @@
     "formatJson": "JSON",
     "statActivities": "Hoạt động",
     "statPeopleReached": "Số người tiếp cận",
+    "statPeopleInPerson": "Tiếp cận trực tiếp",
+    "statPeopleRemote": "Tiếp cận từ xa",
     "statDistinctVenues": "Địa điểm riêng biệt",
     "colDate": "Ngày",
     "colActivity": "Hoạt động",

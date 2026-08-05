@@ -320,7 +320,7 @@
       "community_partner": "Kasosyo sa Komunidad",
       "family_friend": "Kaibigan ng Pamilya",
       "cold_outreach": "Cold Outreach",
-      "reached_out": "Kusang nakipag-ugnayan",
+      "reached_out": "Kinontak kami ng host",
       "other": "Iba pa"
     },
     "institutionType": {
@@ -656,6 +656,8 @@
     "clearFilters": "Alisin ang mga filter",
     "statVisits": "Mga Event",
     "statPeopleReached": "Taong naabot",
+    "statPeopleInPerson": "In-person na naabot",
+    "statPeopleRemote": "Remote na naabot",
     "statVenuesVisited": "Venue na naabot",
     "statActiveCommunicators": "Aktibong communicator",
     "statAvgRating": "Avg. rating",
@@ -688,7 +690,8 @@
     "siblingFilterCaveat": "Ang mga entry mula sa kapatid na komunidad ay may limitadong detalye — hindi ibinabahagi ang audience, mga tag, at pangalan ng host, kaya bahagya lamang naaangkop ang mga filter na iyon at ang paghahanap ng tao.",
     "peopleInPerson": "In person",
     "peopleRemote": "Remote / broadcast",
-    "remoteReachSub": "{{formattedCount}} remote"
+    "remoteReachSub": "{{formattedCount}} remote",
+    "remoteReachTileSub": "broadcast at online"
   },
   "impact": {
     "unavailableTitle": "Hindi available ang page na ito",
@@ -832,6 +835,8 @@
     "formatJson": "JSON",
     "statActivities": "Mga Aktibidad",
     "statPeopleReached": "Taong naabot",
+    "statPeopleInPerson": "In-person na naabot",
+    "statPeopleRemote": "Remote na naabot",
     "statDistinctVenues": "Natatanging venue",
     "colDate": "Petsa",
     "colActivity": "Aktibidad",
