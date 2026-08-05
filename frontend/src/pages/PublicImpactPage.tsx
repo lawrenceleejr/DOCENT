@@ -61,6 +61,10 @@ function PublicTimePanel({
       .map((y) => Date.UTC(y, 0, 1))
       .filter((t) => t >= data[0].t && t <= data[data.length - 1].t);
   }, [data]);
+  // When split, in-person and remote get their own y-axis (huge broadcast scale
+  // would otherwise flatten the in-person line) — matching the Analysis chart.
+  const compact = (n: number) =>
+    new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
   return (
     <Card withBorder p="md">
       <Text fw={600} mb="xs">
@@ -81,13 +85,28 @@ function PublicTimePanel({
             tickLine={false}
           />
           <YAxis
+            yAxisId="left"
             stroke={viz.axis}
-            tick={{ fill: viz.mutedInk, fontSize: 12 }}
+            tick={{ fill: split ? color : viz.mutedInk, fontSize: 12 }}
             tickLine={false}
             axisLine={false}
             width={48}
             allowDecimals={false}
+            tickFormatter={split ? compact : undefined}
           />
+          {split && (
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              stroke={viz.axis}
+              tick={{ fill: split.remoteColor, fontSize: 12 }}
+              tickLine={false}
+              axisLine={false}
+              width={48}
+              allowDecimals={false}
+              tickFormatter={compact}
+            />
+          )}
           <Tooltip
             contentStyle={{
               backgroundColor: viz.tooltipBg,
@@ -106,6 +125,7 @@ function PublicTimePanel({
             <>
               <Legend wrapperStyle={{ fontSize: 12, color: viz.mutedInk }} />
               <Line
+                yAxisId="left"
                 type="monotone"
                 dataKey="people_reached_in_person"
                 name={split.inPersonName}
@@ -114,18 +134,18 @@ function PublicTimePanel({
                 dot={{ r: 3, fill: color, strokeWidth: 0 }}
               />
               <Line
+                yAxisId="right"
                 type="monotone"
                 dataKey="people_reached_remote"
                 name={split.remoteName}
                 stroke={split.remoteColor}
                 strokeWidth={2}
-                strokeDasharray="5 4"
-                strokeOpacity={0.8}
-                dot={false}
+                dot={{ r: 3, fill: split.remoteColor, strokeWidth: 0 }}
               />
             </>
           ) : (
             <Line
+              yAxisId="left"
               type="monotone"
               dataKey={dataKey}
               stroke={color}

@@ -686,7 +686,6 @@ export function DashboardPage() {
                       key: 'people_reached_remote',
                       name: t('dashboard.peopleRemote'),
                       color: viz.series1,
-                      dashed: true,
                       axis: 'right',
                     },
                   ]
