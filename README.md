@@ -1,12 +1,12 @@
 # DOCENT — Reach out. Track it. Prove your Broad Impact.
 
-**D**istributed **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker — a self-hosted web app that helps a scientific community **Reach out** (to grade schools, community colleges, museums, libraries, and beyond), keep one shared record of every visit, and turn it into **Broad Impact** documentation for grant reports at the click of a button.
+**D**istributed **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker — a self-hosted web app that helps a scientific community **Reach out** (to grade schools, community colleges, museums, libraries, and beyond), keep one shared record of every event, and turn it into **Broad Impact** documentation for grant reports at the click of a button.
 
-Communicators register accounts and log each visit — venue, date, host, audience, how it went, people reached — and the whole community shares a live **Analysis** dashboard and a coverage **Map**. When it's reporting season, the **Reports** tab exports a grant-ready summary of your collective **Broad Impact** (PDF / CSV / Markdown / JSON) over any date range.
+Communicators register accounts and log each event — venue, date, host, audience, how it went, people reached — and the whole community shares a live **Analysis** dashboard and a coverage **Map**. When it's reporting season, the **Reports** tab exports a grant-ready summary of your collective **Broad Impact** (PDF / CSV / Markdown / JSON) over any date range.
 
 > ### 🚀 Try it now
 > A public **test instance** is running at **<https://test.docentoutreach.org>** —
-> click around, log a demo visit, explore the map, dashboard, and reports. Log in
+> click around, log a demo event, explore the map, dashboard, and reports. Log in
 > with **`testuser@utk.edu`** / **`12345678`**, or register your own account with
 > access code **`3dd2b671`**. It's a sandbox: don't put anything real in it, and
 > expect the data to be wiped from time to time.
@@ -28,15 +28,15 @@ institution deploys and configures it.)*
 
 ## Screenshots
 
-**Visits** — the shared log of every outreach event, with search, filters (date, type, audience, status), and CSV export.
+**Events** — the shared log of every outreach event, with search, filters (date, type, audience, status), and CSV export.
 
-![Visits list](docs/screenshots/01-visits.png)
+![Events list](docs/screenshots/01-visits.png)
 
-**Log / schedule a visit** — one form for both. Toggle *Completed* vs *Planned*, pick or create a venue (searchable, catalog-backed), add host details, attendance, rating, and notes.
+**Log / schedule an event** — one form for both. Toggle *Completed* vs *Planned*, pick or create a venue (searchable, catalog-backed), add host details, one or more audience levels, attendance, rating, and notes. Flag a podcast, livestream, or other broadcast as **remote / broadcast** reach so its audience is counted apart from in-person attendance.
 
-![Log a visit](docs/screenshots/05-visit-form.png)
+![Log an event](docs/screenshots/05-visit-form.png)
 
-**Analysis dashboard** — totals, visits & people reached per half-year, breakdowns by venue type and audience, top venues, and a researcher leaderboard.
+**Analysis dashboard** — totals, events & people reached per half-year (in-person and remote / broadcast reach tracked separately), breakdowns by venue type and audience, top venues, and a communicator leaderboard.
 
 ![Analysis dashboard](docs/screenshots/02-dashboard.png)
 
@@ -74,7 +74,7 @@ backups), and **prints an access code**. Then:
 
 1. Open **http://localhost:8080** in your browser.
 2. Register with the access code it printed — **the first account becomes the admin**.
-3. Play around: log a visit, import some institutions, explore the Map, Analysis
+3. Play around: log an event, import some institutions, explore the Map, Analysis
    dashboard, and Reports.
 
 > Prefer not to build anything? `docker compose -f docker-compose.release.yml up -d`
@@ -174,14 +174,14 @@ Run from the repo root:
 
 | Script | What it does |
 |---|---|
-| `./scripts/start.sh` | Build + start everything (creates `.env` with random secrets on first run). Also the way to **deploy updates** after `git pull`. |
+| `./scripts/start.sh` | Build + start everything (creates `.env` with random secrets on first run). Also a way to **deploy updates** after `git pull`. |
 | `./scripts/stop.sh` | Stop the stack (data volumes preserved). |
-| `./scripts/restart.sh` | Restart the running containers (no rebuild). |
+| `./scripts/restart.sh` | Rebuild + restart, so `git pull` picks up new code. Pass `--no-build` (or `--fast`) to just bounce the containers without rebuilding. |
 | `./scripts/backup.sh` | Take a database backup right now. |
 | `./scripts/list-backups.sh` | List backups held in the volume. |
 | `./scripts/download-backups.sh [dir]` | Copy all backups onto the host (for off-site storage). |
 | `./scripts/restore.sh <file>` | Restore the DB from a backup (stops/starts the backend around it). |
-| `./scripts/seed-demo.sh` | Fill the app with a realistic demo dataset (fictional communicators/venues/visits) for evaluation or a talk. Merge-safe: re-running never duplicates. |
+| `./scripts/seed-demo.sh` | Fill the app with a realistic demo dataset (fictional communicators/venues/events) for evaluation or a talk. Merge-safe: re-running never duplicates. |
 
 ## Run the published images (no build)
 
@@ -365,21 +365,21 @@ Use the helper scripts (they wrap the `backup` container):
 
 `restore.sh` asks for confirmation, stops the backend during the restore, and
 restarts it afterward. Test your restore path periodically: create a throwaway
-visit, back up, delete it, restore, confirm it's back.
+event, back up, delete it, restore, confirm it's back.
 
 > **Postgres upgrades:** the `db` and `backup` images are both pinned to `postgres:16` so `pg_dump` always matches the server. Bump them together, and take a final backup on the old version first.
 
 ## Scheduling & calendar
 
-Every visit has a **status**: *planned* (a scheduled future event) or *completed*
-(outreach that happened). Only completed visits count toward the dashboard and
+Every event has a **status**: *planned* (a scheduled future event) or *completed*
+(outreach that happened). Only completed events count toward the dashboard and
 map coverage, so planning ahead never inflates your impact numbers.
 
 - **Schedule** tab: your upcoming planned events, soonest first. "Schedule an
-  event" opens the visit form in planned mode (attendance is optional); each row
+  event" opens the event form in planned mode (attendance is optional); each row
   has "Mark done" to record what happened.
-- The visit form has a **Planned / Completed** toggle and an optional **start
-  time** (+ duration). A gap's "Log a visit here" on the map still works the same.
+- The event form has a **Planned / Completed** toggle and an optional **start
+  time** (+ duration). A gap's "Log an event here" on the map still works the same.
 - **Add to calendar (.ics)**: downloads your planned events as an iCalendar file
   to import into Google/Apple/Outlook Calendar (`GET /api/visits/calendar.ics`).
   Times are "floating" — shown in each viewer's local timezone. Events without a
@@ -388,7 +388,7 @@ map coverage, so planning ahead never inflates your impact numbers.
 ## Import your event history from a CSV
 
 Already have years of outreach logged in a spreadsheet — or in **Symplectic
-Elements**? The **Import CSV** button on the Visits page (right next to
+Elements**? The **Import CSV** button on the Events page (right next to
 Export CSV) walks you through bringing it in without retyping everything:
 
 - **Any reasonable CSV works.** DOCENT sniffs the delimiter and encoding,
@@ -482,7 +482,7 @@ who send the `Do Not Track` signal. Clear the box and Save to turn analytics off
 Communicators often work with more than one outreach group — each running its own
 DOCENT. **Federation** lets an instance display activities pulled from a list of
 **sibling instances**, so an activity logged once anywhere shows up everywhere —
-in the **Visits list**, the **Map**, and the **Analysis** stats — with no
+in the **Events list**, the **Map**, and the **Analysis** stats — with no
 duplicate data entry. Sibling rows are clearly badged and link back to the
 instance that owns them; to see full detail you follow that link and sign in
 there. What crosses the wire is deliberately minimal: **date, place (+ coords /
@@ -519,7 +519,7 @@ collapses into the single green "reached" marker. The public `/impact` page has
 its own toggle to count the wider network in its totals — **numbers only, never
 sibling names**.
 
-> Only **completed** visits appear in impact/coverage counting; planned events
+> Only **completed** events appear in impact/coverage counting; planned events
 > stay on the Schedule page. Combined stats can double-count a communicator who
 > takes part through more than one instance — the dashboard and impact page note
 > this when siblings are included. Leaderboards, and the audience /
@@ -532,8 +532,8 @@ sibling names**.
 The **Map** tab plots your outreach on an OpenStreetMap base layer so you can see
 which schools/colleges/museums/libraries in a region you have — and haven't —
 reached. Institutions come from a catalog you import from OpenStreetMap; each is
-shown as a **gap** (orange) until a visit is logged against it, then **reached**
-(green). Your own visited venues show in blue.
+shown as a **gap** (orange) until an event is logged against it, then **reached**
+(green). Your own venues show in blue.
 
 **Populate the catalog** (admin, one-time per region; safe to re-run to refresh):
 
@@ -555,9 +555,9 @@ geocodes the location (OpenStreetMap Nominatim) and pulls everything within the
 radius (max 100 km). Behind a TLS-inspecting corporate proxy, point
 `REQUESTS_CA_BUNDLE` at your CA (a container path) so those live calls succeed.
 
-From the map, clicking a gap's **"Log a visit here"** creates a venue linked to
-that institution and opens a pre-filled visit form — so logging the visit flips
-the marker to reached. The venue picker on the visit form also searches the
+From the map, clicking a gap's **"Log an event here"** creates a venue linked to
+that institution and opens a pre-filled event form — so logging the event flips
+the marker to reached. The venue picker on the event form also searches the
 catalog ("… · from catalog") and fills in coordinates automatically.
 
 > Map tiles load from `tile.openstreetmap.org` in the browser (fine for a small
@@ -601,11 +601,11 @@ The suite runs against real Postgres (the stats SQL uses `date_trunc` and native
 ## How it works
 
 - **Accounts** — open self-registration (optionally gated by `INVITE_CODE`); the first account becomes admin. Admins manage users on the Admin tab.
-- **Visibility** — every signed-in user sees all visits and the shared dashboard; only the visit's author (or an admin) can edit or delete it.
-- **Venues are shared** — the visit form's venue picker searches existing venues first ("Name — City (type)") so the community builds one clean venue list instead of duplicates.
+- **Visibility** — every signed-in user sees all events and the shared dashboard; only the event's author (or an admin) can edit or delete it.
+- **Venues are shared** — the event form's venue picker searches existing venues first ("Name — City (type)") so the community builds one clean venue list instead of duplicates.
 - **Auth** — JWT in an httpOnly `SameSite=Lax` cookie; the browser and API are same-origin through nginx (prod) / the Vite proxy (dev), so there's no CORS surface.
 - **Localization** — the interface is available in English, Spanish, French, Traditional Chinese, Simplified Chinese, Vietnamese, and Tagalog. Switch languages from the globe icon in the header; your choice is remembered in the browser (no account setting).
-- **Visit language** — record which language a visit happened in, picked from a searchable list of world languages. Filter the visit list by language and see it on each visit's detail page and reports.
+- **Event language** — record which language an event happened in, picked from a searchable list of world languages. Filter the event list by language and see it on each event's detail page and reports.
 - **Member profiles** — list the schools you attended (auto-adds you as an alumnus contact on that venue's page) and the languages you speak, from your Profile page. Admins can filter the user list by school or language on the Admin tab, and can optionally let any signed-in member browse a read-only Directory of everyone's schools and languages.
 
 ### Architecture
@@ -632,9 +632,9 @@ After deploying (or upgrading), confirm:
 
 1. `docker compose ps` — all four services up, `db`/`backend` healthy.
 2. Register a user; if it's the first user, check the Admin tab appears.
-3. Log a visit (create the venue inline), see it on the Visits list, edit it.
+3. Log an event (create the venue inline), see it on the Events list, edit it.
 4. Analysis tab shows tiles and charts.
-5. Export CSV from the Visits page and open it.
+5. Export CSV from the Events page and open it.
 6. `docker compose exec backup /backup.sh` — a dump appears under `/backups/daily/`.
 7. Run through the restore steps above with a throwaway change.
 

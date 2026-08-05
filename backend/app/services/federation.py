@@ -166,6 +166,7 @@ def _coerce_row(raw: dict[str, Any]) -> dict[str, Any] | None:
         "contributors": _clean_contributors(raw.get("contributors")),
         "tags": _clean_tags(raw.get("tags")),
         "people_reached": raw.get("people_reached") or 0,
+        "is_broadcast": bool(raw.get("is_broadcast", False)),
         "permalink": raw.get("permalink"),
     }
 

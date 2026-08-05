@@ -101,6 +101,9 @@ class ReportVisit:
     host_role: str | None
     tags: list[str]
     links: list[dict]
+    # Remote/broadcast reach (#38) — defaulted so manually-built ReportVisits
+    # (tests, ad hoc) don't need to pass it.
+    is_broadcast: bool = False
 
     @classmethod
     def from_visit(cls, v: Any) -> "ReportVisit":
@@ -111,6 +114,7 @@ class ReportVisit:
             audience_level=v.audience_level,
             language=v.language,
             people_reached=v.people_reached,
+            is_broadcast=v.is_broadcast,
             duration_minutes=v.duration_minutes,
             status=v.status,
             venue_name=v.venue.name,
@@ -281,6 +285,7 @@ def build_report(
     rows = [rv.as_row() for rv in report_visits]
 
     total_people = sum(rv.people_reached for rv in report_visits)
+    total_people_remote = sum(rv.people_reached for rv in report_visits if rv.is_broadcast)
     venues = {rv.venue_name for rv in report_visits}
     presenters = {rv.presenter for rv in report_visits}
     dates = [rv.visit_date for rv in report_visits]
@@ -304,6 +309,7 @@ def build_report(
         "summary": {
             "total_activities": len(rows),
             "total_people_reached": total_people,
+            "total_people_reached_remote": total_people_remote,
             "distinct_venues": len(venues),
             "active_communicators": len(presenters),
             "avg_people_per_activity": round(total_people / len(rows)) if rows else 0,
@@ -410,6 +416,11 @@ def report_markdown(report: dict[str, Any]) -> str:
         "",
         f"- **Activities:** {s['total_activities']:,}",
         f"- **People reached:** {s['total_people_reached']:,}",
+        *(
+            [f"  - *of which remote / broadcast:* {s['total_people_reached_remote']:,}"]
+            if s.get("total_people_reached_remote")
+            else []
+        ),
         f"- **Distinct venues:** {s['distinct_venues']:,}",
     ]
     if s.get("active_communicators"):
@@ -508,7 +519,12 @@ def report_latex(report: dict[str, Any]) -> str:
         (
             r"\textbf{Activities:} " + f"{s['total_activities']:,}" + r" \quad "
             r"\textbf{People reached:} " + f"{s['total_people_reached']:,}" + r" \quad "
-            r"\textbf{Distinct venues:} " + f"{s['distinct_venues']:,}"
+            + (
+                r"\textbf{(remote:} " + f"{s['total_people_reached_remote']:,}" + r") \quad "
+                if s.get("total_people_reached_remote")
+                else ""
+            )
+            + r"\textbf{Distinct venues:} " + f"{s['distinct_venues']:,}"
         ),
         r"\bigskip",
     ]
@@ -916,7 +932,12 @@ def report_pdf(report: dict[str, Any], *, basemap: bool = True) -> bytes:
     summary = (
         f"Activities: {s['total_activities']:,}    "
         f"People reached: {s['total_people_reached']:,}    "
-        f"Distinct venues: {s['distinct_venues']:,}"
+        + (
+            f"(remote: {s['total_people_reached_remote']:,})    "
+            if s.get("total_people_reached_remote")
+            else ""
+        )
+        + f"Distinct venues: {s['distinct_venues']:,}"
     )
     pdf.set_font("Helvetica", "B", 11)
     pdf.set_text_color(20, 20, 20)

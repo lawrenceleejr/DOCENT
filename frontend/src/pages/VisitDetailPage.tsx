@@ -78,6 +78,11 @@ export function VisitDetailPage() {
             >
               {isOverdue(visit) ? t('visitList.overdue') : enumLabel.visitStatus(visit.status)}
             </Badge>
+            {visit.is_broadcast && (
+              <Badge variant="light" size="lg" color="grape">
+                {t('visitDetail.broadcastBadge')}
+              </Badge>
+            )}
           </Group>
           <Text c="dimmed">
             {visit.visit_date}
@@ -124,7 +129,13 @@ export function VisitDetailPage() {
               <Badge variant="light">{enumLabel.eventType(visit.event_type)}</Badge>
             </Field>
             <Field label={t('visitDetail.fieldAudience')}>
-              <Badge variant="light">{enumLabel.audienceLevel(visit.audience_level)}</Badge>
+              <Group gap={6}>
+                {(visit.audience_levels ?? [visit.audience_level]).map((a) => (
+                  <Badge key={a} variant="light">
+                    {enumLabel.audienceLevel(a)}
+                  </Badge>
+                ))}
+              </Group>
             </Field>
             {visit.language && (
               <Field label={t('visitDetail.fieldLanguage')}>{visit.language}</Field>

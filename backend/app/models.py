@@ -52,6 +52,9 @@ class EventType(str, enum.Enum):
     career_day = "career_day"
     demo_booth = "demo_booth"
     workshop = "workshop"
+    # A media/press interview — e.g. a podcast or radio appearance — that isn't
+    # a "visit" in the usual sense (#39).
+    interview = "interview"
     other = "other"
 
 
@@ -65,6 +68,12 @@ class AudienceLevel(str, enum.Enum):
     general_public = "general_public"
     educators = "educators"
     mixed = "mixed"
+
+
+# One shared Enum instance for both the scalar `audience_level` and the
+# `audience_levels` array column, so metadata.create_all emits the native enum
+# type exactly once (#42).
+_audience_level_enum = Enum(AudienceLevel, name="audience_level")
 
 
 class InstitutionType(str, enum.Enum):
@@ -108,6 +117,11 @@ class HostRelationship(str, enum.Enum):
     community_partner = "community_partner"
     family_friend = "family_friend"
     cold_outreach = "cold_outreach"
+    # The mirror of cold_outreach: the *host* reached out to the communicator
+    # (or their organization) to invite them, rather than the communicator
+    # cold-contacting the host (#40). Use host_relationship_detail to note
+    # whether it was the speaker directly or their department/organization.
+    reached_out = "reached_out"
     other = "other"
 
 
@@ -254,8 +268,15 @@ class Visit(Base):
     host_relationship_detail: Mapped[str | None] = mapped_column(String(500))
     host_notes: Mapped[str | None] = mapped_column(Text)
     people_reached: Mapped[int] = mapped_column(Integer)
-    audience_level: Mapped[AudienceLevel] = mapped_column(
-        Enum(AudienceLevel, name="audience_level")
+    # Primary audience level — kept as a single value for back-compat (federation
+    # feed, CSV/DB export, a one-badge display) and always equal to the first of
+    # `audience_levels`.
+    audience_level: Mapped[AudienceLevel] = mapped_column(_audience_level_enum)
+    # An event can target several audience levels at once (#42). Source of truth
+    # for the form, filtering (match any), and the audience breakdown (an event
+    # is counted once in each level it targets). `audience_level` mirrors [0].
+    audience_levels: Mapped[list[AudienceLevel]] = mapped_column(
+        ARRAY(_audience_level_enum), nullable=False, server_default=text("'{}'")
     )
     # Free-ish text, but constrained to app.languages.LANGUAGE_SET at the
     # Pydantic layer — plain String rather than a Postgres enum so the central
@@ -265,6 +286,12 @@ class Visit(Base):
     rating: Mapped[int | None] = mapped_column(Integer)
     reflection: Mapped[str | None] = mapped_column(Text)
     follow_up_planned: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Remote/broadcast reach (a podcast, video, livestream, …) rather than an
+    # in-person audience. Kept separate in accounting so a huge broadcast number
+    # doesn't swamp in-person figures (#38). Default off.
+    is_broadcast: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
     additional_presenters: Mapped[str | None] = mapped_column(String(500))
     # Co-presenters who have accounts here — links them (and their ORCIDs) to
     # the event so those ORCIDs can travel with federation (#9).
@@ -451,6 +478,12 @@ class FederatedActivity(Base):
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
     )
     people_reached: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    # Whether the sibling marked this as remote/broadcast reach (#38); older
+    # peers on an earlier feed version don't send it, so it defaults to false
+    # (counted as in-person) until they upgrade.
+    is_broadcast: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
     permalink: Mapped[str | None] = mapped_column(Text)
     fetched_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

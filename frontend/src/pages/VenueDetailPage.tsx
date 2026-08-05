@@ -344,18 +344,17 @@ export function VenueDetailPage() {
               variant="light"
               loading={remove.isPending}
               onClick={() => {
-                if (venue.visit_count > 0) {
-                  notifications.show({
-                    color: 'red',
-                    title: t('venueDetail.cannotDeleteTitle'),
-                    message: t('venueDetail.cannotDeleteMessage', {
-                      count: venue.visit_count,
-                      formattedCount: venue.visit_count.toLocaleString(),
-                    }),
-                  });
-                  return;
-                }
-                if (window.confirm(t('venueDetail.deleteConfirm'))) {
+                // A venue with events can now be deleted — but doing so also
+                // permanently deletes those events (anyone's), so confirm with
+                // the count first.
+                const message =
+                  venue.visit_count > 0
+                    ? t('venueDetail.deleteConfirmWithEvents', {
+                        count: venue.visit_count,
+                        formattedCount: venue.visit_count.toLocaleString(),
+                      })
+                    : t('venueDetail.deleteConfirm');
+                if (window.confirm(message)) {
                   remove.mutate();
                 }
               }}

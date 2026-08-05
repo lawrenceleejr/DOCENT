@@ -26,6 +26,7 @@ export const EVENT_TYPES = [
   'career_day',
   'demo_booth',
   'workshop',
+  'interview',
   'other',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
@@ -41,6 +42,7 @@ export const HOST_RELATIONSHIPS = [
   'community_partner',
   'family_friend',
   'cold_outreach',
+  'reached_out',
   'other',
 ] as const;
 export type HostRelationship = (typeof HOST_RELATIONSHIPS)[number];
@@ -353,11 +355,13 @@ export interface Visit {
   host_notes: string | null;
   people_reached: number;
   audience_level: AudienceLevel;
+  audience_levels: AudienceLevel[];
   language: string | null;
   duration_minutes: number | null;
   rating: number | null;
   reflection: string | null;
   follow_up_planned: boolean;
+  is_broadcast: boolean;
   additional_presenters: string | null;
   co_presenters: ContributorUser[];
   tags: string[];
@@ -419,6 +423,7 @@ export interface Paginated<T> {
 export interface StatsSummary {
   total_visits: number;
   total_people_reached: number;
+  total_people_reached_remote: number;
   distinct_venues: number;
   active_communicators: number;
   avg_rating: number | null;
@@ -429,12 +434,14 @@ export interface TimeseriesPoint {
   visits: number;
   people_reached: number;
   planned_visits: number;
+  people_reached_remote: number;
 }
 
 export interface BreakdownRow {
   key: string;
   visits: number;
   people_reached: number;
+  people_reached_remote: number;
 }
 
 export interface TopVenueRow {
@@ -530,10 +537,11 @@ export function institutionVenueType(inst: {
   }
 }
 
-// Mirror of the backend's MAX_PEOPLE_REACHED sanity ceiling.
-export const MAX_PEOPLE_REACHED = 100_000;
-// Above this we ask the user to confirm, to catch a stray extra zero.
-export const PEOPLE_REACHED_CONFIRM_THRESHOLD = 2_000;
+// Mirror of the backend's MAX_PEOPLE_REACHED sanity ceiling (#41).
+export const MAX_PEOPLE_REACHED = 500_000_000;
+// Above this we ask the user to confirm, to catch a stray extra zero — set
+// above any realistic in-person headcount so large-media reach isn't nagged.
+export const PEOPLE_REACHED_CONFIRM_THRESHOLD = 100_000;
 
 // ---- Reports (grant-ready activity exports) ----
 export const REPORT_SCOPES = ['mine', 'all'] as const;
@@ -545,6 +553,7 @@ export type ReportStatusFilter = (typeof REPORT_STATUS)[number];
 export interface ReportSummary {
   total_activities: number;
   total_people_reached: number;
+  total_people_reached_remote: number;
   distinct_venues: number;
   active_communicators: number;
   avg_people_per_activity: number;
@@ -731,6 +740,7 @@ export interface PublicImpact {
   has_siblings: boolean;
   total_visits: number;
   total_people_reached: number;
+  total_people_reached_remote: number;
   distinct_venues: number;
   active_communicators: number;
   timeseries: TimeseriesPoint[];

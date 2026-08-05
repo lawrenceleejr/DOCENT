@@ -149,7 +149,8 @@ def _filtered_query(
     if event_type:
         query = query.where(Visit.event_type == event_type)
     if audience_level:
-        query = query.where(Visit.audience_level == audience_level)
+        # Match an event whose audience multi-select includes this level (#42).
+        query = query.where(Visit.audience_levels.any(audience_level))
     if author_id:
         query = query.where(Visit.author_id == author_id)
     if q:
@@ -476,6 +477,12 @@ def update_visit(visit_id: int, body: VisitUpdate, user: CurrentUser, db: DbSess
     updates = body.model_dump(exclude_unset=True)
     if "venue_id" in updates and not db.get(Venue, updates["venue_id"]):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venue not found")
+    # Keep the audience multi-select and its primary in step (#42): whichever the
+    # client sent drives both columns (the list wins if both are present).
+    if updates.get("audience_levels"):
+        updates["audience_level"] = updates["audience_levels"][0]
+    elif updates.get("audience_level") is not None:
+        updates["audience_levels"] = [updates["audience_level"]]
     for field, value in updates.items():
         setattr(visit, field, value)
     db.commit()

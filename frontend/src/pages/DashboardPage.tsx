@@ -20,11 +20,11 @@ import {
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import {
+  IconBroadcast,
   IconCalendarStats,
   IconInfoCircle,
   IconMapPin,
   IconSearch,
-  IconStar,
   IconUserBolt,
   IconUsers,
 } from '@tabler/icons-react';
@@ -36,6 +36,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -84,6 +85,8 @@ export interface TimeRow {
   label: string; // e.g. "2026-03", "2026 Q1", or "2026 H1"
   visits: number;
   people_reached: number;
+  people_reached_remote: number;
+  people_reached_in_person: number;
   planned_visits: number;
 }
 
@@ -128,6 +131,7 @@ export function buildTimeSeries(points: TimeseriesPoint[]): TimeRow[] {
         gran: pr.gran,
         visits: p.visits,
         people_reached: p.people_reached,
+        people_reached_remote: p.people_reached_remote ?? 0,
         planned_visits: p.planned_visits ?? 0,
       };
     })
@@ -149,6 +153,8 @@ export function buildTimeSeries(points: TimeseriesPoint[]): TimeRow[] {
       label: labelForDate(t, gran),
       visits: hit?.visits ?? 0,
       people_reached: hit?.people_reached ?? 0,
+      people_reached_remote: hit?.people_reached_remote ?? 0,
+      people_reached_in_person: (hit?.people_reached ?? 0) - (hit?.people_reached_remote ?? 0),
       planned_visits: hit?.planned_visits ?? 0,
     });
     if (t >= endT) break;
@@ -177,14 +183,23 @@ function TimePanel({
   title: string;
   data: TimeRow[];
   ticks: number[];
-  // One or more series to draw in the same color; `dashed` renders it as a
-  // dashed segment (used for the future/scheduled tail — #28).
-  lines: { key: string; dashed?: boolean }[];
+  // One or more series. A line uses `color` unless it sets its own; `dashed`
+  // renders it as a dashed segment (the future/scheduled tail — #28). When a
+  // line sets `name`, a legend is shown and the tooltip labels each series (the
+  // in-person vs remote split — #38). A line on `axis: 'right'` draws a second
+  // y-axis so a huge broadcast scale doesn't flatten the in-person line (#38).
+  lines: { key: string; dashed?: boolean; color?: string; name?: string; axis?: 'left' | 'right' }[];
   color: string;
   viz: typeof VIZ_LIGHT;
   caption?: string;
 }) {
   const labelFor = (t: number) => data.find((d) => d.t === t)?.label ?? '';
+  const rightLine = lines.find((ln) => ln.axis === 'right');
+  const hasRight = !!rightLine;
+  const leftColor = (lines.find((ln) => (ln.axis ?? 'left') === 'left')?.color ?? color) as string;
+  const rightColor = (rightLine?.color ?? color) as string;
+  const compact = (n: number) =>
+    new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
   return (
     <Card withBorder p="md">
       <Group justify="space-between" gap="xs" wrap="nowrap" mb="xs">
@@ -211,28 +226,51 @@ function TimePanel({
             minTickGap={8}
           />
           <YAxis
+            yAxisId="left"
             stroke={viz.axis}
-            tick={{ fill: viz.mutedInk, fontSize: 12 }}
+            tick={{ fill: hasRight ? leftColor : viz.mutedInk, fontSize: 12 }}
             tickLine={false}
             axisLine={false}
             width={48}
             allowDecimals={false}
+            tickFormatter={hasRight ? compact : undefined}
           />
+          {hasRight && (
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              stroke={viz.axis}
+              tick={{ fill: rightColor, fontSize: 12 }}
+              tickLine={false}
+              axisLine={false}
+              width={48}
+              allowDecimals={false}
+              tickFormatter={compact}
+            />
+          )}
           <Tooltip
             contentStyle={tooltipStyle(viz)}
             labelFormatter={(t: number) => labelFor(t)}
-            formatter={(value: number) => [Number(value).toLocaleString(), title]}
+            formatter={(value: number, name: string) => [
+              Number(value).toLocaleString(),
+              name && name !== title ? name : title,
+            ]}
           />
+          {lines.some((ln) => ln.name) && (
+            <Legend wrapperStyle={{ fontSize: 12, color: viz.mutedInk }} />
+          )}
           {lines.map((ln) => (
             <Line
               key={ln.key}
+              yAxisId={ln.axis ?? 'left'}
               type="monotone"
               dataKey={ln.key}
-              stroke={color}
+              name={ln.name}
+              stroke={ln.color ?? color}
               strokeWidth={2}
               strokeDasharray={ln.dashed ? '5 4' : undefined}
               strokeOpacity={ln.dashed ? 0.75 : 1}
-              dot={ln.dashed ? false : { r: 3, fill: color, strokeWidth: 0 }}
+              dot={ln.dashed ? false : { r: 3, fill: ln.color ?? color, strokeWidth: 0 }}
               activeDot={{ r: 5, stroke: viz.tooltipBg, strokeWidth: 2 }}
               connectNulls={false}
               isAnimationActive={false}
@@ -460,10 +498,11 @@ export function DashboardPage() {
 
   const activeRange = RANGES.find((r) => r.value === range);
   const rangeCaption = activeRange ? t(`dashboard.${activeRange.captionKey}`) : '';
-  const avgPerVisit =
-    summary && summary.total_visits > 0
-      ? Math.round(summary.total_people_reached / summary.total_visits)
-      : null;
+  // People reached is shown as two separate tiles — in-person vs remote /
+  // broadcast — because a big broadcast number would otherwise swamp the
+  // in-person figure (#38).
+  const remoteReached = summary?.total_people_reached_remote ?? 0;
+  const inPersonReached = Math.max(0, (summary?.total_people_reached ?? 0) - remoteReached);
 
   return (
     <Stack>
@@ -574,15 +613,23 @@ export function DashboardPage() {
           sub={rangeCaption}
         />
         <StatTile
-          label={t('dashboard.statPeopleReached')}
-          value={summary?.total_people_reached.toLocaleString() ?? '—'}
+          label={t('dashboard.statPeopleInPerson')}
+          value={summary ? inPersonReached.toLocaleString() : '—'}
           icon={IconUsers}
           color="grape"
-          sub={
-            avgPerVisit != null
-              ? t('dashboard.avgPerVisit', { formattedCount: avgPerVisit.toLocaleString() })
-              : undefined
-          }
+          sub={t('dashboard.avgPerVisit', {
+            formattedCount:
+              summary && summary.total_visits > 0
+                ? Math.round(inPersonReached / summary.total_visits).toLocaleString()
+                : '0',
+          })}
+        />
+        <StatTile
+          label={t('dashboard.statPeopleRemote')}
+          value={summary ? remoteReached.toLocaleString() : '—'}
+          icon={IconBroadcast}
+          color="cyan"
+          sub={t('dashboard.remoteReachTileSub')}
         />
         <StatTile
           label={t('dashboard.statVenuesVisited')}
@@ -598,19 +645,13 @@ export function DashboardPage() {
           color="indigo"
           sub={t('dashboard.contributing')}
         />
-        <StatTile
-          label={t('dashboard.statAvgRating')}
-          value={summary?.avg_rating != null ? `${summary.avg_rating}` : '—'}
-          icon={IconStar}
-          color="yellow"
-          sub={t('dashboard.outOfFive')}
-        />
       </SimpleGrid>
 
       <Title order={3} mt="sm">
         {t('dashboard.overTimeHeading')}
       </Title>
-      {/* Two measures, two panels — never a dual-axis chart. */}
+      {/* Events and people-reached each get their own panel; within the
+          people panel, in-person and remote/broadcast use separate y-axes. */}
       <SimpleGrid cols={{ base: 1, md: 2 }}>
         <Skeleton visible={timeseries === undefined}>
           <TimePanel
@@ -628,7 +669,28 @@ export function DashboardPage() {
             title={t('dashboard.peopleReachedPer6Months')}
             data={chartData}
             ticks={periodTicks}
-            lines={[{ key: 'people_reached' }]}
+            // Split in-person vs remote/broadcast reach when any remote reach
+            // exists, otherwise a single combined line. The two series get their
+            // own y-axis (in-person left, remote right) so a huge broadcast
+            // scale doesn't flatten the in-person line (#38).
+            lines={
+              (summary?.total_people_reached_remote ?? 0) > 0
+                ? [
+                    {
+                      key: 'people_reached_in_person',
+                      name: t('dashboard.peopleInPerson'),
+                      color: viz.series2,
+                      axis: 'left',
+                    },
+                    {
+                      key: 'people_reached_remote',
+                      name: t('dashboard.peopleRemote'),
+                      color: viz.series1,
+                      axis: 'right',
+                    },
+                  ]
+                : [{ key: 'people_reached' }]
+            }
             color={viz.series2}
             viz={viz}
           />

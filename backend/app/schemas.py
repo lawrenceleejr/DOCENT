@@ -2,7 +2,7 @@ import re
 from datetime import date, datetime, time
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 MAX_TAGS = 30
 MAX_TAG_LEN = 50
@@ -130,6 +130,29 @@ def clean_languages(values: list[str] | None) -> list[str]:
             seen.add(v)
             out.append(v)
     return out
+
+
+def _resolve_audience_levels(
+    levels: "list[AudienceLevel] | None",
+    primary: "AudienceLevel | None",
+    *,
+    required: bool,
+) -> "list[AudienceLevel] | None":
+    """Normalise the audience multi-select (#42): fall back to the single
+    `primary` when the list is absent, dedupe order-preserving, and enforce at
+    least one when `required`. Returns None only for an omitted optional update."""
+    source = levels if levels is not None else ([primary] if primary else None)
+    if source is None:
+        if required:
+            raise ValueError("at least one audience level is required")
+        return None
+    deduped: list = []
+    for lv in source:
+        if lv is not None and lv not in deduped:
+            deduped.append(lv)
+    if not deduped:
+        raise ValueError("at least one audience level is required")
+    return deduped
 
 
 # --- Auth / users ---
@@ -644,8 +667,9 @@ class ConnectionOut(BaseModel):
 
 
 # Sanity ceiling for a single outreach event's headcount — catches fat-finger
-# entries (e.g. an extra zero) that would otherwise skew community totals.
-MAX_PEOPLE_REACHED = 100_000
+# entries (e.g. an extra zero) while still allowing large-scale media reach
+# (podcasts, viral video) up to half a billion (#41). Fits a Postgres int.
+MAX_PEOPLE_REACHED = 500_000_000
 
 
 # --- Visits ---
@@ -667,16 +691,29 @@ class VisitCreate(BaseModel):
     host_notes: str | None = None
     # Optional so a *planned* event can be scheduled before attendance is known.
     people_reached: int = Field(default=0, ge=0, le=MAX_PEOPLE_REACHED)
-    audience_level: AudienceLevel
+    # An event can target several audience levels (#42). `audience_levels` is the
+    # multi-select; `audience_level` is the single primary (first of the list) and
+    # is accepted on its own for back-compat. At least one must be given.
+    audience_level: AudienceLevel | None = None
+    audience_levels: list[AudienceLevel] | None = None
     language: str | None = None
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)
     reflection: str | None = None
     follow_up_planned: bool = False
+    is_broadcast: bool = False
     additional_presenters: str | None = Field(default=None, max_length=500)
     co_presenter_user_ids: list[int] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
     links: list[VisitLink] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _resolve_audiences(self) -> "VisitCreate":
+        self.audience_levels = _resolve_audience_levels(
+            self.audience_levels, self.audience_level, required=True
+        )
+        self.audience_level = self.audience_levels[0]
+        return self
 
     @field_validator("language")
     @classmethod
@@ -711,15 +748,27 @@ class VisitUpdate(BaseModel):
     host_notes: str | None = None
     people_reached: int | None = Field(default=None, ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel | None = None
+    audience_levels: list[AudienceLevel] | None = None
     language: str | None = None
     duration_minutes: int | None = Field(default=None, ge=0)
     rating: int | None = Field(default=None, ge=1, le=5)
     reflection: str | None = None
     follow_up_planned: bool | None = None
+    is_broadcast: bool | None = None
     additional_presenters: str | None = Field(default=None, max_length=500)
     co_presenter_user_ids: list[int] | None = None
     tags: list[str] | None = None
     links: list[VisitLink] | None = None
+
+    @model_validator(mode="after")
+    def _dedupe_audiences(self) -> "VisitUpdate":
+        # Only normalise when the client actually sent an audience field; the
+        # router keeps the scalar primary in step with the list (#42).
+        if self.audience_levels is not None or self.audience_level is not None:
+            self.audience_levels = _resolve_audience_levels(
+                self.audience_levels, self.audience_level, required=False
+            )
+        return self
 
     @field_validator("language")
     @classmethod
@@ -758,11 +807,13 @@ class VisitOut(BaseModel):
     host_notes: str | None
     people_reached: int
     audience_level: AudienceLevel
+    audience_levels: list[AudienceLevel]
     language: str | None
     duration_minutes: int | None
     rating: int | None
     reflection: str | None
     follow_up_planned: bool
+    is_broadcast: bool
     additional_presenters: str | None
     co_presenters: list[ContributorUser] = Field(default_factory=list)
     tags: list[str]
@@ -815,6 +866,8 @@ class ActivitySource(BaseModel):
 class StatsSummary(BaseModel):
     total_visits: int
     total_people_reached: int
+    # Of total_people_reached, the share from remote/broadcast events (#38).
+    total_people_reached_remote: int = 0
     distinct_venues: int
     active_communicators: int
     avg_rating: float | None
@@ -824,6 +877,9 @@ class TimeseriesPoint(BaseModel):
     period: str
     visits: int
     people_reached: int
+    # Of people_reached in this bucket, the remote/broadcast share (#38); the
+    # in-person share is people_reached - people_reached_remote.
+    people_reached_remote: int = 0
     # Scheduled (not-yet-completed) visits in this bucket — drawn as a separate
     # dotted series in the analysis plots (#28).
     planned_visits: int = 0
@@ -833,6 +889,7 @@ class BreakdownRow(BaseModel):
     key: str
     visits: int
     people_reached: int
+    people_reached_remote: int = 0
 
 
 class TopVenueRow(BaseModel):
@@ -862,6 +919,7 @@ class PublicImpact(BaseModel):
     has_siblings: bool = False
     total_visits: int
     total_people_reached: int
+    total_people_reached_remote: int = 0
     distinct_venues: int
     active_communicators: int
     timeseries: list[TimeseriesPoint]
@@ -950,6 +1008,9 @@ class FederatedActivityOut(BaseModel):
     # The activity's tags, so subscribers can pull in only a tagged subset (#31).
     tags: list[str] = Field(default_factory=list)
     people_reached: int
+    # Whether this activity is remote/broadcast reach (#38). Feed v4+; absent
+    # from older peers, where the consumer defaults it to false (in-person).
+    is_broadcast: bool = False
     permalink: str | None
 
 

@@ -539,7 +539,7 @@ def test_feed_contributors_carry_orcids(client, make_client):
 
     anon = make_client()
     body = anon.get("/api/federation/activities", params={"token": token}).json()
-    assert body["feed_version"] == 3
+    assert body["feed_version"] == 4
     activity = next(a for a in body["activities"] if a["person_name"] == "Ada Alvarez")
     contribs = {c["name"]: c["orcid"] for c in activity["contributors"]}
     # Lead, linked co-presenter (both with ORCIDs), and a name-only presenter.
@@ -590,7 +590,7 @@ def test_feed_publishes_tags_and_peer_tag_filter(client, db, make_client):
     # 1) The published feed carries the tags.
     anon = make_client()
     body = anon.get("/api/federation/activities", params={"token": token}).json()
-    assert body["feed_version"] == 3
+    assert body["feed_version"] == 4
     assert set(body["activities"][0]["tags"]) == {"nsf-career", "girls-in-stem"}
 
     envelope = {"activities": [

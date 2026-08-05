@@ -201,12 +201,13 @@ def test_visit_keyword_search(client):
 def test_people_reached_cap(client):
     register(client)
     venue = create_venue(client)
+    # Large-scale media reach (up to 500M) is allowed now (#41).
     ok = client.post(
         "/api/visits",
         json={
             "venue_id": venue["id"], "visit_date": "2026-03-14",
-            "event_type": "classroom_visit", "title": "Big event",
-            "people_reached": 100000, "audience_level": "elementary",
+            "event_type": "classroom_visit", "title": "Viral video",
+            "people_reached": 500_000_000, "audience_level": "general_public",
         },
     )
     assert ok.status_code == 201
@@ -215,7 +216,7 @@ def test_people_reached_cap(client):
         json={
             "venue_id": venue["id"], "visit_date": "2026-03-14",
             "event_type": "classroom_visit", "title": "Typo event",
-            "people_reached": 100001, "audience_level": "elementary",
+            "people_reached": 500_000_001, "audience_level": "elementary",
         },
     )
     assert too_many.status_code == 422
@@ -233,15 +234,34 @@ def test_venue_delete(client, make_client):
     # A stranger cannot delete someone else's venue.
     assert stranger.delete(f"/api/venues/{venue['id']}").status_code == 403
 
-    # A venue with visits cannot be deleted (409).
-    create_visit(creator, venue["id"])
-    blocked = creator.delete(f"/api/venues/{venue['id']}")
-    assert blocked.status_code == 409
+    # A venue with events attached CAN now be deleted — the events go with it.
+    visit = create_visit(creator, venue["id"])
+    assert creator.delete(f"/api/venues/{venue['id']}").status_code == 204
+    assert creator.get(f"/api/venues/{venue['id']}").status_code == 404
+    # The attached event was deleted too (no dangling FK).
+    assert creator.get(f"/api/visits/{visit['id']}").status_code == 404
 
-    # An empty venue can be deleted by its creator.
+    # An empty venue can still be deleted by its creator.
     empty = create_venue(creator, name="Empty Hall", city="Nowhere")
     assert creator.delete(f"/api/venues/{empty['id']}").status_code == 204
     assert creator.get(f"/api/venues/{empty['id']}").status_code == 404
+
+
+def test_delete_venue_removes_other_users_events(client, make_client):
+    """Deleting a venue cascades to events other communicators logged there —
+    the admin/creator/visitor doing the delete takes everything with it."""
+    register(client, email="admin@example.com")  # admin (first user)
+    other = make_client()
+    register(other, email="other@example.com")
+
+    venue = create_venue(client, name="Shared Auditorium", city="Townsville")
+    mine = create_visit(client, venue["id"], title="Mine")
+    theirs = create_visit(other, venue["id"], title="Theirs")
+
+    # Admin deletes the venue; both events are removed.
+    assert client.delete(f"/api/venues/{venue['id']}").status_code == 204
+    assert client.get(f"/api/visits/{mine['id']}").status_code == 404
+    assert client.get(f"/api/visits/{theirs['id']}").status_code == 404
 
 
 def test_venue_edit_by_visitor(client, make_client):
@@ -291,9 +311,10 @@ def test_venue_visitor_passes_delete_permission(client, make_client):
     venue = create_venue(creator, name="Visitor Delete", city="Town")
     create_visit(visitor, venue["id"])
 
-    # The visitor clears the permission gate, so deletion is stopped by the
-    # has-visits guard (409) rather than being forbidden (403).
-    assert visitor.delete(f"/api/venues/{venue['id']}").status_code == 409
+    # Logging a visit there grants stewardship, and a venue with events can now
+    # be deleted (the events go with it), so the visitor's delete succeeds.
+    assert visitor.delete(f"/api/venues/{venue['id']}").status_code == 204
+    assert visitor.get(f"/api/venues/{venue['id']}").status_code == 404
 
 
 def test_venue_list_includes_visit_count(client):
@@ -479,3 +500,70 @@ def test_venue_url_length_capped(client):
         json={"name": "Too Long", "venue_type": "blog", "url": "https://x/" + "a" * 500},
     )
     assert r.status_code == 422
+
+
+def test_reached_out_host_relationship(client):
+    """The new 'reached_out' host relationship roundtrips (#40)."""
+    register(client)
+    venue = create_venue(client)
+    v = create_visit(
+        client,
+        venue["id"],
+        contact_name="Dr. Vance",
+        host_relationship="reached_out",
+        host_relationship_detail="emailed the department seminar organizer",
+    )
+    assert v["host_relationship"] == "reached_out"
+    got = client.get(f"/api/visits/{v['id']}").json()
+    assert got["host_relationship"] == "reached_out"
+
+
+def test_audience_multi_select(client):
+    """Audience is a multi-select: the scalar primary mirrors the first level,
+    duplicates are dropped, and filtering matches any level (#42)."""
+    register(client)
+    venue = create_venue(client)
+    v = create_visit(
+        client,
+        venue["id"],
+        audience_level=None,
+        audience_levels=["elementary", "middle_school", "elementary"],
+    )
+    assert v["audience_levels"] == ["elementary", "middle_school"]  # deduped, ordered
+    assert v["audience_level"] == "elementary"  # primary == first
+
+    got = client.get(f"/api/visits/{v['id']}").json()
+    assert got["audience_levels"] == ["elementary", "middle_school"]
+
+    # Filtering by a *secondary* level still surfaces the event.
+    listed = client.get("/api/visits", params={"audience_level": "middle_school"}).json()
+    assert any(it["id"] == v["id"] for it in listed["items"])
+    # A level it doesn't target excludes it.
+    other = client.get("/api/visits", params={"audience_level": "graduate"}).json()
+    assert all(it["id"] != v["id"] for it in other["items"])
+
+    # Updating the list re-syncs the primary.
+    upd = client.patch(
+        f"/api/visits/{v['id']}", json={"audience_levels": ["graduate", "educators"]}
+    )
+    assert upd.status_code == 200, upd.text
+    assert upd.json()["audience_levels"] == ["graduate", "educators"]
+    assert upd.json()["audience_level"] == "graduate"
+
+
+def test_audience_at_least_one_required(client):
+    """An empty audience multi-select is rejected (#42)."""
+    register(client)
+    venue = create_venue(client)
+    resp = client.post(
+        "/api/visits",
+        json={
+            "venue_id": venue["id"],
+            "visit_date": "2026-03-14",
+            "event_type": "classroom_visit",
+            "title": "No audience",
+            "people_reached": 10,
+            "audience_levels": [],
+        },
+    )
+    assert resp.status_code == 422, resp.text

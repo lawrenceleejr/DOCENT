@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -42,12 +43,16 @@ function PublicTimePanel({
   dataKey,
   color,
   viz,
+  split,
 }: {
   title: string;
   data: TimeRow[];
   dataKey: 'visits' | 'people_reached';
   color: string;
   viz: typeof VIZ_LIGHT;
+  // When set, the people-reached chart draws two lines: in-person and
+  // remote/broadcast (#38).
+  split?: { remoteColor: string; inPersonName: string; remoteName: string };
 }) {
   const ticks = useMemo(() => {
     if (data.length === 0) return [];
@@ -56,6 +61,10 @@ function PublicTimePanel({
       .map((y) => Date.UTC(y, 0, 1))
       .filter((t) => t >= data[0].t && t <= data[data.length - 1].t);
   }, [data]);
+  // When split, in-person and remote get their own y-axis (huge broadcast scale
+  // would otherwise flatten the in-person line) — matching the Analysis chart.
+  const compact = (n: number) =>
+    new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
   return (
     <Card withBorder p="md">
       <Text fw={600} mb="xs">
@@ -76,13 +85,28 @@ function PublicTimePanel({
             tickLine={false}
           />
           <YAxis
+            yAxisId="left"
             stroke={viz.axis}
-            tick={{ fill: viz.mutedInk, fontSize: 12 }}
+            tick={{ fill: split ? color : viz.mutedInk, fontSize: 12 }}
             tickLine={false}
             axisLine={false}
             width={48}
             allowDecimals={false}
+            tickFormatter={split ? compact : undefined}
           />
+          {split && (
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              stroke={viz.axis}
+              tick={{ fill: split.remoteColor, fontSize: 12 }}
+              tickLine={false}
+              axisLine={false}
+              width={48}
+              allowDecimals={false}
+              tickFormatter={compact}
+            />
+          )}
           <Tooltip
             contentStyle={{
               backgroundColor: viz.tooltipBg,
@@ -92,15 +116,43 @@ function PublicTimePanel({
               fontSize: 13,
             }}
             labelFormatter={(t: number) => data.find((d) => d.t === t)?.label ?? ''}
-            formatter={(value: number) => [value.toLocaleString(), title]}
+            formatter={(value: number, name: string) => [
+              value.toLocaleString(),
+              name && name !== title ? name : title,
+            ]}
           />
-          <Line
-            type="monotone"
-            dataKey={dataKey}
-            stroke={color}
-            strokeWidth={2}
-            dot={{ r: 3, fill: color, strokeWidth: 0 }}
-          />
+          {split ? (
+            <>
+              <Legend wrapperStyle={{ fontSize: 12, color: viz.mutedInk }} />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="people_reached_in_person"
+                name={split.inPersonName}
+                stroke={color}
+                strokeWidth={2}
+                dot={{ r: 3, fill: color, strokeWidth: 0 }}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="people_reached_remote"
+                name={split.remoteName}
+                stroke={split.remoteColor}
+                strokeWidth={2}
+                dot={{ r: 3, fill: split.remoteColor, strokeWidth: 0 }}
+              />
+            </>
+          ) : (
+            <Line
+              yAxisId="left"
+              type="monotone"
+              dataKey={dataKey}
+              stroke={color}
+              strokeWidth={2}
+              dot={{ r: 3, fill: color, strokeWidth: 0 }}
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
     </Card>
@@ -200,6 +252,13 @@ export function PublicImpactPage() {
             value={data.total_people_reached.toLocaleString()}
             icon={IconUsers}
             color="grape"
+            sub={
+              (data.total_people_reached_remote ?? 0) > 0
+                ? t('impact.remoteReachSub', {
+                    formattedCount: data.total_people_reached_remote.toLocaleString(),
+                  })
+                : undefined
+            }
           />
           <StatTile
             label={t('impact.statVenuesVisited')}
@@ -229,6 +288,15 @@ export function PublicImpactPage() {
             dataKey="people_reached"
             color={viz.series2}
             viz={viz}
+            split={
+              (data.total_people_reached_remote ?? 0) > 0
+                ? {
+                    remoteColor: viz.series1,
+                    inPersonName: t('impact.peopleInPerson'),
+                    remoteName: t('impact.peopleRemote'),
+                  }
+                : undefined
+            }
           />
         </SimpleGrid>
 

@@ -35,7 +35,7 @@ import {
 import { FilterCard } from '../components/FilterCard';
 import { StatTile } from '../components/StatTile';
 import { useEnumLabel } from '../i18n/enumLabels';
-import { IconCalendarStats, IconMapPin, IconUsers } from '@tabler/icons-react';
+import { IconBroadcast, IconCalendarStats, IconMapPin, IconUsers } from '@tabler/icons-react';
 import { toDateString } from './VisitListPage';
 
 const PREVIEW_LIMIT = 50;
@@ -261,7 +261,7 @@ export function ReportsPage() {
         </Group>
       </Card>
 
-      <SimpleGrid cols={{ base: 1, xs: 3 }}>
+      <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
         <StatTile
           label={t('reports.statActivities')}
           value={data?.summary.total_activities.toLocaleString() ?? '—'}
@@ -269,10 +269,23 @@ export function ReportsPage() {
           color="brand"
         />
         <StatTile
-          label={t('reports.statPeopleReached')}
-          value={data?.summary.total_people_reached.toLocaleString() ?? '—'}
+          label={t('reports.statPeopleInPerson')}
+          value={
+            data
+              ? Math.max(
+                  0,
+                  data.summary.total_people_reached - data.summary.total_people_reached_remote,
+                ).toLocaleString()
+              : '—'
+          }
           icon={IconUsers}
           color="grape"
+        />
+        <StatTile
+          label={t('reports.statPeopleRemote')}
+          value={data?.summary.total_people_reached_remote.toLocaleString() ?? '—'}
+          icon={IconBroadcast}
+          color="cyan"
         />
         <StatTile
           label={t('reports.statDistinctVenues')}

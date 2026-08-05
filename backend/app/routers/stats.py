@@ -2,7 +2,7 @@ from datetime import date
 from enum import Enum
 
 from fastapi import APIRouter, Query
-from sqlalchemy import Integer, Select, cast, func, or_, select
+from sqlalchemy import Integer, Select, case, cast, func, or_, select
 
 from app.deps import CurrentUser, DbSession
 from app.models import (
@@ -169,7 +169,9 @@ def _apply_filters(
         query = query.where(Visit.event_type.in_(event_types))
     audience_levels = _parse_enum_list(audience_level, AudienceLevel)
     if audience_levels:
-        query = query.where(Visit.audience_level.in_(audience_levels))
+        # An event matches if its audience multi-select overlaps the requested
+        # levels (#42).
+        query = query.where(Visit.audience_levels.overlap(audience_levels))
     parsed_tags = _parse_tags(tags)
     if parsed_tags:
         query = query.where(Visit.tags.overlap(parsed_tags))
@@ -208,6 +210,9 @@ def summary(
                 func.count(func.distinct(Visit.venue_id)),
                 func.count(func.distinct(Visit.author_id)),
                 func.avg(Visit.rating),
+                func.coalesce(
+                    func.sum(case((Visit.is_broadcast, Visit.people_reached), else_=0)), 0
+                ),
             ),
             date_from=date_from,
             date_to=date_to,
@@ -221,6 +226,7 @@ def summary(
     total_visits, total_people, distinct_venues, active_communicators = (
         row[0], row[1], row[2], row[3]
     )
+    total_people_remote = row[5]
     # Add sibling activities (different instances → their venues/people don't
     # overlap ours). Rating stays local-only (the feed carries no ratings).
     fed_rows = _federated_rows(
@@ -230,11 +236,13 @@ def summary(
     if fed_rows:
         total_visits += len(fed_rows)
         total_people += sum(a.people_reached for a in fed_rows)
+        total_people_remote += sum(a.people_reached for a in fed_rows if a.is_broadcast)
         distinct_venues += len({(a.venue_name, a.venue_city) for a in fed_rows})
         active_communicators += len({a.person_name for a in fed_rows if a.person_name})
     return StatsSummary(
         total_visits=total_visits,
         total_people_reached=total_people,
+        total_people_reached_remote=total_people_remote,
         distinct_venues=distinct_venues,
         active_communicators=active_communicators,
         avg_rating=round(float(row[4]), 2) if row[4] is not None else None,
@@ -275,7 +283,7 @@ def timeseries(
     granularity = _choose_granularity(span_days)
     period = _period_sql(granularity)
 
-    # [visits, people_reached, planned_visits] per bucket.
+    # [visits, people_reached, planned_visits, people_reached_remote] per bucket.
     buckets: dict[str, list[int]] = {}
     completed = db.execute(
         _apply_filters(
@@ -283,14 +291,17 @@ def timeseries(
                 period.label("period"),
                 func.count(Visit.id),
                 func.coalesce(func.sum(Visit.people_reached), 0),
+                func.coalesce(
+                    func.sum(case((Visit.is_broadcast, Visit.people_reached), else_=0)), 0
+                ),
             ),
             **filters,
         )
         .group_by("period")
         .order_by("period")
     ).all()
-    for p, visits, people in completed:
-        buckets[p] = [visits, people, 0]
+    for p, visits, people, remote in completed:
+        buckets[p] = [visits, people, 0, remote]
 
     # Scheduled (planned) visits — a separate, dotted series (#28).
     planned = db.execute(
@@ -303,20 +314,24 @@ def timeseries(
         .order_by("period")
     ).all()
     for p, n in planned:
-        buckets.setdefault(p, [0, 0, 0])[2] = n
+        buckets.setdefault(p, [0, 0, 0, 0])[2] = n
 
     # Federated (completed) activity folds into the primary series.
     for a in _federated_rows(
         db, include_federated=include_federated, date_from=date_from, date_to=date_to,
         venue_type=venue_type, event_type=event_type, audience_level=audience_level, tags=tags, q=q,
     ):
-        b = buckets.setdefault(_period_label_py(a.visit_date, granularity), [0, 0, 0])
+        b = buckets.setdefault(_period_label_py(a.visit_date, granularity), [0, 0, 0, 0])
         b[0] += 1
         b[1] += a.people_reached
+        if a.is_broadcast:
+            b[3] += a.people_reached
 
     return [
-        TimeseriesPoint(period=p, visits=v, people_reached=pr, planned_visits=pl)
-        for p, (v, pr, pl) in sorted(buckets.items())
+        TimeseriesPoint(
+            period=p, visits=v, people_reached=pr, planned_visits=pl, people_reached_remote=rm
+        )
+        for p, (v, pr, pl, rm) in sorted(buckets.items())
     ]
 
 
@@ -342,7 +357,12 @@ def breakdown(
     }
     key = columns[by]
     query = select(
-        key, func.count(Visit.id), func.coalesce(func.sum(Visit.people_reached), 0)
+        key,
+        func.count(Visit.id),
+        func.coalesce(func.sum(Visit.people_reached), 0),
+        func.coalesce(
+            func.sum(case((Visit.is_broadcast, Visit.people_reached), else_=0)), 0
+        ),
     )
     if by is BreakdownBy.venue_type:
         query = query.join(Visit.venue)
@@ -362,7 +382,7 @@ def breakdown(
         .group_by(key)
         .order_by(func.count(Visit.id).desc())
     ).all()
-    buckets: dict[str, list[int]] = {r[0].value: [r[1], r[2]] for r in rows}
+    buckets: dict[str, list[int]] = {r[0].value: [r[1], r[2], r[3]] for r in rows}
     # venue_type / event_type / audience_level breakdowns can include federated
     # rows (the feed carries those); host_relationship stays local-only.
     _FED_KEY = {
@@ -379,12 +399,14 @@ def breakdown(
             raw = getattr(a, attr)
             if not raw:
                 continue
-            b = buckets.setdefault(raw, [0, 0])
+            b = buckets.setdefault(raw, [0, 0, 0])
             b[0] += 1
             b[1] += a.people_reached
+            if a.is_broadcast:
+                b[2] += a.people_reached
     return [
-        BreakdownRow(key=k, visits=v, people_reached=pr)
-        for k, (v, pr) in sorted(buckets.items(), key=lambda kv: kv[1][0], reverse=True)
+        BreakdownRow(key=k, visits=v, people_reached=pr, people_reached_remote=rm)
+        for k, (v, pr, rm) in sorted(buckets.items(), key=lambda kv: kv[1][0], reverse=True)
     ]
 
 
