@@ -7,6 +7,8 @@ export const VENUE_TYPES = [
   'museum',
   'library',
   'community_center',
+  'restaurant_bar',
+  'concert_venue',
   'youtube_channel',
   'podcast',
   'social_media',

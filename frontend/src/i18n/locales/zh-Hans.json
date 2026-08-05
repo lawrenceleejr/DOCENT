@@ -267,8 +267,10 @@
       "museum": "博物馆",
       "library": "图书馆",
       "community_center": "社区中心",
+      "restaurant_bar": "餐厅／酒吧",
+      "concert_venue": "音乐会场馆",
       "youtube_channel": "YouTube 频道",
-      "podcast": "播客",
+      "podcast": "广播／播客",
       "social_media": "社交媒体",
       "blog": "博客",
       "other": "其他"
@@ -547,7 +549,8 @@
     "startOverButton": "换个文件重新开始",
     "doneCounter": "已处理 {{done}}/{{total}}（导入 {{imported}}，跳过 {{skipped}}）",
     "finishButton": "完成",
-    "closeButton": "关闭"
+    "closeButton": "关闭",
+    "discardConfirm": "放弃本次导入？尚未导入的行将会丢失。"
   },
   "admin": {
     "title": "管理",

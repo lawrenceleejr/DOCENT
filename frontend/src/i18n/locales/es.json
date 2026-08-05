@@ -267,8 +267,10 @@
       "museum": "Museo",
       "library": "Biblioteca",
       "community_center": "Centro comunitario",
+      "restaurant_bar": "Restaurante/Bar",
+      "concert_venue": "Sala de conciertos",
       "youtube_channel": "Canal de YouTube",
-      "podcast": "Pódcast",
+      "podcast": "Radio/Pódcast",
       "social_media": "Redes sociales",
       "blog": "Blog",
       "other": "Otro"
@@ -547,7 +549,8 @@
     "startOverButton": "Empezar de nuevo con otro archivo",
     "doneCounter": "{{done}}/{{total}} gestionadas ({{imported}} importadas, {{skipped}} omitidas)",
     "finishButton": "Listo",
-    "closeButton": "Cerrar"
+    "closeButton": "Cerrar",
+    "discardConfirm": "¿Descartar esta importación? Se perderán las filas que aún no hayas importado."
   },
   "admin": {
     "title": "Administración",

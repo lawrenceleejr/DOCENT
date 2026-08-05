@@ -17,6 +17,7 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Switch,
   Table,
   Text,
   Textarea,
@@ -51,10 +52,20 @@ import {
   type ImportDraftRow,
   type ImportParseResponse,
   type Paginated,
+  type VenueType,
   type Visit,
 } from '../api/types';
 import { useEnumLabel } from '../i18n/enumLabels';
 import { VenuePicker } from './VenuePicker';
+
+// Online venue types default an imported row to remote/broadcast reach (#50),
+// mirroring the main event form.
+const ONLINE_VENUE_TYPES = new Set<VenueType>([
+  'youtube_channel',
+  'podcast',
+  'social_media',
+  'blog',
+]);
 
 /** Editable working copy of one CSV row, plus its wizard state. */
 interface WorkingRow {
@@ -65,6 +76,7 @@ interface WorkingRow {
   event_type: EventType | null;
   audience_level: AudienceLevel | null;
   people_reached: number | '';
+  is_broadcast: boolean;
   venue_id: number | null;
   description: string;
   start_time: string;
@@ -83,6 +95,7 @@ function toWorking(draft: ImportDraftRow): WorkingRow {
     event_type: (draft.event_type as EventType | null) ?? null,
     audience_level: (draft.audience_level as AudienceLevel | null) ?? null,
     people_reached: draft.people_reached ?? '',
+    is_broadcast: false,
     venue_id: null,
     description: draft.description ?? '',
     start_time: draft.start_time ?? '',
@@ -307,6 +320,15 @@ export function EventImportWizard({
   const skippedCount = rows.filter((r) => r.status === 'skipped').length;
   const doneCount = importedCount + skippedCount;
 
+  // A stray click outside, Escape, or the X shouldn't silently wipe an
+  // in-progress import — confirm first when there's unhandled work (#49).
+  const requestClose = () => {
+    const unsaved = rows.length > 0 ? doneCount < rows.length : file !== null;
+    if (unsaved && !window.confirm(t('importWizard.discardConfirm'))) return;
+    reset();
+    onClose();
+  };
+
   const createVisit = useMutation({
     mutationFn: (r: WorkingRow) =>
       api.post<Visit>('/api/visits', {
@@ -318,6 +340,7 @@ export function EventImportWizard({
         title: r.title.trim(),
         description: r.description.trim() || null,
         people_reached: r.people_reached === '' ? 0 : r.people_reached,
+        is_broadcast: r.is_broadcast,
         audience_level: r.audience_level,
         language: r.language,
         duration_minutes: r.duration_minutes === '' ? null : r.duration_minutes,
@@ -443,10 +466,7 @@ export function EventImportWizard({
   return (
     <Modal
       opened={opened}
-      onClose={() => {
-        reset();
-        onClose();
-      }}
+      onClose={requestClose}
       title={
         <Group gap="xs">
           <IconFileSpreadsheet size={20} />
@@ -459,8 +479,6 @@ export function EventImportWizard({
         </Group>
       }
       size={step === 'review' ? '90%' : 'lg'}
-      closeOnClickOutside={false}
-      closeOnEscape={step !== 'review'}
     >
       {step === 'upload' && (
         <Stack>
@@ -660,7 +678,14 @@ export function EventImportWizard({
               <div>
                 <VenuePicker
                   value={row.venue_id}
-                  onChange={(venueId) => patchRow(current, { venue_id: venueId })}
+                  onChange={(venueId, venueType) =>
+                    patchRow(current, {
+                      venue_id: venueId,
+                      // Prefill remote/broadcast from an online venue type (#50);
+                      // the switch below lets the user override.
+                      ...(venueType ? { is_broadcast: ONLINE_VENUE_TYPES.has(venueType) } : {}),
+                    })
+                  }
                   initialSearch={venueSeed}
                   disabled={row.status === 'imported'}
                   required
@@ -682,6 +707,13 @@ export function EventImportWizard({
                 value={row.description}
                 disabled={row.status === 'imported'}
                 onChange={(e) => patchRow(current, { description: e.currentTarget.value })}
+              />
+              <Switch
+                label={t('visitForm.broadcastLabel')}
+                description={t('visitForm.broadcastDescription')}
+                checked={row.is_broadcast}
+                disabled={row.status === 'imported'}
+                onChange={(e) => patchRow(current, { is_broadcast: e.currentTarget.checked })}
               />
               <RawRow raw={row.draft.raw} />
             </Stack>
@@ -746,10 +778,7 @@ export function EventImportWizard({
               </Text>
               <Button
                 variant={doneCount === rows.length ? 'filled' : 'default'}
-                onClick={() => {
-                  reset();
-                  onClose();
-                }}
+                onClick={requestClose}
               >
                 {doneCount === rows.length
                   ? t('importWizard.finishButton')

@@ -267,8 +267,10 @@
       "museum": "博物館",
       "library": "圖書館",
       "community_center": "社區中心",
+      "restaurant_bar": "餐廳／酒吧",
+      "concert_venue": "音樂會場館",
       "youtube_channel": "YouTube 頻道",
-      "podcast": "Podcast",
+      "podcast": "廣播／Podcast",
       "social_media": "社群媒體",
       "blog": "部落格",
       "other": "其他"
@@ -547,7 +549,8 @@
     "startOverButton": "改用其他檔案重新開始",
     "doneCounter": "已處理 {{done}}/{{total}}（匯入 {{imported}}、略過 {{skipped}}）",
     "finishButton": "完成",
-    "closeButton": "關閉"
+    "closeButton": "關閉",
+    "discardConfirm": "放棄這次匯入？尚未匯入的列將會遺失。"
   },
   "admin": {
     "title": "管理",

@@ -267,8 +267,10 @@
       "museum": "Museum",
       "library": "Library",
       "community_center": "Community Center",
+      "restaurant_bar": "Restaurant/Bar",
+      "concert_venue": "Concert Venue",
       "youtube_channel": "YouTube Channel",
-      "podcast": "Podcast",
+      "podcast": "Radio/Podcast",
       "social_media": "Social Media",
       "blog": "Blog",
       "other": "Other"
@@ -547,7 +549,8 @@
     "startOverButton": "Start over with another file",
     "doneCounter": "{{done}}/{{total}} handled ({{imported}} imported, {{skipped}} skipped)",
     "finishButton": "Done",
-    "closeButton": "Close"
+    "closeButton": "Close",
+    "discardConfirm": "Discard this import? Any rows you haven't imported yet will be lost."
   },
   "admin": {
     "title": "Admin",

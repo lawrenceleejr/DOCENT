@@ -116,8 +116,14 @@ function AdaptiveInstitutions({
   useMapEvents({ moveend: () => bump(), zoomend: () => bump() });
 
   const { singles, clusters } = useMemo(() => {
+    // Aggregate only what's actually in view. Institutions are fetched for
+    // outward-rounded bounds (to avoid refetch spam), so counting that
+    // off-screen margin inflates edge clusters — filter to the visible map
+    // first (#52).
+    const view = map.getBounds();
     const cells = new Map<string, InstitutionPoint[]>();
     for (const inst of institutions) {
+      if (!view.contains([inst.latitude, inst.longitude])) continue;
       const p = map.latLngToContainerPoint([inst.latitude, inst.longitude]);
       const key = `${Math.floor(p.x / CELL_PX)}:${Math.floor(p.y / CELL_PX)}`;
       const arr = cells.get(key);

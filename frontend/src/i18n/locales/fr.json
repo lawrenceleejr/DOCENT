@@ -267,8 +267,10 @@
       "museum": "Musée",
       "library": "Bibliothèque",
       "community_center": "Centre communautaire",
+      "restaurant_bar": "Restaurant/Bar",
+      "concert_venue": "Salle de concert",
       "youtube_channel": "Chaîne YouTube",
-      "podcast": "Podcast",
+      "podcast": "Radio/Podcast",
       "social_media": "Réseaux sociaux",
       "blog": "Blog",
       "other": "Autre"
@@ -547,7 +549,8 @@
     "startOverButton": "Recommencer avec un autre fichier",
     "doneCounter": "{{done}}/{{total}} traitées ({{imported}} importées, {{skipped}} ignorées)",
     "finishButton": "Terminé",
-    "closeButton": "Fermer"
+    "closeButton": "Fermer",
+    "discardConfirm": "Abandonner cet import ? Les lignes que vous n'avez pas encore importées seront perdues."
   },
   "admin": {
     "title": "Administration",

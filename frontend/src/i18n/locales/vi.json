@@ -267,8 +267,10 @@
       "museum": "Viện Bảo tàng",
       "library": "Thư viện",
       "community_center": "Trung tâm Cộng đồng",
+      "restaurant_bar": "Nhà hàng/Quán bar",
+      "concert_venue": "Địa điểm hòa nhạc",
       "youtube_channel": "Kênh YouTube",
-      "podcast": "Podcast",
+      "podcast": "Radio/Podcast",
       "social_media": "Mạng xã hội",
       "blog": "Blog",
       "other": "Khác"
@@ -547,7 +549,8 @@
     "startOverButton": "Bắt đầu lại với tệp khác",
     "doneCounter": "Đã xử lý {{done}}/{{total}} ({{imported}} nhập, {{skipped}} bỏ qua)",
     "finishButton": "Xong",
-    "closeButton": "Đóng"
+    "closeButton": "Đóng",
+    "discardConfirm": "Hủy phần nhập này? Các hàng bạn chưa nhập sẽ bị mất."
   },
   "admin": {
     "title": "Quản trị",
