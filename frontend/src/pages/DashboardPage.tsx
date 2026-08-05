@@ -115,7 +115,8 @@ function labelForDate(t: number, gran: Gran): string {
   const mo = d.getUTCMonth();
   if (gran === 'month') return `${y}-${String(mo + 1).padStart(2, '0')}`;
   if (gran === 'quarter') return `${y} Q${Math.floor(mo / 3) + 1}`;
-  return `${y} H${mo < 6 ? 1 : 2}`;
+  // Spell out the half-year rather than the cryptic "H1"/"H2" (#51).
+  return mo < 6 ? `Jan–Jun ${y}` : `Jul–Dec ${y}`;
 }
 
 /** Turn the backend's period rows into a gap-filled series on a real time axis:
@@ -219,7 +220,7 @@ function TimePanel({
             scale="time"
             domain={['dataMin', 'dataMax']}
             ticks={ticks}
-            tickFormatter={labelFor}
+            tickFormatter={(t: number) => String(new Date(t).getUTCFullYear())}
             stroke={viz.axis}
             tick={{ fill: viz.mutedInk, fontSize: 11 }}
             tickLine={false}
@@ -485,15 +486,14 @@ export function DashboardPage() {
     });
   }, [series, nowT]);
 
-  // Ticks at the actual bucket boundaries (months/quarters/half-years),
-  // thinned to ~6, so the axis isn't just year labels (#28).
+  // One evenly-spaced tick per calendar year (#51): the half-year bucket
+  // boundaries read as unevenly spaced and "H1"/"H2" means nothing to viewers.
   const periodTicks = useMemo(() => {
     if (series.length === 0) return [];
-    const step = Math.max(1, Math.ceil(series.length / 6));
-    const ts = series.filter((_, i) => i % step === 0).map((r) => r.t);
-    const lastT = series[series.length - 1].t;
-    if (ts[ts.length - 1] !== lastT) ts.push(lastT);
-    return ts;
+    const years = new Set(series.map((r) => new Date(r.t).getUTCFullYear()));
+    return [...years]
+      .map((y) => Date.UTC(y, 0, 1))
+      .filter((t) => t >= series[0].t && t <= series[series.length - 1].t);
   }, [series]);
 
   const activeRange = RANGES.find((r) => r.value === range);

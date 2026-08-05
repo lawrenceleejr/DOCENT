@@ -33,6 +33,8 @@ class VenueType(str, enum.Enum):
     museum = "museum"
     library = "library"
     community_center = "community_center"
+    restaurant_bar = "restaurant_bar"
+    concert_venue = "concert_venue"
     # Online / distributed outreach channels — no physical location.
     youtube_channel = "youtube_channel"
     podcast = "podcast"

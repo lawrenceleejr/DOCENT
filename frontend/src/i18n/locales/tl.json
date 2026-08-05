@@ -267,8 +267,10 @@
       "museum": "Museo",
       "library": "Aklatan",
       "community_center": "Sentrong Pang-komunidad",
+      "restaurant_bar": "Restaurant/Bar",
+      "concert_venue": "Venue ng Konsiyerto",
       "youtube_channel": "YouTube Channel",
-      "podcast": "Podcast",
+      "podcast": "Radyo/Podcast",
       "social_media": "Social Media",
       "blog": "Blog",
       "other": "Iba pa"
@@ -547,7 +549,8 @@
     "startOverButton": "Magsimula muli gamit ang ibang file",
     "doneCounter": "{{done}}/{{total}} naproseso ({{imported}} na-import, {{skipped}} nilaktawan)",
     "finishButton": "Tapos na",
-    "closeButton": "Isara"
+    "closeButton": "Isara",
+    "discardConfirm": "I-discard ang import na ito? Mawawala ang mga row na hindi mo pa na-import."
   },
   "admin": {
     "title": "Admin",

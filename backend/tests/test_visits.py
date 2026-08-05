@@ -567,3 +567,13 @@ def test_audience_at_least_one_required(client):
         },
     )
     assert resp.status_code == 422, resp.text
+
+
+def test_new_venue_types(client):
+    """Restaurant/Bar and Concert Venue venue types are accepted (#53)."""
+    register(client)
+    for i, vt in enumerate(("restaurant_bar", "concert_venue")):
+        v = create_venue(client, name=f"New Type Venue {i}", venue_type=vt)
+        assert v["venue_type"] == vt
+        got = client.get(f"/api/venues/{v['id']}").json()
+        assert got["venue_type"] == vt
