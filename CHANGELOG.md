@@ -4,6 +4,16 @@ All notable changes to DOCENT are documented here. This project uses
 [semantic versioning](https://semver.org/); tagged releases publish container
 images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
+## v0.1.8
+
+### Fixed
+- **Upgrades no longer crash on the `is_broadcast` migration.** Its backfill
+  compared against `venue_type` enum values in the same transaction that adds
+  them, which Postgres rejects on a brand-new database or any upgrade spanning
+  both migrations (*"unsafe use of new value"*), crash-looping the backend. It
+  now compares the text representation, so `alembic upgrade head` applies
+  cleanly from any prior version.
+
 ## v0.1.7
 
 ### Added

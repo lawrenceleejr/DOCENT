@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: Lee
     given-names: Lawrence
-version: 0.1.7
+version: 0.1.8
 date-released: 2026-08-05
 license: GPL-3.0-or-later
 repository-code: "https://github.com/lawrenceleejr/DOCENT"
