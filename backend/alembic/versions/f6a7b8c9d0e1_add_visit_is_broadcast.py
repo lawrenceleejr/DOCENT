@@ -28,12 +28,18 @@ def upgrade() -> None:
     # so land historical podcasts/videos in the remote curve rather than
     # in-person (#38). New events default to in-person (false) and the form
     # prefills the flag from the venue type.
+    #
+    # `venue_type::text` (not the bare enum) is deliberate: when this runs in the
+    # same transaction as the migration that ADDs those enum values (a fresh DB,
+    # or any upgrade that spans both), Postgres rejects using a not-yet-committed
+    # enum value ("unsafe use of new value"). Comparing the text representation
+    # sidesteps that entirely.
     op.execute(
         """
         UPDATE visits SET is_broadcast = true
         WHERE venue_id IN (
             SELECT id FROM venues
-            WHERE venue_type IN ('youtube_channel', 'podcast', 'social_media', 'blog')
+            WHERE venue_type::text IN ('youtube_channel', 'podcast', 'social_media', 'blog')
         )
         """
     )
@@ -53,7 +59,7 @@ def upgrade() -> None:
     op.execute(
         """
         UPDATE federated_activities SET is_broadcast = true
-        WHERE venue_type IN ('youtube_channel', 'podcast', 'social_media', 'blog')
+        WHERE venue_type::text IN ('youtube_channel', 'podcast', 'social_media', 'blog')
         """
     )
 
