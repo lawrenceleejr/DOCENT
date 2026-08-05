@@ -30,7 +30,7 @@ INSECURE_POSTGRES_PASSWORD = "change-me"
 app = FastAPI(
     title="DOCENT API",
     description="Distributed Outreach & Community Engagement Network Tracker",
-    version="0.1.6",
+    version="0.1.7",
 )
 
 

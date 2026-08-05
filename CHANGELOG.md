@@ -4,6 +4,35 @@ All notable changes to DOCENT are documented here. This project uses
 [semantic versioning](https://semver.org/); tagged releases publish container
 images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
+## v0.1.7
+
+### Added
+- **Separate remote / broadcast reach.** An event that reached people who
+  weren't in the room — a podcast, livestream, video, or media hit — can be
+  flagged as **remote / broadcast** reach (auto-detected for online venue
+  types, with a hover tooltip explaining it). Remote reach is then tallied
+  apart from in-person attendance everywhere: two separate stat tiles on the
+  Analysis and Reports pages, a dual-axis "people reached over time" chart
+  (in-person on the left, remote on the right, so a huge broadcast number
+  doesn't flatten the in-person line), and its own line in every report export.
+- **Interview** event type, for the interviews, podcasts, and media hits that
+  aren't quite visits.
+- **Multi-select audience.** An event can target several audience levels at
+  once; filtering matches any of them, and the detail page shows each level.
+- **"Host reached out to us"** host relationship — the host contacted the
+  communicator, the mirror image of cold outreach.
+
+### Changed
+- **"Visits" are now "Events" throughout the interface** — the shared log, the
+  form, the filters, the scheduler, and the analysis copy — reflecting that not
+  every outreach event is a classroom visit. The data model and API are
+  unchanged.
+- **People reached now allows up to 500,000,000**, for large-scale media reach.
+- **`restart.sh` rebuilds by default**, so a `git pull` followed by a restart
+  deploys the new code; pass `--no-build` / `--fast` to just bounce the stack.
+- A venue can now be deleted even when events are attached — the attached
+  events are removed along with it, after a confirmation.
+
 ## v0.1.6
 
 ### Added
