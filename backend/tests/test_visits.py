@@ -1,3 +1,5 @@
+import time
+
 from tests.conftest import create_venue, create_visit, register
 
 
@@ -595,3 +597,116 @@ def test_link_categories_website_slides(client):
     )
     cats = [lk["category"] for lk in v["links"]]
     assert cats == ["website", "slides"]  # not folded to "other"
+
+
+def test_password_change_revokes_other_sessions(client):
+    """Changing the password kills tokens issued before it; the changing
+    session gets a fresh cookie and stays signed in."""
+    register(client)
+    old_token = client.cookies.get("docent_token")
+    assert client.get("/api/auth/me").status_code == 200
+
+    # Revocation compares whole seconds (JWT iat granularity): a change in the
+    # same second as issuance is deliberately forgiven, so step past it.
+    time.sleep(1.1)
+    r = client.patch(
+        "/api/users/me",
+        json={"current_password": "password123", "new_password": "a-new-password-456"},
+    )
+    assert r.status_code == 200, r.text
+    new_token = client.cookies.get("docent_token")
+    assert new_token and new_token != old_token  # fresh cookie issued
+
+    # The fresh session works…
+    assert client.get("/api/auth/me").status_code == 200
+    # …but the pre-change token is dead everywhere.
+    client.cookies.set("docent_token", old_token)
+    assert client.get("/api/auth/me").status_code == 401
+
+
+def test_admin_password_reset_revokes_sessions(client):
+    """An admin reset logs the target account out of existing sessions."""
+    register(client)  # first user = admin
+    admin_token = client.cookies.get("docent_token")
+    register(client, email="target@example.com", name="Target")
+    target_token = client.cookies.get("docent_token")
+
+    # Target is signed in.
+    assert client.get("/api/auth/me").status_code == 200
+
+    # Same-second changes are forgiven by design (whole-second iat) — step past.
+    time.sleep(1.1)
+    # Admin resets the target's password.
+    client.cookies.set("docent_token", admin_token)
+    payload = client.get("/api/admin/users").json()
+    items = payload["items"] if isinstance(payload, dict) and "items" in payload else payload
+    target_id = next(u["id"] for u in items if u["email"] == "target@example.com")
+    assert client.post(f"/api/admin/users/{target_id}/reset-password").status_code == 200
+
+    # The target's old session is revoked; the admin's own is untouched.
+    client.cookies.set("docent_token", target_token)
+    assert client.get("/api/auth/me").status_code == 401
+    client.cookies.set("docent_token", admin_token)
+    assert client.get("/api/auth/me").status_code == 200
+
+
+def test_admin_tag_rename_and_merge(client, make_client):
+    """Renaming a tag rewrites every event; renaming onto an existing tag
+    merges (deduped). Admin-only."""
+    register(client)  # admin
+    venue = create_venue(client)
+    create_visit(client, venue["id"], tags=["nsf-career", "outreach"])
+    create_visit(client, venue["id"], tags=["nsf career"])
+
+    r = client.post(
+        "/api/admin/tags/rename", json={"from_tag": "nsf career", "to_tag": "nsf-career"}
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["events_updated"] == 1
+
+    counts = {row["tag"]: row["count"] for row in client.get("/api/admin/tags").json()}
+    assert counts["nsf-career"] == 2 and "nsf career" not in counts
+
+    # Merge within one array dedupes: ["nsf-career","outreach"] -> rename
+    # outreach->nsf-career leaves a single "nsf-career".
+    client.post("/api/admin/tags/rename", json={"from_tag": "outreach", "to_tag": "nsf-career"})
+    counts = {row["tag"]: row["count"] for row in client.get("/api/admin/tags").json()}
+    assert counts == {"nsf-career": 2}
+
+    # Same-tag rename is rejected; non-admins are locked out.
+    assert client.post(
+        "/api/admin/tags/rename", json={"from_tag": "x", "to_tag": "X "}
+    ).status_code == 400
+    other = make_client()
+    register(other, email="plain@example.com")
+    assert other.get("/api/admin/tags").status_code == 403
+
+
+def test_calendar_feed_token(client, make_client):
+    """The signed feed URL serves the user's calendar without a cookie; a
+    tampered token is rejected."""
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], status="planned", visit_date="2030-01-15")
+
+    path = client.get("/api/users/me/calendar-feed").json()["path"]
+    anon = make_client()  # no cookies
+    r = anon.get(path)
+    assert r.status_code == 200
+    assert "BEGIN:VCALENDAR" in r.text and "Why the sky is blue" in r.text
+
+    assert anon.get(path[:-4] + "beef").status_code == 401  # tampered signature
+    assert anon.get("/api/visits/calendar.ics").status_code == 401  # no auth at all
+
+
+def test_admin_setup_status(client):
+    """The first-run checklist reflects instance state."""
+    register(client)
+    s = client.get("/api/admin/setup").json()
+    assert s["first_event_logged"] is False and s["institutions_imported"] is False
+    assert s["access_code_set"] is True  # tests run with an invite code configured
+
+    venue = create_venue(client)
+    create_visit(client, venue["id"])
+    s = client.get("/api/admin/setup").json()
+    assert s["first_event_logged"] is True

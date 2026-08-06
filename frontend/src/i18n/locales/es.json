@@ -367,7 +367,10 @@
       "running": "Restauración en curso",
       "success": "Restauración completada",
       "failed": "La restauración falló"
-    }
+    },
+    "healthNone": "Aún no hay copias",
+    "healthOk": "Última copia {{ago}}",
+    "healthStale": "Atrasada — última copia {{ago}}"
   },
   "dbToolsCard": {
     "title": "Exportar e importar datos",
@@ -879,7 +882,13 @@
     "emptyTitle": "Nada programado",
     "emptyDescription": "Ningún próximo evento planeado coincide con estos filtros. Programa uno y aparecerá aquí — listo para exportar a tu calendario.",
     "addToCalendarTooltip": "Exporta los eventos que se muestran aquí, según tus filtros actuales.",
-    "addToCalendarEmpty": "Aún no hay eventos para exportar."
+    "addToCalendarEmpty": "Aún no hay eventos para exportar.",
+    "subscribe": "Suscribirse",
+    "subscribeModalTitle": "Suscribe tu calendario",
+    "subscribeExplainer": "Añade esta URL a Google Calendar (Otros calendarios → Desde URL), Apple Calendar (Archivo → Nueva suscripción a calendario) u Outlook. Tus eventos planificados se mantienen sincronizados automáticamente, a diferencia de la descarga .ics puntual.",
+    "subscribeCopy": "Copiar",
+    "subscribeCopied": "Copiado",
+    "subscribePrivacyNote": "Este enlace es personal: contiene un token que permite a una app de calendario leer tus eventos planificados (y nada más). No lo compartas públicamente."
   },
   "venuePicker": {
     "venueLabel": "Sede",
@@ -1077,5 +1086,31 @@
     "colType": "Tipo",
     "colPeople": "Personas",
     "noEvents": "Aún no hay eventos."
+  },
+  "tagsCard": {
+    "title": "Etiquetas",
+    "description": "Renombra una etiqueta en todos los lugares donde se usa. Renombrar hacia una etiqueta existente las fusiona: útil cuando las etiquetas de texto libre divergen.",
+    "eventCount_one": "{{formattedCount}} evento",
+    "eventCount_other": "{{formattedCount}} eventos",
+    "renameButton": "Renombrar",
+    "renameModalTitle": "Renombrar «{{tag}}»",
+    "newTagLabel": "Nueva etiqueta",
+    "mergeNotice": "«{{to}}» ya existe: «{{from}}» se fusionará con ella.",
+    "mergeButton": "Fusionar etiquetas",
+    "renameConfirmButton": "Renombrar",
+    "renameSuccess_one": "{{count}} evento actualizado",
+    "renameSuccess_other": "{{count}} eventos actualizados"
+  },
+  "gettingStarted": {
+    "title": "Primeros pasos",
+    "progress": "{{done}} de {{total}} completados",
+    "stepSiteName": "Nombra tu comunidad",
+    "stepSiteNameHint": "Define el nombre de la comunidad abajo: aparece en el encabezado y en la página pública de impacto.",
+    "stepAccessCode": "Configura un código de acceso",
+    "stepAccessCodeHint": "El registro siempre lo requiere; compártelo con los comunicadores que quieras admitir.",
+    "stepInstitutions": "Importa instituciones para el mapa",
+    "stepInstitutionsHint": "Carga escuelas, museos y bibliotecas cercanas (abajo) para que el mapa muestre los huecos de cobertura.",
+    "stepFirstEvent": "Registra tu primer evento",
+    "stepFirstEventHint": "Registra un evento de divulgación: el panel y los informes cobran vida con el primero."
   }
 }

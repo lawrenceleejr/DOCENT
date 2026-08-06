@@ -1,10 +1,13 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentUser, DbSession
 from app.models import Connection, HostRelationship, User, UserSchool, Venue, Visit
 from app.schemas import (
+    CalendarFeed,
     ContributorUser,
     DirectoryUserList,
     DirectoryUserOut,
@@ -15,14 +18,29 @@ from app.schemas import (
     UserProfileOut,
     UserUpdate,
 )
-from app.security import hash_password, verify_password
+from app.security import (
+    calendar_feed_token,
+    create_access_token,
+    hash_password,
+    set_auth_cookie,
+    verify_password,
+)
 from app.services.settings import user_directory_visible
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
+@router.get("/me/calendar-feed", response_model=CalendarFeed)
+def my_calendar_feed(user: CurrentUser):
+    """The signed feed URL for subscribing a calendar app to your planned
+    events (the .ics download is one-shot; this stays in sync)."""
+    return CalendarFeed(path=f"/api/visits/calendar.ics?token={calendar_feed_token(user.id)}")
+
+
 @router.patch("/me", response_model=UserOut)
-def update_me(body: UserUpdate, user: CurrentUser, db: DbSession):
+def update_me(
+    body: UserUpdate, user: CurrentUser, db: DbSession, request: Request, response: Response
+):
     if body.name is not None:
         user.name = body.name
     if body.affiliation is not None:
@@ -47,6 +65,9 @@ def update_me(body: UserUpdate, user: CurrentUser, db: DbSession):
                 detail="Current password is incorrect",
             )
         user.password_hash = hash_password(body.new_password)
+        # Revoke every other session; the fresh cookie below keeps THIS one.
+        user.password_changed_at = datetime.now(timezone.utc)
+        set_auth_cookie(response, create_access_token(user.id), request)
 
     db.add(user)
     db.commit()

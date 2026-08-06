@@ -23,7 +23,10 @@ sys.exit(1)
 PY
 
 echo "Running migrations..."
-alembic upgrade head
+# Self-diagnosing wrapper: preflights the revision, applies migrations one
+# committed step at a time, and on failure prints an ordered recovery plan
+# instead of leaving only a traceback.
+python -m app.scripts.upgrade_db
 
 echo "Starting API..."
 exec uvicorn app.main:app --host 0.0.0.0 --port 8000

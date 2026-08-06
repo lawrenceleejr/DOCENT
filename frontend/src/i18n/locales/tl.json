@@ -367,7 +367,10 @@
       "running": "Isinasagawa ang pag-restore",
       "success": "Kumpleto na ang pag-restore",
       "failed": "Nabigo ang pag-restore"
-    }
+    },
+    "healthNone": "Wala pang backup",
+    "healthOk": "Huling backup {{ago}}",
+    "healthStale": "Overdue — huling backup {{ago}}"
   },
   "dbToolsCard": {
     "title": "I-export at i-import ang datos",
@@ -879,7 +882,13 @@
     "emptyTitle": "Walang naka-iskedyul",
     "emptyDescription": "Walang darating na naka-planong event na tumutugma sa mga filter na ito. Mag-iskedyul ng isa at lalabas ito rito — handa na para i-export sa inyong kalendaryo.",
     "addToCalendarTooltip": "I-export ang mga eventong ipinapakita rito, ayon sa iyong mga filter.",
-    "addToCalendarEmpty": "Wala pang eventong maie-export."
+    "addToCalendarEmpty": "Wala pang eventong maie-export.",
+    "subscribe": "Mag-subscribe",
+    "subscribeModalTitle": "I-subscribe ang iyong kalendaryo",
+    "subscribeExplainer": "Idagdag ang URL na ito sa Google Calendar (Other calendars → From URL), Apple Calendar (File → New Calendar Subscription), o Outlook. Awtomatikong nananatiling naka-sync ang iyong mga planadong event — hindi tulad ng one-time na .ics download.",
+    "subscribeCopy": "Kopyahin",
+    "subscribeCopied": "Nakopya",
+    "subscribePrivacyNote": "Personal ang link na ito — naglalaman ito ng token na nagpapahintulot sa calendar app na basahin ang iyong mga planadong event (at wala nang iba). Huwag itong ibahagi sa publiko."
   },
   "venuePicker": {
     "venueLabel": "Venue",
@@ -1077,5 +1086,31 @@
     "colType": "Uri",
     "colPeople": "Tao",
     "noEvents": "Wala pang event."
+  },
+  "tagsCard": {
+    "title": "Mga Tag",
+    "description": "Palitan ang pangalan ng tag saanman ito ginagamit. Ang pagpapalit patungo sa umiiral na tag ay pagsasamahin ang dalawa — kapaki-pakinabang kapag nagkakaiba ang mga free-text na tag.",
+    "eventCount_one": "{{formattedCount}} event",
+    "eventCount_other": "{{formattedCount}} na event",
+    "renameButton": "Palitan",
+    "renameModalTitle": "Palitan ang “{{tag}}”",
+    "newTagLabel": "Bagong tag",
+    "mergeNotice": "Umiiral na ang “{{to}}” — isasama rito ang “{{from}}”.",
+    "mergeButton": "Pagsamahin",
+    "renameConfirmButton": "Palitan",
+    "renameSuccess_one": "Na-update ang {{count}} event",
+    "renameSuccess_other": "Na-update ang {{count}} na event"
+  },
+  "gettingStarted": {
+    "title": "Pagsisimula",
+    "progress": "{{done}} sa {{total}} tapos na",
+    "stepSiteName": "Pangalanan ang iyong komunidad",
+    "stepSiteNameHint": "Itakda ang pangalan ng komunidad sa ibaba — lalabas ito sa header at sa pampublikong impact page.",
+    "stepAccessCode": "Magtakda ng access code",
+    "stepAccessCodeHint": "Laging kailangan ito sa pagrerehistro; ibahagi ito sa mga communicator na gusto mong papasukin.",
+    "stepInstitutions": "Mag-import ng mga institusyon para sa mapa",
+    "stepInstitutionsHint": "I-load ang mga paaralan, museo, at aklatan malapit sa iyo (sa ibaba) para maipakita ng mapa ang mga puwang sa saklaw.",
+    "stepFirstEvent": "I-log ang iyong unang event",
+    "stepFirstEventHint": "Magtala ng outreach event — mabubuhay ang dashboard at mga report sa una pa lang."
   }
 }

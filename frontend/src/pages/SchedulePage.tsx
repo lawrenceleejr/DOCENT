@@ -3,18 +3,22 @@ import {
   Badge,
   Button,
   Card,
+  CopyButton,
   Group,
+  Modal,
   MultiSelect,
   Select,
   Stack,
   Switch,
   Table,
   Text,
+  TextInput,
   Title,
   Tooltip,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { IconCalendarPlus, IconExternalLink } from '@tabler/icons-react';
+import { useDisclosure } from '@mantine/hooks';
+import { IconCalendarPlus, IconCheck, IconCopy, IconExternalLink, IconRss } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +38,7 @@ import { EmptyState } from '../components/EmptyState';
 import { FilterCard } from '../components/FilterCard';
 import { filterParams, type VisitFilters } from '../components/filters';
 import { useEnumLabel } from '../i18n/enumLabels';
-import { toDateString } from './VisitListPage';
+import { toDateString, VisitCard } from './VisitListPage';
 
 export function SchedulePage() {
   const { t } = useTranslation();
@@ -93,6 +97,18 @@ export function SchedulePage() {
     ((filters.tags?.length ?? 0) > 0 ? 1 : 0) +
     (mineOnly ? 1 : 0);
 
+  // Live calendar subscription (#feed): unlike the one-shot .ics download, a
+  // subscribed URL stays in sync as events change. The signed token is fetched
+  // only when the dialog opens.
+  const [subOpened, { open: openSub, close: closeSub }] = useDisclosure(false);
+  const { data: feed } = useQuery({
+    queryKey: ['users', 'me', 'calendar-feed'],
+    queryFn: () => api.get<{ path: string }>('/api/users/me/calendar-feed'),
+    enabled: subOpened,
+  });
+  const feedUrl = feed ? `${window.location.origin}${feed.path}` : '';
+  const webcalUrl = feedUrl.replace(/^https?:/, 'webcal:');
+
   return (
     <Stack>
       <Group justify="space-between">
@@ -120,11 +136,43 @@ export function SchedulePage() {
               {t('schedule.addToCalendar')}
             </Button>
           </Tooltip>
+          <Button variant="default" leftSection={<IconRss size={16} />} onClick={openSub}>
+            {t('schedule.subscribe')}
+          </Button>
           <Button variant="gradient" onClick={() => navigate('/visits/new?status=planned')}>
             {t('schedule.scheduleEvent')}
           </Button>
         </Group>
       </Group>
+
+      <Modal opened={subOpened} onClose={closeSub} title={t('schedule.subscribeModalTitle')} centered>
+        <Stack gap="sm">
+          <Text size="sm">{t('schedule.subscribeExplainer')}</Text>
+          <Group gap="xs" wrap="nowrap" align="flex-end">
+            <TextInput
+              style={{ flex: 1 }}
+              readOnly
+              value={webcalUrl}
+              onFocus={(e) => e.currentTarget.select()}
+            />
+            <CopyButton value={webcalUrl}>
+              {({ copied, copy }) => (
+                <Button
+                  variant={copied ? 'light' : 'default'}
+                  color={copied ? 'teal' : undefined}
+                  leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                  onClick={copy}
+                >
+                  {copied ? t('schedule.subscribeCopied') : t('schedule.subscribeCopy')}
+                </Button>
+              )}
+            </CopyButton>
+          </Group>
+          <Text size="xs" c="dimmed">
+            {t('schedule.subscribePrivacyNote')}
+          </Text>
+        </Stack>
+      </Modal>
 
       <FilterCard activeCount={activeFilterCount}>
         <Group align="flex-end">
@@ -197,7 +245,8 @@ export function SchedulePage() {
         </Group>
       </FilterCard>
 
-      <Card withBorder p={0}>
+      {/* Desktop: the full table. */}
+      <Card withBorder p={0} visibleFrom="sm">
         <Table.ScrollContainer minWidth={760}>
         <Table highlightOnHover>
           <Table.Thead>
@@ -293,6 +342,45 @@ export function SchedulePage() {
         </Table>
         </Table.ScrollContainer>
       </Card>
+
+      {/* Mobile: stacked cards instead of a sideways-scrolling table — same
+          pattern as the events list. */}
+      <Stack hiddenFrom="sm" gap="sm">
+        {(data?.items ?? []).map((it) => {
+          const isLocal = it.source === 'local';
+          const canMarkDone = isLocal && (it.author?.id === user?.id || user?.is_admin);
+          return (
+            <div key={`m-${it.source}-${it.id ?? it.external_url}`}>
+              <VisitCard
+                item={it}
+                onClick={isLocal && it.id != null ? () => navigate(`/visits/${it.id}`) : undefined}
+              />
+              {canMarkDone && (
+                <Button
+                  size="compact-sm"
+                  variant="light"
+                  fullWidth
+                  mt={4}
+                  onClick={() => navigate(`/visits/${it.id}/edit`)}
+                >
+                  {t('schedule.markDone')}
+                </Button>
+              )}
+            </div>
+          );
+        })}
+        {!isLoading && (data?.items.length ?? 0) === 0 && (
+          <Card withBorder p={0}>
+            <EmptyState
+              icon={IconCalendarPlus}
+              title={t('schedule.emptyTitle')}
+              description={t('schedule.emptyDescription')}
+              actionLabel={t('schedule.scheduleEvent')}
+              onAction={() => navigate('/visits/new?status=planned')}
+            />
+          </Card>
+        )}
+      </Stack>
     </Stack>
   );
 }

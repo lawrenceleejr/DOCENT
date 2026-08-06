@@ -367,7 +367,10 @@
       "running": "還原進行中",
       "success": "還原完成",
       "failed": "還原失敗"
-    }
+    },
+    "healthNone": "尚無備份",
+    "healthOk": "最近備份：{{ago}}",
+    "healthStale": "已逾期——最近備份：{{ago}}"
   },
   "dbToolsCard": {
     "title": "匯出與匯入資料",
@@ -879,7 +882,13 @@
     "emptyTitle": "尚無排定行程",
     "emptyDescription": "沒有符合篩選條件的即將舉行活動。安排一場活動後即會顯示於此——並可匯出至您的日曆。",
     "addToCalendarTooltip": "匯出目前依篩選條件顯示的活動。",
-    "addToCalendarEmpty": "目前沒有可匯出的活動。"
+    "addToCalendarEmpty": "目前沒有可匯出的活動。",
+    "subscribe": "訂閱",
+    "subscribeModalTitle": "訂閱到你的行事曆",
+    "subscribeExplainer": "將此 URL 加入 Google 日曆（其他日曆 → 透過網址）、Apple 行事曆（檔案 → 新增行事曆訂閱）或 Outlook。你的計畫活動會自動保持同步——不同於一次性的 .ics 下載。",
+    "subscribeCopy": "複製",
+    "subscribeCopied": "已複製",
+    "subscribePrivacyNote": "此連結為個人專屬——其中的權杖允許行事曆應用程式讀取你的計畫活動（僅此而已）。請勿公開分享。"
   },
   "venuePicker": {
     "venueLabel": "場地",
@@ -1077,5 +1086,31 @@
     "colType": "類型",
     "colPeople": "人數",
     "noEvents": "尚無活動。"
+  },
+  "tagsCard": {
+    "title": "標籤",
+    "description": "在所有使用位置重新命名標籤。重新命名為既有標籤會將兩者合併——當自由文字標籤出現分歧時很有用。",
+    "eventCount_one": "{{formattedCount}} 場活動",
+    "eventCount_other": "{{formattedCount}} 場活動",
+    "renameButton": "重新命名",
+    "renameModalTitle": "重新命名「{{tag}}」",
+    "newTagLabel": "新標籤",
+    "mergeNotice": "「{{to}}」已存在——「{{from}}」將合併至其中。",
+    "mergeButton": "合併標籤",
+    "renameConfirmButton": "重新命名",
+    "renameSuccess_one": "已更新 {{count}} 場活動",
+    "renameSuccess_other": "已更新 {{count}} 場活動"
+  },
+  "gettingStarted": {
+    "title": "快速上手",
+    "progress": "已完成 {{done}}/{{total}}",
+    "stepSiteName": "為你的社群命名",
+    "stepSiteNameHint": "在下方設定社群名稱——它會顯示在頁首與公開影響頁面上。",
+    "stepAccessCode": "設定存取碼",
+    "stepAccessCodeHint": "註冊一律需要存取碼；請分享給你想邀請的傳播者。",
+    "stepInstitutions": "為地圖匯入機構",
+    "stepInstitutionsHint": "載入附近的學校、博物館與圖書館（見下方），地圖即可顯示涵蓋空白。",
+    "stepFirstEvent": "記錄你的第一場活動",
+    "stepFirstEventHint": "記錄一場科普活動——有了第一筆紀錄，儀表板與報告就會生動起來。"
   }
 }

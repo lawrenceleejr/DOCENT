@@ -34,7 +34,16 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            # Commit after every migration instead of one all-or-nothing batch:
+            # a just-added enum value is usable by the next migration (the class
+            # of failure that crash-looped a live instance), and a failure
+            # leaves the DB parked at a known revision that a rerun resumes
+            # from, instead of rolling everything back.
+            transaction_per_migration=True,
+        )
         with context.begin_transaction():
             context.run_migrations()
 

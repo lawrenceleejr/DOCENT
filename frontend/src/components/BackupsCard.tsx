@@ -47,7 +47,7 @@ const CONFIRM_WORD = 'RESTORE';
 type RestoreTarget = { kind: 'path'; path: string } | { kind: 'upload' };
 
 export function BackupsCard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const { data } = useQuery({
     queryKey: ['admin', 'backups'],
@@ -134,10 +134,33 @@ export function BackupsCard() {
   const confirmOk = confirmText.trim().toUpperCase() === CONFIRM_WORD;
   const inProgress = restoreState?.state === 'queued' || restoreState?.state === 'running';
 
+  // At-a-glance backup health: nightly dumps mean anything older than ~a day
+  // (plus cron drift) is a problem worth seeing before you need a restore.
+  const ageHours = lastAt ? (Date.now() - lastAt.getTime()) / 3_600_000 : null;
+  const healthy = ageHours !== null && ageHours < 26;
+  const agoText =
+    ageHours === null
+      ? null
+      : new Intl.RelativeTimeFormat(i18n.language, { numeric: 'auto' }).format(
+          ageHours < 48 ? -Math.round(ageHours) : -Math.round(ageHours / 24),
+          ageHours < 48 ? 'hour' : 'day',
+        );
+
   return (
     <Card withBorder p="lg">
       <Group justify="space-between" mb="xs">
-        <Title order={3}>{t('backupsCard.title')}</Title>
+        <Group gap="sm">
+          <Title order={3}>{t('backupsCard.title')}</Title>
+          {data && (
+            <Badge variant="light" color={healthy ? 'green' : 'red'} size="lg">
+              {ageHours === null
+                ? t('backupsCard.healthNone')
+                : healthy
+                  ? t('backupsCard.healthOk', { ago: agoText })
+                  : t('backupsCard.healthStale', { ago: agoText })}
+            </Badge>
+          )}
+        </Group>
         <Button
           variant="light"
           leftSection={<IconDatabaseExport size={16} />}

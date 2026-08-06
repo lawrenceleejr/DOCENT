@@ -367,7 +367,10 @@
       "running": "Restauration en cours",
       "success": "Restauration terminée",
       "failed": "Échec de la restauration"
-    }
+    },
+    "healthNone": "Aucune sauvegarde",
+    "healthOk": "Dernière sauvegarde {{ago}}",
+    "healthStale": "En retard — dernière sauvegarde {{ago}}"
   },
   "dbToolsCard": {
     "title": "Exporter et importer des données",
@@ -879,7 +882,13 @@
     "emptyTitle": "Rien de prévu",
     "emptyDescription": "Aucune activité planifiée à venir ne correspond à ces filtres. Planifiez-en une et elle apparaîtra ici — prête à exporter vers votre calendrier.",
     "addToCalendarTooltip": "Exporte les événements affichés ici, selon vos filtres actuels.",
-    "addToCalendarEmpty": "Aucun événement à exporter pour l’instant."
+    "addToCalendarEmpty": "Aucun événement à exporter pour l’instant.",
+    "subscribe": "S'abonner",
+    "subscribeModalTitle": "Abonner votre calendrier",
+    "subscribeExplainer": "Ajoutez cette URL à Google Agenda (Autres agendas → À partir de l'URL), Apple Calendrier (Fichier → Nouvel abonnement à un calendrier) ou Outlook. Vos événements planifiés restent synchronisés automatiquement, contrairement au téléchargement .ics ponctuel.",
+    "subscribeCopy": "Copier",
+    "subscribeCopied": "Copié",
+    "subscribePrivacyNote": "Ce lien est personnel : il contient un jeton qui permet à une application de calendrier de lire vos événements planifiés (et rien d'autre). Ne le partagez pas publiquement."
   },
   "venuePicker": {
     "venueLabel": "Lieu",
@@ -1077,5 +1086,31 @@
     "colType": "Type",
     "colPeople": "Personnes",
     "noEvents": "Aucun événement pour l’instant."
+  },
+  "tagsCard": {
+    "title": "Étiquettes",
+    "description": "Renommez une étiquette partout où elle est utilisée. Renommer vers une étiquette existante les fusionne — utile quand les étiquettes libres divergent.",
+    "eventCount_one": "{{formattedCount}} événement",
+    "eventCount_other": "{{formattedCount}} événements",
+    "renameButton": "Renommer",
+    "renameModalTitle": "Renommer « {{tag}} »",
+    "newTagLabel": "Nouvelle étiquette",
+    "mergeNotice": "« {{to}} » existe déjà — « {{from}} » y sera fusionnée.",
+    "mergeButton": "Fusionner",
+    "renameConfirmButton": "Renommer",
+    "renameSuccess_one": "{{count}} événement mis à jour",
+    "renameSuccess_other": "{{count}} événements mis à jour"
+  },
+  "gettingStarted": {
+    "title": "Premiers pas",
+    "progress": "{{done}} sur {{total}} faits",
+    "stepSiteName": "Nommez votre communauté",
+    "stepSiteNameHint": "Définissez le nom de la communauté ci-dessous — il apparaît dans l'en-tête et sur la page publique d'impact.",
+    "stepAccessCode": "Définissez un code d'accès",
+    "stepAccessCodeHint": "L'inscription l'exige toujours ; partagez-le avec les communicateurs à admettre.",
+    "stepInstitutions": "Importez des institutions pour la carte",
+    "stepInstitutionsHint": "Chargez les écoles, musées et bibliothèques proches (ci-dessous) pour que la carte montre les zones non couvertes.",
+    "stepFirstEvent": "Enregistrez votre premier événement",
+    "stepFirstEventHint": "Consignez une action de médiation — le tableau de bord et les rapports prennent vie dès la première."
   }
 }

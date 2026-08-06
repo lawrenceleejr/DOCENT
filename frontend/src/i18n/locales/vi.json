@@ -367,7 +367,10 @@
       "running": "Đang khôi phục",
       "success": "Khôi phục hoàn tất",
       "failed": "Khôi phục thất bại"
-    }
+    },
+    "healthNone": "Chưa có bản sao lưu",
+    "healthOk": "Sao lưu gần nhất {{ago}}",
+    "healthStale": "Quá hạn — sao lưu gần nhất {{ago}}"
   },
   "dbToolsCard": {
     "title": "Xuất & nhập dữ liệu",
@@ -879,7 +882,13 @@
     "emptyTitle": "Không có gì được lên kế hoạch",
     "emptyDescription": "Không có sự kiện đã lên kế hoạch sắp tới nào khớp với các bộ lọc này. Hãy lên kế hoạch một sự kiện và nó sẽ xuất hiện ở đây — sẵn sàng để xuất vào lịch của bạn.",
     "addToCalendarTooltip": "Xuất các sự kiện đang hiển thị theo bộ lọc hiện tại của bạn.",
-    "addToCalendarEmpty": "Chưa có sự kiện nào để xuất."
+    "addToCalendarEmpty": "Chưa có sự kiện nào để xuất.",
+    "subscribe": "Đăng ký theo dõi",
+    "subscribeModalTitle": "Đăng ký lịch của bạn",
+    "subscribeExplainer": "Thêm URL này vào Google Calendar (Lịch khác → Từ URL), Apple Calendar (Tệp → Đăng ký lịch mới) hoặc Outlook. Các sự kiện đã lên kế hoạch của bạn tự động đồng bộ — khác với tải xuống .ics một lần.",
+    "subscribeCopy": "Sao chép",
+    "subscribeCopied": "Đã sao chép",
+    "subscribePrivacyNote": "Liên kết này là riêng tư — nó chứa token cho phép ứng dụng lịch đọc các sự kiện đã lên kế hoạch của bạn (và chỉ vậy). Đừng chia sẻ công khai."
   },
   "venuePicker": {
     "venueLabel": "Địa điểm",
@@ -1077,5 +1086,31 @@
     "colType": "Loại",
     "colPeople": "Người",
     "noEvents": "Chưa có sự kiện nào."
+  },
+  "tagsCard": {
+    "title": "Thẻ",
+    "description": "Đổi tên một thẻ ở mọi nơi nó được dùng. Đổi tên trùng với thẻ có sẵn sẽ gộp hai thẻ — hữu ích khi các thẻ tự do bị lệch nhau.",
+    "eventCount_one": "{{formattedCount}} sự kiện",
+    "eventCount_other": "{{formattedCount}} sự kiện",
+    "renameButton": "Đổi tên",
+    "renameModalTitle": "Đổi tên “{{tag}}”",
+    "newTagLabel": "Thẻ mới",
+    "mergeNotice": "“{{to}}” đã tồn tại — “{{from}}” sẽ được gộp vào đó.",
+    "mergeButton": "Gộp thẻ",
+    "renameConfirmButton": "Đổi tên",
+    "renameSuccess_one": "Đã cập nhật {{count}} sự kiện",
+    "renameSuccess_other": "Đã cập nhật {{count}} sự kiện"
+  },
+  "gettingStarted": {
+    "title": "Bắt đầu",
+    "progress": "Xong {{done}}/{{total}}",
+    "stepSiteName": "Đặt tên cộng đồng của bạn",
+    "stepSiteNameHint": "Đặt tên cộng đồng bên dưới — tên này xuất hiện ở đầu trang và trên trang tác động công khai.",
+    "stepAccessCode": "Đặt mã truy cập",
+    "stepAccessCodeHint": "Đăng ký luôn yêu cầu mã này; chia sẻ với những người truyền thông bạn muốn cho tham gia.",
+    "stepInstitutions": "Nhập các tổ chức cho bản đồ",
+    "stepInstitutionsHint": "Tải các trường học, bảo tàng, thư viện gần bạn (bên dưới) để bản đồ hiển thị các khoảng trống chưa tiếp cận.",
+    "stepFirstEvent": "Ghi sự kiện đầu tiên",
+    "stepFirstEventHint": "Ghi lại một sự kiện tiếp cận cộng đồng — bảng điều khiển và báo cáo sống động ngay từ sự kiện đầu tiên."
   }
 }
