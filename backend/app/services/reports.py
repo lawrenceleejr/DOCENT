@@ -46,6 +46,8 @@ COVERAGE_LABELS = {
     "social_media": "Social media",
     "video": "Video",
     "blog": "Blog",
+    "website": "Website / agenda",
+    "slides": "Slides / materials",
     "other": "Other",
 }
 

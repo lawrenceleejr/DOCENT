@@ -194,7 +194,8 @@
     "reflectionPlaceholder": "哪些地方做得好、哪些不理想、下次可以怎麼做……",
     "followUpLabel": "計畫與此場地進行後續聯繫",
     "coverageLegend": "相關報導與連結",
-    "coverageDescription": "附上此活動相關的新聞報導、社群貼文、影片或部落格文章連結。報告會顯示哪些活動獲得了哪些類型的報導。",
+    "coverageDescription": "加入媒體報導、社群貼文、影片、部落格文章，或本次活動的簡報與教材連結。報告會顯示哪些活動獲得了哪類報導。",
+    "coverageDescriptionPlanned": "加入活動的網站或議程連結、你的簡報或其他教材——查看此活動的任何人都能找到它們。",
     "linkTypeLabel": "類型",
     "linkUrlLabel": "網址",
     "linkUrlPlaceholder": "https://…",
@@ -309,6 +310,8 @@
       "social_media": "社群媒體",
       "video": "影片",
       "blog": "部落格",
+      "website": "網站／議程",
+      "slides": "簡報／教材",
       "other": "其他"
     },
     "hostRelationship": {

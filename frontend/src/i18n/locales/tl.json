@@ -194,7 +194,8 @@
     "reflectionPlaceholder": "Ano ang naging epektibo, ano ang hindi, mga ideya para sa susunod…",
     "followUpLabel": "May balak na follow-up sa venue na ito",
     "coverageLegend": "Coverage at mga link",
-    "coverageDescription": "Ilagay ang link sa press coverage, social media post, video, o blog na sumulat tungkol sa event na ito. Ipapakita sa mga ulat kung aling aktibidad ang nakakuha ng anong uri ng coverage.",
+    "coverageDescription": "Mag-link ng press coverage, social posts, video, blog write-up, o ang slides at mga materyales ng event na ito. Ipinapakita ng mga report kung aling mga aktibidad ang nakakuha ng anong uri ng coverage.",
+    "coverageDescriptionPlanned": "I-link ang website o agenda ng event, ang iyong slides, o iba pang materyales — makikita ito ng sinumang tumitingin sa event.",
     "linkTypeLabel": "Uri",
     "linkUrlLabel": "URL",
     "linkUrlPlaceholder": "https://…",
@@ -309,6 +310,8 @@
       "social_media": "Social Media",
       "video": "Video",
       "blog": "Blog",
+      "website": "Website / agenda",
+      "slides": "Slides / mga materyales",
       "other": "Iba pa"
     },
     "hostRelationship": {

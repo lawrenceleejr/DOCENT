@@ -559,11 +559,14 @@ export function VisitFormPage() {
           </Fieldset>
           )}
 
-          {!isPlanned && (
+          {/* Links apply to planned events too — an agenda/website link or the
+              slides exist before the event happens (no longer completed-only). */}
           <Fieldset legend={t('visitForm.coverageLegend')} radius="md">
             <Stack gap="sm">
               <Text size="sm" c="dimmed">
-                {t('visitForm.coverageDescription')}
+                {isPlanned
+                  ? t('visitForm.coverageDescriptionPlanned')
+                  : t('visitForm.coverageDescription')}
               </Text>
               {/* Desktop: compact single-row editor (unchanged). */}
               <Stack gap="xs" visibleFrom="sm">
@@ -643,14 +646,19 @@ export function VisitFormPage() {
                 leftSection={<IconPlus size={16} />}
                 style={{ alignSelf: 'flex-start' }}
                 onClick={() =>
-                  form.insertListItem('links', { url: '', category: 'press', label: '' })
+                  // Before the event the natural link is its website/agenda;
+                  // after, press coverage.
+                  form.insertListItem('links', {
+                    url: '',
+                    category: isPlanned ? 'website' : 'press',
+                    label: '',
+                  })
                 }
               >
                 {t('visitForm.addLink')}
               </Button>
             </Stack>
           </Fieldset>
-          )}
 
           <Group justify="flex-end">
             <Button
