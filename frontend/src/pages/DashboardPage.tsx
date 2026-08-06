@@ -464,24 +464,34 @@ export function DashboardPage() {
 
   const series = useMemo(() => buildTimeSeries(timeseries ?? []), [timeseries]);
 
-  // Split the visits series so it's one continuous line: solid through the
-  // current period (recorded visits), then dashed for future periods
-  // (scheduled visits). The two segments share the boundary point so they
-  // join seamlessly (#28).
+  // Split the visits series: solid through the current period (recorded
+  // visits), dashed for what's still scheduled (#28). The current bucket gets
+  // BOTH — its solid point is what's recorded so far, and the dashed line
+  // shows its projected total (recorded + still scheduled), so an upcoming
+  // event later in this same half-year is visible instead of silently absent.
+  // The dashed segment is anchored on the previous bucket's recorded point so
+  // it forks off the solid line.
   const [nowT] = useState(() => Date.now());
   const chartData = useMemo(() => {
     let boundary = -1;
     series.forEach((r, i) => {
       if (r.t <= nowT) boundary = i;
     });
-    const hasFuture = boundary < series.length - 1;
+    const hasFuture =
+      boundary < series.length - 1 ||
+      series.some((r, i) => i >= boundary && r.planned_visits > 0);
     return series.map((r, i) => {
       const isPast = i <= boundary;
-      const value = isPast ? r.visits : r.planned_visits;
       return {
         ...r,
-        pastVisits: isPast ? value : null,
-        futureVisits: hasFuture && i >= boundary ? value : null,
+        pastVisits: isPast ? r.visits : null,
+        futureVisits: !hasFuture
+          ? null
+          : i >= boundary
+            ? r.visits + r.planned_visits
+            : i === boundary - 1
+              ? r.visits
+              : null,
       };
     });
   }, [series, nowT]);
