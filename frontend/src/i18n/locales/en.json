@@ -12,7 +12,12 @@
     "translationDisclaimer": "This translation is machine-generated and hasn't been reviewed by a native speaker yet. It may contain errors — volunteers to help review it are very welcome.",
     "unexpectedError": "Unexpected error",
     "clear": "Clear",
-    "unsavedConfirm": "You have unsaved changes. Leave this page and discard them?"
+    "unsavedConfirm": "You have unsaved changes. Leave this page and discard them?",
+    "copy": "Copy",
+    "copied": "Copied",
+    "save": "Save",
+    "remove": "Remove",
+    "confirm": "Confirm"
   },
   "layout": {
     "home": "DOCENT home",
@@ -257,7 +262,8 @@
     "fieldHostNotes": "Host notes",
     "minSuffix": "min",
     "fieldCoPresenters": "Co-presenters",
-    "broadcastBadge": "Remote / broadcast"
+    "broadcastBadge": "Remote / broadcast",
+    "deleteTitle": "Delete this event?"
   },
   "enums": {
     "venueType": {
@@ -492,7 +498,8 @@
     "emptyMatch": "No catalog entries match \"{{q}}\".",
     "emptyYet": "No catalog entries yet.",
     "institutionCount_one": "{{formattedCount}} institution",
-    "institutionCount_other": "{{formattedCount}} institutions"
+    "institutionCount_other": "{{formattedCount}} institutions",
+    "deleteTitle": "Delete this institution?"
   },
   "importWizard": {
     "title": "Import events from CSV",
@@ -648,7 +655,9 @@
     "bannerLevelLabel": "Banner severity",
     "bannerLevelInfo": "Info",
     "bannerLevelWarning": "Warning",
-    "bannerLevelCritical": "Critical"
+    "bannerLevelCritical": "Critical",
+    "mergeTitle": "Merge these accounts?",
+    "deleteUserTitle": "Delete {{name}}?"
   },
   "dashboard": {
     "title": "Analysis",
@@ -1017,7 +1026,9 @@
     "colPeopleReached": "People reached",
     "noVisits": "No events recorded at this venue yet",
     "connectionUpdated": "Connection updated",
-    "connectionAdded": "Connection added"
+    "connectionAdded": "Connection added",
+    "deleteTitle": "Delete {{name}}?",
+    "removeConnectionTitle": "Remove this contact?"
   },
   "federationCard": {
     "title": "Federation",
@@ -1079,7 +1090,8 @@
     "tagFilterAll": "All events",
     "tagFilterLabel": "Only pull events tagged (optional)",
     "tagFilterDescription": "Leave empty to pull all of this sibling's events. Add tags to pull only events carrying at least one of them.",
-    "tagFilterPlaceholder": "e.g. nsf-career"
+    "tagFilterPlaceholder": "e.g. nsf-career",
+    "removeTitle": "Remove this sibling instance?"
   },
   "profileView": {
     "totalVisits": "Events",
@@ -1119,5 +1131,16 @@
     "stepInstitutionsHint": "Load schools, museums, and libraries near you (below) so the map can show coverage gaps.",
     "stepFirstEvent": "Log your first event",
     "stepFirstEventHint": "Record an outreach event — the dashboard and reports come alive with the first one."
+  },
+  "confirm": {
+    "typeToConfirm": "Type {{word}} to confirm",
+    "deleteWord": "DELETE"
+  },
+  "errors": {
+    "loadFailedTitle": "Couldn't load this",
+    "loadFailedBody": "The server didn't respond as expected. Your data is safe — this is a connection problem, not a lost-data problem. Try again in a moment.",
+    "sessionExpiredTitle": "Your session has expired",
+    "sessionExpiredBody": "Sign in again to continue.",
+    "retry": "Try again"
   }
 }

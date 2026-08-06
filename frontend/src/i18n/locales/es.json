@@ -12,7 +12,12 @@
     "filters": "Filtros",
     "unexpectedError": "Error inesperado",
     "clear": "Borrar",
-    "unsavedConfirm": "Tienes cambios sin guardar. ¿Salir de esta página y descartarlos?"
+    "unsavedConfirm": "Tienes cambios sin guardar. ¿Salir de esta página y descartarlos?",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "save": "Guardar",
+    "remove": "Quitar",
+    "confirm": "Confirmar"
   },
   "layout": {
     "home": "Inicio de DOCENT",
@@ -257,7 +262,8 @@
     "fieldHostNotes": "Notas sobre el anfitrión",
     "minSuffix": "min",
     "fieldCoPresenters": "Copresentadores",
-    "broadcastBadge": "Remoto / difusión"
+    "broadcastBadge": "Remoto / difusión",
+    "deleteTitle": "¿Eliminar este evento?"
   },
   "enums": {
     "venueType": {
@@ -492,7 +498,8 @@
     "emptyMatch": "Ninguna entrada del catálogo coincide con \"{{q}}\".",
     "emptyYet": "Todavía no hay entradas en el catálogo.",
     "institutionCount_one": "{{formattedCount}} institución",
-    "institutionCount_other": "{{formattedCount}} instituciones"
+    "institutionCount_other": "{{formattedCount}} instituciones",
+    "deleteTitle": "¿Eliminar esta institución?"
   },
   "importWizard": {
     "title": "Importar eventos desde CSV",
@@ -648,7 +655,9 @@
     "bannerLevelLabel": "Gravedad del aviso",
     "bannerLevelInfo": "Información",
     "bannerLevelWarning": "Advertencia",
-    "bannerLevelCritical": "Crítico"
+    "bannerLevelCritical": "Crítico",
+    "mergeTitle": "¿Fusionar estas cuentas?",
+    "deleteUserTitle": "¿Eliminar a {{name}}?"
   },
   "dashboard": {
     "title": "Análisis",
@@ -1017,7 +1026,9 @@
     "colPeopleReached": "Personas alcanzadas",
     "noVisits": "Todavía no se registraron eventos en esta sede",
     "connectionUpdated": "Contacto actualizado",
-    "connectionAdded": "Contacto agregado"
+    "connectionAdded": "Contacto agregado",
+    "deleteTitle": "¿Eliminar {{name}}?",
+    "removeConnectionTitle": "¿Quitar este contacto?"
   },
   "federationCard": {
     "title": "Federación",
@@ -1079,7 +1090,8 @@
     "tagFilterAll": "Todos los eventos",
     "tagFilterLabel": "Solo traer eventos con estas etiquetas (opcional)",
     "tagFilterDescription": "Déjalo vacío para traer todos los eventos de esta comunidad hermana. Agrega etiquetas para traer solo los eventos que tengan al menos una.",
-    "tagFilterPlaceholder": "p. ej., nsf-career"
+    "tagFilterPlaceholder": "p. ej., nsf-career",
+    "removeTitle": "¿Quitar esta instancia hermana?"
   },
   "profileView": {
     "totalVisits": "Eventos",
@@ -1119,5 +1131,16 @@
     "stepInstitutionsHint": "Carga escuelas, museos y bibliotecas cercanas (abajo) para que el mapa muestre los huecos de cobertura.",
     "stepFirstEvent": "Registra tu primer evento",
     "stepFirstEventHint": "Registra un evento de divulgación: el panel y los informes cobran vida con el primero."
+  },
+  "confirm": {
+    "typeToConfirm": "Escribe {{word}} para confirmar",
+    "deleteWord": "ELIMINAR"
+  },
+  "errors": {
+    "loadFailedTitle": "No se pudo cargar",
+    "loadFailedBody": "El servidor no respondió como se esperaba. Tus datos están a salvo: es un problema de conexión, no de pérdida de datos. Inténtalo de nuevo en un momento.",
+    "sessionExpiredTitle": "Tu sesión ha caducado",
+    "sessionExpiredBody": "Vuelve a iniciar sesión para continuar.",
+    "retry": "Reintentar"
   }
 }

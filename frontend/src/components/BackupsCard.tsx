@@ -168,7 +168,13 @@ export function BackupsCard() {
           onClick={() =>
             runNow.mutate(undefined, {
               onError: (e) =>
-                alert(e instanceof ApiError ? e.message : t('backupsCard.backupRequestError')),
+                // Toast like every other error in the app; a native alert()
+                // here was the odd one out.
+                notifications.show({
+                  color: 'red',
+                  message:
+                    e instanceof ApiError ? e.message : t('backupsCard.backupRequestError'),
+                }),
             })
           }
         >

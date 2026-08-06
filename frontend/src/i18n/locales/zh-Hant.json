@@ -12,7 +12,12 @@
     "filters": "篩選條件",
     "unexpectedError": "發生未預期的錯誤",
     "clear": "清除",
-    "unsavedConfirm": "你有未儲存的變更。要離開此頁面並捨棄變更嗎？"
+    "unsavedConfirm": "你有未儲存的變更。要離開此頁面並捨棄變更嗎？",
+    "copy": "複製",
+    "copied": "已複製",
+    "save": "儲存",
+    "remove": "移除",
+    "confirm": "確認"
   },
   "layout": {
     "home": "DOCENT 首頁",
@@ -257,7 +262,8 @@
     "fieldHostNotes": "接待人備註",
     "minSuffix": "分鐘",
     "fieldCoPresenters": "協同講者",
-    "broadcastBadge": "遠端／廣播"
+    "broadcastBadge": "遠端／廣播",
+    "deleteTitle": "刪除此活動？"
   },
   "enums": {
     "venueType": {
@@ -492,7 +498,8 @@
     "emptyMatch": "沒有符合「{{q}}」的目錄項目。",
     "emptyYet": "目錄中尚無項目。",
     "institutionCount_one": "{{formattedCount}} 個機構",
-    "institutionCount_other": "{{formattedCount}} 個機構"
+    "institutionCount_other": "{{formattedCount}} 個機構",
+    "deleteTitle": "刪除此機構？"
   },
   "importWizard": {
     "title": "從 CSV 匯入活動",
@@ -648,7 +655,9 @@
     "bannerLevelLabel": "橫幅嚴重程度",
     "bannerLevelInfo": "資訊",
     "bannerLevelWarning": "警告",
-    "bannerLevelCritical": "嚴重"
+    "bannerLevelCritical": "嚴重",
+    "mergeTitle": "合併這些帳戶？",
+    "deleteUserTitle": "刪除 {{name}}？"
   },
   "dashboard": {
     "title": "分析",
@@ -1017,7 +1026,9 @@
     "colPeopleReached": "觸及人數",
     "noVisits": "此場地尚無活動紀錄",
     "connectionUpdated": "聯絡人已更新",
-    "connectionAdded": "聯絡人已新增"
+    "connectionAdded": "聯絡人已新增",
+    "deleteTitle": "刪除 {{name}}？",
+    "removeConnectionTitle": "移除此聯絡人？"
   },
   "federationCard": {
     "title": "聯播網",
@@ -1079,7 +1090,8 @@
     "tagFilterAll": "所有活動",
     "tagFilterLabel": "僅拉取帶有這些標籤的活動（選填）",
     "tagFilterDescription": "留空以拉取此姊妹社群的所有活動。新增標籤以僅拉取帶有其中至少一個標籤的活動。",
-    "tagFilterPlaceholder": "例如：nsf-career"
+    "tagFilterPlaceholder": "例如：nsf-career",
+    "removeTitle": "移除此同級實例？"
   },
   "profileView": {
     "totalVisits": "活動",
@@ -1119,5 +1131,16 @@
     "stepInstitutionsHint": "載入附近的學校、博物館與圖書館（見下方），地圖即可顯示涵蓋空白。",
     "stepFirstEvent": "記錄你的第一場活動",
     "stepFirstEventHint": "記錄一場科普活動——有了第一筆紀錄，儀表板與報告就會生動起來。"
+  },
+  "confirm": {
+    "typeToConfirm": "輸入 {{word}} 以確認",
+    "deleteWord": "DELETE"
+  },
+  "errors": {
+    "loadFailedTitle": "無法載入",
+    "loadFailedBody": "伺服器未如預期回應。你的資料是安全的——這是連線問題，而非資料遺失。請稍後重試。",
+    "sessionExpiredTitle": "登入已過期",
+    "sessionExpiredBody": "請重新登入以繼續。",
+    "retry": "重試"
   }
 }

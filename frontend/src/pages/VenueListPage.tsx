@@ -22,6 +22,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { VENUE_TYPES, type Paginated, type VenueListItem } from '../api/types';
 import { ConnectionFormModal } from '../components/ConnectionFormModal';
+import { usePageTitle } from '../components/usePageTitle';
+import { QueryError } from '../components/QueryError';
 import { EmptyState } from '../components/EmptyState';
 import { VenueFormModal } from '../components/VenuePicker';
 import { useEnumLabel } from '../i18n/enumLabels';
@@ -30,6 +32,7 @@ const PAGE_SIZE = 25;
 
 export function VenueListPage() {
   const { t } = useTranslation();
+  usePageTitle(t('venueList.title'));
   const enumLabel = useEnumLabel();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -49,7 +52,7 @@ export function VenueListPage() {
     page,
     page_size: PAGE_SIZE,
   };
-  const { data } = useQuery({
+  const { data, isError, error, refetch } = useQuery({
     queryKey: ['venues', 'list', params],
     queryFn: () => api.get<Paginated<VenueListItem>>('/api/venues', params),
   });
@@ -103,6 +106,9 @@ export function VenueListPage() {
         </Group>
       </Card>
 
+      {isError && <QueryError error={error} onRetry={() => refetch()} />}
+
+
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={620}>
         <Table highlightOnHover>
@@ -137,7 +143,7 @@ export function VenueListPage() {
                 </Table.Td>
               </Table.Tr>
             ))}
-            {(data?.items.length ?? 0) === 0 && (
+            {!isError && (data?.items.length ?? 0) === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={5} p={0}>
                   <EmptyState

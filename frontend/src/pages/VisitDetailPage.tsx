@@ -18,6 +18,7 @@ import { api, ApiError } from '../api/client';
 import { isOverdue, type Visit } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { OrcidLink } from '../components/OrcidLink';
+import { useConfirm } from '../components/ConfirmProvider';
 import { useEnumLabel } from '../i18n/enumLabels';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -33,6 +34,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 export function VisitDetailPage() {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const enumLabel = useEnumLabel();
   const { id } = useParams();
   const navigate = useNavigate();
@@ -112,8 +114,15 @@ export function VisitDetailPage() {
               color="red"
               variant="light"
               loading={remove.isPending}
-              onClick={() => {
-                if (window.confirm(t('visitDetail.deleteConfirm'))) {
+              onClick={async () => {
+                if (
+                  await confirm({
+                    title: t('visitDetail.deleteTitle'),
+                    message: t('visitDetail.deleteConfirm'),
+                    danger: true,
+                    confirmLabel: t('common.delete'),
+                  })
+                ) {
                   remove.mutate();
                 }
               }}

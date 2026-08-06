@@ -12,7 +12,12 @@
     "filters": "筛选条件",
     "unexpectedError": "意外错误",
     "clear": "清除",
-    "unsavedConfirm": "你有未保存的更改。要离开此页面并放弃这些更改吗？"
+    "unsavedConfirm": "你有未保存的更改。要离开此页面并放弃这些更改吗？",
+    "copy": "复制",
+    "copied": "已复制",
+    "save": "保存",
+    "remove": "移除",
+    "confirm": "确认"
   },
   "layout": {
     "home": "DOCENT 首页",
@@ -257,7 +262,8 @@
     "fieldHostNotes": "接待方备注",
     "minSuffix": "分钟",
     "fieldCoPresenters": "协同讲者",
-    "broadcastBadge": "远程／广播"
+    "broadcastBadge": "远程／广播",
+    "deleteTitle": "删除此活动？"
   },
   "enums": {
     "venueType": {
@@ -492,7 +498,8 @@
     "emptyMatch": "没有与“{{q}}”匹配的目录条目。",
     "emptyYet": "目录中暂无条目。",
     "institutionCount_one": "{{formattedCount}} 个机构",
-    "institutionCount_other": "{{formattedCount}} 个机构"
+    "institutionCount_other": "{{formattedCount}} 个机构",
+    "deleteTitle": "删除此机构？"
   },
   "importWizard": {
     "title": "从 CSV 导入活动",
@@ -648,7 +655,9 @@
     "bannerLevelLabel": "横幅严重程度",
     "bannerLevelInfo": "信息",
     "bannerLevelWarning": "警告",
-    "bannerLevelCritical": "严重"
+    "bannerLevelCritical": "严重",
+    "mergeTitle": "合并这些账户？",
+    "deleteUserTitle": "删除 {{name}}？"
   },
   "dashboard": {
     "title": "数据分析",
@@ -1017,7 +1026,9 @@
     "colPeopleReached": "触达人数",
     "noVisits": "该场地暂无活动",
     "connectionUpdated": "联系人已更新",
-    "connectionAdded": "联系人已添加"
+    "connectionAdded": "联系人已添加",
+    "deleteTitle": "删除 {{name}}？",
+    "removeConnectionTitle": "移除此联系人？"
   },
   "federationCard": {
     "title": "联合",
@@ -1079,7 +1090,8 @@
     "tagFilterAll": "所有活动",
     "tagFilterLabel": "仅拉取带有这些标签的活动（选填）",
     "tagFilterDescription": "留空以拉取此姊妹社区的所有活动。添加标签以仅拉取带有其中至少一个标签的活动。",
-    "tagFilterPlaceholder": "例如：nsf-career"
+    "tagFilterPlaceholder": "例如：nsf-career",
+    "removeTitle": "移除此同级实例？"
   },
   "profileView": {
     "totalVisits": "活动数",
@@ -1119,5 +1131,16 @@
     "stepInstitutionsHint": "加载附近的学校、博物馆和图书馆（见下方），地图即可显示覆盖空白。",
     "stepFirstEvent": "记录你的第一个活动",
     "stepFirstEventHint": "记录一次科普活动——有了第一条记录，仪表盘和报告就会生动起来。"
+  },
+  "confirm": {
+    "typeToConfirm": "输入 {{word}} 以确认",
+    "deleteWord": "DELETE"
+  },
+  "errors": {
+    "loadFailedTitle": "无法加载",
+    "loadFailedBody": "服务器未按预期响应。你的数据是安全的——这是连接问题，而非数据丢失。请稍后重试。",
+    "sessionExpiredTitle": "登录已过期",
+    "sessionExpiredBody": "请重新登录以继续。",
+    "retry": "重试"
   }
 }

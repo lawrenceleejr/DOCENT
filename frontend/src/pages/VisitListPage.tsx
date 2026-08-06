@@ -24,8 +24,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { EmptyState } from '../components/EmptyState';
+import { usePageTitle } from '../components/usePageTitle';
 import { EventImportWizard } from '../components/EventImportWizard';
 import { FilterCard } from '../components/FilterCard';
+import { QueryError } from '../components/QueryError';
 import { buildQuery } from '../api/client';
 import { api } from '../api/client';
 import {
@@ -47,6 +49,7 @@ const PAGE_SIZE = 25;
 
 export function VisitListPage() {
   const { t } = useTranslation();
+  usePageTitle(t('visitList.title'));
   const enumLabel = useEnumLabel();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -73,7 +76,7 @@ export function VisitListPage() {
     page_size: PAGE_SIZE,
   };
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['visits', params],
     queryFn: () => api.get<Paginated<ActivityListItem>>('/api/visits', params),
   });
@@ -271,6 +274,8 @@ export function VisitListPage() {
         </Group>
       </FilterCard>
 
+      {isError && <QueryError error={error} onRetry={() => refetch()} />}
+
       <Card withBorder p={0} visibleFrom="sm">
         <Table.ScrollContainer minWidth={780}>
         <Table highlightOnHover>
@@ -394,7 +399,7 @@ export function VisitListPage() {
               </Table.Tr>
               );
             })}
-            {!isLoading && (data?.items.length ?? 0) === 0 && (
+            {!isLoading && !isError && (data?.items.length ?? 0) === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={8} p={0}>
                   <EmptyState
@@ -425,7 +430,7 @@ export function VisitListPage() {
             onClick={it.id != null ? () => navigate(`/visits/${it.id}`) : undefined}
           />
         ))}
-        {!isLoading && (data?.items.length ?? 0) === 0 && (
+        {!isLoading && !isError && (data?.items.length ?? 0) === 0 && (
           <Card withBorder p={0}>
             <EmptyState
               icon={IconClipboardList}

@@ -16,7 +16,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
+import { AppErrorBoundary } from './components/AppErrorBoundary';
 import { AppNotifications } from './components/AppNotifications';
+import { ConfirmProvider } from './components/ConfirmProvider';
 import { AuthProvider } from './auth/AuthContext';
 import { theme } from './theme';
 
@@ -28,13 +30,19 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider theme={theme} defaultColorScheme="dark">
       <AppNotifications />
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </AuthProvider>
-      </QueryClientProvider>
+      {/* Inside MantineProvider so the fallback is styled, but outside the
+          router and data layer so it catches crashes from any of them. */}
+      <AppErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <ConfirmProvider>
+              <BrowserRouter>
+                <App />
+              </BrowserRouter>
+            </ConfirmProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </AppErrorBoundary>
     </MantineProvider>
   </StrictMode>,
 );
