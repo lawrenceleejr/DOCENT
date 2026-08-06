@@ -1,4 +1,4 @@
-import { Badge, Card, Collapse, Group, Text, UnstyledButton } from '@mantine/core';
+import { Badge, Card, CloseButton, Collapse, Group, Text, UnstyledButton } from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { IconChevronDown, IconChevronUp, IconFilter } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
@@ -10,12 +10,22 @@ import { useTranslation } from 'react-i18next';
  * toggle by default — a phone-width screen can't fit 5-8 filter fields at
  * once, so we hide them until asked for instead of rendering them cramped.
  */
+export interface FilterChip {
+  key: string;
+  label: string;
+  onRemove: () => void;
+}
+
 export function FilterCard({
   children,
   activeCount = 0,
+  activeChips = [],
 }: {
   children: ReactNode;
   activeCount?: number;
+  /** Shown as removable pills while the panel is collapsed on mobile, so an
+   * applied filter is never invisible (and can be cleared without expanding). */
+  activeChips?: FilterChip[];
 }) {
   // Mirrors the "sm" breakpoint used by hiddenFrom/visibleFrom elsewhere in
   // the app, so this collapses exactly where the header switches to mobile.
@@ -57,6 +67,26 @@ export function FilterCard({
             {opened ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
           </Group>
         </UnstyledButton>
+      )}
+      {isMobile && !opened && activeChips.length > 0 && (
+        <Group gap={6} mt="sm">
+          {activeChips.map((chip) => (
+            <Badge
+              key={chip.key}
+              variant="light"
+              rightSection={
+                <CloseButton
+                  size={14}
+                  variant="transparent"
+                  aria-label={chip.label}
+                  onClick={chip.onRemove}
+                />
+              }
+            >
+              {chip.label}
+            </Badge>
+          ))}
+        </Group>
       )}
       <Collapse in={!isMobile || opened}>{children}</Collapse>
     </Card>

@@ -407,6 +407,11 @@ export function MapPage() {
             )}
           </Group>
         </Group>
+        {/* The two layers look alike but mean different things — say so, and
+            note that the header count covers catalog institutions only. */}
+        <Text size="xs" c="dimmed" mt="xs">
+          {t('map.layersExplainer')}
+        </Text>
       </FilterCard>
 
       <Card withBorder p={0} style={{ overflow: 'hidden' }}>

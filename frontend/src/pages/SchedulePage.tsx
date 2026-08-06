@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CopyButton,
+  Divider,
   Group,
   Modal,
   MultiSelect,
@@ -18,7 +19,13 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
-import { IconCalendarPlus, IconCheck, IconCopy, IconExternalLink, IconRss } from '@tabler/icons-react';
+import {
+  IconCalendarPlus,
+  IconCheck,
+  IconCopy,
+  IconDownload,
+  IconExternalLink,
+} from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +43,7 @@ import {
 import { useAuth } from '../auth/AuthContext';
 import { EmptyState } from '../components/EmptyState';
 import { FilterCard } from '../components/FilterCard';
-import { filterParams, type VisitFilters } from '../components/filters';
+import { filterParams, visitFilterChips, type VisitFilters } from '../components/filters';
 import { useEnumLabel } from '../i18n/enumLabels';
 import { toDateString, VisitCard } from './VisitListPage';
 
@@ -119,25 +126,11 @@ export function SchedulePage() {
           </Text>
         </div>
         <Group>
-          <Tooltip
-            label={
-              exportableCount === 0
-                ? t('schedule.addToCalendarEmpty')
-                : t('schedule.addToCalendarTooltip')
-            }
-          >
-            <Button
-              component="a"
-              href={exportableCount === 0 ? undefined : icsHref}
-              variant="default"
-              disabled={exportableCount === 0}
-              leftSection={<IconCalendarPlus size={16} />}
-            >
-              {t('schedule.addToCalendar')}
-            </Button>
-          </Tooltip>
-          <Button variant="default" leftSection={<IconRss size={16} />} onClick={openSub}>
-            {t('schedule.subscribe')}
+          {/* One calendar button. Subscribing is what almost everyone wants
+              (it stays in sync); the one-shot .ics download lives inside the
+              dialog rather than competing with it out here. */}
+          <Button variant="default" leftSection={<IconCalendarPlus size={16} />} onClick={openSub}>
+            {t('schedule.addToCalendar')}
           </Button>
           <Button variant="gradient" onClick={() => navigate('/visits/new?status=planned')}>
             {t('schedule.scheduleEvent')}
@@ -171,10 +164,38 @@ export function SchedulePage() {
           <Text size="xs" c="dimmed">
             {t('schedule.subscribePrivacyNote')}
           </Text>
+          <Divider label={t('schedule.orOneTime')} labelPosition="center" />
+          <Tooltip
+            label={
+              exportableCount === 0
+                ? t('schedule.addToCalendarEmpty')
+                : t('schedule.addToCalendarTooltip')
+            }
+          >
+            <Button
+              component="a"
+              href={exportableCount === 0 ? undefined : icsHref}
+              variant="default"
+              disabled={exportableCount === 0}
+              leftSection={<IconDownload size={16} />}
+              style={{ alignSelf: 'flex-start' }}
+            >
+              {t('schedule.downloadIcs')}
+            </Button>
+          </Tooltip>
         </Stack>
       </Modal>
 
-      <FilterCard activeCount={activeFilterCount}>
+      <FilterCard
+        activeCount={activeFilterCount}
+        activeChips={visitFilterChips(filters, update, {
+          venueType: enumLabel.venueType,
+          eventType: enumLabel.eventType,
+          audienceLevel: enumLabel.audienceLevel,
+          from: t('schedule.fromLabel'),
+          to: t('schedule.toLabel'),
+        })}
+      >
         <Group align="flex-end">
           <DateInput
             label={t('schedule.fromLabel')}
@@ -316,7 +337,7 @@ export function SchedulePage() {
                     <Button
                       size="compact-sm"
                       variant="light"
-                      onClick={() => navigate(`/visits/${it.id}/edit`)}
+                      onClick={() => navigate(`/visits/${it.id}/edit?status=completed`)}
                     >
                       {t('schedule.markDone')}
                     </Button>
@@ -361,7 +382,7 @@ export function SchedulePage() {
                   variant="light"
                   fullWidth
                   mt={4}
-                  onClick={() => navigate(`/visits/${it.id}/edit`)}
+                  onClick={() => navigate(`/visits/${it.id}/edit?status=completed`)}
                 >
                   {t('schedule.markDone')}
                 </Button>

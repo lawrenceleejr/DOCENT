@@ -227,7 +227,8 @@
     "mapHintLink": "地圖",
     "broadcastLabel": "遠端／廣播觸及",
     "broadcastDescription": "適用於 Podcast、影片、直播或其他廣播受眾——與現場觸及分開計算。",
-    "broadcastTooltip": "當受眾並非親臨現場時開啟——例如 Podcast、直播或媒體報導。這些人數會計入遠端觸及，與現場觸及分開統計。"
+    "broadcastTooltip": "當受眾並非親臨現場時開啟——例如 Podcast、直播或媒體報導。這些人數會計入遠端觸及，與現場觸及分開統計。",
+    "privateNote": "私密——絕不會出現在報告或公開頁面中。"
   },
   "visitDetail": {
     "markCompleted": "標記為已完成",
@@ -700,7 +701,10 @@
     "peopleInPerson": "現場",
     "peopleRemote": "遠端／廣播",
     "remoteReachSub": "{{formattedCount}} 遠端",
-    "remoteReachTileSub": "廣播與線上"
+    "remoteReachTileSub": "廣播與線上",
+    "emptyTitle": "尚未記錄任何活動",
+    "emptyDescription": "當你的社群開始記錄科普活動後，此頁面將顯示可匯出用於經費報告的總量、趨勢與分項統計。",
+    "emptyAction": "記錄你的第一場活動"
   },
   "impact": {
     "unavailableTitle": "此頁面目前無法使用",
@@ -757,7 +761,8 @@
     "legendSibling": "姊妹社群活動",
     "fromSibling": "來自 {{name}}",
     "openOnPrimary": "在主要站台上開啟",
-    "allSiblings": "所有夥伴社群"
+    "allSiblings": "所有夥伴社群",
+    "layersExplainer": "橙色與綠色圓點是目錄中的機構——你可以觸及的場所，顏色表示是否已觸及。藍色圓點是你自己新增的場地。上方的計數僅包含目錄機構。"
   },
   "profile": {
     "title": "個人資料",
@@ -888,7 +893,9 @@
     "subscribeExplainer": "將此 URL 加入 Google 日曆（其他日曆 → 透過網址）、Apple 行事曆（檔案 → 新增行事曆訂閱）或 Outlook。你的計畫活動會自動保持同步——不同於一次性的 .ics 下載。",
     "subscribeCopy": "複製",
     "subscribeCopied": "已複製",
-    "subscribePrivacyNote": "此連結為個人專屬——其中的權杖允許行事曆應用程式讀取你的計畫活動（僅此而已）。請勿公開分享。"
+    "subscribePrivacyNote": "此連結為個人專屬——其中的權杖允許行事曆應用程式讀取你的計畫活動（僅此而已）。請勿公開分享。",
+    "downloadIcs": "下載 .ics 檔案",
+    "orOneTime": "或下載一次性檔案"
   },
   "venuePicker": {
     "venueLabel": "場地",

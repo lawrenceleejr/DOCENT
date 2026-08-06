@@ -227,7 +227,8 @@
     "mapHintLink": "地图",
     "broadcastLabel": "远程／广播触及",
     "broadcastDescription": "适用于播客、视频、直播或其他广播受众——与现场触及分开计算。",
-    "broadcastTooltip": "当受众并非亲临现场时开启——例如播客、直播或媒体报道。这些人数计入远程触及，与现场触及分开统计。"
+    "broadcastTooltip": "当受众并非亲临现场时开启——例如播客、直播或媒体报道。这些人数计入远程触及，与现场触及分开统计。",
+    "privateNote": "私密——绝不会出现在报告或公开页面中。"
   },
   "visitDetail": {
     "markCompleted": "标记为已完成",
@@ -700,7 +701,10 @@
     "peopleInPerson": "现场",
     "peopleRemote": "远程／广播",
     "remoteReachSub": "{{formattedCount}} 远程",
-    "remoteReachTileSub": "广播与线上"
+    "remoteReachTileSub": "广播与线上",
+    "emptyTitle": "尚未记录任何活动",
+    "emptyDescription": "当你的社区开始记录科普活动后，此页面将显示可导出用于经费报告的总量、趋势与分项统计。",
+    "emptyAction": "记录你的第一个活动"
   },
   "impact": {
     "unavailableTitle": "此页面不可用",
@@ -757,7 +761,8 @@
     "legendSibling": "姊妹社区活动",
     "fromSibling": "来自 {{name}}",
     "openOnPrimary": "在主实例上打开",
-    "allSiblings": "所有同盟社区"
+    "allSiblings": "所有同盟社区",
+    "layersExplainer": "橙色和绿色圆点是目录中的机构——你可以触达的场所，颜色表示是否已触达。蓝色圆点是你自己添加的场地。上方的计数仅包含目录机构。"
   },
   "profile": {
     "title": "个人资料",
@@ -888,7 +893,9 @@
     "subscribeExplainer": "将此 URL 添加到 Google 日历（其他日历 → 通过网址）、Apple 日历（文件 → 新建日历订阅）或 Outlook。你的计划活动会自动保持同步——不同于一次性的 .ics 下载。",
     "subscribeCopy": "复制",
     "subscribeCopied": "已复制",
-    "subscribePrivacyNote": "此链接为个人专属——其中的令牌允许日历应用读取你的计划活动（仅此而已）。请勿公开分享。"
+    "subscribePrivacyNote": "此链接为个人专属——其中的令牌允许日历应用读取你的计划活动（仅此而已）。请勿公开分享。",
+    "downloadIcs": "下载 .ics 文件",
+    "orOneTime": "或下载一次性文件"
   },
   "venuePicker": {
     "venueLabel": "场地",

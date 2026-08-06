@@ -227,7 +227,8 @@
     "mapHintLink": "bản đồ",
     "broadcastLabel": "Tiếp cận từ xa / phát sóng",
     "broadcastDescription": "Dành cho podcast, video, phát trực tiếp hoặc khán giả phát sóng khác — được tính riêng với tiếp cận trực tiếp.",
-    "broadcastTooltip": "Bật tùy chọn này khi khán giả không có mặt trực tiếp với bạn — podcast, phát trực tiếp hoặc lên báo đài. Những người đó được tính là tiếp cận từ xa, tách biệt với tiếp cận trực tiếp."
+    "broadcastTooltip": "Bật tùy chọn này khi khán giả không có mặt trực tiếp với bạn — podcast, phát trực tiếp hoặc lên báo đài. Những người đó được tính là tiếp cận từ xa, tách biệt với tiếp cận trực tiếp.",
+    "privateNote": "Riêng tư — không bao giờ xuất hiện trong báo cáo hay trên trang công khai."
   },
   "visitDetail": {
     "markCompleted": "Đánh dấu là đã hoàn thành",
@@ -700,7 +701,10 @@
     "peopleInPerson": "Trực tiếp",
     "peopleRemote": "Từ xa / phát sóng",
     "remoteReachSub": "{{formattedCount}} từ xa",
-    "remoteReachTileSub": "phát sóng & trực tuyến"
+    "remoteReachTileSub": "phát sóng & trực tuyến",
+    "emptyTitle": "Chưa ghi sự kiện nào",
+    "emptyDescription": "Khi cộng đồng của bạn ghi lại các sự kiện tiếp cận, trang này sẽ hiển thị tổng số, xu hướng và phân tích mà bạn có thể xuất cho báo cáo tài trợ.",
+    "emptyAction": "Ghi sự kiện đầu tiên"
   },
   "impact": {
     "unavailableTitle": "Trang này không khả dụng",
@@ -757,7 +761,8 @@
     "legendSibling": "Hoạt động cộng đồng đồng cấp",
     "fromSibling": "Từ {{name}}",
     "openOnPrimary": "Mở trên phiên bản chính",
-    "allSiblings": "Tất cả cộng đồng liên kết"
+    "allSiblings": "Tất cả cộng đồng liên kết",
+    "layersExplainer": "Chấm cam và xanh lá là các tổ chức trong danh mục — nơi bạn có thể tiếp cận, tô màu theo việc bạn đã tiếp cận hay chưa. Chấm xanh dương là địa điểm bạn tự thêm. Số đếm ở trên chỉ tính các tổ chức trong danh mục."
   },
   "profile": {
     "title": "Hồ sơ",
@@ -888,7 +893,9 @@
     "subscribeExplainer": "Thêm URL này vào Google Calendar (Lịch khác → Từ URL), Apple Calendar (Tệp → Đăng ký lịch mới) hoặc Outlook. Các sự kiện đã lên kế hoạch của bạn tự động đồng bộ — khác với tải xuống .ics một lần.",
     "subscribeCopy": "Sao chép",
     "subscribeCopied": "Đã sao chép",
-    "subscribePrivacyNote": "Liên kết này là riêng tư — nó chứa token cho phép ứng dụng lịch đọc các sự kiện đã lên kế hoạch của bạn (và chỉ vậy). Đừng chia sẻ công khai."
+    "subscribePrivacyNote": "Liên kết này là riêng tư — nó chứa token cho phép ứng dụng lịch đọc các sự kiện đã lên kế hoạch của bạn (và chỉ vậy). Đừng chia sẻ công khai.",
+    "downloadIcs": "Tải tệp .ics",
+    "orOneTime": "hoặc một tệp dùng một lần"
   },
   "venuePicker": {
     "venueLabel": "Địa điểm",

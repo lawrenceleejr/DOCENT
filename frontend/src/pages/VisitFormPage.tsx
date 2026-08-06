@@ -30,6 +30,7 @@ import {
   IconChevronDown,
   IconChevronRight,
   IconCircleOff,
+  IconLock,
   IconPlus,
   IconTrash,
 } from '@tabler/icons-react';
@@ -97,6 +98,21 @@ interface FormValues {
   links: CoverageLink[];
 }
 
+/** Marks a fieldset whose contents never leave this instance — reports and the
+ * public impact page deliberately exclude them. Saying so is what makes people
+ * comfortable writing a candid reflection or storing a host's phone number. */
+function PrivateNote() {
+  const { t } = useTranslation();
+  return (
+    <Group gap={6} mb="sm" wrap="nowrap">
+      <IconLock size={14} style={{ flexShrink: 0, opacity: 0.7 }} />
+      <Text size="xs" c="dimmed">
+        {t('visitForm.privateNote')}
+      </Text>
+    </Group>
+  );
+}
+
 export function VisitFormPage() {
   const { t } = useTranslation();
   const enumLabel = useEnumLabel();
@@ -106,8 +122,12 @@ export function VisitFormPage() {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [hostOpen, host] = useDisclosure(false);
-  const initialStatus: VisitStatus =
-    searchParams.get('status') === 'planned' ? 'planned' : 'completed';
+  // An explicit ?status= drives both the new-event default and, when editing,
+  // the "Mark done" flip below.
+  const rawStatus = searchParams.get('status');
+  const statusParam: VisitStatus | null =
+    rawStatus === 'planned' ? 'planned' : rawStatus === 'completed' ? 'completed' : null;
+  const initialStatus: VisitStatus = statusParam ?? 'completed';
 
   const { data: existing } = useQuery({
     queryKey: ['visits', id],
@@ -180,7 +200,10 @@ export function VisitFormPage() {
     if (existing) {
       form.setValues({
         venue_id: existing.venue.id,
-        status: existing.status,
+        // "Mark done" links here with ?status=completed: open already flipped to
+        // Completed (with the attendance field revealed) instead of looking
+        // like the button did nothing.
+        status: statusParam ?? existing.status,
         visit_date: new Date(`${existing.visit_date}T00:00:00`),
         start_time: existing.start_time ? existing.start_time.slice(0, 5) : '',
         event_type: existing.event_type,
@@ -208,8 +231,9 @@ export function VisitFormPage() {
       });
       broadcastTouched.current = true;
       // Loading an existing visit is not a user edit — rebaseline so the
-      // unsaved-changes guard only trips on real changes (#11).
-      form.resetDirty();
+      // unsaved-changes guard only trips on real changes (#11). A "Mark done"
+      // status flip IS a pending change, so leave the form dirty there.
+      if (!statusParam || statusParam === existing.status) form.resetDirty();
       if (
         existing.contact_name ||
         existing.contact_email ||
@@ -473,6 +497,7 @@ export function VisitFormPage() {
           </Fieldset>
 
           <Fieldset legend={t('visitForm.hostLegend')} radius="md">
+            <PrivateNote />
             <UnstyledButton onClick={host.toggle} c="brand" fz="sm" fw={600}>
               {hostOpen ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}{' '}
               {t('visitForm.addHostDetails')}
@@ -524,6 +549,7 @@ export function VisitFormPage() {
               appear automatically when the visit is marked Completed. */}
           {!isPlanned && (
           <Fieldset legend={t('visitForm.outcomeLegend')} radius="md">
+            <PrivateNote />
             <Stack>
               <Input.Wrapper label={t('visitForm.howDidItGo')}>
                 <Group gap="sm" align="center">

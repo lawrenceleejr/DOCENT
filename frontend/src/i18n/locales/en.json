@@ -227,7 +227,8 @@
     "mapHintLink": "map",
     "broadcastLabel": "Remote / broadcast reach",
     "broadcastDescription": "For a podcast, video, livestream, or other broadcast audience — counted separately from in-person reach.",
-    "broadcastTooltip": "Turn this on when your audience wasn't physically with you — a podcast, livestream, or media hit. Those people are counted as remote reach, kept separate from in-person attendance."
+    "broadcastTooltip": "Turn this on when your audience wasn't physically with you — a podcast, livestream, or media hit. Those people are counted as remote reach, kept separate from in-person attendance.",
+    "privateNote": "Private — never appears in reports or on the public page."
   },
   "visitDetail": {
     "markCompleted": "Mark as completed",
@@ -700,7 +701,10 @@
     "peopleInPerson": "In person",
     "peopleRemote": "Remote / broadcast",
     "remoteReachSub": "{{formattedCount}} remote",
-    "remoteReachTileSub": "broadcast & online"
+    "remoteReachTileSub": "broadcast & online",
+    "emptyTitle": "No events logged yet",
+    "emptyDescription": "Once your community logs outreach events, this page fills in with totals, trends, and breakdowns you can export for grant reports.",
+    "emptyAction": "Log your first event"
   },
   "impact": {
     "unavailableTitle": "This page isn’t available",
@@ -757,7 +761,8 @@
     "legendSibling": "Sibling community activity",
     "fromSibling": "From {{name}}",
     "openOnPrimary": "Open on the primary instance",
-    "allSiblings": "All sibling communities"
+    "allSiblings": "All sibling communities",
+    "layersExplainer": "Orange and green dots are catalog institutions — places you could reach out to, coloured by whether you have. Blue dots are venues you've added yourself. The count above covers catalog institutions only."
   },
   "profile": {
     "title": "Profile",
@@ -888,7 +893,9 @@
     "subscribeExplainer": "Add this URL to Google Calendar (Other calendars → From URL), Apple Calendar (File → New Calendar Subscription), or Outlook. Your planned events stay in sync automatically — unlike the one-time .ics download.",
     "subscribeCopy": "Copy",
     "subscribeCopied": "Copied",
-    "subscribePrivacyNote": "This link is personal — it contains a token that lets a calendar app read your planned events (and nothing else). Don't share it publicly."
+    "subscribePrivacyNote": "This link is personal — it contains a token that lets a calendar app read your planned events (and nothing else). Don't share it publicly.",
+    "downloadIcs": "Download .ics file",
+    "orOneTime": "or a one-time file"
   },
   "venuePicker": {
     "venueLabel": "Venue",
