@@ -577,3 +577,21 @@ def test_new_venue_types(client):
         assert v["venue_type"] == vt
         got = client.get(f"/api/venues/{v['id']}").json()
         assert got["venue_type"] == vt
+
+
+def test_link_categories_website_slides(client):
+    """website/agenda and slides/materials link categories roundtrip, and links
+    can be attached to a *planned* event (agenda exists before it happens)."""
+    register(client)
+    venue = create_venue(client)
+    v = create_visit(
+        client,
+        venue["id"],
+        status="planned",
+        links=[
+            {"url": "https://conf.example/agenda", "category": "website", "label": "Agenda"},
+            {"url": "https://slides.example/deck", "category": "slides", "label": None},
+        ],
+    )
+    cats = [lk["category"] for lk in v["links"]]
+    assert cats == ["website", "slides"]  # not folded to "other"

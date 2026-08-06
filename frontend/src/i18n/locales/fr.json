@@ -194,7 +194,8 @@
     "reflectionPlaceholder": "Ce qui a fonctionné, ce qui n'a pas fonctionné, idées pour la prochaine fois…",
     "followUpLabel": "Suivi prévu avec ce lieu",
     "coverageLegend": "Couverture médiatique et liens",
-    "coverageDescription": "Ajoutez des liens vers la couverture de presse, les publications sur les réseaux sociaux, les vidéos ou les articles de blogue au sujet de cette activité. Les rapports indiquent quelles activités ont attiré quels types de couverture.",
+    "coverageDescription": "Ajoutez la couverture de presse, les publications sur les réseaux, les vidéos, les billets de blog ou les diapositives et supports de cet événement. Les rapports montrent quelles activités ont suscité quels types de couverture.",
+    "coverageDescriptionPlanned": "Ajoutez le site web ou le programme de l'événement, vos diapositives ou d'autres supports — toute personne consultant l'événement pourra les retrouver.",
     "linkTypeLabel": "Type",
     "linkUrlLabel": "URL",
     "linkUrlPlaceholder": "https://…",
@@ -309,6 +310,8 @@
       "social_media": "Réseaux sociaux",
       "video": "Vidéo",
       "blog": "Blogue",
+      "website": "Site web / programme",
+      "slides": "Diapositives / supports",
       "other": "Autre"
     },
     "hostRelationship": {

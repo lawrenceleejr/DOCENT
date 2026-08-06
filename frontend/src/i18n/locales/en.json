@@ -194,7 +194,8 @@
     "reflectionPlaceholder": "What worked, what didn't, ideas for next time…",
     "followUpLabel": "Follow-up planned with this venue",
     "coverageLegend": "Coverage & links",
-    "coverageDescription": "Link to press coverage, social posts, videos, or blog write-ups of this event. Reports show which activities drew which kinds of coverage.",
+    "coverageDescription": "Link to press coverage, social posts, videos, blog write-ups, or the slides and materials from this event. Reports show which activities drew which kinds of coverage.",
+    "coverageDescriptionPlanned": "Link the event's website or agenda, your slides, or other materials — anyone viewing the event can find them.",
     "linkTypeLabel": "Type",
     "linkUrlLabel": "URL",
     "linkUrlPlaceholder": "https://…",
@@ -309,6 +310,8 @@
       "social_media": "Social media",
       "video": "Video",
       "blog": "Blog",
+      "website": "Website / agenda",
+      "slides": "Slides / materials",
       "other": "Other"
     },
     "hostRelationship": {

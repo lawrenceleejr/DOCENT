@@ -194,7 +194,8 @@
     "reflectionPlaceholder": "哪些做得好，哪些不足，下次可以怎么改进……",
     "followUpLabel": "计划与该场地进行后续跟进",
     "coverageLegend": "报道与链接",
-    "coverageDescription": "添加此次活动相关的媒体报道、社交媒体动态、视频或博客文章链接。报告中会展示哪些活动获得了哪类报道。",
+    "coverageDescription": "添加媒体报道、社交帖子、视频、博客文章，或本次活动的幻灯片和材料的链接。报告会显示哪些活动获得了哪类报道。",
+    "coverageDescriptionPlanned": "添加活动的网站或议程链接、你的幻灯片或其他材料——查看该活动的任何人都能找到它们。",
     "linkTypeLabel": "类型",
     "linkUrlLabel": "网址",
     "linkUrlPlaceholder": "https://…",
@@ -309,6 +310,8 @@
       "social_media": "社交媒体",
       "video": "视频",
       "blog": "博客",
+      "website": "网站／议程",
+      "slides": "幻灯片／材料",
       "other": "其他"
     },
     "hostRelationship": {

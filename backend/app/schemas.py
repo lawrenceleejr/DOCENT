@@ -9,7 +9,17 @@ MAX_TAG_LEN = 50
 MAX_LINKS = 50
 
 # Kinds of external coverage a visit can link to.
-COVERAGE_CATEGORIES = ("press", "social_media", "video", "blog", "other")
+COVERAGE_CATEGORIES = (
+    "press",
+    "social_media",
+    "video",
+    "blog",
+    # Forward-looking links a communicator attaches before the event happens:
+    # the event's website/agenda page, and slides or other materials.
+    "website",
+    "slides",
+    "other",
+)
 
 
 def normalize_tags(tags: list[str] | None) -> list[str]:

@@ -194,7 +194,8 @@
     "reflectionPlaceholder": "Điều gì hiệu quả, điều gì chưa, ý tưởng cho lần sau…",
     "followUpLabel": "Có kế hoạch theo dõi tiếp với địa điểm này",
     "coverageLegend": "Truyền thông & liên kết",
-    "coverageDescription": "Liên kết đến bài báo, bài đăng trên mạng xã hội, video hoặc bài viết blog về sự kiện này. Báo cáo sẽ cho biết hoạt động nào thu hút loại truyền thông nào.",
+    "coverageDescription": "Liên kết bài báo, bài đăng mạng xã hội, video, bài blog, hoặc slide và tài liệu của sự kiện này. Báo cáo cho biết hoạt động nào thu hút loại đưa tin nào.",
+    "coverageDescriptionPlanned": "Liên kết trang web hoặc chương trình của sự kiện, slide của bạn hoặc tài liệu khác — ai xem sự kiện cũng có thể tìm thấy.",
     "linkTypeLabel": "Loại",
     "linkUrlLabel": "URL",
     "linkUrlPlaceholder": "https://…",
@@ -309,6 +310,8 @@
       "social_media": "Mạng xã hội",
       "video": "Video",
       "blog": "Blog",
+      "website": "Trang web / chương trình",
+      "slides": "Slide / tài liệu",
       "other": "Khác"
     },
     "hostRelationship": {

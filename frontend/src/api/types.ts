@@ -399,7 +399,15 @@ export interface ActivityListItem {
   venue: VenueBrief | null;
 }
 
-export const COVERAGE_CATEGORIES = ['press', 'social_media', 'video', 'blog', 'other'] as const;
+export const COVERAGE_CATEGORIES = [
+  'press',
+  'social_media',
+  'video',
+  'blog',
+  'website',
+  'slides',
+  'other',
+] as const;
 export type CoverageCategory = (typeof COVERAGE_CATEGORIES)[number];
 export const COVERAGE_LABELS: Record<string, string> = {
   press: 'Press',
