@@ -227,7 +227,8 @@
     "mapHintLink": "mapa",
     "broadcastLabel": "Remote / broadcast na abot",
     "broadcastDescription": "Para sa podcast, video, livestream, o iba pang broadcast na audience — hiwalay na binibilang sa in-person na abot.",
-    "broadcastTooltip": "I-on ito kapag hindi pisikal na kasama ang iyong audience — isang podcast, livestream, o pagkakalathala sa media. Ang mga taong iyon ay binibilang bilang remote na abot, hiwalay sa in-person na abot."
+    "broadcastTooltip": "I-on ito kapag hindi pisikal na kasama ang iyong audience — isang podcast, livestream, o pagkakalathala sa media. Ang mga taong iyon ay binibilang bilang remote na abot, hiwalay sa in-person na abot.",
+    "privateNote": "Pribado — hindi kailanman lumalabas sa mga report o sa pampublikong page."
   },
   "visitDetail": {
     "markCompleted": "Markahan bilang natapos",
@@ -700,7 +701,10 @@
     "peopleInPerson": "In person",
     "peopleRemote": "Remote / broadcast",
     "remoteReachSub": "{{formattedCount}} remote",
-    "remoteReachTileSub": "broadcast at online"
+    "remoteReachTileSub": "broadcast at online",
+    "emptyTitle": "Wala pang na-log na event",
+    "emptyDescription": "Kapag nag-log na ng mga outreach event ang iyong komunidad, mapupuno ang page na ito ng mga kabuuan, trend, at breakdown na mai-e-export mo para sa mga grant report.",
+    "emptyAction": "I-log ang iyong unang event"
   },
   "impact": {
     "unavailableTitle": "Hindi available ang page na ito",
@@ -757,7 +761,8 @@
     "legendSibling": "Aktibidad ng sibling community",
     "fromSibling": "Mula kay {{name}}",
     "openOnPrimary": "Buksan sa primary instance",
-    "allSiblings": "Lahat ng kapwa community"
+    "allSiblings": "Lahat ng kapwa community",
+    "layersExplainer": "Ang orange at green na mga tuldok ay mga institusyon sa katalogo — mga lugar na maaari mong marating, may kulay batay sa naabot mo na ba. Ang asul na mga tuldok ay mga venue na ikaw mismo ang nagdagdag. Ang bilang sa itaas ay para lamang sa mga institusyon sa katalogo."
   },
   "profile": {
     "title": "Profile",
@@ -888,7 +893,9 @@
     "subscribeExplainer": "Idagdag ang URL na ito sa Google Calendar (Other calendars → From URL), Apple Calendar (File → New Calendar Subscription), o Outlook. Awtomatikong nananatiling naka-sync ang iyong mga planadong event — hindi tulad ng one-time na .ics download.",
     "subscribeCopy": "Kopyahin",
     "subscribeCopied": "Nakopya",
-    "subscribePrivacyNote": "Personal ang link na ito — naglalaman ito ng token na nagpapahintulot sa calendar app na basahin ang iyong mga planadong event (at wala nang iba). Huwag itong ibahagi sa publiko."
+    "subscribePrivacyNote": "Personal ang link na ito — naglalaman ito ng token na nagpapahintulot sa calendar app na basahin ang iyong mga planadong event (at wala nang iba). Huwag itong ibahagi sa publiko.",
+    "downloadIcs": "I-download ang .ics file",
+    "orOneTime": "o isang beses na file"
   },
   "venuePicker": {
     "venueLabel": "Venue",

@@ -227,7 +227,8 @@
     "mapHintLink": "mapa",
     "broadcastLabel": "Alcance remoto / difusión",
     "broadcastDescription": "Para un pódcast, video, transmisión en vivo u otro público de difusión: se contabiliza aparte del alcance presencial.",
-    "broadcastTooltip": "Actívalo cuando tu público no estuvo físicamente contigo: un pódcast, una transmisión en vivo o una aparición en medios. Esas personas se contabilizan como alcance remoto, aparte del alcance presencial."
+    "broadcastTooltip": "Actívalo cuando tu público no estuvo físicamente contigo: un pódcast, una transmisión en vivo o una aparición en medios. Esas personas se contabilizan como alcance remoto, aparte del alcance presencial.",
+    "privateNote": "Privado: nunca aparece en los informes ni en la página pública."
   },
   "visitDetail": {
     "markCompleted": "Marcar como completada",
@@ -700,7 +701,10 @@
     "peopleInPerson": "Presencial",
     "peopleRemote": "Remoto / difusión",
     "remoteReachSub": "{{formattedCount}} remoto",
-    "remoteReachTileSub": "difusión y en línea"
+    "remoteReachTileSub": "difusión y en línea",
+    "emptyTitle": "Aún no hay eventos registrados",
+    "emptyDescription": "Cuando tu comunidad registre eventos de divulgación, esta página se llenará con totales, tendencias y desgloses que podrás exportar para informes de subvenciones.",
+    "emptyAction": "Registra tu primer evento"
   },
   "impact": {
     "unavailableTitle": "Esta página no está disponible",
@@ -757,7 +761,8 @@
     "legendSibling": "Actividad de comunidad hermana",
     "fromSibling": "De {{name}}",
     "openOnPrimary": "Abrir en la instancia principal",
-    "allSiblings": "Todas las comunidades hermanas"
+    "allSiblings": "Todas las comunidades hermanas",
+    "layersExplainer": "Los puntos naranjas y verdes son instituciones del catálogo: lugares a los que podrías llegar, coloreados según si ya lo has hecho. Los puntos azules son sedes que has añadido tú. El recuento de arriba solo incluye instituciones del catálogo."
   },
   "profile": {
     "title": "Perfil",
@@ -888,7 +893,9 @@
     "subscribeExplainer": "Añade esta URL a Google Calendar (Otros calendarios → Desde URL), Apple Calendar (Archivo → Nueva suscripción a calendario) u Outlook. Tus eventos planificados se mantienen sincronizados automáticamente, a diferencia de la descarga .ics puntual.",
     "subscribeCopy": "Copiar",
     "subscribeCopied": "Copiado",
-    "subscribePrivacyNote": "Este enlace es personal: contiene un token que permite a una app de calendario leer tus eventos planificados (y nada más). No lo compartas públicamente."
+    "subscribePrivacyNote": "Este enlace es personal: contiene un token que permite a una app de calendario leer tus eventos planificados (y nada más). No lo compartas públicamente.",
+    "downloadIcs": "Descargar archivo .ics",
+    "orOneTime": "o un archivo puntual"
   },
   "venuePicker": {
     "venueLabel": "Sede",

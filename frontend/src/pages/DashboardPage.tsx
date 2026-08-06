@@ -31,7 +31,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Bar,
   BarChart,
@@ -56,6 +56,7 @@ import {
   type TimeseriesPoint,
   type TopVenueRow,
 } from '../api/types';
+import { EmptyState } from '../components/EmptyState';
 import { FilterCard } from '../components/FilterCard';
 import { StatTile } from '../components/StatTile';
 import { VIZ_DARK, VIZ_LIGHT } from '../components/vizTheme';
@@ -346,6 +347,7 @@ function BreakdownPanel({
 
 export function DashboardPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const enumLabel = useEnumLabel();
   const scheme = useComputedColorScheme('dark');
   const viz = scheme === 'dark' ? VIZ_DARK : VIZ_LIGHT;
@@ -513,6 +515,31 @@ export function DashboardPage() {
   // in-person figure (#38).
   const remoteReached = summary?.total_people_reached_remote ?? 0;
   const inPersonReached = Math.max(0, (summary?.total_people_reached ?? 0) - remoteReached);
+
+  // A brand-new instance would otherwise show a wall of zeros and empty charts
+  // with nothing to do about it. Filters/siblings off means this really is an
+  // empty instance rather than an over-narrow query.
+  if (summary && summary.total_visits === 0 && !hasFilters && !includeSiblings) {
+    return (
+      <Stack>
+        <div>
+          <Title order={2}>{t('dashboard.title')}</Title>
+          <Text c="dimmed" size="sm">
+            {t('dashboard.subtitle')}
+          </Text>
+        </div>
+        <Card withBorder p={0}>
+          <EmptyState
+            icon={IconCalendarStats}
+            title={t('dashboard.emptyTitle')}
+            description={t('dashboard.emptyDescription')}
+            actionLabel={t('dashboard.emptyAction')}
+            onAction={() => navigate('/visits/new')}
+          />
+        </Card>
+      </Stack>
+    );
+  }
 
   return (
     <Stack>

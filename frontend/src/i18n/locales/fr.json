@@ -227,7 +227,8 @@
     "mapHintLink": "carte",
     "broadcastLabel": "Portée à distance / diffusion",
     "broadcastDescription": "Pour un podcast, une vidéo, un direct ou tout autre public diffusé — comptabilisé séparément de la portée en personne.",
-    "broadcastTooltip": "Activez cette option lorsque votre public n'était pas physiquement présent : un podcast, un direct ou une couverture médiatique. Ces personnes sont comptabilisées comme portée à distance, séparément de la portée en personne."
+    "broadcastTooltip": "Activez cette option lorsque votre public n'était pas physiquement présent : un podcast, un direct ou une couverture médiatique. Ces personnes sont comptabilisées comme portée à distance, séparément de la portée en personne.",
+    "privateNote": "Privé — n'apparaît jamais dans les rapports ni sur la page publique."
   },
   "visitDetail": {
     "markCompleted": "Marquer comme terminée",
@@ -700,7 +701,10 @@
     "peopleInPerson": "En personne",
     "peopleRemote": "À distance / diffusion",
     "remoteReachSub": "{{formattedCount}} à distance",
-    "remoteReachTileSub": "diffusion et en ligne"
+    "remoteReachTileSub": "diffusion et en ligne",
+    "emptyTitle": "Aucun événement enregistré",
+    "emptyDescription": "Dès que votre communauté enregistrera des actions de médiation, cette page se remplira de totaux, de tendances et de répartitions exportables pour vos rapports de subvention.",
+    "emptyAction": "Enregistrer votre premier événement"
   },
   "impact": {
     "unavailableTitle": "Cette page n'est pas disponible",
@@ -757,7 +761,8 @@
     "legendSibling": "Activité d'une communauté sœur",
     "fromSibling": "De {{name}}",
     "openOnPrimary": "Ouvrir sur l'instance principale",
-    "allSiblings": "Toutes les communautés sœurs"
+    "allSiblings": "Toutes les communautés sœurs",
+    "layersExplainer": "Les points orange et verts sont des institutions du catalogue — des lieux à toucher, colorés selon que vous l'avez déjà fait. Les points bleus sont les lieux que vous avez ajoutés. Le décompte ci-dessus ne concerne que les institutions du catalogue."
   },
   "profile": {
     "title": "Profil",
@@ -888,7 +893,9 @@
     "subscribeExplainer": "Ajoutez cette URL à Google Agenda (Autres agendas → À partir de l'URL), Apple Calendrier (Fichier → Nouvel abonnement à un calendrier) ou Outlook. Vos événements planifiés restent synchronisés automatiquement, contrairement au téléchargement .ics ponctuel.",
     "subscribeCopy": "Copier",
     "subscribeCopied": "Copié",
-    "subscribePrivacyNote": "Ce lien est personnel : il contient un jeton qui permet à une application de calendrier de lire vos événements planifiés (et rien d'autre). Ne le partagez pas publiquement."
+    "subscribePrivacyNote": "Ce lien est personnel : il contient un jeton qui permet à une application de calendrier de lire vos événements planifiés (et rien d'autre). Ne le partagez pas publiquement.",
+    "downloadIcs": "Télécharger le fichier .ics",
+    "orOneTime": "ou un fichier ponctuel"
   },
   "venuePicker": {
     "venueLabel": "Lieu",

@@ -40,7 +40,7 @@ import {
   type Visit,
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
-import { filterParams, type VisitFilters } from '../components/filters';
+import { filterParams, visitFilterChips, type VisitFilters } from '../components/filters';
 import { useEnumLabel } from '../i18n/enumLabels';
 
 const PAGE_SIZE = 25;
@@ -141,7 +141,16 @@ export function VisitListPage() {
         }}
       />
 
-      <FilterCard activeCount={activeFilterCount}>
+      <FilterCard
+        activeCount={activeFilterCount}
+        activeChips={visitFilterChips(filters, update, {
+          venueType: enumLabel.venueType,
+          eventType: enumLabel.eventType,
+          audienceLevel: enumLabel.audienceLevel,
+          from: t('visitList.fromLabel'),
+          to: t('visitList.toLabel'),
+        })}
+      >
         <Group align="flex-end">
           <TextInput
             label={t('visitList.searchLabel')}
@@ -369,7 +378,9 @@ export function VisitListPage() {
                   )}
                 </Table.Td>
                 <Table.Td ta="right" className="tabular-nums">
-                  {it.people_reached.toLocaleString()}
+                  {/* An upcoming event hasn't reached anyone *yet* — a hard 0
+                      reads as "this drew nobody". */}
+                  {it.status === 'planned' ? '—' : it.people_reached.toLocaleString()}
                 </Table.Td>
                 <Table.Td>
                   {it.rating ? (
@@ -533,7 +544,10 @@ export function VisitCard({ item, onClick }: { item: ActivityListItem; onClick?:
             </Text>
           ) : null}
           <Text size="sm" c="dimmed" className="tabular-nums">
-            {item.people_reached.toLocaleString()} {t('visitList.reachedSuffix')}
+            {/* Upcoming events show "—" rather than "0 reached" (see table). */}
+            {item.status === 'planned'
+              ? '—'
+              : `${item.people_reached.toLocaleString()} ${t('visitList.reachedSuffix')}`}
           </Text>
         </Group>
       </Group>
