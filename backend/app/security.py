@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import secrets
 from datetime import datetime, timedelta, timezone
 
@@ -56,6 +58,28 @@ def decode_access_token(token: str) -> tuple[int, int | None] | None:
         return int(payload["sub"]), (int(iat) if iat is not None else None)
     except (jwt.InvalidTokenError, KeyError, ValueError):
         return None
+
+
+def calendar_feed_token(user_id: int) -> str:
+    """Signed, non-expiring token that authenticates the read-only calendar
+    feed URL (calendar apps can't send cookies). Deterministic per user and
+    derived from SECRET_KEY, so rotating the key revokes every feed URL. It
+    grants access to nothing but the .ics feed."""
+    sig = hmac.new(
+        get_settings().secret_key.encode(), f"calfeed:{user_id}".encode(), hashlib.sha256
+    ).hexdigest()[:32]
+    return f"{user_id}.{sig}"
+
+
+def verify_calendar_feed_token(token: str) -> int | None:
+    """Return the user id for a valid feed token, else None."""
+    user_part, _, sig = token.partition(".")
+    try:
+        user_id = int(user_part)
+    except ValueError:
+        return None
+    expected = calendar_feed_token(user_id)
+    return user_id if hmac.compare_digest(token, expected) else None
 
 
 def _resolve_secure(request: Request | None) -> bool:

@@ -367,7 +367,10 @@
       "running": "Restore in progress",
       "success": "Restore complete",
       "failed": "Restore failed"
-    }
+    },
+    "healthNone": "No backups yet",
+    "healthOk": "Last backup {{ago}}",
+    "healthStale": "Overdue — last backup {{ago}}"
   },
   "dbToolsCard": {
     "title": "Export & import data",
@@ -879,7 +882,13 @@
     "emptyTitle": "Nothing scheduled",
     "emptyDescription": "No upcoming planned events match these filters. Schedule one and it will appear here — ready to export to your calendar.",
     "addToCalendarTooltip": "Exports the events shown here, matching your current filters.",
-    "addToCalendarEmpty": "No events to export yet."
+    "addToCalendarEmpty": "No events to export yet.",
+    "subscribe": "Subscribe",
+    "subscribeModalTitle": "Subscribe your calendar",
+    "subscribeExplainer": "Add this URL to Google Calendar (Other calendars → From URL), Apple Calendar (File → New Calendar Subscription), or Outlook. Your planned events stay in sync automatically — unlike the one-time .ics download.",
+    "subscribeCopy": "Copy",
+    "subscribeCopied": "Copied",
+    "subscribePrivacyNote": "This link is personal — it contains a token that lets a calendar app read your planned events (and nothing else). Don't share it publicly."
   },
   "venuePicker": {
     "venueLabel": "Venue",
@@ -1077,5 +1086,31 @@
     "colType": "Type",
     "colPeople": "People",
     "noEvents": "No events yet."
+  },
+  "tagsCard": {
+    "title": "Tags",
+    "description": "Rename a tag everywhere it's used. Renaming onto an existing tag merges the two — useful when free-text tags drift apart.",
+    "eventCount_one": "{{formattedCount}} event",
+    "eventCount_other": "{{formattedCount}} events",
+    "renameButton": "Rename",
+    "renameModalTitle": "Rename “{{tag}}”",
+    "newTagLabel": "New tag",
+    "mergeNotice": "“{{to}}” already exists — “{{from}}” will be merged into it.",
+    "mergeButton": "Merge tags",
+    "renameConfirmButton": "Rename",
+    "renameSuccess_one": "Updated {{count}} event",
+    "renameSuccess_other": "Updated {{count}} events"
+  },
+  "gettingStarted": {
+    "title": "Getting started",
+    "progress": "{{done}} of {{total}} done",
+    "stepSiteName": "Name your community",
+    "stepSiteNameHint": "Set the community name below — it appears in the header and on the public impact page.",
+    "stepAccessCode": "Set an access code",
+    "stepAccessCodeHint": "Registration always requires it; share it with the communicators you want to let in.",
+    "stepInstitutions": "Import institutions for the map",
+    "stepInstitutionsHint": "Load schools, museums, and libraries near you (below) so the map can show coverage gaps.",
+    "stepFirstEvent": "Log your first event",
+    "stepFirstEventHint": "Record an outreach event — the dashboard and reports come alive with the first one."
   }
 }

@@ -9,7 +9,7 @@ from typing import Any
 import httpx
 from fastapi import APIRouter, Body, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse, Response
-from sqlalchemy import delete, func, or_, select, update
+from sqlalchemy import delete, func, or_, select, text, update
 from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentAdmin, DbSession
@@ -49,9 +49,14 @@ from app.schemas import (
     PasswordResetResult,
     RegistrationSettings,
     RegistrationSettingsUpdate,
+    SetupStatus,
+    TagCount,
+    TagRenameRequest,
+    TagRenameResult,
     UserMergeRequest,
     UserOut,
 )
+from app.schemas import normalize_tags
 from app.security import hash_password
 from app.services import dbtransfer
 from app.services import federation as fed
@@ -424,6 +429,66 @@ def reset_password(user_id: int, _admin: CurrentAdmin, db: DbSession):
     user.password_changed_at = datetime.now(timezone.utc)
     db.commit()
     return PasswordResetResult(user_id=user.id, temporary_password=temporary_password)
+
+
+@router.get("/setup", response_model=SetupStatus)
+def setup_status(_admin: CurrentAdmin, db: DbSession):
+    """What's left of first-run setup — drives the getting-started checklist."""
+    return SetupStatus(
+        site_name_set=bool(effective_site_name(db)),
+        access_code_set=bool(effective_invite_code(db)),
+        institutions_imported=(db.scalar(select(func.count()).select_from(Institution)) or 0) > 0,
+        first_event_logged=(db.scalar(select(func.count()).select_from(Visit)) or 0) > 0,
+    )
+
+
+@router.get("/tags", response_model=list[TagCount])
+def list_tags_with_counts(_admin: CurrentAdmin, db: DbSession):
+    """Every tag in use, with how many events carry it — the admin's view for
+    spotting near-duplicates worth merging (#tag-hygiene)."""
+    tag_rows = select(func.unnest(Visit.tags).label("tag")).subquery()
+    rows = db.execute(
+        select(tag_rows.c.tag, func.count())
+        .group_by(tag_rows.c.tag)
+        .order_by(func.count().desc(), tag_rows.c.tag)
+    ).all()
+    return [TagCount(tag=r[0], count=r[1]) for r in rows]
+
+
+@router.post("/tags/rename", response_model=TagRenameResult)
+def rename_tag(body: TagRenameRequest, _admin: CurrentAdmin, db: DbSession):
+    """Rename a tag across every event (and federation tag filters). Renaming
+    onto an existing tag merges the two; results are deduplicated."""
+    normalized = normalize_tags([body.from_tag]) + normalize_tags([body.to_tag])
+    if len(normalized) != 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Both tags are required"
+        )
+    old, new = normalized
+    if old == new:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The new tag is the same as the old one",
+        )
+
+    # Replace in-array and dedupe (merging onto an existing tag would otherwise
+    # leave it twice). DISTINCT loses order; tag order carries no meaning.
+    replace_sql = (
+        "SET {col} = ("
+        "  SELECT coalesce(array_agg(DISTINCT CASE WHEN t = :old THEN :new ELSE t END), '{{}}')"
+        "  FROM unnest({col}) AS t"
+        ") WHERE :old = ANY({col})"
+    )
+    events = db.execute(
+        text("UPDATE visits " + replace_sql.format(col="tags")),
+        {"old": old, "new": new},
+    )
+    peers = db.execute(
+        text("UPDATE federation_peers " + replace_sql.format(col="tag_filter")),
+        {"old": old, "new": new},
+    )
+    db.commit()
+    return TagRenameResult(events_updated=events.rowcount, peers_updated=peers.rowcount)
 
 
 @router.post("/institutions/import", response_model=InstitutionImportResult)

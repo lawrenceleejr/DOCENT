@@ -463,7 +463,7 @@ export function VisitStatusBadge({ visit }: { visit: Visit }) {
   );
 }
 
-function VisitCard({ item, onClick }: { item: ActivityListItem; onClick?: () => void }) {
+export function VisitCard({ item, onClick }: { item: ActivityListItem; onClick?: () => void }) {
   const { t } = useTranslation();
   const enumLabel = useEnumLabel();
   const isLocal = item.source === 'local';

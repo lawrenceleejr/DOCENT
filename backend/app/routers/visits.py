@@ -2,12 +2,15 @@ import csv
 import io
 from datetime import date, datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from typing import Annotated
+
+from fastapi import APIRouter, Cookie, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import joinedload
 
-from app.deps import CurrentUser, DbSession
+from app.deps import CurrentUser, DbSession, get_current_user
+from app.security import COOKIE_NAME, verify_calendar_feed_token
 from app.models import (
     AudienceLevel,
     EventType,
@@ -393,7 +396,8 @@ def export_csv(
 @router.get("/calendar.ics")
 def calendar_ics(
     db: DbSession,
-    user: CurrentUser,
+    token: str | None = None,
+    docent_token: Annotated[str | None, Cookie(alias=COOKIE_NAME)] = None,
     date_from: date | None = None,
     date_to: date | None = None,
     venue_id: int | None = None,
@@ -407,6 +411,17 @@ def calendar_ics(
     language: str | None = None,
     everyone: bool = False,
 ):
+    # Auth: either the signed feed token (calendar apps subscribing to the URL
+    # can't send cookies) or the normal session cookie for direct downloads.
+    if token is not None:
+        user_id = verify_calendar_feed_token(token)
+        user = db.get(User, user_id) if user_id is not None else None
+        if user is None or not user.is_active:
+            # 401 literal: the `status` query param shadows fastapi.status here.
+            raise HTTPException(status_code=401, detail="Invalid feed token")
+    else:
+        user = get_current_user(db, docent_token)
+
     # Default to the current user's planned (upcoming) events; params allow
     # broader exports (e.g. all of my events) via the same filter machinery.
     # `everyone=true` exports the whole community's schedule (no author filter).

@@ -7,6 +7,7 @@ from sqlalchemy.orm import joinedload
 from app.deps import CurrentUser, DbSession
 from app.models import Connection, HostRelationship, User, UserSchool, Venue, Visit
 from app.schemas import (
+    CalendarFeed,
     ContributorUser,
     DirectoryUserList,
     DirectoryUserOut,
@@ -17,10 +18,23 @@ from app.schemas import (
     UserProfileOut,
     UserUpdate,
 )
-from app.security import create_access_token, hash_password, set_auth_cookie, verify_password
+from app.security import (
+    calendar_feed_token,
+    create_access_token,
+    hash_password,
+    set_auth_cookie,
+    verify_password,
+)
 from app.services.settings import user_directory_visible
 
 router = APIRouter(prefix="/api/users", tags=["users"])
+
+
+@router.get("/me/calendar-feed", response_model=CalendarFeed)
+def my_calendar_feed(user: CurrentUser):
+    """The signed feed URL for subscribing a calendar app to your planned
+    events (the .ics download is one-shot; this stays in sync)."""
+    return CalendarFeed(path=f"/api/visits/calendar.ics?token={calendar_feed_token(user.id)}")
 
 
 @router.patch("/me", response_model=UserOut)

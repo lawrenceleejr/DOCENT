@@ -46,6 +46,8 @@ import type {
 import { LANGUAGES } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { BackupsCard } from '../components/BackupsCard';
+import { GettingStartedCard } from '../components/GettingStartedCard';
+import { TagsCard } from '../components/TagsCard';
 import { LoginHistoryCard } from '../components/LoginHistoryCard';
 import { InstitutionImportCard } from '../components/InstitutionImportCard';
 import { InstitutionManagerCard } from '../components/InstitutionManagerCard';
@@ -496,12 +498,14 @@ export function AdminPage() {
   return (
     <Stack>
       <Title order={2}>{t('admin.title')}</Title>
+      <GettingStartedCard />
       <RegistrationCard />
       <SiteSetupCard />
       <AnalyticsCard />
       <DbToolsCard />
       <FederationCard />
       <BackupsCard />
+      <TagsCard />
       <InstitutionImportCard />
       <InstitutionManagerCard />
 

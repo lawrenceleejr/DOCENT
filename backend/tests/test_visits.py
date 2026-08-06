@@ -648,3 +648,65 @@ def test_admin_password_reset_revokes_sessions(client):
     assert client.get("/api/auth/me").status_code == 401
     client.cookies.set("docent_token", admin_token)
     assert client.get("/api/auth/me").status_code == 200
+
+
+def test_admin_tag_rename_and_merge(client, make_client):
+    """Renaming a tag rewrites every event; renaming onto an existing tag
+    merges (deduped). Admin-only."""
+    register(client)  # admin
+    venue = create_venue(client)
+    create_visit(client, venue["id"], tags=["nsf-career", "outreach"])
+    create_visit(client, venue["id"], tags=["nsf career"])
+
+    r = client.post(
+        "/api/admin/tags/rename", json={"from_tag": "nsf career", "to_tag": "nsf-career"}
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["events_updated"] == 1
+
+    counts = {row["tag"]: row["count"] for row in client.get("/api/admin/tags").json()}
+    assert counts["nsf-career"] == 2 and "nsf career" not in counts
+
+    # Merge within one array dedupes: ["nsf-career","outreach"] -> rename
+    # outreach->nsf-career leaves a single "nsf-career".
+    client.post("/api/admin/tags/rename", json={"from_tag": "outreach", "to_tag": "nsf-career"})
+    counts = {row["tag"]: row["count"] for row in client.get("/api/admin/tags").json()}
+    assert counts == {"nsf-career": 2}
+
+    # Same-tag rename is rejected; non-admins are locked out.
+    assert client.post(
+        "/api/admin/tags/rename", json={"from_tag": "x", "to_tag": "X "}
+    ).status_code == 400
+    other = make_client()
+    register(other, email="plain@example.com")
+    assert other.get("/api/admin/tags").status_code == 403
+
+
+def test_calendar_feed_token(client, make_client):
+    """The signed feed URL serves the user's calendar without a cookie; a
+    tampered token is rejected."""
+    register(client)
+    venue = create_venue(client)
+    create_visit(client, venue["id"], status="planned", visit_date="2030-01-15")
+
+    path = client.get("/api/users/me/calendar-feed").json()["path"]
+    anon = make_client()  # no cookies
+    r = anon.get(path)
+    assert r.status_code == 200
+    assert "BEGIN:VCALENDAR" in r.text and "Why the sky is blue" in r.text
+
+    assert anon.get(path[:-4] + "beef").status_code == 401  # tampered signature
+    assert anon.get("/api/visits/calendar.ics").status_code == 401  # no auth at all
+
+
+def test_admin_setup_status(client):
+    """The first-run checklist reflects instance state."""
+    register(client)
+    s = client.get("/api/admin/setup").json()
+    assert s["first_event_logged"] is False and s["institutions_imported"] is False
+    assert s["access_code_set"] is True  # tests run with an invite code configured
+
+    venue = create_venue(client)
+    create_visit(client, venue["id"])
+    s = client.get("/api/admin/setup").json()
+    assert s["first_event_logged"] is True

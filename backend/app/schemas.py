@@ -320,6 +320,38 @@ class SchoolCreate(BaseModel):
     venue_id: int
 
 
+class SetupStatus(BaseModel):
+    """First-run checklist state for the admin's getting-started card."""
+
+    site_name_set: bool
+    access_code_set: bool
+    institutions_imported: bool
+    first_event_logged: bool
+
+
+class CalendarFeed(BaseModel):
+    """The signed, read-only .ics feed path for the current user."""
+
+    path: str  # e.g. /api/visits/calendar.ics?token=…
+
+
+class TagCount(BaseModel):
+    tag: str
+    count: int
+
+
+class TagRenameRequest(BaseModel):
+    """Rename a tag everywhere; renaming onto an existing tag merges them."""
+
+    from_tag: str = Field(min_length=1, max_length=100)
+    to_tag: str = Field(min_length=1, max_length=100)
+
+
+class TagRenameResult(BaseModel):
+    events_updated: int
+    peers_updated: int
+
+
 class UserMergeRequest(BaseModel):
     into_id: int
 

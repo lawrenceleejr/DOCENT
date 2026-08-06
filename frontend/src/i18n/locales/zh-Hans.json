@@ -367,7 +367,10 @@
       "running": "还原进行中",
       "success": "还原完成",
       "failed": "还原失败"
-    }
+    },
+    "healthNone": "尚无备份",
+    "healthOk": "最近备份：{{ago}}",
+    "healthStale": "已逾期——最近备份：{{ago}}"
   },
   "dbToolsCard": {
     "title": "导出与导入数据",
@@ -879,7 +882,13 @@
     "emptyTitle": "暂无安排",
     "emptyDescription": "没有符合筛选条件的即将进行的计划活动。安排一场活动后，它会出现在这里，随时可以导出到您的日历。",
     "addToCalendarTooltip": "导出当前按筛选条件显示的活动。",
-    "addToCalendarEmpty": "暂时没有可导出的活动。"
+    "addToCalendarEmpty": "暂时没有可导出的活动。",
+    "subscribe": "订阅",
+    "subscribeModalTitle": "订阅到你的日历",
+    "subscribeExplainer": "将此 URL 添加到 Google 日历（其他日历 → 通过网址）、Apple 日历（文件 → 新建日历订阅）或 Outlook。你的计划活动会自动保持同步——不同于一次性的 .ics 下载。",
+    "subscribeCopy": "复制",
+    "subscribeCopied": "已复制",
+    "subscribePrivacyNote": "此链接为个人专属——其中的令牌允许日历应用读取你的计划活动（仅此而已）。请勿公开分享。"
   },
   "venuePicker": {
     "venueLabel": "场地",
@@ -1077,5 +1086,31 @@
     "colType": "类型",
     "colPeople": "人数",
     "noEvents": "暂无活动。"
+  },
+  "tagsCard": {
+    "title": "标签",
+    "description": "在所有使用位置重命名标签。重命名为已有标签会将两者合并——当自由文本标签出现分歧时很有用。",
+    "eventCount_one": "{{formattedCount}} 个活动",
+    "eventCount_other": "{{formattedCount}} 个活动",
+    "renameButton": "重命名",
+    "renameModalTitle": "重命名“{{tag}}”",
+    "newTagLabel": "新标签",
+    "mergeNotice": "“{{to}}”已存在——“{{from}}”将合并到其中。",
+    "mergeButton": "合并标签",
+    "renameConfirmButton": "重命名",
+    "renameSuccess_one": "已更新 {{count}} 个活动",
+    "renameSuccess_other": "已更新 {{count}} 个活动"
+  },
+  "gettingStarted": {
+    "title": "快速上手",
+    "progress": "已完成 {{done}}/{{total}}",
+    "stepSiteName": "为你的社区命名",
+    "stepSiteNameHint": "在下方设置社区名称——它会显示在页眉和公开影响页上。",
+    "stepAccessCode": "设置访问码",
+    "stepAccessCodeHint": "注册始终需要访问码；将它分享给你想邀请的传播者。",
+    "stepInstitutions": "为地图导入机构",
+    "stepInstitutionsHint": "加载附近的学校、博物馆和图书馆（见下方），地图即可显示覆盖空白。",
+    "stepFirstEvent": "记录你的第一个活动",
+    "stepFirstEventHint": "记录一次科普活动——有了第一条记录，仪表盘和报告就会生动起来。"
   }
 }
