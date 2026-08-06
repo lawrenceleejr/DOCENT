@@ -17,12 +17,21 @@ def get_current_user(
     )
     if not docent_token:
         raise credentials_error
-    user_id = decode_access_token(docent_token)
-    if user_id is None:
+    decoded = decode_access_token(docent_token)
+    if decoded is None:
         raise credentials_error
+    user_id, issued_at = decoded
     user = db.get(User, user_id)
     if user is None or not user.is_active:
         raise credentials_error
+    # A password change revokes every session started before it. Comparison is
+    # in whole seconds (JWT iat granularity), so the fresh token minted in the
+    # same request as the change survives; tokens without iat predate the
+    # feature and are treated as older than any change.
+    if user.password_changed_at is not None:
+        changed = int(user.password_changed_at.timestamp())
+        if issued_at is None or issued_at < changed:
+            raise credentials_error
     return user
 
 

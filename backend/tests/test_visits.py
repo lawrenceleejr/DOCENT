@@ -1,3 +1,5 @@
+import time
+
 from tests.conftest import create_venue, create_visit, register
 
 
@@ -595,3 +597,54 @@ def test_link_categories_website_slides(client):
     )
     cats = [lk["category"] for lk in v["links"]]
     assert cats == ["website", "slides"]  # not folded to "other"
+
+
+def test_password_change_revokes_other_sessions(client):
+    """Changing the password kills tokens issued before it; the changing
+    session gets a fresh cookie and stays signed in."""
+    register(client)
+    old_token = client.cookies.get("docent_token")
+    assert client.get("/api/auth/me").status_code == 200
+
+    # Revocation compares whole seconds (JWT iat granularity): a change in the
+    # same second as issuance is deliberately forgiven, so step past it.
+    time.sleep(1.1)
+    r = client.patch(
+        "/api/users/me",
+        json={"current_password": "password123", "new_password": "a-new-password-456"},
+    )
+    assert r.status_code == 200, r.text
+    new_token = client.cookies.get("docent_token")
+    assert new_token and new_token != old_token  # fresh cookie issued
+
+    # The fresh session works…
+    assert client.get("/api/auth/me").status_code == 200
+    # …but the pre-change token is dead everywhere.
+    client.cookies.set("docent_token", old_token)
+    assert client.get("/api/auth/me").status_code == 401
+
+
+def test_admin_password_reset_revokes_sessions(client):
+    """An admin reset logs the target account out of existing sessions."""
+    register(client)  # first user = admin
+    admin_token = client.cookies.get("docent_token")
+    register(client, email="target@example.com", name="Target")
+    target_token = client.cookies.get("docent_token")
+
+    # Target is signed in.
+    assert client.get("/api/auth/me").status_code == 200
+
+    # Same-second changes are forgiven by design (whole-second iat) — step past.
+    time.sleep(1.1)
+    # Admin resets the target's password.
+    client.cookies.set("docent_token", admin_token)
+    payload = client.get("/api/admin/users").json()
+    items = payload["items"] if isinstance(payload, dict) and "items" in payload else payload
+    target_id = next(u["id"] for u in items if u["email"] == "target@example.com")
+    assert client.post(f"/api/admin/users/{target_id}/reset-password").status_code == 200
+
+    # The target's old session is revoked; the admin's own is untouched.
+    client.cookies.set("docent_token", target_token)
+    assert client.get("/api/auth/me").status_code == 401
+    client.cookies.set("docent_token", admin_token)
+    assert client.get("/api/auth/me").status_code == 200

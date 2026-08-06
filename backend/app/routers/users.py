@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import joinedload
 
@@ -15,14 +17,16 @@ from app.schemas import (
     UserProfileOut,
     UserUpdate,
 )
-from app.security import hash_password, verify_password
+from app.security import create_access_token, hash_password, set_auth_cookie, verify_password
 from app.services.settings import user_directory_visible
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
 @router.patch("/me", response_model=UserOut)
-def update_me(body: UserUpdate, user: CurrentUser, db: DbSession):
+def update_me(
+    body: UserUpdate, user: CurrentUser, db: DbSession, request: Request, response: Response
+):
     if body.name is not None:
         user.name = body.name
     if body.affiliation is not None:
@@ -47,6 +51,9 @@ def update_me(body: UserUpdate, user: CurrentUser, db: DbSession):
                 detail="Current password is incorrect",
             )
         user.password_hash = hash_password(body.new_password)
+        # Revoke every other session; the fresh cookie below keeps THIS one.
+        user.password_changed_at = datetime.now(timezone.utc)
+        set_auth_cookie(response, create_access_token(user.id), request)
 
     db.add(user)
     db.commit()

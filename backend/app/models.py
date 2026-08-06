@@ -139,6 +139,10 @@ class User(Base):
     # communicator to their researcher identity and travels with federation.
     orcid: Mapped[str | None] = mapped_column(String(19))
     password_hash: Mapped[str] = mapped_column(String(255))
+    # When the password last changed — sessions issued before this instant are
+    # rejected, so a change (or admin reset) logs the account out everywhere.
+    # Null = never changed; all tokens valid.
+    password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     # Languages this communicator can present in — validated against

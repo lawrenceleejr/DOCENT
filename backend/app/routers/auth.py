@@ -9,6 +9,7 @@ from app.schemas import AuthConfig, LoginRequest, RegisterRequest, UserOut
 from app.security import (
     clear_auth_cookie,
     create_access_token,
+    dummy_verify_password,
     hash_password,
     set_auth_cookie,
     verify_password,
@@ -104,7 +105,15 @@ def register(body: RegisterRequest, request: Request, response: Response, db: Db
 @router.post("/login", response_model=UserOut, dependencies=[Depends(login_rate_limit)])
 def login(body: LoginRequest, request: Request, response: Response, db: DbSession):
     user = db.scalar(select(User).where(User.email == body.email.lower()))
-    if not user or not verify_password(body.password, user.password_hash):
+    # Unknown email burns the same Argon2 time as a wrong password, so response
+    # timing can't be used to discover which emails have accounts.
+    if not user:
+        dummy_verify_password()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+    if not verify_password(body.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",

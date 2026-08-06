@@ -420,6 +420,8 @@ def reset_password(user_id: int, _admin: CurrentAdmin, db: DbSession):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     temporary_password = secrets.token_urlsafe(9)
     user.password_hash = hash_password(temporary_password)
+    # Revoke the account's existing sessions everywhere — the point of a reset.
+    user.password_changed_at = datetime.now(timezone.utc)
     db.commit()
     return PasswordResetResult(user_id=user.id, temporary_password=temporary_password)
 
