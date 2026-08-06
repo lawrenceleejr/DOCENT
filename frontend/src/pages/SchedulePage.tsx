@@ -42,13 +42,16 @@ import {
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { EmptyState } from '../components/EmptyState';
+import { usePageTitle } from '../components/usePageTitle';
 import { FilterCard } from '../components/FilterCard';
+import { QueryError } from '../components/QueryError';
 import { filterParams, visitFilterChips, type VisitFilters } from '../components/filters';
 import { useEnumLabel } from '../i18n/enumLabels';
 import { toDateString, VisitCard } from './VisitListPage';
 
 export function SchedulePage() {
   const { t } = useTranslation();
+  usePageTitle(t('schedule.title'));
   const enumLabel = useEnumLabel();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -77,7 +80,7 @@ export function SchedulePage() {
     sort: 'visit_date', // soonest first
     page_size: 100,
   };
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['visits', 'schedule', params],
     queryFn: () => api.get<Paginated<ActivityListItem>>('/api/visits', params),
     enabled: !!user,
@@ -266,6 +269,8 @@ export function SchedulePage() {
         </Group>
       </FilterCard>
 
+      {isError && <QueryError error={error} onRetry={() => refetch()} />}
+
       {/* Desktop: the full table. */}
       <Card withBorder p={0} visibleFrom="sm">
         <Table.ScrollContainer minWidth={760}>
@@ -346,7 +351,7 @@ export function SchedulePage() {
               </Table.Tr>
               );
             })}
-            {!isLoading && (data?.items.length ?? 0) === 0 && (
+            {!isLoading && !isError && (data?.items.length ?? 0) === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={7} p={0}>
                   <EmptyState
@@ -390,7 +395,7 @@ export function SchedulePage() {
             </div>
           );
         })}
-        {!isLoading && (data?.items.length ?? 0) === 0 && (
+        {!isLoading && !isError && (data?.items.length ?? 0) === 0 && (
           <Card withBorder p={0}>
             <EmptyState
               icon={IconCalendarPlus}

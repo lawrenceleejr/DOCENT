@@ -32,6 +32,7 @@ import {
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { ConnectionFormModal } from '../components/ConnectionFormModal';
+import { useConfirm } from '../components/ConfirmProvider';
 import { VenueFormModal } from '../components/VenuePicker';
 import { useEnumLabel } from '../i18n/enumLabels';
 
@@ -213,6 +214,7 @@ function MergeVenueModal({
 
 export function VenueDetailPage() {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const enumLabel = useEnumLabel();
   const { id } = useParams();
   const navigate = useNavigate();
@@ -343,20 +345,25 @@ export function VenueDetailPage() {
               color="red"
               variant="light"
               loading={remove.isPending}
-              onClick={() => {
-                // A venue with events can now be deleted — but doing so also
-                // permanently deletes those events (anyone's), so confirm with
-                // the count first.
-                const message =
-                  venue.visit_count > 0
+              onClick={async () => {
+                // Deleting a venue also permanently deletes every event held
+                // there — anyone's. That blast radius earns a type-to-confirm
+                // rather than a one-click OK.
+                const cascades = venue.visit_count > 0;
+                const ok = await confirm({
+                  title: t('venueDetail.deleteTitle', { name: venue.name }),
+                  message: t('venueDetail.deleteConfirm'),
+                  warning: cascades
                     ? t('venueDetail.deleteConfirmWithEvents', {
                         count: venue.visit_count,
                         formattedCount: venue.visit_count.toLocaleString(),
                       })
-                    : t('venueDetail.deleteConfirm');
-                if (window.confirm(message)) {
-                  remove.mutate();
-                }
+                    : undefined,
+                  danger: true,
+                  confirmLabel: t('common.delete'),
+                  typeToConfirm: cascades ? t('confirm.deleteWord') : undefined,
+                });
+                if (ok) remove.mutate();
               }}
             >
               {t('common.delete')}
@@ -510,11 +517,17 @@ export function VenueDetailPage() {
                                 <ActionIcon
                                   variant="subtle"
                                   color="red"
-                                  onClick={() => {
+                                  aria-label={t('venueDetail.deleteConnectionTooltip')}
+                                  onClick={async () => {
                                     if (
-                                      window.confirm(
-                                        t('venueDetail.removeConnectionConfirm', { name: row.name }),
-                                      )
+                                      await confirm({
+                                        title: t('venueDetail.removeConnectionTitle'),
+                                        message: t('venueDetail.removeConnectionConfirm', {
+                                          name: row.name,
+                                        }),
+                                        danger: true,
+                                        confirmLabel: t('common.remove'),
+                                      })
                                     ) {
                                       api
                                         .delete(`/api/connections/${row.connection!.id}`)

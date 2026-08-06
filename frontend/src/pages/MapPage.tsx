@@ -30,6 +30,7 @@ import {
   type VenuePoint,
 } from '../api/types';
 import { FilterCard } from '../components/FilterCard';
+import { usePageTitle } from '../components/usePageTitle';
 import { COLORS, coveredIcon, dotIcon, gapIcon } from '../components/mapIcons';
 
 // Sibling-instance activities are a separate layer; give them a distinct grape
@@ -200,6 +201,7 @@ function AdaptiveInstitutions({
 
 export function MapPage() {
   const { t } = useTranslation();
+  usePageTitle(t('map.title'));
   const enumLabel = useEnumLabel();
   const navigate = useNavigate();
   const scheme = useComputedColorScheme('dark');

@@ -57,7 +57,9 @@ import {
   type TopVenueRow,
 } from '../api/types';
 import { EmptyState } from '../components/EmptyState';
+import { usePageTitle } from '../components/usePageTitle';
 import { FilterCard } from '../components/FilterCard';
+import { QueryError } from '../components/QueryError';
 import { StatTile } from '../components/StatTile';
 import { VIZ_DARK, VIZ_LIGHT } from '../components/vizTheme';
 import { useEnumLabel } from '../i18n/enumLabels';
@@ -347,6 +349,7 @@ function BreakdownPanel({
 
 export function DashboardPage() {
   const { t } = useTranslation();
+  usePageTitle(t('dashboard.title'));
   const navigate = useNavigate();
   const enumLabel = useEnumLabel();
   const scheme = useComputedColorScheme('dark');
@@ -410,7 +413,7 @@ export function DashboardPage() {
     setPeopleQuery('');
   };
 
-  const { data: summary } = useQuery({
+  const { data: summary, isError: summaryError, error: summaryErr, refetch: refetchSummary } = useQuery({
     queryKey: ['stats', 'summary', filters, includeFederated],
     queryFn: () =>
       api.get<StatsSummary>('/api/stats/summary', {
@@ -519,6 +522,21 @@ export function DashboardPage() {
   // A brand-new instance would otherwise show a wall of zeros and empty charts
   // with nothing to do about it. Filters/siblings off means this really is an
   // empty instance rather than an over-narrow query.
+  // A failed load must not masquerade as an empty instance (or as zeros).
+  if (summaryError) {
+    return (
+      <Stack>
+        <div>
+          <Title order={2}>{t('dashboard.title')}</Title>
+          <Text c="dimmed" size="sm">
+            {t('dashboard.subtitle')}
+          </Text>
+        </div>
+        <QueryError error={summaryErr} onRetry={() => refetchSummary()} />
+      </Stack>
+    );
+  }
+
   if (summary && summary.total_visits === 0 && !hasFilters && !includeSiblings) {
     return (
       <Stack>

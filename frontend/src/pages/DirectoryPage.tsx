@@ -6,10 +6,13 @@ import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { LANGUAGES, type DirectoryUser, type Paginated } from '../api/types';
 import { OrcidLink } from '../components/OrcidLink';
+import { usePageTitle } from '../components/usePageTitle';
+import { QueryError } from '../components/QueryError';
 import { VenueFilterSelect } from '../components/VenueFilterSelect';
 
 export function DirectoryPage() {
   const { t } = useTranslation();
+  usePageTitle(t('directory.title'));
   const [q, setQ] = useState('');
   const [venueFilter, setVenueFilter] = useState<number | null>(null);
   const [languageFilter, setLanguageFilter] = useState<string | null>(null);
@@ -20,7 +23,7 @@ export function DirectoryPage() {
     language: languageFilter ?? undefined,
     page_size: 100,
   };
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['users', 'directory', params],
     queryFn: () => api.get<Paginated<DirectoryUser>>('/api/users/directory', params),
   });
@@ -60,6 +63,8 @@ export function DirectoryPage() {
           />
         </Group>
       </Card>
+
+      {isError && <QueryError error={error} onRetry={() => refetch()} />}
 
       <Card withBorder p={0}>
         <Table.ScrollContainer minWidth={640}>
@@ -105,7 +110,7 @@ export function DirectoryPage() {
                   </Table.Td>
                 </Table.Tr>
               ))}
-              {!isLoading && (data?.items.length ?? 0) === 0 && (
+              {!isLoading && !isError && (data?.items.length ?? 0) === 0 && (
                 <Table.Tr>
                   <Table.Td colSpan={6}>
                     <Text c="dimmed" ta="center" py="lg">

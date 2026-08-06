@@ -46,6 +46,8 @@ import type {
 import { LANGUAGES } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { BackupsCard } from '../components/BackupsCard';
+import { usePageTitle } from '../components/usePageTitle';
+import { useConfirm } from '../components/ConfirmProvider';
 import { GettingStartedCard } from '../components/GettingStartedCard';
 import { TagsCard } from '../components/TagsCard';
 import { LoginHistoryCard } from '../components/LoginHistoryCard';
@@ -306,7 +308,12 @@ function EmailCell({ user, disabled }: { user: User; disabled: boolean }) {
         <span>{user.email}</span>
         {!disabled && (
           <Tooltip label={t('admin.changeEmailTooltip')}>
-            <ActionIcon variant="subtle" size="sm" onClick={() => { setValue(user.email); setEditing(true); }}>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              aria-label={t('common.edit')}
+              onClick={() => { setValue(user.email); setEditing(true); }}
+            >
               <IconPencil size={14} />
             </ActionIcon>
           </Tooltip>
@@ -323,10 +330,23 @@ function EmailCell({ user, disabled }: { user: User; disabled: boolean }) {
         w={220}
         autoFocus
       />
-      <ActionIcon color="green" variant="light" size="sm" loading={save.isPending} onClick={() => save.mutate()}>
+      <ActionIcon
+        color="green"
+        variant="light"
+        size="sm"
+        aria-label={t('common.save')}
+        loading={save.isPending}
+        onClick={() => save.mutate()}
+      >
         <IconCheck size={14} />
       </ActionIcon>
-      <ActionIcon color="gray" variant="light" size="sm" onClick={() => setEditing(false)}>
+      <ActionIcon
+        color="gray"
+        variant="light"
+        size="sm"
+        aria-label={t('common.cancel')}
+        onClick={() => setEditing(false)}
+      >
         <IconX size={14} />
       </ActionIcon>
     </Group>
@@ -343,6 +363,7 @@ function MergeUserModal({
   onMerged: () => void;
 }) {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const [q, setQ] = useState('');
   const { data } = useQuery({
     queryKey: ['admin', 'users', 'mergepick', q],
@@ -403,8 +424,15 @@ function MergeUserModal({
                 size="xs"
                 variant="light"
                 loading={merge.isPending && merge.variables === u.id}
-                onClick={() => {
-                  if (window.confirm(t('admin.confirmMerge', { source: source?.name, target: u.name })))
+                onClick={async () => {
+                  if (
+                    await confirm({
+                      title: t('admin.mergeTitle'),
+                      message: t('admin.confirmMerge', { source: source?.name, target: u.name }),
+                      danger: true,
+                      confirmLabel: t('admin.mergeHereButton'),
+                    })
+                  )
                     merge.mutate(u.id);
                 }}
               >
@@ -425,6 +453,8 @@ function MergeUserModal({
 
 export function AdminPage() {
   const { t } = useTranslation();
+  usePageTitle(t('admin.title'));
+  const confirm = useConfirm();
   const { user: me } = useAuth();
   const queryClient = useQueryClient();
   const [resetInfo, setResetInfo] = useState<{ name: string; password: string } | null>(null);
@@ -637,8 +667,16 @@ export function AdminPage() {
                           color="red"
                           leftSection={<IconTrash size={14} />}
                           disabled={user.id === me?.id}
-                          onClick={() => {
-                            if (window.confirm(t('admin.confirmDeleteUser', { name: user.name }))) {
+                          onClick={async () => {
+                            if (
+                              await confirm({
+                                title: t('admin.deleteUserTitle', { name: user.name }),
+                                message: t('admin.confirmDeleteUser', { name: user.name }),
+                                danger: true,
+                                confirmLabel: t('common.delete'),
+                                typeToConfirm: t('confirm.deleteWord'),
+                              })
+                            ) {
                               removeUser.mutate(user);
                             }
                           }}

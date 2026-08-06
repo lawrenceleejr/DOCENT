@@ -12,7 +12,12 @@
     "filters": "Filtres",
     "unexpectedError": "Erreur inattendue",
     "clear": "Effacer",
-    "unsavedConfirm": "Vous avez des modifications non enregistrées. Quitter cette page et les abandonner ?"
+    "unsavedConfirm": "Vous avez des modifications non enregistrées. Quitter cette page et les abandonner ?",
+    "copy": "Copier",
+    "copied": "Copié",
+    "save": "Enregistrer",
+    "remove": "Retirer",
+    "confirm": "Confirmer"
   },
   "layout": {
     "home": "Accueil DOCENT",
@@ -257,7 +262,8 @@
     "fieldHostNotes": "Notes sur l'hôte",
     "minSuffix": "min",
     "fieldCoPresenters": "Co-présentateurs",
-    "broadcastBadge": "À distance / diffusion"
+    "broadcastBadge": "À distance / diffusion",
+    "deleteTitle": "Supprimer cet événement ?"
   },
   "enums": {
     "venueType": {
@@ -492,7 +498,8 @@
     "emptyMatch": "Aucune entrée du catalogue ne correspond à « {{q}} ».",
     "emptyYet": "Aucune entrée dans le catalogue pour l'instant.",
     "institutionCount_one": "{{formattedCount}} institution",
-    "institutionCount_other": "{{formattedCount}} institutions"
+    "institutionCount_other": "{{formattedCount}} institutions",
+    "deleteTitle": "Supprimer cette institution ?"
   },
   "importWizard": {
     "title": "Importer des événements depuis un CSV",
@@ -648,7 +655,9 @@
     "bannerLevelLabel": "Niveau de la bannière",
     "bannerLevelInfo": "Information",
     "bannerLevelWarning": "Avertissement",
-    "bannerLevelCritical": "Critique"
+    "bannerLevelCritical": "Critique",
+    "mergeTitle": "Fusionner ces comptes ?",
+    "deleteUserTitle": "Supprimer {{name}} ?"
   },
   "dashboard": {
     "title": "Analyse",
@@ -1017,7 +1026,9 @@
     "colPeopleReached": "Personnes rejointes",
     "noVisits": "Aucun événement enregistré à ce lieu pour l'instant",
     "connectionUpdated": "Contact mis à jour",
-    "connectionAdded": "Contact ajouté"
+    "connectionAdded": "Contact ajouté",
+    "deleteTitle": "Supprimer {{name}} ?",
+    "removeConnectionTitle": "Retirer ce contact ?"
   },
   "federationCard": {
     "title": "Fédération",
@@ -1079,7 +1090,8 @@
     "tagFilterAll": "Tous les événements",
     "tagFilterLabel": "N'importer que les événements ainsi étiquetés (facultatif)",
     "tagFilterDescription": "Laissez vide pour importer tous les événements de cette communauté sœur. Ajoutez des étiquettes pour n'importer que ceux en portant au moins une.",
-    "tagFilterPlaceholder": "p. ex. nsf-career"
+    "tagFilterPlaceholder": "p. ex. nsf-career",
+    "removeTitle": "Retirer cette instance sœur ?"
   },
   "profileView": {
     "totalVisits": "Événements",
@@ -1119,5 +1131,16 @@
     "stepInstitutionsHint": "Chargez les écoles, musées et bibliothèques proches (ci-dessous) pour que la carte montre les zones non couvertes.",
     "stepFirstEvent": "Enregistrez votre premier événement",
     "stepFirstEventHint": "Consignez une action de médiation — le tableau de bord et les rapports prennent vie dès la première."
+  },
+  "confirm": {
+    "typeToConfirm": "Tapez {{word}} pour confirmer",
+    "deleteWord": "SUPPRIMER"
+  },
+  "errors": {
+    "loadFailedTitle": "Chargement impossible",
+    "loadFailedBody": "Le serveur n'a pas répondu comme prévu. Vos données sont intactes — c'est un problème de connexion, pas une perte de données. Réessayez dans un instant.",
+    "sessionExpiredTitle": "Votre session a expiré",
+    "sessionExpiredBody": "Reconnectez-vous pour continuer.",
+    "retry": "Réessayer"
   }
 }

@@ -12,7 +12,12 @@
     "filters": "Bộ lọc",
     "unexpectedError": "Lỗi không mong muốn",
     "clear": "Xóa",
-    "unsavedConfirm": "Bạn có thay đổi chưa lưu. Rời khỏi trang này và bỏ các thay đổi?"
+    "unsavedConfirm": "Bạn có thay đổi chưa lưu. Rời khỏi trang này và bỏ các thay đổi?",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép",
+    "save": "Lưu",
+    "remove": "Gỡ",
+    "confirm": "Xác nhận"
   },
   "layout": {
     "home": "Trang chủ DOCENT",
@@ -257,7 +262,8 @@
     "fieldHostNotes": "Ghi chú về người tiếp đón",
     "minSuffix": "phút",
     "fieldCoPresenters": "Đồng thuyết trình",
-    "broadcastBadge": "Từ xa / phát sóng"
+    "broadcastBadge": "Từ xa / phát sóng",
+    "deleteTitle": "Xóa sự kiện này?"
   },
   "enums": {
     "venueType": {
@@ -492,7 +498,8 @@
     "emptyMatch": "Không có mục nào trong danh mục khớp với \"{{q}}\".",
     "emptyYet": "Danh mục chưa có mục nào.",
     "institutionCount_one": "{{formattedCount}} tổ chức",
-    "institutionCount_other": "{{formattedCount}} tổ chức"
+    "institutionCount_other": "{{formattedCount}} tổ chức",
+    "deleteTitle": "Xóa tổ chức này?"
   },
   "importWizard": {
     "title": "Nhập sự kiện từ CSV",
@@ -648,7 +655,9 @@
     "bannerLevelLabel": "Mức độ của biểu ngữ",
     "bannerLevelInfo": "Thông tin",
     "bannerLevelWarning": "Cảnh báo",
-    "bannerLevelCritical": "Nghiêm trọng"
+    "bannerLevelCritical": "Nghiêm trọng",
+    "mergeTitle": "Gộp các tài khoản này?",
+    "deleteUserTitle": "Xóa {{name}}?"
   },
   "dashboard": {
     "title": "Phân tích",
@@ -1017,7 +1026,9 @@
     "colPeopleReached": "Số người tiếp cận",
     "noVisits": "Chưa có sự kiện nào được ghi nhận tại địa điểm này",
     "connectionUpdated": "Đã cập nhật liên hệ",
-    "connectionAdded": "Đã thêm liên hệ"
+    "connectionAdded": "Đã thêm liên hệ",
+    "deleteTitle": "Xóa {{name}}?",
+    "removeConnectionTitle": "Gỡ liên hệ này?"
   },
   "federationCard": {
     "title": "Liên kết phiên bản",
@@ -1079,7 +1090,8 @@
     "tagFilterAll": "Tất cả sự kiện",
     "tagFilterLabel": "Chỉ lấy sự kiện có các thẻ này (không bắt buộc)",
     "tagFilterDescription": "Để trống để lấy tất cả sự kiện của cộng đồng anh em này. Thêm thẻ để chỉ lấy những sự kiện có ít nhất một thẻ trong số đó.",
-    "tagFilterPlaceholder": "ví dụ: nsf-career"
+    "tagFilterPlaceholder": "ví dụ: nsf-career",
+    "removeTitle": "Gỡ phiên bản anh em này?"
   },
   "profileView": {
     "totalVisits": "Sự kiện",
@@ -1119,5 +1131,16 @@
     "stepInstitutionsHint": "Tải các trường học, bảo tàng, thư viện gần bạn (bên dưới) để bản đồ hiển thị các khoảng trống chưa tiếp cận.",
     "stepFirstEvent": "Ghi sự kiện đầu tiên",
     "stepFirstEventHint": "Ghi lại một sự kiện tiếp cận cộng đồng — bảng điều khiển và báo cáo sống động ngay từ sự kiện đầu tiên."
+  },
+  "confirm": {
+    "typeToConfirm": "Nhập {{word}} để xác nhận",
+    "deleteWord": "XOA"
+  },
+  "errors": {
+    "loadFailedTitle": "Không tải được",
+    "loadFailedBody": "Máy chủ không phản hồi như mong đợi. Dữ liệu của bạn vẫn an toàn — đây là sự cố kết nối, không phải mất dữ liệu. Hãy thử lại sau giây lát.",
+    "sessionExpiredTitle": "Phiên đăng nhập đã hết hạn",
+    "sessionExpiredBody": "Đăng nhập lại để tiếp tục.",
+    "retry": "Thử lại"
   }
 }

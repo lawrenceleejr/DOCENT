@@ -12,7 +12,12 @@
     "filters": "Mga Filter",
     "unexpectedError": "Hindi inaasahang error",
     "clear": "I-clear",
-    "unsavedConfirm": "May mga pagbabago kang hindi pa na-save. Aalis sa page na ito at itatapon ang mga ito?"
+    "unsavedConfirm": "May mga pagbabago kang hindi pa na-save. Aalis sa page na ito at itatapon ang mga ito?",
+    "copy": "Kopyahin",
+    "copied": "Nakopya",
+    "save": "I-save",
+    "remove": "Alisin",
+    "confirm": "Kumpirmahin"
   },
   "layout": {
     "home": "Home ng DOCENT",
@@ -257,7 +262,8 @@
     "fieldHostNotes": "Mga tala tungkol sa host",
     "minSuffix": "min",
     "fieldCoPresenters": "Mga co-presenter",
-    "broadcastBadge": "Remote / broadcast"
+    "broadcastBadge": "Remote / broadcast",
+    "deleteTitle": "I-delete ang event na ito?"
   },
   "enums": {
     "venueType": {
@@ -492,7 +498,8 @@
     "emptyMatch": "Walang entry sa katalogo na tumutugma sa \"{{q}}\".",
     "emptyYet": "Walang entry sa katalogo pa.",
     "institutionCount_one": "{{formattedCount}} institusyon",
-    "institutionCount_other": "{{formattedCount}} institusyon"
+    "institutionCount_other": "{{formattedCount}} institusyon",
+    "deleteTitle": "I-delete ang institusyong ito?"
   },
   "importWizard": {
     "title": "Mag-import ng mga event mula sa CSV",
@@ -648,7 +655,9 @@
     "bannerLevelLabel": "Antas ng banner",
     "bannerLevelInfo": "Impormasyon",
     "bannerLevelWarning": "Babala",
-    "bannerLevelCritical": "Kritikal"
+    "bannerLevelCritical": "Kritikal",
+    "mergeTitle": "Pagsamahin ang mga account na ito?",
+    "deleteUserTitle": "I-delete si {{name}}?"
   },
   "dashboard": {
     "title": "Analysis",
@@ -1017,7 +1026,9 @@
     "colPeopleReached": "Taong naabot",
     "noVisits": "Walang event na naitala sa venue na ito pa",
     "connectionUpdated": "Na-update ang connection",
-    "connectionAdded": "Naidagdag ang connection"
+    "connectionAdded": "Naidagdag ang connection",
+    "deleteTitle": "I-delete ang {{name}}?",
+    "removeConnectionTitle": "Alisin ang contact na ito?"
   },
   "federationCard": {
     "title": "Federation",
@@ -1079,7 +1090,8 @@
     "tagFilterAll": "Lahat ng event",
     "tagFilterLabel": "Kunin lang ang mga event na may ganitong tag (opsyonal)",
     "tagFilterDescription": "Iwanang blangko para kunin ang lahat ng event ng kapatid na komunidad na ito. Magdagdag ng tag para kunin lang ang mga event na may kahit isa sa mga ito.",
-    "tagFilterPlaceholder": "hal. nsf-career"
+    "tagFilterPlaceholder": "hal. nsf-career",
+    "removeTitle": "Alisin ang sibling instance na ito?"
   },
   "profileView": {
     "totalVisits": "Mga event",
@@ -1119,5 +1131,16 @@
     "stepInstitutionsHint": "I-load ang mga paaralan, museo, at aklatan malapit sa iyo (sa ibaba) para maipakita ng mapa ang mga puwang sa saklaw.",
     "stepFirstEvent": "I-log ang iyong unang event",
     "stepFirstEventHint": "Magtala ng outreach event — mabubuhay ang dashboard at mga report sa una pa lang."
+  },
+  "confirm": {
+    "typeToConfirm": "I-type ang {{word}} para kumpirmahin",
+    "deleteWord": "DELETE"
+  },
+  "errors": {
+    "loadFailedTitle": "Hindi ma-load ito",
+    "loadFailedBody": "Hindi tumugon ang server gaya ng inaasahan. Ligtas ang iyong data — problema ito sa koneksyon, hindi pagkawala ng data. Subukan ulit maya-maya.",
+    "sessionExpiredTitle": "Nag-expire na ang iyong session",
+    "sessionExpiredBody": "Mag-sign in ulit para magpatuloy.",
+    "retry": "Subukan ulit"
   }
 }

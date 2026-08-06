@@ -18,6 +18,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
+import { useConfirm } from './ConfirmProvider';
 import { INSTITUTION_TYPES, type AdminInstitution, type Paginated } from '../api/types';
 import { useEnumLabel } from '../i18n/enumLabels';
 
@@ -25,6 +26,7 @@ const PAGE_SIZE = 10;
 
 export function InstitutionManagerCard() {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const enumLabel = useEnumLabel();
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
@@ -165,8 +167,15 @@ export function InstitutionManagerCard() {
                       color="red"
                       variant="subtle"
                       loading={remove.isPending && remove.variables === inst.id}
-                      onClick={() => {
-                        if (window.confirm(t('institutionManagerCard.deleteConfirm', { name: inst.name }))) {
+                      onClick={async () => {
+                        if (
+                          await confirm({
+                            title: t('institutionManagerCard.deleteTitle'),
+                            message: t('institutionManagerCard.deleteConfirm', { name: inst.name }),
+                            danger: true,
+                            confirmLabel: t('common.delete'),
+                          })
+                        ) {
                           remove.mutate(inst.id);
                         }
                       }}

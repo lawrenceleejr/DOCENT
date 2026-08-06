@@ -26,6 +26,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, ApiError } from '../api/client';
+import { useConfirm } from './ConfirmProvider';
 import {
   FEDERATION_INTERVALS,
   type FederationInterval,
@@ -36,6 +37,7 @@ import {
 
 export function FederationCard() {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
 
   const { data: settings } = useQuery({
@@ -507,13 +509,16 @@ export function FederationCard() {
                         color="red"
                         variant="subtle"
                         loading={remove.isPending && remove.variables === peer.id}
-                        onClick={() => {
+                        onClick={async () => {
                           if (
-                            window.confirm(
-                              t('federationCard.confirmRemove', {
+                            await confirm({
+                              title: t('federationCard.removeTitle'),
+                              message: t('federationCard.confirmRemove', {
                                 label: peer.label || peer.feed_url,
                               }),
-                            )
+                              danger: true,
+                              confirmLabel: t('common.remove'),
+                            })
                           ) {
                             remove.mutate(peer.id);
                           }

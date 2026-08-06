@@ -23,11 +23,13 @@ import { useInstitutionOptions, usePositionOptions } from '../api/meta';
 import { LANGUAGES, type School, type StatsSummary, type User, type UserRole } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { OrcidLink } from '../components/OrcidLink';
+import { usePageTitle } from '../components/usePageTitle';
 import { RolesEditor } from '../components/RolesEditor';
 import { VenuePicker } from '../components/VenuePicker';
 
 export function ProfilePage() {
   const { t } = useTranslation();
+  usePageTitle(t('profile.title'));
   const { user, refresh } = useAuth();
   const queryClient = useQueryClient();
   const [newSchoolId, setNewSchoolId] = useState<number | null>(null);

@@ -33,6 +33,8 @@ import {
   type ReportStatusFilter,
 } from '../api/types';
 import { FilterCard } from '../components/FilterCard';
+import { usePageTitle } from '../components/usePageTitle';
+import { QueryError } from '../components/QueryError';
 import { StatTile } from '../components/StatTile';
 import { useEnumLabel } from '../i18n/enumLabels';
 import { IconBroadcast, IconCalendarStats, IconMapPin, IconUsers } from '@tabler/icons-react';
@@ -89,6 +91,7 @@ function MiniTable({
 
 export function ReportsPage() {
   const { t } = useTranslation();
+  usePageTitle(t('reports.title'));
   const enumLabel = useEnumLabel();
   const [scope, setScope] = useState<ReportScope>('all');
   const [status, setStatus] = useState<ReportStatusFilter>('completed');
@@ -115,7 +118,7 @@ export function ReportsPage() {
     tags: tags.length ? tags.join(',') : undefined,
   };
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, isError, error, refetch } = useQuery({
     queryKey: ['report', filterParams],
     queryFn: () =>
       api.get<ActivityReport>('/api/reports/activities', { format: 'json', ...filterParams }),
@@ -260,6 +263,8 @@ export function ReportsPage() {
           ))}
         </Group>
       </Card>
+
+      {isError && <QueryError error={error} onRetry={() => refetch()} />}
 
       <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
         <StatTile
