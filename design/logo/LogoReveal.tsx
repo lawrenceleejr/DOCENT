@@ -77,7 +77,7 @@ export function LogoReveal({
 
         {showTagline && (
           <div className="dc-tagline">
-            <b>D</b>ecentralized&nbsp;&nbsp;<b>O</b>utreach&nbsp;&amp;&nbsp;<b>C</b>ommunity&nbsp;&nbsp;
+            <b>D</b>istributed&nbsp;&nbsp;<b>O</b>utreach&nbsp;&amp;&nbsp;<b>C</b>ommunity&nbsp;&nbsp;
             <b>E</b>ngagement&nbsp;&nbsp;<b>N</b>etwork&nbsp;&nbsp;<b>T</b>racker
           </div>
         )}

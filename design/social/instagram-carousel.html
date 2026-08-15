@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>DOCENT — seamless Instagram carousel (8 × 1080×1350)</title>
+
+<!-- The app's own reveal animation, reused verbatim: the ripple rings, the radar
+     ping, the node flashes and the letter rise all come from this one file. -->
+<link rel="stylesheet" href="../logo/LogoReveal.css" />
+
+<style>
+  /* ── self-hosted brand fonts (same families as the app theme) ───────── */
+  @font-face {
+    font-family: 'Space Grotesk Variable';
+    src: url('fonts/space-grotesk-latin-wght-normal.woff2') format('woff2-variations');
+    font-weight: 300 700; font-display: block; font-style: normal;
+  }
+  @font-face {
+    font-family: 'Inter Variable';
+    src: url('fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+    font-weight: 100 900; font-display: block; font-style: normal;
+  }
+
+  /* ── brand tokens (frontend/src/theme.ts) ──────────────────────────── */
+  :root {
+    --brand-6: #6d41ec;   /* primary        */
+    --brand-5: #7d4ff5;
+    --brand-3: #a98dff;
+    --brand-1: #e4dcff;
+    --brand-0: #f3f0ff;
+    --violet:  #b14fe0;   /* gradient end   */
+    --ink:     #f3f0ff;
+    --ink-2:   #c9c9d4;
+    --ink-3:   #a2a2b3;
+    --base:    #0b0b10;
+
+    --slide-w: 1080px;
+    --slide-h: 1350px;
+    --pad-x: 84px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #000; }
+  body { font-family: 'Inter Variable', Inter, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  /* ── the panorama: one continuous image, later sliced into 8 slides ── */
+  .canvas {
+    position: relative;
+    width: calc(var(--slide-w) * 8);
+    height: var(--slide-h);
+    overflow: hidden;
+    background: var(--base);
+    isolation: isolate;
+  }
+
+  /* Continuous background washes — they ignore the slide grid entirely,
+     which is what makes the swipe read as one moving surface. */
+  .bg { position: absolute; inset: 0; z-index: 0; }
+  .bg::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(1500px 1500px at 540px 675px,  rgba(109, 65, 236, 0.62), rgba(109, 65, 236, 0) 70%),
+      radial-gradient(1700px 1500px at 3100px 250px, rgba(177, 79, 224, 0.26), rgba(177, 79, 224, 0) 70%),
+      radial-gradient(1900px 1600px at 5600px 1250px, rgba(109, 65, 236, 0.28), rgba(109, 65, 236, 0) 70%),
+      radial-gradient(1700px 1500px at 8100px 620px, rgba(177, 79, 224, 0.42), rgba(177, 79, 224, 0) 72%),
+      linear-gradient(90deg, #12101f 0%, #0c0b13 34%, #0b0b10 62%, #100d1b 100%);
+  }
+  /* faint top/bottom vignette so text always sits on quiet ground */
+  .bg::after {
+    content: ''; position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0) 22%, rgba(0,0,0,0) 72%, rgba(0,0,0,0.5));
+  }
+
+  .ripple { position: absolute; inset: 0; z-index: 1; display: block; }
+
+  /* ── slide grid ────────────────────────────────────────────────────── */
+  .slides { position: absolute; inset: 0; z-index: 2; display: flex; }
+  .slide {
+    position: relative;
+    flex: 0 0 var(--slide-w);
+    width: var(--slide-w);
+    height: var(--slide-h);
+    padding: 84px var(--pad-x);
+    overflow: hidden;           /* keeps per-slide furniture inside its frame */
+  }
+
+  /* slide header: mini brand + carousel position */
+  .head { display: flex; align-items: center; justify-content: space-between; height: 36px; }
+  .head-brand { display: flex; align-items: center; gap: 12px; opacity: 0.62; }
+  .head-brand svg { display: block; }
+  .head-brand span {
+    font-family: 'Space Grotesk Variable', sans-serif;
+    font-weight: 700; font-size: 19px; letter-spacing: 0.2em; color: var(--brand-1);
+  }
+  .pips { display: flex; gap: 7px; }
+  .pips i { display: block; width: 22px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.16); }
+  .pips i.on { background: linear-gradient(90deg, var(--brand-5), var(--violet)); width: 38px; }
+
+  /* ── type ──────────────────────────────────────────────────────────── */
+  .body-copy { margin-top: 70px; max-width: 890px; }
+  .eyebrow {
+    font-size: 25px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--brand-3);
+  }
+  h2 {
+    margin-top: 26px;
+    font-family: 'Space Grotesk Variable', sans-serif;
+    font-weight: 700; font-size: 76px; line-height: 1.06; letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+  h2 em {
+    font-style: normal;
+    background: linear-gradient(120deg, #c7b6ff 0%, #e9b6ff 60%, #ffd9f4 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .lede { margin-top: 26px; font-size: 29px; line-height: 1.52; color: var(--ink-2); max-width: 880px; }
+  .lede b { color: var(--ink); font-weight: 600; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; max-width: 880px; }
+  .chip {
+    padding: 11px 20px; border-radius: 999px;
+    border: 1px solid rgba(169,141,255,0.34); background: rgba(109,65,236,0.14);
+    font-size: 23px; font-weight: 500; color: var(--brand-1); white-space: nowrap;
+  }
+
+  /* ── screenshot mockup, bleeding off the bottom edge ───────────────── */
+  .shot {
+    position: absolute; left: 56px; bottom: -112px; width: 1100px;
+    border-radius: 20px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.13);
+    background: #131318;
+    box-shadow: 0 50px 120px rgba(0,0,0,0.62), 0 0 0 1px rgba(109,65,236,0.18);
+    transform: rotate(-1.4deg);
+  }
+  .shot-bar { height: 44px; display: flex; align-items: center; gap: 9px; padding: 0 18px; background: #16161c; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .shot-bar i { width: 11px; height: 11px; border-radius: 50%; background: #34343f; display: block; }
+  .shot img { display: block; width: 100%; }
+
+  /* ── slide 1: the lockup ───────────────────────────────────────────── */
+  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; }
+  .cover .dc-reveal { gap: 0; }
+  /* scale up the app's tagline treatment for print-size type */
+  .cover .dc-tagline { font-size: 18px; letter-spacing: 0.17em; color: var(--ink-3); margin-top: 16px; }
+  .cover .dc-tagline b { color: var(--brand-3); }
+  .cover-line {
+    margin-top: 62px;
+    font-family: 'Space Grotesk Variable', sans-serif;
+    font-weight: 700; font-size: 62px; line-height: 1.16; letter-spacing: -0.01em; color: var(--ink);
+    animation: dcFade 0.9s ease-out 2.4s both;
+  }
+  .cover-line em {
+    font-style: normal;
+    background: linear-gradient(120deg, #c7b6ff, #e9b6ff 55%, #ffd9f4);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .swipe {
+    position: absolute; right: 46px; bottom: 74px;
+    display: flex; align-items: center; gap: 14px;
+    font-size: 21px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: var(--brand-3);
+    animation: dcFade 0.9s ease-out 2.8s both;
+  }
+  /* 2.5s = exactly two cycles per 5s ping, so the exported loop is seamless */
+  .swipe .arrow { animation: dcNudge 2.5s ease-in-out infinite; }
+  @keyframes dcNudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(11px); } }
+
+  /* ── slide 2: the scattered "before" state ─────────────────────────── */
+  .scatter { position: absolute; left: 40px; right: -40px; bottom: -40px; height: 620px; }
+  .sheet {
+    position: absolute; width: 372px; border-radius: 14px;
+    border: 1px dashed rgba(255,255,255,0.16); background: rgba(22,22,28,0.72);
+    padding: 20px; filter: grayscale(0.55); opacity: 0.7;
+  }
+  .sheet h5 { font-size: 20px; font-weight: 600; color: #8a8a9c; letter-spacing: 0.04em; }
+  .sheet .row { height: 12px; border-radius: 3px; background: rgba(255,255,255,0.09); margin-top: 13px; }
+  .sheet .row:nth-child(3) { width: 78%; }
+  .sheet .row:nth-child(5) { width: 62%; }
+  .sheet .row:nth-child(6) { width: 84%; }
+
+  /* ── slide 4: the coverage panel ───────────────────────────────────── */
+  .mapfield {
+    position: relative; height: 664px; overflow: hidden;
+    background:
+      radial-gradient(700px 500px at 22% 30%, rgba(109,65,236,0.20), rgba(109,65,236,0) 70%),
+      radial-gradient(650px 520px at 78% 78%, rgba(177,79,224,0.16), rgba(177,79,224,0) 70%),
+      #0f0f16;
+  }
+  /* graticule + a couple of drawn "roads/rivers" so it reads as a map */
+  .mapfield::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size: 92px 92px;
+  }
+  .mapfield::after {
+    content: ''; position: absolute; inset: -30%;
+    background:
+      linear-gradient(74deg, transparent 48.4%, rgba(255,255,255,0.07) 48.4%, rgba(255,255,255,0.07) 48.9%, transparent 48.9%),
+      linear-gradient(-58deg, transparent 61.5%, rgba(255,255,255,0.055) 61.5%, rgba(255,255,255,0.055) 62%, transparent 62%),
+      linear-gradient(12deg, transparent 33.6%, rgba(120,160,255,0.07) 33.6%, rgba(120,160,255,0.07) 34.4%, transparent 34.4%);
+  }
+  .pin {
+    position: absolute; width: 18px; height: 18px; border-radius: 50%;
+    border: 2.5px solid #fff; box-shadow: 0 0 6px rgba(0,0,0,0.65); z-index: 2;
+  }
+  .pin.halo::after {
+    content: ''; position: absolute; inset: -13px; border-radius: 50%;
+    border: 2px solid currentColor; opacity: 0.45;
+  }
+  .cluster {
+    position: absolute; z-index: 2; width: 62px; height: 62px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(232,132,58,0.28); border: 2px solid rgba(232,132,58,0.85);
+    color: #ffd9bd; font-size: 24px; font-weight: 700;
+  }
+  .map-legend {
+    position: absolute; left: 26px; top: 24px; z-index: 3;
+    display: flex; gap: 22px; padding: 14px 22px; border-radius: 12px;
+    background: rgba(19,19,24,0.9); border: 1px solid rgba(255,255,255,0.1);
+    font-size: 22px; color: var(--ink-2);
+  }
+  .map-legend span { display: flex; align-items: center; gap: 10px; }
+  .map-legend b { width: 15px; height: 15px; border-radius: 50%; border: 2px solid #fff; display: block; }
+  .map-callout {
+    position: absolute; z-index: 4; width: 402px; padding: 20px 24px; border-radius: 14px;
+    background: rgba(19,19,24,0.96); border: 1px solid rgba(232,132,58,0.5);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  }
+  .mc-title { font-size: 25px; font-weight: 600; color: var(--ink); }
+  .mc-sub { margin-top: 6px; font-size: 21px; color: var(--ink-3); }
+  .mc-cta { margin-top: 14px; font-size: 22px; font-weight: 600; color: #f0a06a; }
+
+  /* ── slide 7: the terminal ─────────────────────────────────────────── */
+  .term {
+    position: absolute; left: 84px; bottom: 96px; width: 912px;
+    border-radius: 18px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.13); background: rgba(10,10,13,0.88);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+  }
+  .term-body { padding: 30px 34px 34px; font-family: 'DejaVu Sans Mono', ui-monospace, monospace; font-size: 26px; line-height: 1.8; }
+  .term-body .p { color: var(--brand-3); }
+  .term-body .c { color: var(--ink); }
+  .term-body .ok { color: #4ec9a0; }
+  .term-body .d { color: #6d6d80; }
+
+  /* ── slide 8: the call to action ───────────────────────────────────── */
+  .cta { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; }
+  .cta h2 { font-size: 88px; margin-top: 40px; }
+  .url {
+    margin-top: 46px; padding: 24px 46px; border-radius: 18px;
+    border: 1px solid rgba(169,141,255,0.4);
+    background: linear-gradient(135deg, rgba(109,65,236,0.34), rgba(177,79,224,0.24));
+    font-family: 'Space Grotesk Variable', sans-serif; font-weight: 700; font-size: 44px; color: #fff; letter-spacing: -0.01em;
+  }
+  .creds { margin-top: 26px; font-size: 26px; line-height: 1.6; color: var(--ink-2); }
+  .creds code { font-family: 'DejaVu Sans Mono', ui-monospace, monospace; color: var(--brand-1); font-size: 24px; }
+  .repo { margin-top: 40px; font-size: 27px; color: var(--ink-3); }
+  .repo b { color: var(--ink); font-weight: 600; }
+  .cta-foot { margin-top: 52px; font-size: 24px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--brand-3); }
+
+  /* ── panorama ripple accents ───────────────────────────────────────── */
+  .dcx-ping { vector-effect: non-scaling-stroke; }
+  .dcx-node { transform-box: fill-box; transform-origin: center; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cover-line, .swipe, .swipe .arrow { animation: none !important; }
+  }
+</style>
+</head>
+
+<body>
+<div class="canvas" id="canvas">
+  <div class="bg"></div>
+
+  <!-- One ripple system for the whole panorama: concentric orbits centred on
+       the logo in slide 1, expanding right across all eight slides. The arcs
+       and the thread between the nodes are what cross the slide seams. -->
+  <svg class="ripple" id="ripple" viewBox="0 0 8640 1350" width="8640" height="1350" aria-hidden="true"></svg>
+
+  <div class="slides">
+
+    <!-- ═══════════ 1 · cover ═══════════ -->
+    <section class="slide">
+      <div class="cover">
+        <div class="dc-reveal">
+          <div class="dc-reveal-lockup" style="gap: 46px">
+            <svg class="dc-svg" width="290" height="290" viewBox="0 0 64 64" role="img" aria-label="DOCENT logo"
+                 style="display:block; filter: drop-shadow(0 24px 60px rgba(109,65,236,0.4))">
+              <defs>
+                <linearGradient id="dcRevealGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#6d41ec" />
+                  <stop offset="1" stop-color="#b14fe0" />
+                </linearGradient>
+              </defs>
+              <rect class="dc-tile" x="1.5" y="1.5" width="61" height="61" rx="15" fill="url(#dcRevealGrad)" />
+              <circle class="dc-el dc-ring3" cx="32" cy="32" r="21.5" fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="1.7" />
+              <circle class="dc-el dc-ring2" cx="32" cy="32" r="15" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.9" />
+              <circle class="dc-el dc-ring1" cx="32" cy="32" r="8.5" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2.1" />
+              <circle class="dc-el dc-wave" cx="32" cy="32" r="24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2" />
+              <g class="dc-el dc-sat1"><circle class="dc-flash1" cx="37.5" cy="25.5" r="2.5" fill="#fff" /></g>
+              <g class="dc-el dc-sat2"><circle class="dc-flash2" cx="17.9" cy="26.9" r="2.5" fill="#fff" /></g>
+              <g class="dc-el dc-sat3"><circle class="dc-flash2" cx="35.9" cy="46.5" r="2.5" fill="#fff" /></g>
+              <g class="dc-el dc-sat4"><circle class="dc-flash3" cx="51.5" cy="41.1" r="2.5" fill="#fff" /></g>
+              <g class="dc-el dc-node"><circle class="dc-core" cx="32" cy="32" r="4" fill="#fff" /></g>
+            </svg>
+
+            <div class="dc-wordmark" style="font-size: 116px; letter-spacing: 0.06em">
+              <span class="dc-letter" style="animation-delay:1.35s">D</span><span class="dc-letter" style="animation-delay:1.42s">O</span><span class="dc-letter" style="animation-delay:1.49s">C</span><span class="dc-letter" style="animation-delay:1.56s">E</span><span class="dc-letter" style="animation-delay:1.63s">N</span><span class="dc-letter" style="animation-delay:1.70s">T</span>
+            </div>
+
+            <div class="dc-tagline">
+              <b>D</b>istributed&nbsp;&nbsp;<b>O</b>utreach&nbsp;&amp;&nbsp;<b>C</b>ommunity&nbsp;&nbsp;<b>E</b>ngagement&nbsp;&nbsp;<b>N</b>etwork&nbsp;&nbsp;<b>T</b>racker
+            </div>
+          </div>
+        </div>
+
+        <div class="cover-line">Reach out.<br />Track it.<br /><em>Prove your Broad Impact.</em></div>
+      </div>
+
+      <div class="swipe">Swipe <span class="arrow">
+        <svg width="46" height="18" viewBox="0 0 46 18" fill="none" aria-hidden="true">
+          <path d="M0 9h42M34 1l8 8-8 8" stroke="#a98dff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg></span>
+      </div>
+    </section>
+
+    <!-- ═══════════ 2 · the problem ═══════════ -->
+    <section class="slide" data-pip="2">
+      <div class="body-copy">
+        <div class="eyebrow">The problem</div>
+        <h2>Your outreach is <em>everywhere</em> — and nowhere.</h2>
+        <p class="lede">The school visits, the festival table, the observing night, the podcast. Logged in somebody’s spreadsheet, somebody else’s inbox, and three people’s memory. Then the <b>Broad Impact</b> section of the grant report is due on Friday.</p>
+      </div>
+
+      <div class="scatter">
+        <div class="sheet" style="left: 14px;  top: 84px;  transform: rotate(-5deg)"><h5>outreach_2024_FINAL.xlsx</h5><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div></div>
+        <div class="sheet" style="left: 402px; top: 190px; transform: rotate(3.5deg)"><h5>visits – copy (2).csv</h5><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div></div>
+        <div class="sheet" style="left: 748px; top: 40px;  transform: rotate(-2deg)"><h5>Re: Fwd: numbers?</h5><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 3 · one shared record ═══════════ -->
+    <section class="slide" data-pip="3">
+      <div class="body-copy">
+        <div class="eyebrow">One shared record</div>
+        <h2>Everyone logs it.<br /><em>Everyone sees it.</em></h2>
+        <p class="lede">Communicators log an event once — venue, date, host, audience, people reached — and the whole community works from one live list. Searchable, filterable, exportable, and importable from the spreadsheet you already keep.</p>
+      </div>
+      <div class="shot"><div class="shot-bar"><i></i><i></i><i></i></div><img src="../../docs/screenshots/01-visits.png" alt="DOCENT events list" /></div>
+    </section>
+
+    <!-- ═══════════ 4 · coverage map ═══════════ -->
+    <section class="slide" data-pip="4">
+      <div class="body-copy">
+        <div class="eyebrow">Coverage</div>
+        <h2>See exactly who you're <em>missing</em>.</h2>
+        <p class="lede">Import every school, college, museum, and library in your region from OpenStreetMap. Each one sits on the map as an orange <b>gap</b> until someone reaches it — then it turns green. Click a gap to log an event right there.</p>
+      </div>
+      <!-- The map screenshot can't be used here: OpenStreetMap tiles render in
+           the browser, so they come out blank in a static capture. This panel
+           shows the same thing with the app's own marker colours
+           (frontend/src/components/mapIcons.ts). -->
+      <div class="shot mapcard">
+        <div class="shot-bar"><i></i><i></i><i></i></div>
+        <div class="mapfield" id="mapfield">
+          <div class="map-legend">
+            <span><b style="background:#e8843a"></b>Gap</span>
+            <span><b style="background:#199e70"></b>Reached</span>
+            <span><b style="background:#6d41ec"></b>Your venue</span>
+          </div>
+          <div class="map-callout" style="left: 452px; top: 214px">
+            <div class="mc-title">Cedar Ridge Middle School</div>
+            <div class="mc-sub">Middle school · no events yet</div>
+            <div class="mc-cta">Log an event here →</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 5 · analysis ═══════════ -->
+    <section class="slide" data-pip="5">
+      <div class="body-copy">
+        <div class="eyebrow">Analysis</div>
+        <h2>Your impact, <em>already added up</em>.</h2>
+        <p class="lede">Events and people reached over time, with in-person and broadcast reach counted separately. Breakdowns by venue type and audience level, top venues, and a community leaderboard — live, for everyone.</p>
+      </div>
+      <div class="shot"><div class="shot-bar"><i></i><i></i><i></i></div><img src="../../docs/screenshots/02-dashboard.png" alt="DOCENT analysis dashboard" /></div>
+    </section>
+
+    <!-- ═══════════ 6 · reports ═══════════ -->
+    <section class="slide" data-pip="6">
+      <div class="body-copy">
+        <div class="eyebrow">Reporting season</div>
+        <h2><em>Broad Impact</em>, in one click.</h2>
+        <p class="lede">Pick a date range and a scope, then download a grant-ready summary of your community’s activity. Factual data only — never private notes, reflections, or ratings.</p>
+        <div class="chips"><span class="chip">PDF</span><span class="chip">CSV</span><span class="chip">Markdown</span><span class="chip">LaTeX</span><span class="chip">JSON</span></div>
+      </div>
+      <div class="shot"><div class="shot-bar"><i></i><i></i><i></i></div><img src="../../docs/screenshots/07-reports.png" alt="DOCENT reports export" /></div>
+    </section>
+
+    <!-- ═══════════ 7 · self-hosted ═══════════ -->
+    <section class="slide" data-pip="7">
+      <div class="body-copy">
+        <div class="eyebrow">Yours, entirely</div>
+        <h2>Runs on <em>your</em> server. Nobody else’s.</h2>
+        <p class="lede">One command brings up the app, the database, and nightly rotated backups. Your records never leave your institution, which keeps data governance and <b>FERPA</b> simple — and it’s free and open source under the GPL.</p>
+        <div class="chips"><span class="chip">Self-hosted</span><span class="chip">Nightly backups</span><span class="chip">Automatic HTTPS</span><span class="chip">7 languages</span><span class="chip">Federates with sibling instances</span></div>
+      </div>
+
+      <div class="term">
+        <div class="shot-bar"><i></i><i></i><i></i></div>
+        <div class="term-body">
+          <div><span class="p">$</span> <span class="c">git clone …/DOCENT &amp;&amp; cd DOCENT</span></div>
+          <div><span class="p">$</span> <span class="c">./scripts/start.sh</span></div>
+          <div class="ok">✔ .env created · random secrets generated</div>
+          <div class="ok">✔ web app · postgres · nightly backups</div>
+          <div class="d">→ http://localhost:8080</div>
+          <div class="d">→ your access code is printed above ↑</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ 8 · call to action ═══════════ -->
+    <section class="slide" data-pip="8">
+      <div class="cta">
+        <svg width="118" height="118" viewBox="0 0 64 64" role="img" aria-label="DOCENT" style="filter: drop-shadow(0 20px 50px rgba(177,79,224,0.45))">
+          <defs>
+            <linearGradient id="dcCtaGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#6d41ec" /><stop offset="1" stop-color="#b14fe0" />
+            </linearGradient>
+          </defs>
+          <rect x="1.5" y="1.5" width="61" height="61" rx="15" fill="url(#dcCtaGrad)" />
+          <circle cx="32" cy="32" r="21.5" fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="1.7" />
+          <circle cx="32" cy="32" r="15" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.9" />
+          <circle cx="32" cy="32" r="8.5" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2.1" />
+          <circle cx="37.5" cy="25.5" r="2.5" fill="#fff" /><circle cx="17.9" cy="26.9" r="2.5" fill="#fff" />
+          <circle cx="35.9" cy="46.5" r="2.5" fill="#fff" /><circle cx="51.5" cy="41.1" r="2.5" fill="#fff" />
+          <circle class="dc-core" cx="32" cy="32" r="4" fill="#fff" />
+        </svg>
+
+        <h2>Try it <em>right now</em>.</h2>
+        <div class="url">test.docentoutreach.org</div>
+        <div class="creds">Log in with <code>testuser@utk.edu</code> / <code>12345678</code><br />or register with access code <code>3dd2b671</code></div>
+        <div class="repo">Self-host it: <b>github.com/lawrenceleejr/DOCENT</b></div>
+        <div class="cta-foot">Reach out · Track it · Prove your Broad Impact</div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  /* ── slide furniture: mini brand + carousel pips on slides 2–8 ─────── */
+  const MARK = `<svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
+      <defs><linearGradient id="g%I%" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#6d41ec"/><stop offset="1" stop-color="#b14fe0"/></linearGradient></defs>
+      <rect x="1.5" y="1.5" width="61" height="61" rx="15" fill="url(#g%I%)"/>
+      <circle cx="32" cy="32" r="21.5" fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="2.6"/>
+      <circle cx="32" cy="32" r="15" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2.8"/>
+      <circle cx="32" cy="32" r="8.5" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="3"/>
+      <circle cx="32" cy="32" r="4.6" fill="#fff"/></svg>`;
+
+  document.querySelectorAll('.slide[data-pip]').forEach((slide) => {
+    const n = Number(slide.dataset.pip);
+    const pips = Array.from({ length: 8 }, (_, i) => `<i class="${i === n - 1 ? 'on' : ''}"></i>`).join('');
+    slide.insertAdjacentHTML('afterbegin',
+      `<div class="head">
+         <div class="head-brand">${MARK.replaceAll('%I%', String(n))}<span>DOCENT</span></div>
+         <div class="pips">${pips}</div>
+       </div>`);
+  });
+
+  /* ── slide 4: institutions scattered over the coverage panel ───────── */
+  const GAP = '#e8843a', REACHED = '#199e70', VENUE = '#6d41ec';
+  const pins = [
+    [ 62, 486, GAP], [148, 214, REACHED], [212, 402, GAP], [286, 118, GAP],
+    [318, 560, REACHED], [392, 306, GAP], [438, 470, VENUE], [512, 128, REACHED],
+    [566, 596, GAP], [604, 372, GAP], [676, 226, REACHED], [716, 520, GAP],
+    [788, 108, GAP], [822, 424, REACHED], [884, 588, GAP], [928, 268, GAP],
+    [986, 470, REACHED], [1024, 148, GAP], [372, 640, GAP], [1042, 604, VENUE],
+  ];
+  const field = document.getElementById('mapfield');
+  if (field) {
+    pins.forEach(([x, y, color], i) => {
+      const d = document.createElement('div');
+      d.className = `pin${i % 4 === 0 ? ' halo' : ''}`;
+      d.style.cssText = `left:${x}px; top:${y}px; background:${color}; color:${color}`;
+      field.appendChild(d);
+    });
+    const c = document.createElement('div');
+    c.className = 'cluster';
+    c.style.cssText = 'left: 906px; top: 146px';
+    c.textContent = '12';
+    field.appendChild(c);
+  }
+
+  /* ── the panorama ripple ───────────────────────────────────────────────
+     Concentric orbits centred on the cover logo, growing by a fixed ratio
+     until they run off the end of the canvas, with community nodes snapped
+     onto the arcs and a thread stitched between them. Every element that
+     crosses a slide boundary is drawn here, on one uninterrupted surface. */
+  const CX = 540, CY = 675, W = 8640, H = 1350;
+  const svg = document.getElementById('ripple');
+  const el = (tag, attrs) => {
+    const n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v));
+    return n;
+  };
+
+  // orbits — opacity tapers with radius, the way the logo's three rings do
+  const radii = [];
+  for (let r = 132; r < 9400; r *= 1.108) radii.push(r);
+  radii.forEach((r, i) => {
+    const t = i / (radii.length - 1);
+    const near = Math.max(0, 1 - t * 1.35);
+    svg.appendChild(el('circle', {
+      cx: CX, cy: CY, r: r.toFixed(1), fill: 'none',
+      stroke: `rgba(${230 - t * 40}, ${220 - t * 40}, 255, ${(0.055 + near * 0.30).toFixed(3)})`,
+      'stroke-width': (1.1 + near * 2.2).toFixed(2),
+    }));
+  });
+
+  // the app's radar ping, scaled to the whole panorama (class dc-wave =
+  // the same keyframes, the same 5s cadence, as the logo's own sweep)
+  svg.appendChild(el('circle', {
+    class: 'dc-el dc-wave dcx-ping', cx: CX, cy: CY, r: 8300,
+    fill: 'none', stroke: 'rgba(233,182,255,0.30)', 'stroke-width': 3.5,
+  }));
+
+  /* Community nodes, snapped onto whichever orbit passes closest. They sit in
+     the quiet band between the slide header and the headline, so the thread
+     runs the full length of the carousel without ever crossing type. */
+  const wanted = Array.from({ length: 25 }, (_, i) => {
+    const x = 108 + i * 356 + (i % 3) * 42;
+    const y = 150 + 18 * Math.sin(i * 0.9) + 8 * Math.cos(i * 2.3);
+    return [x, y];
+  });
+  const snapped = wanted.map(([x, y]) => {
+    let best = null;
+    for (const r of radii) {
+      const dx = Math.abs(x - CX);
+      if (dx >= r) continue;
+      const dy = Math.sqrt(r * r - dx * dx);
+      for (const cand of [CY - dy, CY + dy]) {
+        if (cand < 124 || cand > 176) continue;
+        if (!best || Math.abs(cand - y) < Math.abs(best[1] - y)) best = [x, cand];
+      }
+    }
+    return best || [x, y];
+  });
+
+  // the thread between them — a single polyline running the full 8 slides
+  svg.appendChild(el('polyline', {
+    points: snapped.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' '),
+    fill: 'none', stroke: 'rgba(169,141,255,0.20)', 'stroke-width': 1.6,
+    'stroke-dasharray': '9 13', 'stroke-linecap': 'round',
+  }));
+
+  snapped.forEach(([x, y], i) => {
+    const big = i % 3 === 0;
+    svg.appendChild(el('circle', {
+      cx: x.toFixed(1), cy: y.toFixed(1), r: big ? 9 : 6,
+      fill: '#fff', opacity: big ? 0.9 : 0.58,
+      // reuse the logo's node-flash keyframes, staggered across the panorama
+      class: `dcx-node dc-flash${(i % 3) + 1}`,
+    }));
+    if (big) {
+      svg.appendChild(el('circle', {
+        cx: x.toFixed(1), cy: y.toFixed(1), r: 24,
+        fill: 'none', stroke: 'rgba(255,255,255,0.18)', 'stroke-width': 1.3,
+      }));
+    }
+  });
+
+  document.documentElement.dataset.ready = '1';
+</script>
+</body>
+</html>

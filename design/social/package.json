@@ -1,0 +1,16 @@
+{
+  "name": "docent-social",
+  "private": true,
+  "version": "0.1.8",
+  "description": "Seamless Instagram carousel for DOCENT, rendered from the app's own brand animation",
+  "type": "module",
+  "scripts": {
+    "render": "node render.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.1"
+  },
+  "optionalDependencies": {
+    "ffmpeg-static": "^5.2.0"
+  }
+}
