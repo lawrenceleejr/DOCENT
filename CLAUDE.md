@@ -40,6 +40,15 @@
 - No email-based features (notifications, self-service password reset) — the
   admin-mediated flows are deliberate.
 
+## Outward-facing materials
+
+Anything outward-facing — social posts, slides, posters, one-pagers, web or
+artifact pages, README imagery — follows `design/BRAND.md`: palette, type,
+layout, motion, and copy voice, all derived from `frontend/src/theme.ts` and
+`design/logo/`. Reuse the app's animation by linking
+`design/logo/LogoReveal.css`; never redraw or retime it. Rendered assets are
+not committed — only their sources and the guide.
+
 ## Privacy invariants
 
 - Reports and the public `/impact` page must never include private fields:
