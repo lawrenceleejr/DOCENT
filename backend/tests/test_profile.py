@@ -127,6 +127,88 @@ def test_directory_filters(client, make_client):
     assert "email" not in by_q["items"][0]
 
 
+def test_directory_search_all_fields(client, make_client):
+    """The free-text search spans every directory column, not just the name."""
+    register(client, email="admin@example.com", name="Ada Lovelace")
+    client.patch("/api/users/me", json={
+        "affiliation": "University of Tennessee", "position": "Professor",
+        "orcid": "0000-0002-1825-0097", "languages_spoken": ["Spanish"],
+    })
+    venue = create_venue(client, name="Lincoln Elementary", city="Knoxville")
+    client.post("/api/users/me/schools", json={"venue_id": venue["id"]})
+
+    other = make_client()
+    register(other, email="grace@example.com", name="Grace Hopper")
+
+    def names(**params):
+        r = client.get("/api/users/directory", params=params)
+        return [u["name"] for u in r.json()["items"]]
+
+    assert names(q="tennessee") == ["Ada Lovelace"]       # affiliation
+    assert names(q="professor") == ["Ada Lovelace"]       # position
+    assert names(q="1825-0097") == ["Ada Lovelace"]       # orcid
+    assert names(q="lincoln") == ["Ada Lovelace"]         # school name
+    assert names(q="spanish") == ["Ada Lovelace"]         # language
+    assert names(q="hopper") == ["Grace Hopper"]          # name still works
+
+
+def test_directory_position_institution_filters_and_facets(client, make_client):
+    register(client, email="admin@example.com", name="Ada Lovelace")
+    client.patch("/api/users/me", json={
+        "affiliation": "University of Tennessee", "position": "Professor",
+    })
+    other = make_client()
+    register(other, email="grace@example.com", name="Grace Hopper")
+    other.patch("/api/users/me", json={
+        "affiliation": "Vanderbilt", "position": "PhD Student",
+    })
+
+    listing = client.get("/api/users/directory").json()
+    # Facets carry every distinct value in the directory, for the multiselects.
+    assert listing["positions"] == ["PhD Student", "Professor"]
+    assert listing["institutions"] == ["University of Tennessee", "Vanderbilt"]
+
+    by_position = client.get(
+        "/api/users/directory", params={"position": ["Professor"]}
+    ).json()
+    assert [u["name"] for u in by_position["items"]] == ["Ada Lovelace"]
+
+    # Multiselect: repeated params match any of the selected values.
+    both = client.get(
+        "/api/users/directory", params={"position": ["Professor", "PhD Student"]}
+    ).json()
+    assert {u["name"] for u in both["items"]} == {"Ada Lovelace", "Grace Hopper"}
+
+    by_institution = client.get(
+        "/api/users/directory", params={"institution": ["Vanderbilt"]}
+    ).json()
+    assert [u["name"] for u in by_institution["items"]] == ["Grace Hopper"]
+
+    # Facets don't shrink when a filter is applied — the options stay complete.
+    assert by_institution["positions"] == ["PhD Student", "Professor"]
+
+
+def test_directory_sorting(client, make_client):
+    register(client, email="admin@example.com", name="Ada Lovelace")
+    client.patch("/api/users/me", json={"position": "Professor"})
+    other = make_client()
+    register(other, email="grace@example.com", name="Grace Hopper")
+    other.patch("/api/users/me", json={"position": "Admiral"})
+    third = make_client()
+    register(third, email="brian@example.com", name="Brian Kernighan")  # no position
+
+    def names(**params):
+        return [u["name"] for u in client.get("/api/users/directory", params=params).json()["items"]]
+
+    assert names() == ["Ada Lovelace", "Brian Kernighan", "Grace Hopper"]
+    assert names(sort="-name") == ["Grace Hopper", "Brian Kernighan", "Ada Lovelace"]
+    # Position sort keeps members without one last, in either direction.
+    assert names(sort="position") == ["Grace Hopper", "Ada Lovelace", "Brian Kernighan"]
+    assert names(sort="-position") == ["Ada Lovelace", "Grace Hopper", "Brian Kernighan"]
+    # An unknown sort key falls back to the name order rather than erroring.
+    assert names(sort="nonsense") == ["Ada Lovelace", "Brian Kernighan", "Grace Hopper"]
+
+
 def test_admin_users_filters_and_schools(client, make_client):
     register(client, email="admin@example.com", name="Ada Lovelace")
     venue = create_venue(client, name="Lincoln Elementary", city="Knoxville")

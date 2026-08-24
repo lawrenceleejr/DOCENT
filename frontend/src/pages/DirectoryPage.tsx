@@ -1,28 +1,82 @@
-import { Anchor, Badge, Card, Group, Select, Stack, Table, Text, TextInput, Title } from '@mantine/core';
+import {
+  Anchor,
+  Badge,
+  Card,
+  Group,
+  MultiSelect,
+  Select,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Title,
+  UnstyledButton,
+} from '@mantine/core';
+import { IconChevronDown, IconChevronUp, IconSelector } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
-import { LANGUAGES, type DirectoryUser, type Paginated } from '../api/types';
+import { LANGUAGES, type DirectoryUserList } from '../api/types';
 import { OrcidLink } from '../components/OrcidLink';
 import { VenueFilterSelect } from '../components/VenueFilterSelect';
+
+type SortField = 'name' | 'affiliation' | 'position' | 'orcid';
+
+/** A column header that cycles ascending → descending on click, showing the
+ * current direction (server-side sort — see /api/users/directory). */
+function SortableTh({
+  label,
+  field,
+  sort,
+  onSort,
+}: {
+  label: string;
+  field: SortField;
+  sort: string;
+  onSort: (field: SortField) => void;
+}) {
+  const active = sort === field || sort === `-${field}`;
+  const Icon = !active ? IconSelector : sort === field ? IconChevronUp : IconChevronDown;
+  return (
+    <Table.Th>
+      <UnstyledButton onClick={() => onSort(field)}>
+        <Group gap={4} wrap="nowrap">
+          <Text size="sm" fw={700}>
+            {label}
+          </Text>
+          <Icon size={14} stroke={1.5} />
+        </Group>
+      </UnstyledButton>
+    </Table.Th>
+  );
+}
 
 export function DirectoryPage() {
   const { t } = useTranslation();
   const [q, setQ] = useState('');
   const [venueFilter, setVenueFilter] = useState<number | null>(null);
   const [languageFilter, setLanguageFilter] = useState<string | null>(null);
+  const [positionFilter, setPositionFilter] = useState<string[]>([]);
+  const [institutionFilter, setInstitutionFilter] = useState<string[]>([]);
+  const [sort, setSort] = useState<string>('name');
+
+  const toggleSort = (field: SortField) =>
+    setSort((current) => (current === field ? `-${field}` : field));
 
   const params = {
     q: q || undefined,
     venue_id: venueFilter ?? undefined,
     language: languageFilter ?? undefined,
+    position: positionFilter.length ? positionFilter : undefined,
+    institution: institutionFilter.length ? institutionFilter : undefined,
+    sort,
     page_size: 100,
   };
   const { data, isLoading } = useQuery({
     queryKey: ['users', 'directory', params],
-    queryFn: () => api.get<Paginated<DirectoryUser>>('/api/users/directory', params),
+    queryFn: () => api.get<DirectoryUserList>('/api/users/directory', params),
   });
 
   return (
@@ -38,10 +92,32 @@ export function DirectoryPage() {
         <Group align="flex-end">
           <TextInput
             label={t('directory.searchLabel')}
-            placeholder={t('directory.namePlaceholder')}
+            placeholder={t('directory.searchAllPlaceholder')}
             value={q}
             onChange={(e) => setQ(e.currentTarget.value)}
             w={220}
+          />
+          <MultiSelect
+            label={t('directory.positionLabel')}
+            placeholder={positionFilter.length ? undefined : t('directory.anyPositionPlaceholder')}
+            searchable
+            clearable
+            data={data?.positions ?? []}
+            value={positionFilter}
+            onChange={setPositionFilter}
+            w={220}
+          />
+          <MultiSelect
+            label={t('directory.institutionLabel')}
+            placeholder={
+              institutionFilter.length ? undefined : t('directory.anyInstitutionPlaceholder')
+            }
+            searchable
+            clearable
+            data={data?.institutions ?? []}
+            value={institutionFilter}
+            onChange={setInstitutionFilter}
+            w={240}
           />
           <VenueFilterSelect
             value={venueFilter}
@@ -66,10 +142,30 @@ export function DirectoryPage() {
           <Table highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>{t('directory.colName')}</Table.Th>
-                <Table.Th>{t('directory.colAffiliation')}</Table.Th>
-                <Table.Th>{t('directory.colPosition')}</Table.Th>
-                <Table.Th>{t('directory.colOrcid')}</Table.Th>
+                <SortableTh
+                  label={t('directory.colName')}
+                  field="name"
+                  sort={sort}
+                  onSort={toggleSort}
+                />
+                <SortableTh
+                  label={t('directory.colAffiliation')}
+                  field="affiliation"
+                  sort={sort}
+                  onSort={toggleSort}
+                />
+                <SortableTh
+                  label={t('directory.colPosition')}
+                  field="position"
+                  sort={sort}
+                  onSort={toggleSort}
+                />
+                <SortableTh
+                  label={t('directory.colOrcid')}
+                  field="orcid"
+                  sort={sort}
+                  onSort={toggleSort}
+                />
                 <Table.Th>{t('directory.colSchools')}</Table.Th>
                 <Table.Th>{t('directory.colLanguages')}</Table.Th>
               </Table.Tr>

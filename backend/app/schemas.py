@@ -633,6 +633,10 @@ class DirectoryUserList(BaseModel):
     total: int
     page: int
     page_size: int
+    # Distinct values across the whole directory (not just this page), feeding
+    # the position / institution filter multiselects.
+    positions: list[str] = []
+    institutions: list[str] = []
 
 
 class VenueListItem(VenueOut):

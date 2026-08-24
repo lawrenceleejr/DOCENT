@@ -279,6 +279,8 @@ def build_report(
     generated_at: datetime,
     date_from: date | None = None,
     date_to: date | None = None,
+    scope_user: str | None = None,
+    app_version: str | None = None,
 ) -> dict[str, Any]:
     """Assemble the report data structure (rows + summary + analysis + metadata)."""
     report_visits = [
@@ -305,6 +307,10 @@ def build_report(
     return {
         "title": REPORT_TITLE,
         "scope": scope,
+        # The communicator's name when scope is "mine", so serializers can label
+        # the report "<Name>'s activities" instead of an ambiguous "My activities".
+        "scope_user": scope_user,
+        "app_version": app_version,
         "generated_at": generated_at.replace(microsecond=0).isoformat(),
         "date_from": date_from.isoformat() if date_from else None,
         "date_to": date_to.isoformat() if date_to else None,
@@ -326,8 +332,16 @@ def build_report(
     }
 
 
-def _scope_label(scope: str) -> str:
-    return "My activities" if scope == "mine" else "All community activities"
+def _scope_label(report: dict[str, Any]) -> str:
+    if report["scope"] == "mine":
+        name = report.get("scope_user")
+        return f"{name}'s activities" if name else "My activities"
+    return "All community activities"
+
+
+def _made_with_label(report: dict[str, Any]) -> str:
+    version = report.get("app_version")
+    return f"Made with DOCENT {version}" if version else "Made with DOCENT"
 
 
 def _range_label(report: dict[str, Any]) -> str:
@@ -410,7 +424,7 @@ def report_markdown(report: dict[str, Any]) -> str:
     lines = [
         f"# {report['title']}",
         "",
-        f"- **Scope:** {_scope_label(report['scope'])}",
+        f"- **Scope:** {_scope_label(report)}",
         f"- **Date range:** {_range_label(report)}",
         f"- **Generated:** {report['generated_at']}",
         "",
@@ -515,7 +529,7 @@ def report_latex(report: dict[str, Any]) -> str:
         r"\setlength{\LTright}{0pt}",
         r"\begin{document}",
         r"\section*{" + esc(report["title"]) + "}",
-        r"\noindent\textbf{Scope:} " + esc(_scope_label(report["scope"])) + r" \\",
+        r"\noindent\textbf{Scope:} " + esc(_scope_label(report)) + r" \\",
         r"\textbf{Date range:} " + esc(_range_label(report)) + r" \\",
         r"\textbf{Generated:} " + esc(report["generated_at"]) + r" \\[4pt]",
         (
@@ -912,22 +926,64 @@ def _pdf_vector_map(pdf: Any, coords: list[dict[str, Any]], usable_w: float) -> 
     pdf.cell(0, 5, _pdf_safe(caption), new_x="LMARGIN", new_y="NEXT")
 
 
+def _pdf_logo_mark(pdf: Any, x: float, y: float, size: float) -> None:
+    """The DOCENT logo mark (frontend/public/logo-mark.svg) drawn with native
+    primitives — no SVG rasterizer needed. The SVG's translucent white rings are
+    approximated by pre-blending white over the brand fill."""
+    s = size / 64.0  # the SVG is drawn in a 64x64 viewBox
+
+    pdf.set_fill_color(*_BRAND_RGB)
+    pdf.rect(x, y, size, size, style="F", round_corners=True, corner_radius=15 * s)
+
+    def blend(alpha: float) -> tuple[int, int, int]:
+        return tuple(round(255 * alpha + c * (1 - alpha)) for c in _BRAND_RGB)
+
+    cx, cy = x + 32 * s, y + 32 * s
+    for radius, width, alpha in ((21.5, 1.7, 0.32), (15.0, 1.9, 0.55), (8.5, 2.1, 0.85)):
+        pdf.set_draw_color(*blend(alpha))
+        pdf.set_line_width(width * s)
+        r = radius * s
+        pdf.ellipse(cx - r, cy - r, 2 * r, 2 * r, style="D")
+
+    pdf.set_fill_color(255, 255, 255)
+    for dot_x, dot_y, radius in (
+        (37.5, 25.5, 2.5), (17.9, 26.9, 2.5), (35.9, 46.5, 2.5),
+        (51.5, 41.1, 2.5), (32.0, 32.0, 4.0),
+    ):
+        r = radius * s
+        pdf.ellipse(x + dot_x * s - r, y + dot_y * s - r, 2 * r, 2 * r, style="F")
+
+
 def report_pdf(report: dict[str, Any], *, basemap: bool = True) -> bytes:
     from fpdf import FPDF
 
+    made_with = _made_with_label(report)
+
+    class ReportPDF(FPDF):
+        def footer(self) -> None:
+            self.set_y(-10)
+            self.set_font("Helvetica", "I", 7)
+            self.set_text_color(150, 150, 150)
+            self.cell(0, 5, _pdf_safe(made_with), align="L", new_x="LMARGIN")
+            self.cell(0, 5, f"Page {self.page_no()}", align="R")
+
     s = report["summary"]
-    pdf = FPDF(orientation="L", unit="mm", format="A4")
-    pdf.set_auto_page_break(auto=True, margin=12)
+    pdf = ReportPDF(orientation="L", unit="mm", format="A4")
+    pdf.set_auto_page_break(auto=True, margin=14)
     pdf.set_margins(12, 12, 12)
     pdf.add_page()
 
+    logo_size = 16.0
+    _pdf_logo_mark(pdf, pdf.w - pdf.r_margin - logo_size, pdf.t_margin, logo_size)
+
     pdf.set_font("Helvetica", "B", 18)
+    pdf.set_text_color(20, 20, 20)
     pdf.cell(0, 10, _pdf_safe(report["title"]), new_x="LMARGIN", new_y="NEXT")
 
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(90, 90, 90)
     meta = (
-        f"{_scope_label(report['scope'])}   |   {_range_label(report)}"
+        f"{_scope_label(report)}   |   {_range_label(report)}"
         f"   |   Generated {report['generated_at']}"
     )
     pdf.cell(0, 6, _pdf_safe(meta), new_x="LMARGIN", new_y="NEXT")

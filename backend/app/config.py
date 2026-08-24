@@ -48,6 +48,10 @@ class Settings(BaseSettings):
     # Run the in-process background loop that pulls activities from federation
     # peers. Disabled in the test suite. Interval/enablement is per-peer (DB).
     federation_sync_enabled: bool = True
+    # The user-facing version stamped into PDF reports — the same value the web
+    # footer shows. The Docker image bakes it in at build time (no .git in the
+    # image); empty falls back to git describe, then "dev". See app/version.py.
+    app_version: str = ""
     # Fetch a real basemap (the same CARTO tiles the web map uses) behind the PDF
     # report's activity map. Requires outbound network at report time; when off,
     # or when tiles can't be reached, the PDF falls back to a vector coverage map.

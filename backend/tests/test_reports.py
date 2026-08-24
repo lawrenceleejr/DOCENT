@@ -139,6 +139,55 @@ def test_pdf_format(seeded, client):
     assert len(resp.content) > 500
 
 
+def _pdf_streams_text(data: bytes) -> str:
+    """Inflate the PDF's FlateDecode content streams so text drawn on the page
+    (Tj operators carry latin-1 strings) can be asserted on."""
+    import re
+    import zlib
+
+    chunks = []
+    for m in re.finditer(rb"stream\r?\n(.*?)endstream", data, re.S):
+        try:
+            chunks.append(zlib.decompress(m.group(1)).decode("latin-1", "ignore"))
+        except zlib.error:
+            pass  # not a Flate stream (e.g. an embedded image)
+    return "".join(chunks)
+
+
+def test_scope_mine_uses_communicator_name(seeded, client):
+    """A personal report says "<Name>'s activities", never "My activities" —
+    the file gets shared, and "my" is ambiguous outside the app."""
+    j = _get(client, format="json", scope="mine").json()
+    assert j["scope_user"] == "Ada Lovelace"
+
+    md = _get(client, format="md", scope="mine").text
+    assert "Ada Lovelace's activities" in md
+    assert "My activities" not in md
+
+    tex = _get(client, format="latex", scope="mine").text
+    assert "Ada Lovelace's activities" in tex
+
+    pdf_text = _pdf_streams_text(_get(client, format="pdf", scope="mine").content)
+    assert "Ada Lovelace's activities" in pdf_text
+
+    # Community-wide reports are unchanged (and carry no scope_user).
+    everyone = _get(client, format="json", scope="all").json()
+    assert everyone["scope_user"] is None
+    assert "All community activities" in _get(client, format="md", scope="all").text
+
+
+def test_pdf_made_with_docent_footer(seeded, client, monkeypatch):
+    """Every PDF page footer credits DOCENT with the same version the web
+    footer shows (git tag / short hash / APP_VERSION)."""
+    import app.routers.reports as reports_router
+
+    monkeypatch.setattr(reports_router, "app_version", lambda: "v9.9.9-test")
+    resp = _get(client, format="pdf", scope="all")
+    text = _pdf_streams_text(resp.content)
+    assert "Made with DOCENT v9.9.9-test" in text
+    assert _get(client, format="json", scope="all").json()["app_version"] == "v9.9.9-test"
+
+
 def test_report_includes_analysis(seeded, client):
     """Every report carries the same breakdowns as the Analysis dashboard,
     computed over exactly the report's rows so the figures reconcile."""

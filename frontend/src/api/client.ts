@@ -7,13 +7,16 @@ export class ApiError extends Error {
   }
 }
 
-type Query = Record<string, string | number | boolean | null | undefined>;
+type Query = Record<string, string | number | boolean | string[] | null | undefined>;
 
 export function buildQuery(params?: Query): string {
   if (!params) return '';
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null && value !== '') {
+    if (Array.isArray(value)) {
+      // Repeated params (?position=a&position=b) — FastAPI list query params.
+      for (const item of value) search.append(key, item);
+    } else if (value !== undefined && value !== null && value !== '') {
       search.set(key, String(value));
     }
   }

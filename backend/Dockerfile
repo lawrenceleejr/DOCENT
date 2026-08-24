@@ -2,6 +2,12 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# The user-facing version stamped into PDF reports — the same value the
+# frontend bakes into its footer. The build context has no .git, so it must be
+# passed in; app/version.py falls back to "dev" when it's empty.
+ARG APP_VERSION=""
+ENV APP_VERSION=$APP_VERSION
+
 # Install dependencies first for layer caching. Building behind a
 # TLS-inspecting proxy? Drop its PEM bundle at backend/extra-ca.crt
 # (gitignored) and it will be trusted during the build.

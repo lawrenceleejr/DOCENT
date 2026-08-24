@@ -277,6 +277,12 @@ export interface DirectoryUser {
   schools: VenueBrief[];
 }
 
+export interface DirectoryUserList extends Paginated<DirectoryUser> {
+  // Distinct values across the whole directory, feeding the filter multiselects.
+  positions: string[];
+  institutions: string[];
+}
+
 export interface Venue {
   id: number;
   name: string;

@@ -9,6 +9,7 @@ from app.deps import CurrentUser, DbSession
 from app.models import AudienceLevel, EventType, VenueType, Visit, VisitStatus
 from app.routers.visits import _apply_sort, _filtered_query, _parse_tags
 from app.services import reports as R
+from app.version import app_version
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -62,9 +63,13 @@ def activities_report(
     report = R.build_report(
         visits,
         scope=scope,
+        # Label a personal report with the communicator's name ("Ada's
+        # activities") — "My activities" is ambiguous once the file is shared.
+        scope_user=user.name if scope == "mine" else None,
         generated_at=generated_at,
         date_from=date_from,
         date_to=date_to,
+        app_version=app_version(),
     )
 
     if format == "json":

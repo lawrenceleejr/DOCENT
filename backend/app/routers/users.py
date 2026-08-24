@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response, status
-from sqlalchemy import func, select
+from sqlalchemy import distinct, func, or_, select
 from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentUser, DbSession
@@ -164,6 +164,16 @@ def remove_my_school(school_id: int, user: CurrentUser, db: DbSession):
     db.commit()
 
 
+# Directory columns the client may sort on (arrays like schools/languages have
+# no meaningful server-side order). A leading "-" in the sort param descends.
+_DIRECTORY_SORTS = {
+    "name": User.name,
+    "affiliation": User.affiliation,
+    "position": User.position,
+    "orcid": User.orcid,
+}
+
+
 @router.get("/directory", response_model=DirectoryUserList)
 def user_directory(
     db: DbSession,
@@ -171,6 +181,9 @@ def user_directory(
     q: str | None = None,
     venue_id: int | None = None,
     language: str | None = None,
+    position: list[str] | None = Query(default=None),
+    institution: list[str] | None = Query(default=None),
+    sort: str = "name",
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=25, ge=1, le=100),
 ):
@@ -182,28 +195,51 @@ def user_directory(
 
     query = select(User).where(User.is_active.is_(True))
     if q:
+        # Free-text search spans every directory column, not just the name.
         pattern = f"%{q.strip()}%"
-        query = query.where(User.name.ilike(pattern))
+        query = query.where(
+            or_(
+                User.name.ilike(pattern),
+                User.affiliation.ilike(pattern),
+                User.position.ilike(pattern),
+                User.orcid.ilike(pattern),
+                func.array_to_string(User.languages_spoken, " ").ilike(pattern),
+                User.id.in_(
+                    select(UserSchool.user_id)
+                    .join(Venue, UserSchool.venue_id == Venue.id)
+                    .where(Venue.name.ilike(pattern))
+                ),
+            )
+        )
     if language:
         query = query.where(User.languages_spoken.any(language))
+    if position:
+        query = query.where(User.position.in_(position))
+    if institution:
+        query = query.where(User.affiliation.in_(institution))
     if venue_id:
         query = query.where(
             User.id.in_(select(UserSchool.user_id).where(UserSchool.venue_id == venue_id))
         )
+
+    sort_col = _DIRECTORY_SORTS.get(sort.lstrip("-"), User.name)
+    order = (sort_col.desc() if sort.startswith("-") else sort_col.asc()).nulls_last()
 
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
     # Page the user IDs first, then eager-load schools for just that page —
     # joining a to-many relationship before LIMIT/OFFSET would paginate over
     # fanned-out (user, school) rows instead of distinct users.
     page_users = db.scalars(
-        query.order_by(User.name).offset((page - 1) * page_size).limit(page_size)
+        query.order_by(order, User.name).offset((page - 1) * page_size).limit(page_size)
     ).all()
-    users = db.scalars(
+    loaded = db.scalars(
         select(User)
         .where(User.id.in_([u.id for u in page_users]))
         .options(joinedload(User.schools).joinedload(UserSchool.venue))
-        .order_by(User.name)
     ).unique().all()
+    # Preserve the paged query's sort order — the eager-load query has none.
+    by_id = {u.id: u for u in loaded}
+    users = [by_id[u.id] for u in page_users]
     items = [
         DirectoryUserOut(
             id=u.id,
@@ -217,7 +253,26 @@ def user_directory(
         )
         for u in users
     ]
-    return DirectoryUserList(items=items, total=total, page=page, page_size=page_size)
+
+    # Every position / institution present in the directory, for the filter
+    # multiselects — computed over all active members, not the filtered page,
+    # so the options don't shrink as filters are applied.
+    def _facet(column) -> list[str]:
+        values = db.scalars(
+            select(distinct(column)).where(
+                User.is_active.is_(True), column.isnot(None), column != ""
+            )
+        ).all()
+        return sorted(values, key=str.lower)
+
+    return DirectoryUserList(
+        items=items,
+        total=total,
+        page=page,
+        page_size=page_size,
+        positions=_facet(User.position),
+        institutions=_facet(User.affiliation),
+    )
 
 
 @router.get("/{user_id}/profile", response_model=UserProfileOut)
