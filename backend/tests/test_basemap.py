@@ -59,6 +59,18 @@ def test_rejects_unusable_urls(url, message):
     assert message in str(exc.value)
 
 
+def test_rejects_unreplaced_key_placeholder():
+    """The admin panel offers ready-made CARTO templates containing YOUR_KEY.
+    Pasting one without substituting the key is a valid-looking URL that just
+    returns watermarked or rejected tiles, so catch it at the form."""
+    template = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=YOUR_KEY"
+    with pytest.raises(InvalidTileUrl) as exc:
+        validate_tile_url(template)
+    assert "YOUR_KEY" in str(exc.value)
+    # The same template with a real key is fine.
+    assert validate_tile_url(template.replace("YOUR_KEY", "abc123")).endswith("key=abc123")
+
+
 def test_empty_url_allowed_and_stripped():
     """Empty means "fall back" — for the dark URL that's "reuse the light tiles"."""
     assert validate_tile_url("") == ""

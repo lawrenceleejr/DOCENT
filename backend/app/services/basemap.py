@@ -34,6 +34,11 @@ DEFAULT_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">
 ALLOWED_PLACEHOLDERS = frozenset({"s", "z", "x", "y", "r"})
 REQUIRED_PLACEHOLDERS = frozenset({"z", "x", "y"})
 
+# The placeholder used in the admin panel's ready-made CARTO templates. Left
+# un-replaced it is a syntactically fine URL that silently yields watermarked
+# or rejected tiles, so we catch it at the form instead.
+KEY_PLACEHOLDER = "YOUR_KEY"
+
 # Brightness lift applied after grayscale. OSM's greens/greys go quite dark
 # once desaturated; this pulls the mid-tones up toward Positron's airy feel
 # while clipping keeps paper-white backgrounds white.
@@ -85,6 +90,10 @@ def validate_tile_url(url: str) -> str:
         raise InvalidTileUrl(
             "Tile URL must include %s"
             % ", ".join("{%s}" % p for p in sorted(missing))
+        )
+    if KEY_PLACEHOLDER in url:
+        raise InvalidTileUrl(
+            "Replace %s with the key your tile provider gave you" % KEY_PLACEHOLDER
         )
     return url
 

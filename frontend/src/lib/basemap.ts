@@ -20,6 +20,25 @@ export const DEFAULT_LIGHT_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png
 export const DEFAULT_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
+/**
+ * CARTO's raster templates, offered in the admin panel as the ready-made
+ * "I have a key" answer. These are the styles DOCENT used to request
+ * anonymously, before CARTO started requiring a key and watermarking the
+ * tiles — so pasting these with a key restores exactly the old look.
+ *
+ * `{r}` asks for @2x retina tiles, which CARTO serves and which the PDF
+ * report's stitcher will pick up automatically for a sharper printed map.
+ */
+export const CARTO_KEY_PLACEHOLDER = 'YOUR_KEY';
+export const CARTO_LIGHT_URL =
+  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=YOUR_KEY';
+export const CARTO_DARK_URL =
+  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=YOUR_KEY';
+/** CARTO require their credit to stay visible alongside OpenStreetMap's. */
+export const CARTO_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+export const CARTO_APIKEY_URL = 'https://carto.com/basemaps/apikey/';
+
 export interface BasemapChoice {
   url: string;
   attribution: string;

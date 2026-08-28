@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Alert,
   Anchor,
   Badge,
   Button,
@@ -7,6 +8,7 @@ import {
   Code,
   CopyButton,
   Group,
+  List,
   Menu,
   Modal,
   NumberInput,
@@ -25,7 +27,9 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
   IconCheck,
+  IconCopy,
   IconDots,
+  IconInfoCircle,
   IconGitMerge,
   IconKey,
   IconPencil,
@@ -36,7 +40,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
-import { DEFAULT_LIGHT_URL } from '../lib/basemap';
+import {
+  CARTO_APIKEY_URL,
+  CARTO_ATTRIBUTION,
+  CARTO_DARK_URL,
+  CARTO_LIGHT_URL,
+  DEFAULT_LIGHT_URL,
+} from '../lib/basemap';
 import { api, ApiError } from '../api/client';
 import type {
   AdminUser,
@@ -60,6 +70,36 @@ import { FederationCard } from '../components/FederationCard';
 import { VenueFilterSelect } from '../components/VenueFilterSelect';
 
 const PAGE_SIZE = 25;
+
+/** One of the ready-made CARTO values, with a copy-to-clipboard button. */
+function BasemapSnippet({ label, text }: { label: string; text: string }) {
+  const { t } = useTranslation();
+  return (
+    <div>
+      <Group justify="space-between" mb={2} wrap="nowrap">
+        <Text size="xs" fw={600}>
+          {label}
+        </Text>
+        <CopyButton value={text} timeout={1500}>
+          {({ copied, copy }) => (
+            <Tooltip
+              label={copied ? t('siteSetupCard.copiedTooltip') : t('siteSetupCard.copyTooltip')}
+              withArrow
+            >
+              <ActionIcon variant="subtle" color={copied ? 'teal' : 'gray'} onClick={copy}>
+                {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
+              </ActionIcon>
+            </Tooltip>
+          )}
+        </CopyButton>
+      </Group>
+      <Code block style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: 11 }}>
+        {text}
+      </Code>
+    </div>
+  );
+}
+
 
 function RegistrationCard() {
   const { t } = useTranslation();
@@ -276,6 +316,37 @@ function RegistrationCard() {
           <Text size="xs" c="dimmed" mb={8}>
             {t('admin.basemapDescription')}
           </Text>
+          <Alert color="blue" variant="light" icon={<IconInfoCircle size={16} />} mb="sm">
+            <Text size="sm" fw={600} mb={6}>
+              {t('admin.basemapCartoTitle')}
+            </Text>
+            <List size="sm" spacing={4} type="ordered">
+              <List.Item>
+                <Trans
+                  i18nKey="admin.basemapCartoStep1"
+                  components={{
+                    cartoLink: (
+                      <Anchor href={CARTO_APIKEY_URL} target="_blank" rel="noreferrer" />
+                    ),
+                  }}
+                />
+              </List.Item>
+              <List.Item>{t('admin.basemapCartoStep2')}</List.Item>
+              <List.Item>{t('admin.basemapCartoStep3')}</List.Item>
+              <List.Item>{t('admin.basemapCartoStep4')}</List.Item>
+            </List>
+            <Stack gap={6} mt="sm">
+              <BasemapSnippet label={t('admin.basemapCartoLightLabel')} text={CARTO_LIGHT_URL} />
+              <BasemapSnippet label={t('admin.basemapCartoDarkLabel')} text={CARTO_DARK_URL} />
+              <BasemapSnippet
+                label={t('admin.basemapCartoAttributionLabel')}
+                text={CARTO_ATTRIBUTION}
+              />
+            </Stack>
+            <Text size="xs" c="dimmed" mt="sm">
+              {t('admin.basemapCartoNote')}
+            </Text>
+          </Alert>
           <Stack gap="xs">
             <TextInput
               label={t('admin.basemapLightLabel')}
