@@ -35,6 +35,8 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+
+import { DEFAULT_LIGHT_URL } from '../lib/basemap';
 import { api, ApiError } from '../api/client';
 import type {
   AdminUser,
@@ -77,6 +79,10 @@ function RegistrationCard() {
   const [mapLon, setMapLon] = useState<number | string | null>(null);
   const [mapRadius, setMapRadius] = useState<number | string | null>(null);
   const [directoryVisible, setDirectoryVisible] = useState<boolean | null>(null);
+  const [basemapLight, setBasemapLight] = useState<string | null>(null);
+  const [basemapDark, setBasemapDark] = useState<string | null>(null);
+  const [basemapAttribution, setBasemapAttribution] = useState<string | null>(null);
+  const [basemapMonochrome, setBasemapMonochrome] = useState<boolean | null>(null);
 
   const codeValue = code ?? data?.invite_code ?? '';
   const emailValue = email ?? data?.contact_email ?? '';
@@ -89,6 +95,10 @@ function RegistrationCard() {
   const mapLonValue = mapLon ?? data?.map_center_lon ?? 0;
   const mapRadiusValue = mapRadius ?? data?.map_radius_km ?? 80;
   const directoryValue = directoryVisible ?? data?.user_directory_visible ?? false;
+  const basemapLightValue = basemapLight ?? data?.basemap_light_url ?? '';
+  const basemapDarkValue = basemapDark ?? data?.basemap_dark_url ?? '';
+  const basemapAttributionValue = basemapAttribution ?? data?.basemap_attribution ?? '';
+  const basemapMonochromeValue = basemapMonochrome ?? data?.basemap_monochrome ?? true;
 
   const save = useMutation({
     mutationFn: () =>
@@ -104,6 +114,10 @@ function RegistrationCard() {
         map_center_lon: Number(mapLonValue),
         map_radius_km: Number(mapRadiusValue),
         user_directory_visible: directoryValue,
+        basemap_light_url: basemapLightValue,
+        basemap_dark_url: basemapDarkValue,
+        basemap_attribution: basemapAttributionValue,
+        basemap_monochrome: basemapMonochromeValue,
       }),
     onSuccess: (updated) => {
       queryClient.setQueryData(['admin', 'settings'], updated);
@@ -118,6 +132,10 @@ function RegistrationCard() {
       setMapLat(null);
       setMapLon(null);
       setMapRadius(null);
+      setBasemapLight(null);
+      setBasemapDark(null);
+      setBasemapAttribution(null);
+      setBasemapMonochrome(null);
       setDirectoryVisible(null);
       notifications.show({ message: t('admin.settingsSaved'), color: 'green' });
     },
@@ -251,6 +269,46 @@ function RegistrationCard() {
             />
           </Group>
         </div>
+        <div>
+          <Text size="sm" fw={500} mb={4}>
+            {t('admin.basemapTitle')}
+          </Text>
+          <Text size="xs" c="dimmed" mb={8}>
+            {t('admin.basemapDescription')}
+          </Text>
+          <Stack gap="xs">
+            <TextInput
+              label={t('admin.basemapLightLabel')}
+              description={t('admin.basemapLightDescription')}
+              placeholder={DEFAULT_LIGHT_URL}
+              value={basemapLightValue}
+              onChange={(e) => setBasemapLight(e.currentTarget.value)}
+            />
+            <TextInput
+              label={t('admin.basemapDarkLabel')}
+              description={t('admin.basemapDarkDescription')}
+              value={basemapDarkValue}
+              onChange={(e) => setBasemapDark(e.currentTarget.value)}
+            />
+            <TextInput
+              label={t('admin.basemapAttributionLabel')}
+              description={t('admin.basemapAttributionDescription')}
+              value={basemapAttributionValue}
+              onChange={(e) => setBasemapAttribution(e.currentTarget.value)}
+            />
+            <Switch
+              label={t('admin.basemapMonochromeLabel')}
+              description={t('admin.basemapMonochromeDescription')}
+              checked={basemapMonochromeValue}
+              onChange={(e) => setBasemapMonochrome(e.currentTarget.checked)}
+            />
+          </Stack>
+        </div>
+        {save.error && (
+          <Text size="sm" c="red">
+            {save.error.message}
+          </Text>
+        )}
         <Group justify="flex-end">
           <Button
             variant="gradient"
@@ -266,7 +324,11 @@ function RegistrationCard() {
               mapLat === null &&
               mapLon === null &&
               mapRadius === null &&
-              directoryVisible === null
+              directoryVisible === null &&
+              basemapLight === null &&
+              basemapDark === null &&
+              basemapAttribution === null &&
+              basemapMonochrome === null
             }
             onClick={() => save.mutate()}
           >

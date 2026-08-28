@@ -4,6 +4,29 @@ All notable changes to DOCENT are documented here. This project uses
 [semantic versioning](https://semver.org/); tagged releases publish container
 images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
+## Unreleased
+
+### Fixed
+- **The map no longer shows an "API KEY REQUIRED" watermark.** CARTO began
+  requiring an API key for their anonymous raster basemaps and now stamps that
+  notice into the tile pixels — which affected both the Map page and the map
+  embedded in PDF reports, so shared reports carried the watermark too. The
+  tile source is now admin-configurable and defaults to keyless OpenStreetMap,
+  so existing instances recover on upgrade with no action and no signup.
+  Because CARTO's own docs say the raster endpoints are being retired, this
+  deliberately does not just add a CARTO key field.
+
+### Added
+- **Basemap tile settings** in the admin panel: light and dark tile URL
+  templates, the attribution line, and a "flatten to grey" toggle. Point them
+  at any `{z}/{x}/{y}` raster provider — CARTO with your own key, Stadia,
+  MapTiler, or a self-hosted tile server. Leaving the dark URL empty reuses the
+  light tiles inverted, so a single keyless source covers both themes. URLs are
+  validated on save, so a typo is a form error rather than a blank map.
+  Because OpenStreetMap's standard style is colourful, tiles are desaturated by
+  default (matched pixel-for-pixel between the web map's CSS and the PDF's
+  server-side rendering) to keep the flat backdrop the coloured markers need.
+
 ## v0.1.8
 
 ### Fixed

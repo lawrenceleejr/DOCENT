@@ -18,6 +18,13 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Iterable
 
+from app.services.basemap import (
+    Basemap,
+    apply_monochrome,
+    attribution_text,
+)
+from app.services.basemap import placeholders as tile_placeholders
+
 # Column key -> human header. This is the full, machine-readable column set used
 # by JSON / CSV / Markdown. (PDF uses a narrower subset so it fits the page.)
 REPORT_COLUMNS: list[tuple[str, str]] = [
@@ -639,15 +646,20 @@ def _pdf_table(pdf: Any, table: dict[str, Any], usable_w: float) -> None:
         fill = not fill
 
 
-# CARTO "light" raster basemap — the very tiles the web map uses (see
+# Raster basemap — the very tiles the web map uses (see
 # frontend/src/pages/MapPage.tsx) — stitched into a static image behind the PDF
-# activity map. Fetched at report time; if the backend can't reach the tile
-# server we fall back to the dependency-free vector coverage map below.
-_BASEMAP_TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+# activity map. The tile source is admin-configurable (services/basemap.py);
+# fetched at report time, and if the backend can't reach the tile server we fall
+# back to the dependency-free vector coverage map below.
 _BASEMAP_SUBDOMAINS = ("a", "b", "c", "d")
-_BASEMAP_TILE_PX = 512  # @2x retina tiles for print-quality output
+# Tile indices are computed on the slippy-map's nominal 256 px grid; the pixels
+# we actually get back may be 256 or 512 (@2x), so the real size is measured
+# from the fetched tiles and the geometry scaled to it. Don't assume either.
+_BASEMAP_NOMINAL_PX = 256
+# Target image size in nominal px (i.e. 3.1 x 2 tiles), which sets how much
+# ground one report map covers.
+_BASEMAP_TARGET = (800, 500)
 _BASEMAP_MAX_TILES = 30
-_BASEMAP_ATTRIBUTION = "(c) OpenStreetMap  (c) CARTO"
 
 
 def _mercator_px(lat: float, lon: float, z: int, tile_px: int) -> tuple[float, float]:
@@ -687,8 +699,8 @@ def _pick_basemap_zoom(
     return 0
 
 
-def _fetch_basemap(coords: list[dict[str, Any]]):
-    """Stitch CARTO tiles covering the venue bbox into one image. Returns
+def _fetch_basemap(coords: list[dict[str, Any]], bm: Basemap):
+    """Stitch basemap tiles covering the venue bbox into one image. Returns
     (PIL image, project(lat, lon)->(px, py), (width, height)) or raises if the
     tiles can't be fetched (offline / restricted backend)."""
     import io
@@ -710,17 +722,23 @@ def _fetch_basemap(coords: list[dict[str, Any]]):
     min_lon = max(min_lon - lon_span * 0.12, -180.0)
     max_lon = min(max_lon + lon_span * 0.12, 180.0)
 
-    tile_px = _BASEMAP_TILE_PX
-    z = _pick_basemap_zoom(min_lat, max_lat, min_lon, max_lon, tile_px, 1600, 1000, _BASEMAP_MAX_TILES)
+    # Geometry on the nominal 256 px grid; the fetched tiles' real pixel size is
+    # measured below and the geometry scaled to it.
+    nom = _BASEMAP_NOMINAL_PX
+    target_w, target_h = _BASEMAP_TARGET
+    z = _pick_basemap_zoom(min_lat, max_lat, min_lon, max_lon, nom, target_w, target_h, _BASEMAP_MAX_TILES)
     n_tiles = 2 ** z
-    left = _mercator_px(0.0, min_lon, z, tile_px)[0]
-    right = _mercator_px(0.0, max_lon, z, tile_px)[0]
-    top = _mercator_px(max_lat, 0.0, z, tile_px)[1]
-    bottom = _mercator_px(min_lat, 0.0, z, tile_px)[1]
-    tx_min, tx_max = math.floor(left / tile_px), math.floor((right - 1e-6) / tile_px)
-    ty_min, ty_max = math.floor(top / tile_px), math.floor((bottom - 1e-6) / tile_px)
+    left = _mercator_px(0.0, min_lon, z, nom)[0]
+    right = _mercator_px(0.0, max_lon, z, nom)[0]
+    top = _mercator_px(max_lat, 0.0, z, nom)[1]
+    bottom = _mercator_px(min_lat, 0.0, z, nom)[1]
+    tx_min, tx_max = math.floor(left / nom), math.floor((right - 1e-6) / nom)
+    ty_min, ty_max = math.floor(top / nom), math.floor((bottom - 1e-6) / nom)
 
-    retina = "@2x" if tile_px == 512 else ""
+    url_template = bm.report_url
+    # Only ask for retina tiles when the template offers the placeholder — most
+    # keyless providers (OSM included) serve 256 px tiles only.
+    retina = "@2x" if "r" in tile_placeholders(url_template) else ""
     headers = {"User-Agent": "DOCENT-report/1.0 (+https://github.com/lawrenceleejr/docent)"}
     timeout = httpx.Timeout(6.0, connect=3.0)
 
@@ -729,16 +747,12 @@ def _fetch_basemap(coords: list[dict[str, Any]]):
             return tx, ty, None
         x = tx % n_tiles  # wrap longitude
         s = _BASEMAP_SUBDOMAINS[(tx + ty) % len(_BASEMAP_SUBDOMAINS)]
-        url = _BASEMAP_TILE_URL.format(s=s, z=z, x=x, y=ty, r=retina)
+        url = url_template.format(s=s, z=z, x=x, y=ty, r=retina)
         resp = client.get(url)
         resp.raise_for_status()
         return tx, ty, Image.open(io.BytesIO(resp.content)).convert("RGB")
 
-    canvas = Image.new(
-        "RGB",
-        ((tx_max - tx_min + 1) * tile_px, (ty_max - ty_min + 1) * tile_px),
-        (245, 245, 247),
-    )
+    fetched: dict[tuple[int, int], Any] = {}
     total = failures = 0
     with httpx.Client(timeout=timeout, headers=headers, follow_redirects=True) as client:
         with ThreadPoolExecutor(max_workers=6) as pool:
@@ -755,19 +769,39 @@ def _fetch_basemap(coords: list[dict[str, Any]]):
                     failures += 1
                     continue
                 if img is not None:
-                    canvas.paste(img, ((tx - tx_min) * tile_px, (ty - ty_min) * tile_px))
+                    fetched[(tx, ty)] = img
     if total == 0 or failures > total * 0.4:
         raise RuntimeError("basemap tiles unavailable")
 
+    # Whatever the provider actually served decides the mosaic's resolution.
+    tile_px = next((img.width for img in fetched.values()), 0)
+    if not tile_px:
+        raise RuntimeError("basemap tiles unavailable")
+    scale = tile_px / nom
+
+    canvas = Image.new(
+        "RGB",
+        ((tx_max - tx_min + 1) * tile_px, (ty_max - ty_min + 1) * tile_px),
+        (245, 245, 247),
+    )
+    for (tx, ty), img in fetched.items():
+        if img.width != tile_px or img.height != tile_px:
+            img = img.resize((tile_px, tile_px))  # mixed sizes: normalise
+        canvas.paste(img, ((tx - tx_min) * tile_px, (ty - ty_min) * tile_px))
+
+    # Match the web map's treatment so the report and the screen agree.
+    if bm.monochrome:
+        canvas = apply_monochrome(canvas)
+
     origin_x, origin_y = tx_min * tile_px, ty_min * tile_px
     crop = canvas.crop((
-        round(left - origin_x), round(top - origin_y),
-        round(right - origin_x), round(bottom - origin_y),
+        round(left * scale - origin_x), round(top * scale - origin_y),
+        round(right * scale - origin_x), round(bottom * scale - origin_y),
     ))
 
     def project(lat: float, lon: float) -> tuple[float, float]:
-        px, py = _mercator_px(lat, lon, z, tile_px)
-        return px - left, py - top
+        px, py = _mercator_px(lat, lon, z, nom)
+        return (px - left) * scale, (py - top) * scale
 
     return crop, project, crop.size
 
@@ -790,10 +824,13 @@ def _draw_map_dots(pdf: Any, coords: list[dict[str, Any]], project, panel: tuple
         pdf.ellipse(px - r, py - r, 2 * r, 2 * r, style="FD")
 
 
-def _pdf_map(pdf: Any, points: list[dict[str, Any]], usable_w: float, basemap: bool = True) -> None:
-    """Activity map for the PDF: a real CARTO basemap (matching the web map) with
-    venue dots on top, or the offline vector coverage map when basemaps are
-    disabled or the tiles can't be fetched."""
+def _pdf_map(
+    pdf: Any, points: list[dict[str, Any]], usable_w: float, basemap: Basemap | None = None
+) -> None:
+    """Activity map for the PDF: a real raster basemap (the same tiles, and the
+    same monochrome treatment, as the web map) with venue dots on top, or the
+    offline vector coverage map when basemaps are disabled (`basemap=None`) or
+    the tiles can't be fetched."""
     coords = [p for p in points if p.get("latitude") is not None and p.get("longitude") is not None]
 
     pdf.ln(3)
@@ -807,9 +844,9 @@ def _pdf_map(pdf: Any, points: list[dict[str, Any]], usable_w: float, basemap: b
     # Try to fetch a real basemap; on any failure fall through to the vector map.
     crop = project = None
     crop_w = crop_h = 0
-    if basemap:
+    if basemap is not None:
         try:
-            crop, project, (crop_w, crop_h) = _fetch_basemap(coords)
+            crop, project, (crop_w, crop_h) = _fetch_basemap(coords, basemap)
         except Exception:
             crop = None
 
@@ -852,7 +889,7 @@ def _pdf_map(pdf: Any, points: list[dict[str, Any]], usable_w: float, basemap: b
     pdf.set_text_color(120, 120, 120)
     caption = (
         f"{len(coords)} mapped venue{'s' if len(coords) != 1 else ''}  |  "
-        f"dot size scales with activity count  |  {_BASEMAP_ATTRIBUTION}"
+        f"dot size scales with activity count  |  {attribution_text(basemap.attribution)}"
     )
     pdf.cell(0, 5, _pdf_safe(caption), new_x="LMARGIN", new_y="NEXT")
 
@@ -954,7 +991,7 @@ def _pdf_logo_mark(pdf: Any, x: float, y: float, size: float) -> None:
         pdf.ellipse(x + dot_x * s - r, y + dot_y * s - r, 2 * r, 2 * r, style="F")
 
 
-def report_pdf(report: dict[str, Any], *, basemap: bool = True) -> bytes:
+def report_pdf(report: dict[str, Any], *, basemap: Basemap | None = None) -> bytes:
     from fpdf import FPDF
 
     made_with = _made_with_label(report)

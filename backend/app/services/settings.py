@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.models import Setting
+from app.services.basemap import Basemap
 
 INVITE_CODE_KEY = "invite_code"
 CONTACT_EMAIL_KEY = "contact_email"
@@ -29,6 +30,10 @@ FEDERATION_PUBLISH_KEY = "federation_publish"
 FEDERATION_PUBLISH_PLANNED_KEY = "federation_publish_planned"
 FEDERATION_TOKEN_KEY = "federation_token"
 CF_ANALYTICS_KEY = "cf_analytics_snippet"
+BASEMAP_LIGHT_URL_KEY = "basemap_light_url"
+BASEMAP_DARK_URL_KEY = "basemap_dark_url"
+BASEMAP_ATTRIBUTION_KEY = "basemap_attribution"
+BASEMAP_MONOCHROME_KEY = "basemap_monochrome"
 
 # The admin pastes the whole Cloudflare Web Analytics snippet
 # (<script … data-cf-beacon='{"token":"…"}'></script>) — or just the bare
@@ -107,6 +112,29 @@ def effective_banner_level(db: Session) -> str:
     override = get_setting(db, BANNER_LEVEL_KEY)
     level = override if override is not None else get_settings().banner_level
     return level if level in BANNER_LEVELS else "info"
+
+
+def effective_basemap(db: Session) -> Basemap:
+    """The tile sources both the web map and the PDF report draw on.
+
+    An empty dark URL is meaningful (reuse the light tiles and invert), so the
+    usual "DB row wins even when empty" rule applies to every field here.
+    """
+    settings = get_settings()
+
+    def value(key: str, fallback: str) -> str:
+        override = get_setting(db, key)
+        return override if override is not None else fallback
+
+    monochrome = get_setting(db, BASEMAP_MONOCHROME_KEY)
+    return Basemap(
+        light_url=value(BASEMAP_LIGHT_URL_KEY, settings.basemap_light_url),
+        dark_url=value(BASEMAP_DARK_URL_KEY, settings.basemap_dark_url),
+        attribution=value(BASEMAP_ATTRIBUTION_KEY, settings.basemap_attribution),
+        monochrome=(
+            monochrome == "1" if monochrome is not None else settings.basemap_monochrome
+        ),
+    )
 
 
 def user_directory_visible(db: Session) -> bool:

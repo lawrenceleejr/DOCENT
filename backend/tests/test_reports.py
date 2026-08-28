@@ -237,7 +237,7 @@ def test_pdf_basemap_math():
     and north is up (higher latitude -> smaller pixel y)."""
     from app.services.reports import _mercator_px, _pick_basemap_zoom
 
-    tile_px = 512
+    tile_px = 256
     # North is up.
     _, y_north = _mercator_px(48.0, 0.0, 4, tile_px)
     _, y_south = _mercator_px(30.0, 0.0, 4, tile_px)
@@ -247,8 +247,8 @@ def test_pdf_basemap_math():
     x_east, _ = _mercator_px(0.0, 10.0, 4, tile_px)
     assert x_west < x_east
 
-    citywide = _pick_basemap_zoom(35.95, 35.97, -83.93, -83.91, tile_px, 1600, 1000, 30)
-    transatlantic = _pick_basemap_zoom(30.0, 55.7, -122.3, 18.0, tile_px, 1600, 1000, 30)
+    citywide = _pick_basemap_zoom(35.95, 35.97, -83.93, -83.91, tile_px, 800, 500, 30)
+    transatlantic = _pick_basemap_zoom(30.0, 55.7, -122.3, 18.0, tile_px, 800, 500, 30)
     assert citywide > transatlantic
     assert transatlantic >= 0
 
@@ -262,7 +262,7 @@ def test_pdf_basemap_embeds_image(monkeypatch):
 
     # Stub the network fetch with a synthetic image + projection so the basemap
     # drawing path runs deterministically, without hitting the tile server.
-    def fake_fetch(coords):
+    def fake_fetch(coords, bm):
         # A gradient (not a flat fill) so the embedded PNG has real, incompressible
         # content — proving the raster path ran, not just a tiny solid block.
         img = Image.new("RGB", (400, 240))
@@ -299,12 +299,135 @@ def test_pdf_basemap_embeds_image(monkeypatch):
         scope="all",
         generated_at=__import__("datetime").datetime(2026, 7, 31, 12, 0),
     )
-    with_basemap = R.report_pdf(report, basemap=True)
-    without_basemap = R.report_pdf(report, basemap=False)
+    from app.services.basemap import DEFAULT_ATTRIBUTION, DEFAULT_LIGHT_URL, Basemap
+
+    bm = Basemap(DEFAULT_LIGHT_URL, "", DEFAULT_ATTRIBUTION, monochrome=True)
+    with_basemap = R.report_pdf(report, basemap=bm)
+    without_basemap = R.report_pdf(report, basemap=None)
     assert with_basemap[:5] == b"%PDF-"
     # The embedded raster makes the basemap PDF materially larger than the
     # vector-only fallback.
     assert len(with_basemap) > len(without_basemap) + 5000
+
+
+def _stub_tile_server(monkeypatch, tile_px):
+    """Serve synthetic tiles of a given pixel size, recording requested URLs."""
+    import io
+
+    import httpx
+    from PIL import Image
+
+    requested = []
+
+    class FakeResponse:
+        def __init__(self, content):
+            self.content = content
+
+        def raise_for_status(self):
+            return None
+
+    class FakeClient:
+        def __init__(self, *a, **kw):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def get(self, url):
+            requested.append(url)
+            buf = io.BytesIO()
+            # A gradient, so the monochrome transform has something to act on.
+            img = Image.new("RGB", (tile_px, tile_px))
+            px = img.load()
+            for y in range(tile_px):
+                for x in range(tile_px):
+                    px[x, y] = (x % 256, y % 256, 120)
+            img.save(buf, format="PNG")
+            return FakeResponse(buf.getvalue())
+
+    monkeypatch.setattr(httpx, "Client", FakeClient)
+    return requested
+
+
+def test_basemap_projection_independent_of_tile_pixel_size(monkeypatch):
+    """The stitcher must not assume a tile's pixel size.
+
+    Tile *indices* live on the slippy-map's nominal 256 px grid while the bytes
+    a provider returns may be 256 or 512 (@2x). Conflating the two silently
+    misplaces every venue dot — the old code hardcoded 512 — so assert a venue
+    lands at the same *fractional* spot either way, with @2x only sharpening it.
+    """
+    from app.services import reports as R
+    from app.services.basemap import DEFAULT_ATTRIBUTION, Basemap
+
+    coords = [
+        {"latitude": 35.96, "longitude": -83.92, "visits": 3},
+        {"latitude": 36.01, "longitude": -84.27, "visits": 1},
+    ]
+    bm = Basemap("https://tiles.test/{z}/{x}/{y}.png", "", DEFAULT_ATTRIBUTION, True)
+
+    results = {}
+    for tile_px in (256, 512):
+        _stub_tile_server(monkeypatch, tile_px)
+        crop, project, (w, h) = R._fetch_basemap(coords, bm)
+        fx, fy = project(35.96, -83.92)
+        assert 0 <= fx <= w and 0 <= fy <= h, f"dot outside crop at {tile_px}px"
+        results[tile_px] = (fx / w, fy / h, w, h)
+
+    (lo_fx, lo_fy, lo_w, lo_h) = results[256]
+    (hi_fx, hi_fy, hi_w, hi_h) = results[512]
+    # Same place on the map...
+    assert hi_fx == pytest.approx(lo_fx, abs=0.005)
+    assert hi_fy == pytest.approx(lo_fy, abs=0.005)
+    # ...at twice the resolution.
+    assert hi_w == pytest.approx(lo_w * 2, rel=0.02)
+    assert hi_h == pytest.approx(lo_h * 2, rel=0.02)
+
+
+def test_basemap_retina_only_requested_when_offered(monkeypatch):
+    """`{r}` is a CARTO-ism. Appending @2x to a provider that doesn't offer it
+    (OSM) yields 404s and a blank map, so only substitute it when asked for."""
+    from app.services import reports as R
+    from app.services.basemap import DEFAULT_ATTRIBUTION, Basemap
+
+    coords = [{"latitude": 35.96, "longitude": -83.92, "visits": 1}]
+
+    plain = _stub_tile_server(monkeypatch, 256)
+    R._fetch_basemap(coords, Basemap("https://tiles.test/{z}/{x}/{y}.png", "", DEFAULT_ATTRIBUTION, True))
+    assert plain and not any("@2x" in u for u in plain)
+
+    retina = _stub_tile_server(monkeypatch, 512)
+    R._fetch_basemap(
+        coords,
+        Basemap("https://tiles.test/{z}/{x}/{y}{r}.png", "", DEFAULT_ATTRIBUTION, True),
+    )
+    assert retina and all("@2x" in u for u in retina)
+
+
+def test_basemap_monochrome_removes_colour(monkeypatch):
+    """The PDF map must get the same flat treatment as the web map, so the
+    report and the screen agree."""
+    from app.services import reports as R
+    from app.services.basemap import DEFAULT_ATTRIBUTION, Basemap
+
+    coords = [{"latitude": 35.96, "longitude": -83.92, "visits": 1}]
+    url = "https://tiles.test/{z}/{x}/{y}.png"
+
+    _stub_tile_server(monkeypatch, 256)
+    mono, _, _ = R._fetch_basemap(coords, Basemap(url, "", DEFAULT_ATTRIBUTION, True))
+    _stub_tile_server(monkeypatch, 256)
+    colour, _, _ = R._fetch_basemap(coords, Basemap(url, "", DEFAULT_ATTRIBUTION, False))
+
+    # The stub paints a coloured gradient; monochrome must flatten every pixel.
+    def triples(img):
+        raw = img.convert("RGB").tobytes()
+        return [tuple(raw[i : i + 3]) for i in range(0, len(raw), 3)]
+
+    assert all(r == g == b for r, g, b in triples(mono))
+    assert any(r != g or g != b for r, g, b in triples(colour))
 
 
 def test_requires_auth(client):

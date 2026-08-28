@@ -21,6 +21,7 @@ from app.services.settings import (
     effective_login_message,
     effective_banner_level,
     effective_banner_message,
+    effective_basemap,
     effective_map_center_lat,
     effective_map_center_lon,
     effective_map_radius_km,
@@ -37,6 +38,7 @@ def auth_config(db: DbSession) -> AuthConfig:
     """Public: instance-wide, non-sensitive config the login/register pages
     (and, once signed in, the rest of the app) need — sign-up status, contact
     info, and small branding/behavior overrides like the map's start point."""
+    bm = effective_basemap(db)
     return AuthConfig(
         registration_enabled=bool(effective_invite_code(db)),
         contact_email=effective_contact_email(db) or None,
@@ -49,6 +51,10 @@ def auth_config(db: DbSession) -> AuthConfig:
         banner_message=effective_banner_message(db) or None,
         banner_level=effective_banner_level(db),
         user_directory_visible=user_directory_visible(db),
+        basemap_light_url=bm.url_for(dark=False),
+        basemap_dark_url=bm.dark_url,
+        basemap_attribution=bm.attribution,
+        basemap_monochrome=bm.monochrome,
         has_siblings=has_enabled_peers(db),
         cf_analytics_token=cf_analytics_token(db),
     )

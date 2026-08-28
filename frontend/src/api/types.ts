@@ -675,6 +675,15 @@ export interface AuthConfig {
   banner_message: string | null;
   banner_level: string;
   user_directory_visible: boolean;
+  /**
+   * Basemap tiles for the map. An empty dark URL means "reuse the light tiles";
+   * `basemap_monochrome` then asks the client to flatten them to grey (and
+   * invert for dark mode) so the coloured markers read on top.
+   */
+  basemap_light_url: string;
+  basemap_dark_url: string;
+  basemap_attribution: string;
+  basemap_monochrome: boolean;
   has_siblings: boolean;
   /** Cloudflare Web Analytics beacon token, or null when not configured. */
   cf_analytics_token: string | null;
@@ -782,6 +791,11 @@ export interface RegistrationSettings {
   federation_feed_url: string;
   /** Raw Cloudflare Web Analytics snippet the admin pasted (round-trips). */
   cf_analytics_snippet: string;
+  /** Basemap tile sources, shared by the web map and the PDF report. */
+  basemap_light_url: string;
+  basemap_dark_url: string;
+  basemap_attribution: string;
+  basemap_monochrome: boolean;
 }
 
 export interface DbImportResult {
