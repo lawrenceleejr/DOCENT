@@ -105,12 +105,19 @@ function CommunicatorSelect({
   const { t } = useTranslation();
   const { user } = useAuth();
   const [search, setSearch] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Mantine echoes the selected option's label back through onSearchChange, so
+  // the search box holds "Ada Alvarez" (or "Me (…)") whenever the dropdown is
+  // shut. Sending that as the query would filter the list down to nobody, so
+  // only search while the dropdown is open — where the text really was typed.
+  const q = dropdownOpen ? search.trim() : '';
 
   const { data } = useQuery({
-    queryKey: ['admin', 'users', 'attribution', search],
+    queryKey: ['admin', 'users', 'attribution', q],
     queryFn: () =>
       api.get<Paginated<AdminUser>>('/api/admin/users', {
-        q: search.trim() || undefined,
+        q: q || undefined,
         page_size: 50,
       }),
   });
@@ -157,6 +164,12 @@ function CommunicatorSelect({
       value={value.id === null ? 'me' : String(value.id)}
       searchValue={search}
       onSearchChange={setSearch}
+      // Open on the full list rather than on the selected name as a filter.
+      onDropdownOpen={() => {
+        setDropdownOpen(true);
+        setSearch('');
+      }}
+      onDropdownClose={() => setDropdownOpen(false)}
       comboboxProps={{ withinPortal: true }}
       nothingFoundMessage={t('importWizard.attributeNothing')}
       onChange={(picked) => {
