@@ -470,11 +470,33 @@ def list_tags(db: DbSession, _user: CurrentUser):
     return [r[0] for r in rows]
 
 
+def _resolve_author_id(requested: int | None, user: User, db: DbSession) -> int:
+    """Whose event this becomes. Normally the caller's own; an admin may name
+    another communicator so a colleague's back-catalogue can be logged (or
+    CSV-imported) on their behalf. The event then belongs to that person for
+    every purpose — their stats, their reports, theirs to edit."""
+    if requested is None or requested == user.id:
+        return user.id
+    if not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only an admin can log an event for another communicator.",
+        )
+    author = db.get(User, requested)
+    if author is None or not author.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Communicator not found"
+        )
+    return author.id
+
+
 @router.post("", response_model=VisitOut, status_code=status.HTTP_201_CREATED)
 def create_visit(body: VisitCreate, user: CurrentUser, db: DbSession):
     if not db.get(Venue, body.venue_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venue not found")
-    visit = Visit(**body.model_dump(), author_id=user.id)
+    data = body.model_dump()
+    author_id = _resolve_author_id(data.pop("author_id"), user, db)
+    visit = Visit(**data, author_id=author_id)
     db.add(visit)
     db.commit()
     return _get_visit_or_404(visit.id, db)

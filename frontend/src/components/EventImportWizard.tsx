@@ -47,6 +47,7 @@ import {
   AUDIENCE_LEVELS,
   EVENT_TYPES,
   LANGUAGES,
+  type AdminUser,
   type EventType,
   type AudienceLevel,
   type ImportDraftRow,
@@ -55,6 +56,7 @@ import {
   type VenueType,
   type Visit,
 } from '../api/types';
+import { useAuth } from '../auth/AuthContext';
 import { useEnumLabel } from '../i18n/enumLabels';
 import { VenuePicker } from './VenuePicker';
 
@@ -67,6 +69,106 @@ const ONLINE_VENUE_TYPES = new Set<VenueType>([
   'blog',
 ]);
 
+/**
+ * Who an imported event is logged for. `id: null` means the signed-in user —
+ * the only possibility for a non-admin, and the default for everyone.
+ */
+interface Communicator {
+  id: number | null;
+  name: string | null;
+}
+
+const MYSELF: Communicator = { id: null, name: null };
+
+/**
+ * Admin-only picker for whose events these are. An admin handed a colleague's
+ * CV can import the whole back-catalogue under the colleague's account: the
+ * events become theirs for every purpose — their profile, their stats, their
+ * reports, theirs to edit. Non-admins never see this control, and the API
+ * refuses the attribution regardless of the UI.
+ */
+function CommunicatorSelect({
+  value,
+  onChange,
+  label,
+  description,
+  disabled,
+  size,
+}: {
+  value: Communicator;
+  onChange: (who: Communicator) => void;
+  label: string;
+  description?: string;
+  disabled?: boolean;
+  size?: string;
+}) {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const [search, setSearch] = useState('');
+
+  const { data } = useQuery({
+    queryKey: ['admin', 'users', 'attribution', search],
+    queryFn: () =>
+      api.get<Paginated<AdminUser>>('/api/admin/users', {
+        q: search.trim() || undefined,
+        page_size: 50,
+      }),
+  });
+
+  // Only active accounts: a deactivated one can't own new events (the API
+  // rejects it too). "Me" is offered separately as the first option.
+  const candidates = useMemo(
+    () => (data?.items ?? []).filter((u) => u.is_active && u.id !== user?.id),
+    [data, user?.id],
+  );
+
+  const options = useMemo(() => {
+    // Label with the bare name: picking an option feeds the label back as the
+    // next search, and a name still matches the server-side search where
+    // "Name — email" would find nothing. The email is only added to tell two
+    // people with the same name apart.
+    const seen = new Map<string, number>();
+    for (const u of candidates) seen.set(u.name, (seen.get(u.name) ?? 0) + 1);
+    const opts = [
+      { value: 'me', label: t('importWizard.attributeSelf', { name: user?.name ?? '' }) },
+      ...candidates.map((u) => ({
+        value: String(u.id),
+        label: (seen.get(u.name) ?? 0) > 1 ? `${u.name} — ${u.email}` : u.name,
+      })),
+    ];
+    // Keep the current selection resolvable even when the search has moved on.
+    if (value.id !== null && !candidates.some((u) => u.id === value.id)) {
+      opts.push({ value: String(value.id), label: value.name ?? `#${value.id}` });
+    }
+    return opts;
+  }, [candidates, value, user?.name, t]);
+
+  return (
+    <Select
+      label={label}
+      description={description}
+      size={size}
+      searchable
+      disabled={disabled}
+      data={options}
+      // Results are already filtered server-side; don't re-filter locally
+      // (that would hide "Me", whose label rarely matches the typed name).
+      filter={({ options }) => options}
+      value={value.id === null ? 'me' : String(value.id)}
+      searchValue={search}
+      onSearchChange={setSearch}
+      comboboxProps={{ withinPortal: true }}
+      nothingFoundMessage={t('importWizard.attributeNothing')}
+      onChange={(picked) => {
+        if (!picked || picked === 'me') return onChange(MYSELF);
+        const id = Number(picked);
+        const hit = candidates.find((u) => u.id === id);
+        onChange({ id, name: hit?.name ?? value.name ?? `#${id}` });
+      }}
+    />
+  );
+}
+
 /** Editable working copy of one CSV row, plus its wizard state. */
 interface WorkingRow {
   draft: ImportDraftRow;
@@ -77,6 +179,10 @@ interface WorkingRow {
   audience_level: AudienceLevel | null;
   people_reached: number | '';
   is_broadcast: boolean;
+  // Whose event this becomes. null = the signed-in user (the only option for
+  // non-admins); an id attributes the event to that communicator instead.
+  author_id: number | null;
+  author_name: string | null;
   venue_id: number | null;
   description: string;
   start_time: string;
@@ -87,7 +193,7 @@ interface WorkingRow {
   createdVisitId: number | null;
 }
 
-function toWorking(draft: ImportDraftRow): WorkingRow {
+function toWorking(draft: ImportDraftRow, author: Communicator): WorkingRow {
   return {
     draft,
     title: draft.title ?? '',
@@ -96,6 +202,8 @@ function toWorking(draft: ImportDraftRow): WorkingRow {
     audience_level: (draft.audience_level as AudienceLevel | null) ?? null,
     people_reached: draft.people_reached ?? '',
     is_broadcast: false,
+    author_id: author.id,
+    author_name: author.name,
     venue_id: null,
     description: draft.description ?? '',
     start_time: draft.start_time ?? '',
@@ -244,6 +352,8 @@ export function EventImportWizard({
 }) {
   const { t } = useTranslation();
   const enumLabel = useEnumLabel();
+  const { user } = useAuth();
+  const isAdmin = !!user?.is_admin;
 
   const [file, setFile] = useState<File | null>(null);
   const [parsed, setParsed] = useState<ImportParseResponse | null>(null);
@@ -252,6 +362,9 @@ export function EventImportWizard({
   // against `mapping` so edits in the dropdowns always trigger a re-parse.
   const [appliedMapping, setAppliedMapping] = useState<Record<string, string>>({});
   const [rows, setRows] = useState<WorkingRow[]>([]);
+  // Who the whole file is being imported for; each row starts here and can be
+  // re-pointed individually during the review.
+  const [importFor, setImportFor] = useState<Communicator>(MYSELF);
   const [current, setCurrent] = useState(0);
   // IDs of visits created in this session — so the same-day panel can tag them.
   const [createdIds, setCreatedIds] = useState<Set<number>>(new Set());
@@ -264,6 +377,7 @@ export function EventImportWizard({
     setMapping({});
     setAppliedMapping({});
     setRows([]);
+    setImportFor(MYSELF);
     setCurrent(0);
     setCreatedIds(new Set());
   }, []);
@@ -306,7 +420,7 @@ export function EventImportWizard({
         return; // parse.onError already showed the notification
       }
     }
-    setRows(resp.rows.map(toWorking));
+    setRows(resp.rows.map((r) => toWorking(r, importFor)));
     setCurrent(0);
   };
 
@@ -333,6 +447,8 @@ export function EventImportWizard({
     mutationFn: (r: WorkingRow) =>
       api.post<Visit>('/api/visits', {
         venue_id: r.venue_id,
+        // null = mine; an id is an admin attributing the event to a colleague.
+        author_id: r.author_id,
         status: 'completed',
         visit_date: isoDate(r.visit_date),
         start_time: r.start_time || null,
@@ -347,13 +463,19 @@ export function EventImportWizard({
         additional_presenters: r.presenters.trim() || null,
         links: r.draft.url ? [{ url: r.draft.url, category: 'other', note: null }] : [],
       }),
-    onSuccess: (visit) => {
+    onSuccess: (visit, imported) => {
       setCreatedIds((cur) => new Set(cur).add(visit.id));
       patchRow(current, { status: 'imported', createdVisitId: visit.id });
       onImported();
       notifications.show({
         color: 'green',
-        message: t('importWizard.importedNotification', { title: visit.title }),
+        message:
+          imported.author_id !== null
+            ? t('importWizard.importedForNotification', {
+                title: visit.title,
+                name: visit.author.name,
+              })
+            : t('importWizard.importedNotification', { title: visit.title }),
       });
       goNextPending();
     },
@@ -508,6 +630,15 @@ export function EventImportWizard({
                   : t('importWizard.detectedGeneric', { count: parsed.rows.length })}
               </Alert>
 
+              {isAdmin && (
+                <CommunicatorSelect
+                  value={importFor}
+                  onChange={setImportFor}
+                  label={t('importWizard.attributeLabel')}
+                  description={t('importWizard.attributeDescription')}
+                />
+              )}
+
               <Text size="sm" fw={600}>
                 {t('importWizard.mappingHeading')}
               </Text>
@@ -606,7 +737,14 @@ export function EventImportWizard({
             {/* Left: the editable draft */}
             <Stack gap="xs">
               <Group justify="space-between">
-                <Text fw={600}>{t('importWizard.draftHeading')}</Text>
+                <Group gap="xs">
+                  <Text fw={600}>{t('importWizard.draftHeading')}</Text>
+                  {row.author_id !== null && (
+                    <Badge color="grape" variant="light">
+                      {t('importWizard.forCommunicatorBadge', { name: row.author_name })}
+                    </Badge>
+                  )}
+                </Group>
                 {row.status === 'imported' && (
                   <Badge color="teal" leftSection={<IconCheck size={12} />}>
                     {t('importWizard.importedBadge')}
@@ -625,6 +763,17 @@ export function EventImportWizard({
                     components={{ code: <Code /> }}
                   />
                 </Alert>
+              )}
+
+              {isAdmin && (
+                <CommunicatorSelect
+                  value={{ id: row.author_id, name: row.author_name }}
+                  onChange={(who) =>
+                    patchRow(current, { author_id: who.id, author_name: who.name })
+                  }
+                  label={t('importWizard.rowAuthorLabel')}
+                  disabled={row.status === 'imported'}
+                />
               )}
 
               <TextInput

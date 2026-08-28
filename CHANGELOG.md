@@ -4,6 +4,17 @@ All notable changes to DOCENT are documented here. This project uses
 [semantic versioning](https://semver.org/); tagged releases publish container
 images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
+## Unreleased
+
+### Added
+- **Import a colleague's event history on their behalf.** An admin running the
+  CSV import can choose which communicator the events are logged for — picked
+  once for the whole file, and changeable per event during the review. The
+  events belong to that person for every purpose: their profile, their stats,
+  their reports, and theirs to edit. Handy when someone hands over a CV or a
+  publication list rather than entering it themselves. Non-admins see no
+  change, and the API refuses the attribution for anyone who isn't an admin.
+
 ## v0.1.8
 
 ### Fixed

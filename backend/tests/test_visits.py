@@ -1,6 +1,6 @@
 import time
 
-from tests.conftest import create_venue, create_visit, register
+from tests.conftest import VISIT, create_venue, create_visit, register
 
 
 def test_create_and_get_visit(client):
@@ -710,3 +710,95 @@ def test_admin_setup_status(client):
     create_visit(client, venue["id"])
     s = client.get("/api/admin/setup").json()
     assert s["first_event_logged"] is True
+
+
+# --- Attributing an event to another communicator (admin-only) -------------
+#
+# An admin logs or CSV-imports a colleague's back-catalogue for them; the event
+# has to end up owned by the colleague, not by the admin who typed it in.
+
+
+def test_admin_creates_visit_for_another_communicator(client, make_client):
+    register(client)  # first user bootstraps as admin
+    colleague_client = make_client()
+    colleague = register(
+        colleague_client, email="colleague@example.com", name="Colleague"
+    ).json()
+
+    venue = create_venue(client)
+    visit = create_visit(client, venue["id"], author_id=colleague["id"])
+
+    # It belongs to the colleague — not the admin who imported it.
+    assert visit["author"]["id"] == colleague["id"]
+    assert visit["author"]["name"] == "Colleague"
+
+    # And it really is theirs: it lists under their author filter, and they can
+    # edit it as the author (no admin rights needed).
+    mine = colleague_client.get("/api/visits", params={"author_id": colleague["id"]})
+    assert [v["id"] for v in mine.json()["items"]] == [visit["id"]]
+    assert colleague_client.patch(
+        f"/api/visits/{visit['id']}", json={"people_reached": 99}
+    ).status_code == 200
+
+
+def test_non_admin_cannot_attribute_visit_to_someone_else(client, make_client):
+    register(client)  # admin
+    other = make_client()
+    register(other, email="other@example.com", name="Other")
+    third = make_client()
+    third_user = register(third, email="third@example.com", name="Third").json()
+
+    venue = create_venue(client)
+    response = other.post(
+        "/api/visits",
+        json={**VISIT, "venue_id": venue["id"], "author_id": third_user["id"]},
+    )
+    assert response.status_code == 403
+
+
+def test_naming_yourself_as_author_is_always_allowed(client, make_client):
+    register(client)  # admin
+    other = make_client()
+    me = register(other, email="other@example.com", name="Other").json()
+
+    venue = create_venue(client)
+    visit = create_visit(other, venue["id"], author_id=me["id"])
+    assert visit["author"]["id"] == me["id"]
+
+
+def test_admin_cannot_attribute_to_unknown_or_deactivated_account(client, make_client):
+    register(client)  # admin
+    gone = make_client()
+    gone_user = register(gone, email="gone@example.com", name="Gone").json()
+    venue = create_venue(client)
+
+    missing = client.post(
+        "/api/visits", json={**VISIT, "venue_id": venue["id"], "author_id": 999_999}
+    )
+    assert missing.status_code == 404
+
+    client.patch(f"/api/admin/users/{gone_user['id']}", json={"is_active": False})
+    deactivated = client.post(
+        "/api/visits",
+        json={**VISIT, "venue_id": venue["id"], "author_id": gone_user["id"]},
+    )
+    assert deactivated.status_code == 404
+
+
+def test_attributed_visit_counts_toward_the_colleagues_profile(client, make_client):
+    """The point of the feature: an imported back-catalogue shows up in the
+    colleague's own numbers, not the importing admin's."""
+    register(client)  # admin
+    colleague_client = make_client()
+    colleague = register(
+        colleague_client, email="colleague@example.com", name="Colleague"
+    ).json()
+    admin = client.get("/api/auth/me").json()
+    venue = create_venue(client)
+    create_visit(client, venue["id"], author_id=colleague["id"], people_reached=42)
+
+    theirs = client.get(f"/api/users/{colleague['id']}/profile").json()
+    assert theirs["total_visits"] == 1 and theirs["total_people_reached"] == 42
+
+    mine = client.get(f"/api/users/{admin['id']}/profile").json()
+    assert mine["total_visits"] == 0

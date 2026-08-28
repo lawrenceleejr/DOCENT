@@ -722,6 +722,13 @@ MAX_PEOPLE_REACHED = 500_000_000
 
 class VisitCreate(BaseModel):
     venue_id: int
+    # Whose event this is. Omitted (the normal case) it's the caller's own;
+    # naming someone else attributes the event to that communicator and is
+    # admin-only — the route enforces it. Exists so an admin can log or import
+    # a colleague's back-catalogue on their behalf (e.g. a CV handed over as a
+    # CSV), which is the only way an event can land under an account that
+    # didn't create it.
+    author_id: int | None = None
     status: VisitStatus = VisitStatus.completed
     visit_date: date
     start_time: time | None = None

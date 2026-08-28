@@ -409,6 +409,12 @@ Export CSV) walks you through bringing it in without retyping everything:
 - **Duplicate spotting built in:** while you review a row, a side panel lists
   every event already in DOCENT on that same day — including ones you just
   imported — so double entries are caught before they happen.
+- **Admins can import for someone else.** Handed a colleague's CV instead of a
+  spreadsheet they'll enter themselves? An admin gets a **"Log these events
+  for"** picker — set it once for the whole file, and override it per event
+  during the review. The events are then that communicator's for every purpose:
+  their profile, their stats, their reports, and theirs to edit. Everyone else
+  imports into their own account, and the API enforces that.
 
 ![CSV import wizard](docs/screenshots/10-import.png)
 
