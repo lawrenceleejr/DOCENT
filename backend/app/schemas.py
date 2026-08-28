@@ -316,6 +316,17 @@ class AdminUserUpdate(BaseModel):
     email: EmailStr | None = None
 
 
+class AdminUserCreate(BaseModel):
+    """An account an admin opens on someone else's behalf. Deliberately has no
+    password field — see the route: the account is created unreachable, and a
+    password reset is what hands it over."""
+
+    name: str = Field(min_length=1, max_length=255)
+    email: EmailStr
+    affiliation: str | None = Field(default=None, max_length=255)
+    position: str | None = Field(default=None, max_length=255)
+
+
 class SchoolCreate(BaseModel):
     venue_id: int
 

@@ -14,6 +14,13 @@ images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
   their reports, and theirs to edit. Handy when someone hands over a CV or a
   publication list rather than entering it themselves. Non-admins see no
   change, and the API refuses the attribution for anyone who isn't an admin.
+- **Admins can open an account for a colleague who won't sign up themselves.**
+  **Add user** on the Admin page creates the account with no usable password —
+  a long random one, hashed and discarded, so nobody can log in as them — which
+  makes them available immediately as a name to log and import events under.
+  Handing the account over stays a separate, deliberate act: **Reset password**
+  on their row, relayed out of band as before. Self-registration with the access
+  code is still how everyone else gets in.
 
 ## v0.1.8
 
