@@ -304,11 +304,6 @@ function RegistrationCard() {
             />
           </Stack>
         </div>
-        {save.error && (
-          <Text size="sm" c="red">
-            {save.error.message}
-          </Text>
-        )}
         <Group justify="flex-end">
           <Button
             variant="gradient"

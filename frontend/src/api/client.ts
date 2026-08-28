@@ -51,6 +51,9 @@ async function request<T>(
       const data = await response.json();
       if (typeof data.detail === 'string') detail = data.detail;
       else if (Array.isArray(data.detail)) detail = data.detail[0]?.msg ?? detail;
+      // Pydantic prefixes messages raised from a validator with "Value error, ";
+      // that's framework noise in front of text written for the user.
+      detail = detail.replace(/^Value error,\s*/, '');
     } catch {
       // non-JSON error body; keep statusText
     }

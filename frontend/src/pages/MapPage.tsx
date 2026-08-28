@@ -416,7 +416,19 @@ export function MapPage() {
         </Text>
       </FilterCard>
 
-      <Card withBorder p={0} style={{ overflow: 'hidden' }}>
+      {/* The monochrome filter value lives here rather than on MapContainer:
+          react-leaflet applies MapContainer's style once, on mount, so a value
+          set there would go stale the moment the colour scheme is toggled. */}
+      <Card
+        withBorder
+        p={0}
+        style={
+          {
+            overflow: 'hidden',
+            '--basemap-filter': basemap.filter ?? 'none',
+          } as CSSProperties
+        }
+      >
         {!config && <Skeleton height="70vh" radius={0} />}
         {config && (
           // bounds are only read on mount — wait for the config so the map opens
@@ -428,13 +440,7 @@ export function MapPage() {
               config.map_radius_km,
             )}
             boundsOptions={{ padding: [24, 24] }}
-            style={
-              {
-                height: '70vh',
-                width: '100%',
-                '--basemap-filter': basemap.filter ?? 'none',
-              } as CSSProperties
-            }
+            style={{ height: '70vh', width: '100%' }}
             scrollWheelZoom
           >
             <TileLayer
