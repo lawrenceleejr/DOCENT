@@ -175,3 +175,14 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Monochrome basemap. The default tile source is keyless OpenStreetMap (CARTO's
+   anonymous raster tiles now carry an "API KEY REQUIRED" watermark), and OSM's
+   standard style is colourful — so we flatten it to grey, and invert it for
+   dark mode, to keep the flat background the coloured markers read against.
+   The filter value comes from src/lib/basemap.ts, which mirrors the treatment
+   the PDF report applies in PIL; only the tile pane is filtered, so markers,
+   popups and controls keep their own colours. */
+.basemap-monochrome {
+  filter: var(--basemap-filter, none);
+}

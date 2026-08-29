@@ -14,8 +14,10 @@ import {
 import { notifications } from '@mantine/notifications';
 import { useQuery } from '@tanstack/react-query';
 import { divIcon, type LatLngBoundsExpression } from 'leaflet';
-import { useMemo, useReducer, useState } from 'react';
+import { useMemo, useReducer, useState, type CSSProperties } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+
+import { basemapFor } from '../lib/basemap';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
@@ -203,11 +205,6 @@ export function MapPage() {
   const enumLabel = useEnumLabel();
   const navigate = useNavigate();
   const scheme = useComputedColorScheme('dark');
-  // Flat, monochrome CARTO basemap so the colored markers read clearly.
-  const tileUrl =
-    scheme === 'dark'
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
   const [bounds, setBounds] = useState<Bounds | null>(null);
   const [types, setTypes] = useState<InstitutionType[]>(DEFAULT_TYPES);
   const [statusFilter, setStatusFilter] = useState<'all' | 'gap' | 'covered'>('all');
@@ -222,6 +219,11 @@ export function MapPage() {
     queryFn: () => api.get<AuthConfig>('/api/auth/config'),
     staleTime: 5 * 60 * 1000,
   });
+
+  // Admin-configured tile source. Keyless by default, with a monochrome
+  // treatment so the coloured markers keep reading against a flat background
+  // (the PDF report applies the same treatment server-side).
+  const basemap = basemapFor(config, scheme === 'dark');
 
   const rounded = bounds ? roundBounds(bounds) : null;
   const typeParam = types.join(',');
@@ -414,7 +416,19 @@ export function MapPage() {
         </Text>
       </FilterCard>
 
-      <Card withBorder p={0} style={{ overflow: 'hidden' }}>
+      {/* The monochrome filter value lives here rather than on MapContainer:
+          react-leaflet applies MapContainer's style once, on mount, so a value
+          set there would go stale the moment the colour scheme is toggled. */}
+      <Card
+        withBorder
+        p={0}
+        style={
+          {
+            overflow: 'hidden',
+            '--basemap-filter': basemap.filter ?? 'none',
+          } as CSSProperties
+        }
+      >
         {!config && <Skeleton height="70vh" radius={0} />}
         {config && (
           // bounds are only read on mount — wait for the config so the map opens
@@ -430,10 +444,12 @@ export function MapPage() {
             scrollWheelZoom
           >
             <TileLayer
-              key={scheme}
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              url={tileUrl}
+              // Remount on a scheme/source change so Leaflet drops cached tiles.
+              key={`${scheme}-${basemap.url}`}
+              attribution={basemap.attribution}
+              url={basemap.url}
               subdomains="abcd"
+              className={basemap.filter ? 'basemap-monochrome' : undefined}
             />
             <BoundsWatcher onChange={setBounds} />
 

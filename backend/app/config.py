@@ -2,6 +2,8 @@ from functools import lru_cache
 
 from pydantic_settings import BaseSettings
 
+from app.services import basemap
+
 
 class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://docent:docent@localhost:5432/docent"
@@ -56,6 +58,17 @@ class Settings(BaseSettings):
     # report's activity map. Requires outbound network at report time; when off,
     # or when tiles can't be reached, the PDF falls back to a vector coverage map.
     report_basemap_enabled: bool = True
+    # Basemap tiles for the web map and the PDF report's activity map. CARTO's
+    # anonymous raster tiles now carry an "API KEY REQUIRED" watermark and are
+    # being retired, so the default is keyless OpenStreetMap plus a monochrome
+    # treatment (see services/basemap.py) that keeps the flat background the
+    # coloured markers need. Admin-editable from the UI; point them at any
+    # {z}/{x}/{y} raster provider (CARTO with your own key, Stadia, MapTiler,
+    # a self-hosted server) to use something else.
+    basemap_light_url: str = basemap.DEFAULT_LIGHT_URL
+    basemap_dark_url: str = basemap.DEFAULT_DARK_URL
+    basemap_attribution: str = basemap.DEFAULT_ATTRIBUTION
+    basemap_monochrome: bool = True
     overpass_url: str = "https://overpass-api.de/api/interpreter"
     nominatim_url: str = "https://nominatim.openstreetmap.org/search"
     # Photon (komoot) — free, keyless, OSM-based, built for type-ahead search

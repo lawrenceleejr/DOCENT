@@ -67,6 +67,10 @@ from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
 from app.services.settings import (
     BANNER_LEVEL_KEY,
     BANNER_MESSAGE_KEY,
+    BASEMAP_ATTRIBUTION_KEY,
+    BASEMAP_DARK_URL_KEY,
+    BASEMAP_LIGHT_URL_KEY,
+    BASEMAP_MONOCHROME_KEY,
     CF_ANALYTICS_KEY,
     CONTACT_EMAIL_KEY,
     FEDERATION_PUBLISH_KEY,
@@ -85,6 +89,7 @@ from app.services.settings import (
     effective_cf_analytics_snippet,
     effective_contact_email,
     effective_invite_code,
+    effective_basemap,
     effective_login_message,
     effective_map_center_lat,
     effective_map_center_lon,
@@ -224,6 +229,7 @@ def update_user(user_id: int, body: AdminUserUpdate, admin: CurrentAdmin, db: Db
 
 
 def _settings_out(db) -> RegistrationSettings:
+    bm = effective_basemap(db)
     return RegistrationSettings(
         invite_code=effective_invite_code(db),
         contact_email=effective_contact_email(db),
@@ -241,6 +247,10 @@ def _settings_out(db) -> RegistrationSettings:
         federation_publish_planned=federation_publish_planned_enabled(db),
         federation_feed_url=federation_feed_url(db),
         cf_analytics_snippet=effective_cf_analytics_snippet(db),
+        basemap_light_url=bm.light_url,
+        basemap_dark_url=bm.dark_url,
+        basemap_attribution=bm.attribution,
+        basemap_monochrome=bm.monochrome,
     )
 
 
@@ -277,6 +287,14 @@ def update_registration_settings(
         set_setting(db, BANNER_LEVEL_KEY, body.banner_level)
     if body.user_directory_visible is not None:
         set_setting(db, USER_DIRECTORY_KEY, "1" if body.user_directory_visible else "")
+    if body.basemap_light_url is not None:
+        set_setting(db, BASEMAP_LIGHT_URL_KEY, body.basemap_light_url)
+    if body.basemap_dark_url is not None:
+        set_setting(db, BASEMAP_DARK_URL_KEY, body.basemap_dark_url)
+    if body.basemap_attribution is not None:
+        set_setting(db, BASEMAP_ATTRIBUTION_KEY, body.basemap_attribution.strip())
+    if body.basemap_monochrome is not None:
+        set_setting(db, BASEMAP_MONOCHROME_KEY, "1" if body.basemap_monochrome else "")
     if body.federation_publish is not None:
         set_setting(db, FEDERATION_PUBLISH_KEY, "1" if body.federation_publish else "")
         # Ensure a token exists the moment publishing is turned on, so the admin

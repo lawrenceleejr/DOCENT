@@ -9,6 +9,7 @@ from app.deps import CurrentUser, DbSession
 from app.models import AudienceLevel, EventType, VenueType, Visit, VisitStatus
 from app.routers.visits import _apply_sort, _filtered_query, _parse_tags
 from app.services import reports as R
+from app.services.settings import effective_basemap
 from app.version import app_version
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
@@ -81,7 +82,10 @@ def activities_report(
     elif format == "latex":
         content = R.report_latex(report).encode("utf-8")
     else:
-        content = R.report_pdf(report, basemap=get_settings().report_basemap_enabled)
+        # report_basemap_enabled is the kill switch (offline / restricted
+        # backends); the tile source itself is admin-configurable.
+        basemap = effective_basemap(db) if get_settings().report_basemap_enabled else None
+        content = R.report_pdf(report, basemap=basemap)
 
     filename = R.report_filename(format, generated_at)
     return Response(

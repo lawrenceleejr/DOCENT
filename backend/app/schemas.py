@@ -100,6 +100,7 @@ def normalize_links(links: list | None) -> list[dict]:
     return out
 
 from app.languages import LANGUAGE_SET
+from app.services.basemap import InvalidTileUrl, validate_tile_url
 from app.models import (
     AudienceLevel,
     EventType,
@@ -195,6 +196,13 @@ class AuthConfig(BaseModel):
     banner_message: str | None
     banner_level: str
     user_directory_visible: bool
+    # Basemap tiles for the web map. An empty dark URL means "reuse the light
+    # tiles"; basemap_monochrome then tells the client to grayscale (and invert
+    # for dark mode) so the markers read against a flat background.
+    basemap_light_url: str
+    basemap_dark_url: str
+    basemap_attribution: str
+    basemap_monochrome: bool
     # True when at least one enabled federation peer exists, so the UI can hide
     # the "sibling instances" controls entirely on stand-alone instances (#6).
     has_siblings: bool
@@ -471,6 +479,11 @@ class RegistrationSettings(BaseModel):
     # The raw Cloudflare Web Analytics snippet, returned verbatim so the admin
     # form round-trips exactly what was pasted.
     cf_analytics_snippet: str
+    # Basemap tile sources, shared by the web map and the PDF report.
+    basemap_light_url: str
+    basemap_dark_url: str
+    basemap_attribution: str
+    basemap_monochrome: bool
 
 
 class RegistrationSettingsUpdate(BaseModel):
@@ -489,6 +502,22 @@ class RegistrationSettingsUpdate(BaseModel):
     federation_publish: bool | None = None
     federation_publish_planned: bool | None = None
     cf_analytics_snippet: str | None = Field(default=None, max_length=2000)
+    basemap_light_url: str | None = Field(default=None, max_length=500)
+    basemap_dark_url: str | None = Field(default=None, max_length=500)
+    basemap_attribution: str | None = Field(default=None, max_length=500)
+    basemap_monochrome: bool | None = None
+
+    @field_validator("basemap_light_url", "basemap_dark_url")
+    @classmethod
+    def _check_tile_url(cls, v: str | None) -> str | None:
+        """Reject a template the tile fetchers couldn't use, so a typo surfaces
+        as a form error instead of blank tiles or a 500 from the PDF renderer."""
+        if v is None:
+            return None
+        try:
+            return validate_tile_url(v)
+        except InvalidTileUrl as exc:
+            raise ValueError(str(exc)) from exc
 
 
 

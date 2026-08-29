@@ -6,7 +6,32 @@ images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
 ## Unreleased
 
+### Fixed
+- **The map no longer shows an "API KEY REQUIRED" watermark.** CARTO began
+  requiring an API key for their anonymous raster basemaps and now stamps that
+  notice into the tile pixels — which affected both the Map page and the map
+  embedded in PDF reports, so shared reports carried the watermark too. The
+  tile source is now admin-configurable and defaults to keyless OpenStreetMap,
+  so existing instances recover on upgrade with no action and no signup.
+  Because CARTO's own docs say the raster endpoints are being retired, this
+  deliberately does not just add a CARTO key field.
+
 ### Added
+- **Basemap tile settings** in the admin panel: light and dark tile URL
+  templates, the attribution line, and a "flatten to grey" toggle. Point them
+  at any `{z}/{x}/{y}` raster provider — CARTO with your own key, Stadia,
+  MapTiler, or a self-hosted tile server. Leaving the dark URL empty reuses the
+  light tiles inverted, so a single keyless source covers both themes. URLs are
+  validated on save, so a typo is a form error rather than a blank map.
+  Because OpenStreetMap's standard style is colourful, tiles are desaturated by
+  default (matched pixel-for-pixel between the web map's CSS and the PDF's
+  server-side rendering) to keep the flat backdrop the coloured markers need.
+- **Step-by-step CARTO setup in the admin panel**, for anyone who wants the old
+  Positron/Dark Matter look back: where to request a free key (no account, 5
+  million tiles a month), copy-to-clipboard light, dark, and attribution values
+  ready to paste, and a note to turn "Flatten to grey" off since those styles
+  are already muted. Pasting a template with `YOUR_KEY` still in it is rejected
+  with a message saying so, rather than silently serving watermarked tiles.
 - **Import a colleague's event history on their behalf.** An admin running the
   CSV import can choose which communicator the events are logged for — picked
   once for the whole file, and changeable per event during the review. The
