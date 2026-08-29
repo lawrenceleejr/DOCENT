@@ -656,10 +656,14 @@ _BASEMAP_SUBDOMAINS = ("a", "b", "c", "d")
 # we actually get back may be 256 or 512 (@2x), so the real size is measured
 # from the fetched tiles and the geometry scaled to it. Don't assume either.
 _BASEMAP_NOMINAL_PX = 256
-# Target image size in nominal px (i.e. 3.1 x 2 tiles), which sets how much
-# ground one report map covers.
-_BASEMAP_TARGET = (800, 500)
-_BASEMAP_MAX_TILES = 30
+# Output resolution we aim for, in real pixels. Held constant whatever the
+# provider serves, so the printed map doesn't get softer just because the tile
+# source has no @2x: a provider offering {r} reaches this with 512 px tiles,
+# one without needs a zoom level deeper and four times as many 256 px tiles.
+_BASEMAP_TARGET_PX = (1600, 1000)
+# Tile budgets matched to those two cases, so both cover the same ground.
+_BASEMAP_MAX_TILES_RETINA = 30
+_BASEMAP_MAX_TILES = 120
 
 
 def _mercator_px(lat: float, lon: float, z: int, tile_px: int) -> tuple[float, float]:
@@ -722,11 +726,21 @@ def _fetch_basemap(coords: list[dict[str, Any]], bm: Basemap):
     min_lon = max(min_lon - lon_span * 0.12, -180.0)
     max_lon = min(max_lon + lon_span * 0.12, 180.0)
 
+    url_template = bm.report_url
+    # Only ask for retina tiles when the template offers the placeholder — most
+    # keyless providers (OSM included) serve 256 px tiles only.
+    retina = "@2x" if "r" in tile_placeholders(url_template) else ""
+
     # Geometry on the nominal 256 px grid; the fetched tiles' real pixel size is
-    # measured below and the geometry scaled to it.
+    # measured below and the geometry scaled to it. Aim at a fixed *real* pixel
+    # target, so a provider without @2x simply goes one zoom deeper rather than
+    # handing us a half-resolution map.
     nom = _BASEMAP_NOMINAL_PX
-    target_w, target_h = _BASEMAP_TARGET
-    z = _pick_basemap_zoom(min_lat, max_lat, min_lon, max_lon, nom, target_w, target_h, _BASEMAP_MAX_TILES)
+    expected_scale = (512 if retina else 256) / nom
+    target_w = _BASEMAP_TARGET_PX[0] / expected_scale
+    target_h = _BASEMAP_TARGET_PX[1] / expected_scale
+    max_tiles = _BASEMAP_MAX_TILES_RETINA if retina else _BASEMAP_MAX_TILES
+    z = _pick_basemap_zoom(min_lat, max_lat, min_lon, max_lon, nom, target_w, target_h, max_tiles)
     n_tiles = 2 ** z
     left = _mercator_px(0.0, min_lon, z, nom)[0]
     right = _mercator_px(0.0, max_lon, z, nom)[0]
@@ -735,10 +749,6 @@ def _fetch_basemap(coords: list[dict[str, Any]], bm: Basemap):
     tx_min, tx_max = math.floor(left / nom), math.floor((right - 1e-6) / nom)
     ty_min, ty_max = math.floor(top / nom), math.floor((bottom - 1e-6) / nom)
 
-    url_template = bm.report_url
-    # Only ask for retina tiles when the template offers the placeholder — most
-    # keyless providers (OSM included) serve 256 px tiles only.
-    retina = "@2x" if "r" in tile_placeholders(url_template) else ""
     headers = {"User-Agent": "DOCENT-report/1.0 (+https://github.com/lawrenceleejr/docent)"}
     timeout = httpx.Timeout(6.0, connect=3.0)
 

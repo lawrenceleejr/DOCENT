@@ -26,6 +26,13 @@ images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
   Because OpenStreetMap's standard style is colourful, tiles are desaturated by
   default (matched pixel-for-pixel between the web map's CSS and the PDF's
   server-side rendering) to keep the flat backdrop the coloured markers need.
+- **The map renders at full resolution on high-DPI screens.** CARTO served
+  `@2x` retina tiles; OpenStreetMap serves 256px only, so on a retina display
+  the map was drawn at half the screen's pixel density and looked soft. The web
+  map now fetches a zoom level deeper and draws it at half size on such screens,
+  and the PDF report's map aims at a fixed pixel resolution regardless of
+  whether the provider offers `@2x`. A provider that does offer it (CARTO with
+  your key) is used directly, without the extra requests.
 - **Step-by-step CARTO setup in the admin panel**, for anyone who wants the old
   Positron/Dark Matter look back: where to request a free key (no account, 5
   million tiles a month), copy-to-clipboard light, dark, and attribution values

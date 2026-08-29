@@ -44,7 +44,16 @@ export interface BasemapChoice {
   attribution: string;
   /** A CSS `filter` value, or undefined to leave the tiles untouched. */
   filter: string | undefined;
+  /** Ask Leaflet to compensate for a provider that has no @2x tiles. */
+  detectRetina: boolean;
 }
+
+/**
+ * Highest zoom we ask a tile layer for. With `detectRetina` Leaflet knocks one
+ * off this and fetches the level below, so 19 keeps the map's usable maximum at
+ * 18 — what it was before — while staying inside OpenStreetMap's z19 ceiling.
+ */
+export const MAX_ZOOM = 19;
 
 /**
  * Resolve the tile layer for one colour scheme.
@@ -71,9 +80,18 @@ export function basemapFor(
     if (usingLightTilesForDark) parts.push('invert(1)');
   }
 
+  const url = dark && darkUrl ? darkUrl : light;
   return {
-    url: dark && darkUrl ? darkUrl : light,
+    url,
     attribution: config?.basemap_attribution || DEFAULT_ATTRIBUTION,
     filter: parts.length ? parts.join(' ') : undefined,
+    // A provider offering {r} serves @2x tiles and Leaflet substitutes it on
+    // HiDPI screens, so the map is already sharp. Everything else — including
+    // the OpenStreetMap default — serves 256px tiles only, which a retina
+    // display draws at half its pixel density, i.e. visibly soft. There,
+    // `detectRetina` makes Leaflet fetch one zoom level deeper and draw it at
+    // half size, restoring full density. Turning both on at once would fetch
+    // four @2x tiles where one belongs, so it's strictly either/or.
+    detectRetina: !url.includes('{r}'),
   };
 }

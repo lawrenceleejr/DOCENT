@@ -387,6 +387,38 @@ def test_basemap_projection_independent_of_tile_pixel_size(monkeypatch):
     assert hi_h == pytest.approx(lo_h * 2, rel=0.02)
 
 
+def test_basemap_resolution_does_not_depend_on_provider(monkeypatch):
+    """A provider without @2x must not yield a half-resolution printed map.
+
+    CARTO served 512px @2x tiles; OpenStreetMap serves 256px only. Rendering the
+    same bbox from each has to land on roughly the same *pixel* size — the
+    non-retina source going a zoom level deeper to get there — or switching the
+    default silently halves the resolution of every PDF report's map.
+    """
+    from app.services import reports as R
+    from app.services.basemap import DEFAULT_ATTRIBUTION, Basemap
+
+    coords = [
+        {"latitude": 35.96, "longitude": -83.92, "visits": 2},
+        {"latitude": 36.01, "longitude": -84.27, "visits": 1},
+    ]
+
+    _stub_tile_server(monkeypatch, 512)
+    retina, _, retina_size = R._fetch_basemap(
+        coords, Basemap("https://t.test/{z}/{x}/{y}{r}.png", "", DEFAULT_ATTRIBUTION, True)
+    )
+    _stub_tile_server(monkeypatch, 256)
+    plain, _, plain_size = R._fetch_basemap(
+        coords, Basemap("https://t.test/{z}/{x}/{y}.png", "", DEFAULT_ATTRIBUTION, True)
+    )
+
+    # Within one zoom step's worth of rounding, the two are the same resolution.
+    assert plain_size[0] == pytest.approx(retina_size[0], rel=0.25)
+    assert plain_size[1] == pytest.approx(retina_size[1], rel=0.25)
+    # And both are genuinely high-resolution, not a 640px thumbnail.
+    assert plain_size[0] > 900 and retina_size[0] > 900
+
+
 def test_basemap_retina_only_requested_when_offered(monkeypatch):
     """`{r}` is a CARTO-ism. Appending @2x to a provider that doesn't offer it
     (OSM) yields 404s and a blank map, so only substitute it when asked for."""

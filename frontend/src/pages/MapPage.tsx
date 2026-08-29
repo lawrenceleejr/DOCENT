@@ -17,7 +17,7 @@ import { divIcon, type LatLngBoundsExpression } from 'leaflet';
 import { useMemo, useReducer, useState, type CSSProperties } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 
-import { basemapFor } from '../lib/basemap';
+import { basemapFor, MAX_ZOOM } from '../lib/basemap';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
@@ -449,6 +449,8 @@ export function MapPage() {
               attribution={basemap.attribution}
               url={basemap.url}
               subdomains="abcd"
+              maxZoom={MAX_ZOOM}
+              detectRetina={basemap.detectRetina}
               className={basemap.filter ? 'basemap-monochrome' : undefined}
             />
             <BoundsWatcher onChange={setBounds} />
