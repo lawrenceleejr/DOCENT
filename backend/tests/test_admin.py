@@ -427,3 +427,99 @@ def test_cf_analytics_snippet_length_capped(client):
     register(client, email="admin@example.com")
     r = client.patch("/api/admin/settings", json={"cf_analytics_snippet": "a" * 2001})
     assert r.status_code == 422
+
+
+# --- Admin-created accounts -------------------------------------------------
+#
+# For the colleague who won't sign up for a thing but whose outreach still
+# belongs in the record. The account is created unreachable; a password reset
+# is what hands it over.
+
+
+def test_admin_creates_an_account_nobody_can_log_into_yet(client, make_client):
+    register(client, email="admin@example.com")
+
+    created = client.post(
+        "/api/admin/users",
+        json={
+            "name": "Prof. Senior Colleague",
+            "email": "Senior@Example.ORG",
+            "affiliation": "Dept. of Physics",
+            "position": "Distinguished Professor",
+        },
+    )
+    assert created.status_code == 201, created.text
+    account = created.json()
+    assert account["email"] == "senior@example.org"  # normalised
+    assert account["name"] == "Prof. Senior Colleague"
+    assert account["affiliation"] == "Dept. of Physics"
+    # Usable as an author straight away, but not an admin.
+    assert account["is_active"] is True and account["is_admin"] is False
+
+    # No password was chosen, so none of the obvious guesses is the password.
+    guesser = make_client()
+    for guess in ("", "password123", "senior@example.org", "Prof. Senior Colleague"):
+        r = guesser.post(
+            "/api/auth/login", json={"email": "senior@example.org", "password": guess}
+        )
+        assert r.status_code == 401, guess
+
+
+def test_password_reset_is_how_an_admin_created_account_is_handed_over(client, make_client):
+    register(client, email="admin@example.com")
+    account = client.post(
+        "/api/admin/users", json={"name": "Senior Colleague", "email": "senior@example.org"}
+    ).json()
+
+    temporary = client.post(
+        f"/api/admin/users/{account['id']}/reset-password"
+    ).json()["temporary_password"]
+
+    theirs = make_client()
+    login = theirs.post(
+        "/api/auth/login", json={"email": "senior@example.org", "password": temporary}
+    )
+    assert login.status_code == 200
+    assert theirs.get("/api/auth/me").json()["id"] == account["id"]
+
+
+def test_admin_created_account_rejects_a_duplicate_email(client):
+    register(client, email="admin@example.com")
+    body = {"name": "Senior Colleague", "email": "senior@example.org"}
+    assert client.post("/api/admin/users", json=body).status_code == 201
+    assert client.post("/api/admin/users", json=body).status_code == 409
+    # Including one that only differs by case, and the existing admin's own.
+    assert client.post(
+        "/api/admin/users", json={"name": "Again", "email": "SENIOR@example.org"}
+    ).status_code == 409
+    assert client.post(
+        "/api/admin/users", json={"name": "Again", "email": "admin@example.com"}
+    ).status_code == 409
+
+
+def test_creating_accounts_is_admin_only(client, make_client):
+    register(client, email="admin@example.com")
+    other = make_client()
+    register(other, email="other@example.com")
+    r = other.post(
+        "/api/admin/users", json={"name": "Senior Colleague", "email": "senior@example.org"}
+    )
+    assert r.status_code == 403
+
+
+def test_events_can_be_logged_for_an_admin_created_account(client):
+    """The pair the feature exists for: open the account, then import the
+    colleague's back-catalogue under it."""
+    from tests.conftest import create_venue, create_visit
+
+    register(client, email="admin@example.com")
+    account = client.post(
+        "/api/admin/users", json={"name": "Senior Colleague", "email": "senior@example.org"}
+    ).json()
+
+    venue = create_venue(client)
+    visit = create_visit(client, venue["id"], author_id=account["id"])
+    assert visit["author"]["name"] == "Senior Colleague"
+
+    profile = client.get(f"/api/users/{account['id']}/profile").json()
+    assert profile["total_visits"] == 1

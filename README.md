@@ -52,7 +52,7 @@ institution deploys and configures it.)*
 
 ![Reports](docs/screenshots/07-reports.png)
 
-**Admin** — manage users, reset passwords, and **import institutions near a location** (address + radius in km/mi) straight from OpenStreetMap.
+**Admin** — manage users, reset passwords, **open an account for a colleague who won't sign up themselves** (created with no usable password, so it can't be logged into until you hand it over with Reset password), and **import institutions near a location** (address + radius in km/mi) straight from OpenStreetMap.
 
 ![Admin](docs/screenshots/06-admin.png)
 
@@ -409,8 +409,34 @@ Export CSV) walks you through bringing it in without retyping everything:
 - **Duplicate spotting built in:** while you review a row, a side panel lists
   every event already in DOCENT on that same day — including ones you just
   imported — so double entries are caught before they happen.
+- **Admins can import for someone else.** Handed a colleague's CV instead of a
+  spreadsheet they'll enter themselves? An admin gets a **"Log these events
+  for"** picker — set it once for the whole file, and override it per event
+  during the review. The events are then that communicator's for every purpose:
+  their profile, their stats, their reports, and theirs to edit. Everyone else
+  imports into their own account, and the API enforces that.
+  If they don't have an account yet, **Add user** on the Admin page opens one
+  for them (see below) — they never have to log in for their work to count.
 
 ![CSV import wizard](docs/screenshots/10-import.png)
+
+## Accounts for people who won't sign up
+
+Registration always needs the access code, and that stays the way people get in.
+But some colleagues — often the most senior ones — will never sign up for
+another thing, and their outreach still belongs in the record. **Add user** on
+the Admin page opens an account for them:
+
+- **No password is chosen.** The account is created with a long random one that
+  is hashed and thrown away, so nobody — you included — can log in as them.
+- **The account is immediately usable *as a name*:** log or
+  [CSV-import](#import-your-event-history-from-a-csv) their events under it, and
+  they show up in the directory, the leaderboard, and everyone's reports.
+- **Handing it over is a separate, deliberate act.** If they ever do want to log
+  in, use **Reset password** on their row and pass the temporary password along
+  yourself. Nothing is emailed, the same as every other credential here.
+
+Use it for the exception, not the rule — everyone who will register should.
 
 ## Reports (grant-ready exports)
 

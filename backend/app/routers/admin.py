@@ -25,6 +25,7 @@ from app.models import (
     Visit,
 )
 from app.schemas import (
+    AdminUserCreate,
     AdminUserList,
     AdminUserOut,
     AdminUserUpdate,
@@ -151,6 +152,45 @@ def list_users(
         for u in users
     ]
     return AdminUserList(items=items, total=total, page=page, page_size=page_size)
+
+
+@router.post("/users", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+def create_user(body: AdminUserCreate, _admin: CurrentAdmin, db: DbSession):
+    """Open an account for someone who won't sign up themselves.
+
+    The deliberate exception to self-registration, for the senior colleague who
+    won't log into a thing but whose outreach still belongs in the record: the
+    admin makes the account, then imports or logs that person's events under it.
+
+    No password is chosen here. The account is created with a long random one
+    that is hashed and immediately thrown away, so nobody — the admin included —
+    can log into it. Handing it over is a separate, deliberate act: "Reset
+    password" mints a temporary password for the admin to relay out of band,
+    exactly as for any other account. Nothing is emailed.
+    """
+    email = body.email.lower()
+    if db.scalar(select(User).where(User.email == email)):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists",
+        )
+    user = User(
+        email=email,
+        name=body.name.strip(),
+        affiliation=body.affiliation,
+        position=body.position,
+        # Not a guessable placeholder: 64 URL-safe random characters, hashed and
+        # never returned or stored in the clear. Until an admin resets it, every
+        # password on this account is wrong.
+        password_hash=hash_password(secrets.token_urlsafe(48)),
+        is_admin=False,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    # No LoginEvent: nobody registered and nobody logged in. The login history
+    # stays a record of what people actually did.
+    return user
 
 
 @router.patch("/users/{user_id}", response_model=UserOut)

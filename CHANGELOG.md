@@ -32,6 +32,20 @@ images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
   ready to paste, and a note to turn "Flatten to grey" off since those styles
   are already muted. Pasting a template with `YOUR_KEY` still in it is rejected
   with a message saying so, rather than silently serving watermarked tiles.
+- **Import a colleague's event history on their behalf.** An admin running the
+  CSV import can choose which communicator the events are logged for — picked
+  once for the whole file, and changeable per event during the review. The
+  events belong to that person for every purpose: their profile, their stats,
+  their reports, and theirs to edit. Handy when someone hands over a CV or a
+  publication list rather than entering it themselves. Non-admins see no
+  change, and the API refuses the attribution for anyone who isn't an admin.
+- **Admins can open an account for a colleague who won't sign up themselves.**
+  **Add user** on the Admin page creates the account with no usable password —
+  a long random one, hashed and discarded, so nobody can log in as them — which
+  makes them available immediately as a name to log and import events under.
+  Handing the account over stays a separate, deliberate act: **Reset password**
+  on their row, relayed out of band as before. Self-registration with the access
+  code is still how everyone else gets in.
 
 ## v0.1.8
 

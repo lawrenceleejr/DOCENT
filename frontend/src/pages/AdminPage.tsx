@@ -34,6 +34,7 @@ import {
   IconKey,
   IconPencil,
   IconTrash,
+  IconUserPlus,
   IconX,
 } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -551,6 +552,126 @@ function MergeUserModal({
   );
 }
 
+/**
+ * Open an account for someone who won't sign up themselves — the senior
+ * colleague who won't log into a thing, but whose outreach still belongs in
+ * the record. No password is chosen: the account is created unreachable, and
+ * "Reset password" on its row is what hands it over.
+ */
+function AddUserModal({
+  opened,
+  onClose,
+  onCreated,
+}: {
+  opened: boolean;
+  onClose: () => void;
+  onCreated: (user: User) => void;
+}) {
+  const { t } = useTranslation();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [affiliation, setAffiliation] = useState('');
+  const [position, setPosition] = useState('');
+
+  const clear = () => {
+    setName('');
+    setEmail('');
+    setAffiliation('');
+    setPosition('');
+  };
+
+  const create = useMutation({
+    mutationFn: () =>
+      api.post<User>('/api/admin/users', {
+        name: name.trim(),
+        email: email.trim(),
+        affiliation: affiliation.trim() || null,
+        position: position.trim() || null,
+      }),
+    onSuccess: (user) => {
+      clear();
+      onCreated(user);
+      onClose();
+      notifications.show({
+        color: 'green',
+        title: t('admin.userCreatedTitle'),
+        message: t('admin.userCreatedMessage', { name: user.name }),
+      });
+    },
+    onError: (e) => {
+      notifications.show({
+        color: 'red',
+        title: t('admin.createUserFailed'),
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
+      });
+    },
+  });
+
+  const valid = name.trim().length > 0 && /^\S+@\S+\.\S+$/.test(email.trim());
+
+  return (
+    <Modal
+      opened={opened}
+      onClose={() => {
+        clear();
+        onClose();
+      }}
+      title={t('admin.addUserModalTitle')}
+      size="md"
+    >
+      <Stack>
+        <Text size="sm" c="dimmed">
+          {t('admin.addUserModalDescription')}
+        </Text>
+        <TextInput
+          label={t('admin.addUserNameLabel')}
+          withAsterisk
+          value={name}
+          onChange={(e) => setName(e.currentTarget.value)}
+        />
+        <TextInput
+          label={t('admin.addUserEmailLabel')}
+          description={t('admin.addUserEmailDescription')}
+          withAsterisk
+          value={email}
+          onChange={(e) => setEmail(e.currentTarget.value)}
+        />
+        <TextInput
+          label={t('admin.addUserAffiliationLabel')}
+          value={affiliation}
+          onChange={(e) => setAffiliation(e.currentTarget.value)}
+        />
+        <TextInput
+          label={t('admin.addUserPositionLabel')}
+          value={position}
+          onChange={(e) => setPosition(e.currentTarget.value)}
+        />
+        <Alert variant="light" color="blue" icon={<IconKey size={16} />}>
+          {t('admin.addUserNoPasswordNote')}
+        </Alert>
+        <Group justify="flex-end">
+          <Button
+            variant="default"
+            onClick={() => {
+              clear();
+              onClose();
+            }}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            disabled={!valid}
+            loading={create.isPending}
+            onClick={() => create.mutate()}
+          >
+            {t('admin.addUserSubmit')}
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
+  );
+}
+
 export function AdminPage() {
   const { t } = useTranslation();
   const { user: me } = useAuth();
@@ -558,6 +679,7 @@ export function AdminPage() {
   const [resetInfo, setResetInfo] = useState<{ name: string; password: string } | null>(null);
   const [resetOpen, reset] = useDisclosure(false);
   const [mergeSource, setMergeSource] = useState<User | null>(null);
+  const [addUserOpen, addUser] = useDisclosure(false);
   const [q, setQ] = useState('');
   const [venueFilter, setVenueFilter] = useState<number | null>(null);
   const [languageFilter, setLanguageFilter] = useState<string | null>(null);
@@ -640,6 +762,13 @@ export function AdminPage() {
       <Group justify="space-between" align="flex-end" mt="md" wrap="wrap">
         <Title order={3}>{t('admin.userManagementHeading')}</Title>
         <Group align="flex-end">
+          <Button
+            variant="default"
+            leftSection={<IconUserPlus size={16} />}
+            onClick={addUser.open}
+          >
+            {t('admin.addUserButton')}
+          </Button>
           <TextInput
             placeholder={t('admin.searchPlaceholder')}
             value={q}
@@ -808,6 +937,20 @@ export function AdminPage() {
 
       {/* Login history lives at the very bottom, collapsed by default (#30). */}
       <LoginHistoryCard />
+
+      <AddUserModal
+        opened={addUserOpen}
+        onClose={addUser.close}
+        onCreated={(user) => {
+          queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+          // Users page oldest-first, so a new one lands on the last page —
+          // filter to them instead, ready for "Reset password" on their row.
+          setQ(user.email);
+          setVenueFilter(null);
+          setLanguageFilter(null);
+          setPage(1);
+        }}
+      />
 
       <MergeUserModal
         source={mergeSource}
