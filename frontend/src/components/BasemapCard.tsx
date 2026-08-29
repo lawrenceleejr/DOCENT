@@ -163,6 +163,11 @@ export function BasemapCard() {
           <Text size="sm" fw={600} mb={6}>
             {t('admin.basemapCartoTitle')}
           </Text>
+          {/* The reason to bother: it's a genuine quality difference, not just
+              a branding preference. See the retina handling in lib/basemap.ts. */}
+          <Text size="sm" mb={8}>
+            {t('admin.basemapCartoQuality')}
+          </Text>
           <List size="sm" spacing={4} type="ordered">
             <List.Item>
               <Trans

@@ -594,6 +594,7 @@
     "basemapStatusCustom": "PERSONNALISÉ",
     "basemapDescription": "L'imagerie derrière les marqueurs, utilisée par la page Carte et par la carte des rapports PDF. Le réglage par défaut ne nécessite aucune clé d'API. N'importe quel fournisseur raster en {z}/{x}/{y} convient — Stadia, MapTiler ou votre propre serveur de tuiles — ainsi que CARTO, ci-dessous.",
     "basemapCartoTitle": "Vous voulez le fond CARTO ? Il vous faut une clé gratuite",
+    "basemapCartoQuality": "Suivez ces étapes si vous voulez les plus belles cartes. CARTO fournit des tuiles retina (@2x) : la page Carte et les rapports PDF s'affichent en pleine résolution, avec des étiquettes dimensionnées pour le niveau de zoom consulté. La valeur par défaut sans clé n'a pas de tuiles retina ; DOCENT maintient donc la netteté en récupérant un niveau de zoom plus profond puis en le réduisant — cela fonctionne, mais l'étiquetage est plus petit et plus dense, et cela demande quatre fois plus de tuiles.",
     "basemapCartoStep1": "Demandez une clé sur <cartoLink>carto.com/basemaps/apikey</cartoLink>. C'est gratuit, sans compte, et cela couvre 5 millions de requêtes de tuiles par mois.",
     "basemapCartoStep2": "Copiez les URL claire et sombre ci-dessous dans les deux champs en dessous, en remplaçant YOUR_KEY par la clé fournie par CARTO.",
     "basemapCartoStep3": "Copiez l'attribution ci-dessous dans le champ Attribution — CARTO exige que son crédit reste visible.",

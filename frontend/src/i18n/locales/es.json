@@ -594,6 +594,7 @@
     "basemapStatusCustom": "PERSONALIZADO",
     "basemapDescription": "Las imágenes detrás de los marcadores, usadas por la página Mapa y por el mapa de los informes PDF. La opción predeterminada no necesita clave de API. Sirve cualquier proveedor ráster de {z}/{x}/{y} — Stadia, MapTiler o tu propio servidor de teselas — y también CARTO, abajo.",
     "basemapCartoTitle": "¿Quieres el mapa base de CARTO? Necesitas una clave gratuita",
+    "basemapCartoQuality": "Sigue estos pasos si quieres los mapas con mejor aspecto. CARTO sirve teselas retina (@2x), así que la página Mapa y los informes PDF se muestran a resolución completa, con etiquetas dimensionadas para el zoom que estás viendo. La opción predeterminada sin clave no tiene teselas retina, así que DOCENT mantiene la nitidez pidiendo un nivel de zoom más profundo y reduciéndolo — funciona, pero el etiquetado queda más pequeño y recargado, y cuesta cuatro veces más teselas.",
     "basemapCartoStep1": "Solicita una clave en <cartoLink>carto.com/basemaps/apikey</cartoLink>. Es gratis, no requiere cuenta y cubre 5 millones de solicitudes de teselas al mes.",
     "basemapCartoStep2": "Copia las URL clara y oscura de abajo en los dos campos siguientes, sustituyendo YOUR_KEY por la clave que te dé CARTO.",
     "basemapCartoStep3": "Copia la atribución de abajo en el campo Atribución: CARTO exige que su crédito siga visible.",

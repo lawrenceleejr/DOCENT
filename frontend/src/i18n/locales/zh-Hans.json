@@ -594,6 +594,7 @@
     "basemapStatusCustom": "自定义",
     "basemapDescription": "标记背后的地图图像，供地图页面和 PDF 报告中的地图使用。默认选项无需 API 密钥。任何 {z}/{x}/{y} 栅格服务商都可以使用 —— Stadia、MapTiler，或你自己的瓦片服务器 —— 下方的 CARTO 亦可。",
     "basemapCartoTitle": "想用 CARTO 底图？需要一个免费密钥",
+    "basemapCartoQuality": "如果你想要效果最好的地图，请按这些步骤设置。CARTO 提供高清（@2x）瓦片，因此地图页面和 PDF 报告能以完整分辨率呈现，标注大小也与你当前的缩放级别相匹配。无需密钥的默认选项没有高清瓦片，DOCENT 会改为抓取更深一级的缩放再缩小来保持清晰度——这样可行，但标注会更小更密集，且瓦片请求量是原来的四倍。",
     "basemapCartoStep1": "前往 <cartoLink>carto.com/basemaps/apikey</cartoLink> 申请密钥。免费、无需账户，每月可用 500 万次瓦片请求。",
     "basemapCartoStep2": "把下面的浅色和深色网址复制到下方两个输入框，并将 YOUR_KEY 替换为 CARTO 提供的密钥。",
     "basemapCartoStep3": "把下面的署名复制到「署名」栏 —— CARTO 要求保持其署名可见。",

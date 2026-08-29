@@ -594,6 +594,7 @@
     "basemapStatusCustom": "CUSTOM",
     "basemapDescription": "The map imagery behind the markers, used by the Map page and by the map in PDF reports. The default needs no API key. Any {z}/{x}/{y} raster provider works — Stadia, MapTiler, or your own tile server — as does CARTO, below.",
     "basemapCartoTitle": "Want the CARTO basemap? You'll need a free key",
+    "basemapCartoQuality": "Follow these steps if you want the best-looking maps. CARTO serves retina (@2x) tiles, so the Map page and PDF reports render at full resolution with labels sized for the zoom you're viewing. The keyless default has no retina tiles, so DOCENT keeps the sharpness up by fetching a zoom level deeper and scaling it down — which works, but gives smaller, busier labelling and four times as many tile requests.",
     "basemapCartoStep1": "Request a key at <cartoLink>carto.com/basemaps/apikey</cartoLink>. It's free, needs no account, and covers 5 million tile requests a month.",
     "basemapCartoStep2": "Copy the light and dark URLs below into the two fields underneath, replacing YOUR_KEY with the key CARTO gave you.",
     "basemapCartoStep3": "Copy the attribution below into the Attribution field — CARTO require their credit to stay visible.",

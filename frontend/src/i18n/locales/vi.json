@@ -594,6 +594,7 @@
     "basemapStatusCustom": "TÙY CHỈNH",
     "basemapDescription": "Hình ảnh phía sau các điểm đánh dấu, dùng cho trang Bản đồ và bản đồ trong báo cáo PDF. Tùy chọn mặc định không cần khóa API. Mọi nhà cung cấp raster dạng {z}/{x}/{y} đều dùng được — Stadia, MapTiler, hoặc máy chủ ô bản đồ của riêng bạn — và cả CARTO bên dưới.",
     "basemapCartoTitle": "Muốn dùng bản đồ nền CARTO? Bạn cần một khóa miễn phí",
+    "basemapCartoQuality": "Hãy làm theo các bước này nếu bạn muốn bản đồ đẹp nhất. CARTO cung cấp ô retina (@2x), nên trang Bản đồ và báo cáo PDF hiển thị ở độ phân giải đầy đủ, với nhãn có kích thước phù hợp mức thu phóng bạn đang xem. Tùy chọn mặc định không khóa không có ô retina, nên DOCENT giữ độ sắc nét bằng cách lấy mức thu phóng sâu hơn rồi thu nhỏ lại — cách này hiệu quả, nhưng nhãn nhỏ và dày hơn, và tốn gấp bốn lần số lượt yêu cầu ô.",
     "basemapCartoStep1": "Yêu cầu khóa tại <cartoLink>carto.com/basemaps/apikey</cartoLink>. Miễn phí, không cần tài khoản, và bao gồm 5 triệu lượt yêu cầu ô mỗi tháng.",
     "basemapCartoStep2": "Sao chép URL sáng và tối bên dưới vào hai ô phía dưới, thay YOUR_KEY bằng khóa CARTO cấp cho bạn.",
     "basemapCartoStep3": "Sao chép phần ghi công bên dưới vào ô Ghi công — CARTO yêu cầu giữ hiển thị phần ghi công của họ.",

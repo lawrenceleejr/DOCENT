@@ -594,6 +594,7 @@
     "basemapStatusCustom": "自訂",
     "basemapDescription": "標記背後的地圖影像，供地圖頁面與 PDF 報告中的地圖使用。預設選項無需 API 金鑰。任何 {z}/{x}/{y} 網格服務商都可以使用 —— Stadia、MapTiler，或你自己的圖磚伺服器 —— 下方的 CARTO 亦可。",
     "basemapCartoTitle": "想用 CARTO 底圖？需要一組免費金鑰",
+    "basemapCartoQuality": "如果你想要效果最好的地圖，請依這些步驟設定。CARTO 提供高解析（@2x）圖磚，因此地圖頁面與 PDF 報告能以完整解析度呈現，標註大小也與你目前的縮放層級相符。無需金鑰的預設選項沒有高解析圖磚，DOCENT 會改為抓取更深一層的縮放再縮小以維持清晰度——這樣可行，但標註會更小更密集，且圖磚請求量是原本的四倍。",
     "basemapCartoStep1": "前往 <cartoLink>carto.com/basemaps/apikey</cartoLink> 申請金鑰。免費、無需帳戶，每月可用 500 萬次圖磚請求。",
     "basemapCartoStep2": "把下面的淺色與深色網址複製到下方兩個欄位，並將 YOUR_KEY 換成 CARTO 提供的金鑰。",
     "basemapCartoStep3": "把下面的署名複製到「署名」欄 —— CARTO 要求保持其署名可見。",

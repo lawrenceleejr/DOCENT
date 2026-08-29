@@ -594,6 +594,7 @@
     "basemapStatusCustom": "CUSTOM",
     "basemapDescription": "Ang imahen sa likod ng mga marker, ginagamit ng pahinang Mapa at ng mapa sa mga PDF na ulat. Hindi nangangailangan ng API key ang default. Gumagana ang anumang {z}/{x}/{y} raster provider — Stadia, MapTiler, o ang sarili mong tile server — pati na ang CARTO sa ibaba.",
     "basemapCartoTitle": "Gusto ng CARTO basemap? Kailangan mo ng libreng key",
+    "basemapCartoQuality": "Sundin ang mga hakbang na ito kung gusto mo ang pinakamagandang mapa. Naghahatid ang CARTO ng retina (@2x) na tiles, kaya buong resolusyon ang pahinang Mapa at mga PDF na ulat, na may mga label na naaangkop sa zoom na tinitingnan mo. Walang retina tiles ang default na walang key, kaya pinapanatili ng DOCENT ang linaw sa pamamagitan ng pagkuha ng mas malalim na zoom at pagliit nito — gumagana ito, pero mas maliit at mas siksik ang mga label, at apat na beses na mas maraming tile ang hinihingi.",
     "basemapCartoStep1": "Humingi ng key sa <cartoLink>carto.com/basemaps/apikey</cartoLink>. Libre ito, walang kailangang account, at sakop ang 5 milyong tile request kada buwan.",
     "basemapCartoStep2": "Kopyahin ang maliwanag at madilim na URL sa ibaba papunta sa dalawang field sa ilalim, palitan ang YOUR_KEY ng key na ibinigay ng CARTO.",
     "basemapCartoStep3": "Kopyahin ang atribusyon sa ibaba papunta sa field na Atribusyon — kailangan ng CARTO na manatiling nakikita ang kanilang kredito.",
