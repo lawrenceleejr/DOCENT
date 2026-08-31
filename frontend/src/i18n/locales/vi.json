@@ -42,7 +42,9 @@
     "completeProfileLink": "Đến hồ sơ của bạn",
     "needsReportTitle": "{{count}} sự kiện cần báo cáo",
     "needsReportText": "Bạn có các sự kiện đã qua cần ghi lại — bắt đầu với",
-    "needsReportMore": "và {{count}} nữa."
+    "needsReportMore": "và {{count}} nữa.",
+    "footerPrivacy": "Quyền riêng tư",
+    "footerTerms": "Điều khoản"
   },
   "authShell": {
     "taglineBold": "Kết nối cộng đồng.",
@@ -691,7 +693,22 @@
     "bannerLevelLabel": "Mức độ của biểu ngữ",
     "bannerLevelInfo": "Thông tin",
     "bannerLevelWarning": "Cảnh báo",
-    "bannerLevelCritical": "Nghiêm trọng"
+    "bannerLevelCritical": "Nghiêm trọng",
+    "policiesTitle": "Tài liệu chính sách",
+    "policiesCollapsedSubtitle": "— công bố chính sách quyền riêng tư và điều khoản sử dụng (không bắt buộc)",
+    "policiesDescription": "Viết bằng Markdown và hiển thị cho mọi người, dù đã đăng nhập hay chưa, để họ có thể đọc chính sách quyền riêng tư trước khi đăng ký. Mỗi tài liệu chưa được công bố cho đến khi bạn lưu nội dung ở đây, và trước đó không có liên kết nào ở chân trang. Hãy tải bản mẫu làm điểm khởi đầu — nó mô tả đúng những gì DOCENT thực hiện và đánh dấu mọi chỗ bạn cần điền.",
+    "policiesStatusNone": "CHƯA CÔNG BỐ",
+    "policiesStatusPublished_one": "ĐÃ CÔNG BỐ {{count}}",
+    "policiesStatusPublished_other": "ĐÃ CÔNG BỐ {{count}}",
+    "policiesUpload": "Tải lên .md",
+    "policiesLoadExample": "Tải bản mẫu",
+    "policiesViewLink": "xem",
+    "policiesPlaceholder": "Trống — không công bố gì và không có liên kết ở chân trang.",
+    "policyTooLong": "Tệp đó quá lớn để lưu làm tài liệu chính sách.",
+    "policy_privacy_label": "Chính sách quyền riêng tư",
+    "policy_privacy_description": "Công bố tại /privacy. Hãy xem lại từng mục của bản mẫu trước khi lưu — thời hạn lưu trữ, địa chỉ liên hệ và các quyền là do bạn nêu ra.",
+    "policy_terms_label": "Điều khoản sử dụng",
+    "policy_terms_description": "Công bố tại /terms. Áp dụng cho phiên bản cài đặt này, không phải phần mềm DOCENT, vốn theo GPLv3 và không có bảo hành."
   },
   "dashboard": {
     "title": "Phân tích",
@@ -1166,5 +1183,10 @@
     "stepInstitutionsHint": "Tải các trường học, bảo tàng, thư viện gần bạn (bên dưới) để bản đồ hiển thị các khoảng trống chưa tiếp cận.",
     "stepFirstEvent": "Ghi sự kiện đầu tiên",
     "stepFirstEventHint": "Ghi lại một sự kiện tiếp cận cộng đồng — bảng điều khiển và báo cáo sống động ngay từ sự kiện đầu tiên."
+  },
+  "policy": {
+    "notPublishedTitle": "Chưa công bố",
+    "notPublishedBody": "Phiên bản cài đặt này chưa công bố tài liệu đó.",
+    "backHome": "Quay lại DOCENT"
   }
 }

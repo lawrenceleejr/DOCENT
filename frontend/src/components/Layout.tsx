@@ -335,6 +335,24 @@ export function Layout({ children }: { children: ReactNode }) {
             <Anchor href={GITHUB_CONTRIBUTING_URL} target="_blank" c="dimmed" underline="always">
               {t('layout.footerSuggestions')}
             </Anchor>
+            {/* Only linked once an admin has actually published the document,
+                so the footer never points at a 404. */}
+            {config?.published_policies?.includes('privacy') && (
+              <>
+                {' \u00b7 '}
+                <Anchor component={Link} to="/privacy" c="dimmed" underline="always">
+                  {t('layout.footerPrivacy')}
+                </Anchor>
+              </>
+            )}
+            {config?.published_policies?.includes('terms') && (
+              <>
+                {' \u00b7 '}
+                <Anchor component={Link} to="/terms" c="dimmed" underline="always">
+                  {t('layout.footerTerms')}
+                </Anchor>
+              </>
+            )}
           </Text>
         </Container>
       </AppShell.Main>

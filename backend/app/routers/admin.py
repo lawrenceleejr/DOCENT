@@ -64,6 +64,7 @@ from app.services import federation as fed
 from app.services.geocode import geocode, to_meters
 from app.services.institution_import import upsert_institutions
 from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
+from app.services.policies import POLICIES, POLICIES_BY_SLUG
 from app.services.settings import (
     BANNER_LEVEL_KEY,
     BANNER_MESSAGE_KEY,
@@ -80,6 +81,8 @@ from app.services.settings import (
     MAP_CENTER_LAT_KEY,
     MAP_CENTER_LON_KEY,
     MAP_RADIUS_KM_KEY,
+    POLICY_PRIVACY_KEY,
+    POLICY_TERMS_KEY,
     PUBLIC_PAGE_KEY,
     SITE_NAME_KEY,
     SITE_URL_KEY,
@@ -94,6 +97,7 @@ from app.services.settings import (
     effective_map_center_lat,
     effective_map_center_lon,
     effective_map_radius_km,
+    policy_body,
     effective_site_name,
     effective_site_url,
     ensure_federation_token,
@@ -251,7 +255,19 @@ def _settings_out(db) -> RegistrationSettings:
         basemap_dark_url=bm.dark_url,
         basemap_attribution=bm.attribution,
         basemap_monochrome=bm.monochrome,
+        policy_privacy=policy_body(db, POLICIES_BY_SLUG['privacy']),
+        policy_terms=policy_body(db, POLICIES_BY_SLUG['terms']),
     )
+
+
+@router.get("/policies/examples")
+def policy_examples(_admin: CurrentAdmin) -> dict[str, str]:
+    """The starter markdown for each policy document.
+
+    Served rather than bundled so the examples have one home (kept in step with
+    PRIVACY.md), and admin-only because they are editorial scaffolding, not
+    something this instance publishes."""
+    return {doc.slug: doc.example for doc in POLICIES}
 
 
 @router.get("/settings", response_model=RegistrationSettings)
@@ -295,6 +311,12 @@ def update_registration_settings(
         set_setting(db, BASEMAP_ATTRIBUTION_KEY, body.basemap_attribution.strip())
     if body.basemap_monochrome is not None:
         set_setting(db, BASEMAP_MONOCHROME_KEY, "1" if body.basemap_monochrome else "")
+    # Stored verbatim: the admin editor must round-trip exactly what was
+    # written, and markdown's leading whitespace is meaningful.
+    if body.policy_privacy is not None:
+        set_setting(db, POLICY_PRIVACY_KEY, body.policy_privacy)
+    if body.policy_terms is not None:
+        set_setting(db, POLICY_TERMS_KEY, body.policy_terms)
     if body.federation_publish is not None:
         set_setting(db, FEDERATION_PUBLISH_KEY, "1" if body.federation_publish else "")
         # Ensure a token exists the moment publishing is turned on, so the admin

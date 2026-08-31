@@ -42,7 +42,9 @@
     "completeProfileLink": "Pumunta sa iyong profile",
     "needsReportTitle": "{{count}} event ang kailangan ng ulat",
     "needsReportText": "May mga nakaraang event kang dapat i-report — magsimula sa",
-    "needsReportMore": "at {{count}} pa."
+    "needsReportMore": "at {{count}} pa.",
+    "footerPrivacy": "Privacy",
+    "footerTerms": "Mga Tuntunin"
   },
   "authShell": {
     "taglineBold": "Umabot.",
@@ -691,7 +693,22 @@
     "bannerLevelLabel": "Antas ng banner",
     "bannerLevelInfo": "Impormasyon",
     "bannerLevelWarning": "Babala",
-    "bannerLevelCritical": "Kritikal"
+    "bannerLevelCritical": "Kritikal",
+    "policiesTitle": "Mga dokumento ng patakaran",
+    "policiesCollapsedSubtitle": "— maglathala ng patakaran sa privacy at mga tuntunin ng paggamit (opsyonal)",
+    "policiesDescription": "Nakasulat sa Markdown at nakikita ng sinuman, naka-sign in man o hindi, para mabasa ang iyong patakaran sa privacy bago magrehistro. Hindi nalalathala ang bawat isa hangga't wala kang ini-save dito, at wala ring lalabas na link sa footer. I-load ang halimbawa bilang panimula — inilalarawan nito ang totoong ginagawa ng DOCENT at minamarkahan ang lahat ng dapat mong punan.",
+    "policiesStatusNone": "HINDI NAKALATHALA",
+    "policiesStatusPublished_one": "{{count}} NAKALATHALA",
+    "policiesStatusPublished_other": "{{count}} NAKALATHALA",
+    "policiesUpload": "Mag-upload ng .md",
+    "policiesLoadExample": "I-load ang halimbawa",
+    "policiesViewLink": "tingnan",
+    "policiesPlaceholder": "Walang laman — walang inilalathala at walang link sa footer.",
+    "policyTooLong": "Masyadong malaki ang file na iyon para itago bilang dokumento ng patakaran.",
+    "policy_privacy_label": "Patakaran sa privacy",
+    "policy_privacy_description": "Inilalathala sa /privacy. Suriin ang bawat bahagi ng halimbawa bago i-save — sa iyo ang pagtukoy ng panahon ng pag-iingat, contact address, at mga karapatan.",
+    "policy_terms_label": "Mga tuntunin ng paggamit",
+    "policy_terms_description": "Inilalathala sa /terms. Sakop nito ang instance na ito, hindi ang DOCENT software, na GPLv3 at walang warranty."
   },
   "dashboard": {
     "title": "Analysis",
@@ -1166,5 +1183,10 @@
     "stepInstitutionsHint": "I-load ang mga paaralan, museo, at aklatan malapit sa iyo (sa ibaba) para maipakita ng mapa ang mga puwang sa saklaw.",
     "stepFirstEvent": "I-log ang iyong unang event",
     "stepFirstEventHint": "Magtala ng outreach event — mabubuhay ang dashboard at mga report sa una pa lang."
+  },
+  "policy": {
+    "notPublishedTitle": "Hindi nakalathala",
+    "notPublishedBody": "Hindi inilathala ng instance na ito ang dokumentong ito.",
+    "backHome": "Bumalik sa DOCENT"
   }
 }

@@ -42,7 +42,9 @@
     "completeProfileLink": "前往個人檔案",
     "needsReportTitle": "{{count}} 筆活動待填報告",
     "needsReportText": "你有過去的活動待記錄——先從",
-    "needsReportMore": "等另 {{count}} 筆。"
+    "needsReportMore": "等另 {{count}} 筆。",
+    "footerPrivacy": "隱私",
+    "footerTerms": "條款"
   },
   "authShell": {
     "taglineBold": "走出去。",
@@ -691,7 +693,22 @@
     "bannerLevelLabel": "橫幅嚴重程度",
     "bannerLevelInfo": "資訊",
     "bannerLevelWarning": "警告",
-    "bannerLevelCritical": "嚴重"
+    "bannerLevelCritical": "嚴重",
+    "policiesTitle": "政策文件",
+    "policiesCollapsedSubtitle": "—— 向使用者發布隱私政策與使用條款（選填）",
+    "policiesDescription": "使用 Markdown 撰寫，任何人無論是否登入都能檢視，以便在註冊前閱讀你的隱私政策。在你儲存內容之前，各文件皆未發布，頁尾也不會出現連結。可載入範例作為起點——它描述了 DOCENT 的實際行為，並標出所有需要你填寫的內容。",
+    "policiesStatusNone": "未發布",
+    "policiesStatusPublished_one": "已發布 {{count}}",
+    "policiesStatusPublished_other": "已發布 {{count}}",
+    "policiesUpload": "上傳 .md",
+    "policiesLoadExample": "載入範例",
+    "policiesViewLink": "檢視",
+    "policiesPlaceholder": "空白 —— 不會發布任何內容，頁尾也不會出現連結。",
+    "policyTooLong": "該檔案太大，無法儲存為政策文件。",
+    "policy_privacy_label": "隱私政策",
+    "policy_privacy_description": "發布於 /privacy。儲存前請逐節檢查範例——保存期限、聯絡地址與各項權利需由你自行聲明。",
+    "policy_terms_label": "使用條款",
+    "policy_terms_description": "發布於 /terms。適用於本執行個體，而非 DOCENT 軟體本身（GPLv3，不提供擔保）。"
   },
   "dashboard": {
     "title": "分析",
@@ -1166,5 +1183,10 @@
     "stepInstitutionsHint": "載入附近的學校、博物館與圖書館（見下方），地圖即可顯示涵蓋空白。",
     "stepFirstEvent": "記錄你的第一場活動",
     "stepFirstEventHint": "記錄一場科普活動——有了第一筆紀錄，儀表板與報告就會生動起來。"
+  },
+  "policy": {
+    "notPublishedTitle": "未發布",
+    "notPublishedBody": "本執行個體尚未發布該文件。",
+    "backHome": "返回 DOCENT"
   }
 }

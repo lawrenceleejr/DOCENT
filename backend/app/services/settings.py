@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.models import Setting
 from app.services.basemap import Basemap
+from app.services.policies import POLICIES, PolicyDoc
 
 INVITE_CODE_KEY = "invite_code"
 CONTACT_EMAIL_KEY = "contact_email"
@@ -34,6 +35,8 @@ BASEMAP_LIGHT_URL_KEY = "basemap_light_url"
 BASEMAP_DARK_URL_KEY = "basemap_dark_url"
 BASEMAP_ATTRIBUTION_KEY = "basemap_attribution"
 BASEMAP_MONOCHROME_KEY = "basemap_monochrome"
+POLICY_PRIVACY_KEY = "policy_privacy"
+POLICY_TERMS_KEY = "policy_terms"
 
 # The admin pastes the whole Cloudflare Web Analytics snippet
 # (<script … data-cf-beacon='{"token":"…"}'></script>) — or just the bare
@@ -135,6 +138,21 @@ def effective_basemap(db: Session) -> Basemap:
             monochrome == "1" if monochrome is not None else settings.basemap_monochrome
         ),
     )
+
+
+def policy_body(db: Session, doc: PolicyDoc) -> str:
+    """The published markdown for one document, or "" when unpublished.
+
+    There is no env fallback and the shipped example is deliberately not the
+    default: an unreviewed template served as a real policy would state
+    retention periods and rights nobody has checked.
+    """
+    return get_setting(db, doc.setting_key) or ""
+
+
+def published_policy_slugs(db: Session) -> list[str]:
+    """Slugs with something published, so the UI links only what exists."""
+    return [doc.slug for doc in POLICIES if policy_body(db, doc)]
 
 
 def user_directory_visible(db: Session) -> bool:

@@ -42,7 +42,9 @@
     "completeProfileLink": "Accéder à votre profil",
     "needsReportTitle": "{{count}} événement(s) à compléter",
     "needsReportText": "Vous avez des événements passés à documenter — commencez par",
-    "needsReportMore": "et {{count}} de plus."
+    "needsReportMore": "et {{count}} de plus.",
+    "footerPrivacy": "Confidentialité",
+    "footerTerms": "Conditions"
   },
   "authShell": {
     "taglineBold": "Rayonnez.",
@@ -691,7 +693,22 @@
     "bannerLevelLabel": "Niveau de la bannière",
     "bannerLevelInfo": "Information",
     "bannerLevelWarning": "Avertissement",
-    "bannerLevelCritical": "Critique"
+    "bannerLevelCritical": "Critique",
+    "policiesTitle": "Documents de politique",
+    "policiesCollapsedSubtitle": "— publiez une politique de confidentialité et des conditions d'utilisation (facultatif)",
+    "policiesDescription": "Rédigés en Markdown et visibles par tous, connectés ou non, afin que chacun puisse lire votre politique de confidentialité avant de s'inscrire. Chaque document reste non publié tant que vous n'enregistrez rien ici, et aucun lien n'apparaît dans le pied de page avant cela. Chargez l'exemple comme point de départ : il décrit ce que DOCENT fait réellement et signale tout ce que vous devez compléter.",
+    "policiesStatusNone": "NON PUBLIÉ",
+    "policiesStatusPublished_one": "{{count}} PUBLIÉ",
+    "policiesStatusPublished_other": "{{count}} PUBLIÉS",
+    "policiesUpload": "Importer .md",
+    "policiesLoadExample": "Charger l'exemple",
+    "policiesViewLink": "voir",
+    "policiesPlaceholder": "Vide — rien n'est publié et aucun lien n'apparaît dans le pied de page.",
+    "policyTooLong": "Ce fichier est trop volumineux pour être enregistré comme document de politique.",
+    "policy_privacy_label": "Politique de confidentialité",
+    "policy_privacy_description": "Publiée sur /privacy. Relisez chaque section de l'exemple avant d'enregistrer : la durée de conservation, l'adresse de contact et les droits vous appartiennent.",
+    "policy_terms_label": "Conditions d'utilisation",
+    "policy_terms_description": "Publiées sur /terms. Elles concernent cette instance, pas le logiciel DOCENT, qui est sous GPLv3 sans garantie."
   },
   "dashboard": {
     "title": "Analyse",
@@ -1166,5 +1183,10 @@
     "stepInstitutionsHint": "Chargez les écoles, musées et bibliothèques proches (ci-dessous) pour que la carte montre les zones non couvertes.",
     "stepFirstEvent": "Enregistrez votre premier événement",
     "stepFirstEventHint": "Consignez une action de médiation — le tableau de bord et les rapports prennent vie dès la première."
+  },
+  "policy": {
+    "notPublishedTitle": "Non publié",
+    "notPublishedBody": "Cette instance n'a pas publié ce document.",
+    "backHome": "Retour à DOCENT"
   }
 }

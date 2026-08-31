@@ -33,6 +33,20 @@ images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
   and the PDF report's map aims at a fixed pixel resolution regardless of
   whether the provider offers `@2x`. A provider that does offer it (CARTO with
   your key) is used directly, without the extra requests.
+- **Publish a privacy policy and terms of use.** A new **Policy documents**
+  card in the admin panel takes Markdown — typed, pasted, or uploaded as a
+  `.md` file — and publishes it at `/privacy` and `/terms`, linked from the
+  footer. The pages are readable signed-out, so people can read your privacy
+  policy before they register. Each ships an example that describes what DOCENT
+  actually does and flags everything you need to fill in; the example is loaded
+  on request rather than published by default, since an unreviewed template
+  served as a real policy would state retention periods and rights nobody has
+  checked. Nothing is published, and no footer link appears, until you save.
+- **`PRIVACY.md`**, a data-handling reference for whoever deploys an instance:
+  what is stored, what leaves the server (map tiles are the only third-party
+  call your users' browsers make; geocoding is proxied server-side so their IPs
+  aren't exposed), what reports and the public page deliberately withhold, and
+  what the retention and deletion tools actually do.
 - **Step-by-step CARTO setup in the admin panel**, for anyone who wants the old
   Positron/Dark Matter look back: where to request a free key (no account, 5
   million tiles a month), copy-to-clipboard light, dark, and attribution values

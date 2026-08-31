@@ -57,6 +57,7 @@ import { InstitutionManagerCard } from '../components/InstitutionManagerCard';
 import { SiteSetupCard } from '../components/SiteSetupCard';
 import { AnalyticsCard } from '../components/AnalyticsCard';
 import { BasemapCard } from '../components/BasemapCard';
+import { PoliciesCard } from '../components/PoliciesCard';
 import { DbToolsCard } from '../components/DbToolsCard';
 import { FederationCard } from '../components/FederationCard';
 import { VenueFilterSelect } from '../components/VenueFilterSelect';
@@ -626,6 +627,7 @@ export function AdminPage() {
       <GettingStartedCard />
       <RegistrationCard />
       <BasemapCard />
+      <PoliciesCard />
       <SiteSetupCard />
       <AnalyticsCard />
       <DbToolsCard />

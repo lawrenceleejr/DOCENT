@@ -101,6 +101,7 @@ def normalize_links(links: list | None) -> list[dict]:
 
 from app.languages import LANGUAGE_SET
 from app.services.basemap import InvalidTileUrl, validate_tile_url
+from app.services.policies import MAX_POLICY_CHARS
 from app.models import (
     AudienceLevel,
     EventType,
@@ -182,6 +183,13 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class PolicyDocOut(BaseModel):
+    """One published policy document, served unauthenticated."""
+
+    slug: str
+    body: str
+
+
 class AuthConfig(BaseModel):
     """Public, unauthenticated info the login/register pages need."""
 
@@ -203,6 +211,10 @@ class AuthConfig(BaseModel):
     basemap_dark_url: str
     basemap_attribution: str
     basemap_monochrome: bool
+    # Slugs of the policy documents this instance has published (privacy,
+    # terms). Only the list — the bodies are fetched by the pages that show
+    # them, so every config poll doesn't carry two documents.
+    published_policies: list[str]
     # True when at least one enabled federation peer exists, so the UI can hide
     # the "sibling instances" controls entirely on stand-alone instances (#6).
     has_siblings: bool
@@ -484,6 +496,9 @@ class RegistrationSettings(BaseModel):
     basemap_dark_url: str
     basemap_attribution: str
     basemap_monochrome: bool
+    # Full markdown of each policy document, so the admin editor round-trips it.
+    policy_privacy: str
+    policy_terms: str
 
 
 class RegistrationSettingsUpdate(BaseModel):
@@ -506,6 +521,8 @@ class RegistrationSettingsUpdate(BaseModel):
     basemap_dark_url: str | None = Field(default=None, max_length=500)
     basemap_attribution: str | None = Field(default=None, max_length=500)
     basemap_monochrome: bool | None = None
+    policy_privacy: str | None = Field(default=None, max_length=MAX_POLICY_CHARS)
+    policy_terms: str | None = Field(default=None, max_length=MAX_POLICY_CHARS)
 
     @field_validator("basemap_light_url", "basemap_dark_url")
     @classmethod

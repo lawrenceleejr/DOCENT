@@ -12,17 +12,20 @@ Communicators register accounts and log each event — venue, date, host, audien
 > expect the data to be wiped from time to time.
 
 ### Why self-host? Your data never leaves your institution
-DOCENT runs entirely on **your** server — no third-party cloud, no vendor with a
-copy of your records. Everything stays inside your institution's own
-infrastructure, which makes it far simpler to satisfy campus data-governance and
-**FERPA** obligations for any student-related information. You own the database,
-the backups, and the export — and you can delete or move it whenever you like.
+DOCENT runs entirely on **your** server — no vendor with a copy of your records.
+Everything stays inside your institution's own infrastructure, which makes it far
+simpler to satisfy campus data-governance and **FERPA** obligations for any
+student-related information. You own the database, the backups, and the export —
+and you can delete or move it whenever you like.
+[`PRIVACY.md`](PRIVACY.md) lists the handful of outbound calls the app makes —
+map tiles are the only one your users' browsers make — and how to turn each off
+or point it somewhere else.
 *(Self-hosting supports FERPA compliance; actual compliance depends on how your
 institution deploys and configures it.)*
 
 **Stack:** FastAPI + PostgreSQL backend, React (TypeScript, Mantine, Recharts) frontend, nginx, and a backup sidecar with nightly rotated `pg_dump`s — deployed with a single `docker compose up`.
 
-**Docs:** [Quick start](#quick-start-try-it-on-your-own-machine) · [Go live on a subdomain](#go-live-put-it-on-your-subdomain) · [Run the published images](#run-the-published-images-no-build) · [Free cloud hosting](#no-machine-of-your-own-run-it-free-in-the-cloud) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) · GPLv3
+**Docs:** [Quick start](#quick-start-try-it-on-your-own-machine) · [Go live on a subdomain](#go-live-put-it-on-your-subdomain) · [Run the published images](#run-the-published-images-no-build) · [Free cloud hosting](#no-machine-of-your-own-run-it-free-in-the-cloud) · [Security](SECURITY.md) · [Data handling](PRIVACY.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) · GPLv3
 
 ---
 

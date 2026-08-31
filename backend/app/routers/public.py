@@ -13,13 +13,40 @@ from sqlalchemy import Integer, case, cast, func, select
 
 from app.deps import DbSession
 from app.models import Venue, Visit, VisitStatus
-from app.schemas import BreakdownRow, PublicActivity, PublicImpact, TimeseriesPoint
+from app.schemas import (
+    BreakdownRow,
+    PolicyDocOut,
+    PublicActivity,
+    PublicImpact,
+    TimeseriesPoint,
+)
 from app.services.federation import federated_query, has_enabled_peers
-from app.services.settings import effective_site_name, public_page_enabled
+from app.services.policies import get_policy
+from app.services.settings import (
+    effective_site_name,
+    policy_body,
+    public_page_enabled,
+)
 
 router = APIRouter(prefix="/api/public", tags=["public"])
 
 RECENT_LIMIT = 12
+
+
+@router.get("/policy/{slug}", response_model=PolicyDocOut)
+def public_policy(slug: str, db: DbSession) -> PolicyDocOut:
+    """A policy document, readable without signing in — a privacy policy has to
+    be legible *before* you hand over an email address to register.
+
+    Unknown slug and unpublished document are the same 404 on purpose: whether
+    an admin has drafted something is not public information."""
+    doc = get_policy(slug)
+    body = policy_body(db, doc) if doc else ""
+    if not body:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No such policy document"
+        )
+    return PolicyDocOut(slug=doc.slug, body=body)
 
 
 def _half_year_period(d) -> str:

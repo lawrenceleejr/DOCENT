@@ -27,6 +27,7 @@ from app.services.settings import (
     effective_map_radius_km,
     effective_site_name,
     public_page_enabled,
+    published_policy_slugs,
     user_directory_visible,
 )
 
@@ -55,6 +56,7 @@ def auth_config(db: DbSession) -> AuthConfig:
         basemap_dark_url=bm.dark_url,
         basemap_attribution=bm.attribution,
         basemap_monochrome=bm.monochrome,
+        published_policies=published_policy_slugs(db),
         has_siblings=has_enabled_peers(db),
         cf_analytics_token=cf_analytics_token(db),
     )

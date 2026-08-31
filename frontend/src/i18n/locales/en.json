@@ -42,7 +42,9 @@
     "completeProfileLink": "Go to your profile",
     "needsReportTitle": "{{count}} event(s) need a report",
     "needsReportText": "You have past events to write up — start with",
-    "needsReportMore": "and {{count}} more."
+    "needsReportMore": "and {{count}} more.",
+    "footerPrivacy": "Privacy",
+    "footerTerms": "Terms"
   },
   "authShell": {
     "taglineBold": "Reach out.",
@@ -691,7 +693,22 @@
     "bannerLevelLabel": "Banner severity",
     "bannerLevelInfo": "Info",
     "bannerLevelWarning": "Warning",
-    "bannerLevelCritical": "Critical"
+    "bannerLevelCritical": "Critical",
+    "policiesTitle": "Policy documents",
+    "policiesCollapsedSubtitle": "— publish a privacy policy and terms of use to your users (optional)",
+    "policiesDescription": "Written in Markdown and shown to anyone who visits, signed in or not, so people can read your privacy policy before they register. Each is unpublished until you save something here, and nothing is linked in the footer until then. Load the example as a starting point — it describes what DOCENT actually does, and marks everything you need to fill in.",
+    "policiesStatusNone": "NOT PUBLISHED",
+    "policiesStatusPublished_one": "{{count}} PUBLISHED",
+    "policiesStatusPublished_other": "{{count}} PUBLISHED",
+    "policiesUpload": "Upload .md",
+    "policiesLoadExample": "Load example",
+    "policiesViewLink": "view",
+    "policiesPlaceholder": "Empty — nothing is published and no link appears in the footer.",
+    "policyTooLong": "That file is too large to store as a policy document.",
+    "policy_privacy_label": "Privacy policy",
+    "policy_privacy_description": "Published at /privacy. Review every section of the example before saving — the retention period, contact address and rights are yours to state.",
+    "policy_terms_label": "Terms of use",
+    "policy_terms_description": "Published at /terms. Covers this instance, not the DOCENT software, which is GPLv3 with no warranty."
   },
   "dashboard": {
     "title": "Analysis",
@@ -1166,5 +1183,10 @@
     "stepInstitutionsHint": "Load schools, museums, and libraries near you (below) so the map can show coverage gaps.",
     "stepFirstEvent": "Log your first event",
     "stepFirstEventHint": "Record an outreach event — the dashboard and reports come alive with the first one."
+  },
+  "policy": {
+    "notPublishedTitle": "Not published",
+    "notPublishedBody": "This instance has not published this document.",
+    "backHome": "Back to DOCENT"
   }
 }

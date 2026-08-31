@@ -42,7 +42,9 @@
     "completeProfileLink": "Ir a tu perfil",
     "needsReportTitle": "{{count}} evento(s) necesitan informe",
     "needsReportText": "Tienes eventos pasados por documentar; empieza por",
-    "needsReportMore": "y {{count}} más."
+    "needsReportMore": "y {{count}} más.",
+    "footerPrivacy": "Privacidad",
+    "footerTerms": "Condiciones"
   },
   "authShell": {
     "taglineBold": "Acércate.",
@@ -691,7 +693,22 @@
     "bannerLevelLabel": "Gravedad del aviso",
     "bannerLevelInfo": "Información",
     "bannerLevelWarning": "Advertencia",
-    "bannerLevelCritical": "Crítico"
+    "bannerLevelCritical": "Crítico",
+    "policiesTitle": "Documentos de política",
+    "policiesCollapsedSubtitle": "— publica una política de privacidad y unas condiciones de uso (opcional)",
+    "policiesDescription": "Escritos en Markdown y visibles para cualquiera, con sesión iniciada o no, para que se pueda leer tu política de privacidad antes de registrarse. Cada documento permanece sin publicar hasta que guardes algo aquí, y hasta entonces no aparece ningún enlace en el pie de página. Carga el ejemplo como punto de partida: describe lo que DOCENT hace realmente y señala todo lo que debes completar.",
+    "policiesStatusNone": "SIN PUBLICAR",
+    "policiesStatusPublished_one": "{{count}} PUBLICADO",
+    "policiesStatusPublished_other": "{{count}} PUBLICADOS",
+    "policiesUpload": "Subir .md",
+    "policiesLoadExample": "Cargar ejemplo",
+    "policiesViewLink": "ver",
+    "policiesPlaceholder": "Vacío: no se publica nada y no aparece ningún enlace en el pie de página.",
+    "policyTooLong": "Ese archivo es demasiado grande para guardarlo como documento de política.",
+    "policy_privacy_label": "Política de privacidad",
+    "policy_privacy_description": "Publicada en /privacy. Revisa cada sección del ejemplo antes de guardar: el periodo de conservación, la dirección de contacto y los derechos los declaras tú.",
+    "policy_terms_label": "Condiciones de uso",
+    "policy_terms_description": "Publicadas en /terms. Cubren esta instancia, no el software DOCENT, que es GPLv3 sin garantía."
   },
   "dashboard": {
     "title": "Análisis",
@@ -1166,5 +1183,10 @@
     "stepInstitutionsHint": "Carga escuelas, museos y bibliotecas cercanas (abajo) para que el mapa muestre los huecos de cobertura.",
     "stepFirstEvent": "Registra tu primer evento",
     "stepFirstEventHint": "Registra un evento de divulgación: el panel y los informes cobran vida con el primero."
+  },
+  "policy": {
+    "notPublishedTitle": "Sin publicar",
+    "notPublishedBody": "Esta instancia no ha publicado este documento.",
+    "backHome": "Volver a DOCENT"
   }
 }

@@ -684,6 +684,8 @@ export interface AuthConfig {
   basemap_dark_url: string;
   basemap_attribution: string;
   basemap_monochrome: boolean;
+  /** Slugs of policy documents this instance publishes (privacy, terms). */
+  published_policies: string[];
   has_siblings: boolean;
   /** Cloudflare Web Analytics beacon token, or null when not configured. */
   cf_analytics_token: string | null;
@@ -796,6 +798,9 @@ export interface RegistrationSettings {
   basemap_dark_url: string;
   basemap_attribution: string;
   basemap_monochrome: boolean;
+  /** Full markdown of each policy document; empty means not published. */
+  policy_privacy: string;
+  policy_terms: string;
 }
 
 export interface DbImportResult {
@@ -867,4 +872,10 @@ export interface ImportParseResponse {
   mappable_fields: string[];
   suggested_mapping: Record<string, string>;
   rows: ImportDraftRow[];
+}
+
+/** A policy document published by this instance. */
+export interface PolicyDoc {
+  slug: string;
+  body: string;
 }

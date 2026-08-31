@@ -9,6 +9,7 @@ import { DirectoryPage } from './pages/DirectoryPage';
 import { LoginPage } from './pages/LoginPage';
 import { MapPage } from './pages/MapPage';
 import { PublicImpactPage } from './pages/PublicImpactPage';
+import { PolicyPage } from './pages/PolicyPage';
 import { SchedulePage } from './pages/SchedulePage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ProfileViewPage } from './pages/ProfileViewPage';
@@ -45,6 +46,10 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/impact" element={<PublicImpactPage />} />
+        {/* Readable signed-out: you should be able to read the privacy
+            policy before registering. */}
+        <Route path="/privacy" element={<PolicyPage />} />
+        <Route path="/terms" element={<PolicyPage />} />
         <Route element={<RequireAuth />}>
           <Route path="/" element={<VisitListPage />} />
           <Route path="/visits/new" element={<VisitFormPage />} />
