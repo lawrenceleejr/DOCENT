@@ -673,6 +673,7 @@
     "tempPasswordBody": "Partagez ce mot de passe à usage unique avec <bold>{{name}}</bold> via un canal sécurisé. Cette personne devrait se connecter et le changer depuis son profil. Il n'est affiché qu'une seule fois.",
     "copyButton": "Copier",
     "copiedButton": "Copié",
+    "copyAccessCodeLabel": "Copier le code d'accès",
     "loginHistoryTitle": "Historique des connexions",
     "loginHistorySubtitle": "Connexions et nouveaux comptes au cours des 30 derniers jours.",
     "loginHistoryTotal": "{{formattedCount}} au total",

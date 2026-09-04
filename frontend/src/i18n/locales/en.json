@@ -673,6 +673,7 @@
     "tempPasswordBody": "Share this one-time password with <bold>{{name}}</bold> over a secure channel. They should log in and change it from their profile. It is shown only once.",
     "copyButton": "Copy",
     "copiedButton": "Copied",
+    "copyAccessCodeLabel": "Copy access code",
     "loginHistoryTitle": "Login history",
     "loginHistorySubtitle": "Sign-ins and new accounts over the last 30 days.",
     "loginHistoryTotal": "{{formattedCount}} total",

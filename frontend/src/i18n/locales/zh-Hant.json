@@ -673,6 +673,7 @@
     "tempPasswordBody": "請透過安全的管道將此一次性密碼提供給 <bold>{{name}}</bold>。對方應登入後於個人資料頁面變更密碼。此密碼僅會顯示一次。",
     "copyButton": "複製",
     "copiedButton": "已複製",
+    "copyAccessCodeLabel": "複製存取碼",
     "loginHistoryTitle": "登入紀錄",
     "loginHistorySubtitle": "過去 30 天的登入和新建帳戶。",
     "loginHistoryTotal": "共 {{formattedCount}} 次",

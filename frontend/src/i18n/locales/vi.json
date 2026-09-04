@@ -673,6 +673,7 @@
     "tempPasswordBody": "Chia sẻ mật khẩu dùng một lần này với <bold>{{name}}</bold> qua một kênh an toàn. Họ nên đăng nhập và đổi mật khẩu từ trang hồ sơ của mình. Mật khẩu này chỉ hiển thị một lần.",
     "copyButton": "Sao chép",
     "copiedButton": "Đã sao chép",
+    "copyAccessCodeLabel": "Sao chép mã truy cập",
     "loginHistoryTitle": "Lịch sử đăng nhập",
     "loginHistorySubtitle": "Các lần đăng nhập và tài khoản mới trong 30 ngày qua.",
     "loginHistoryTotal": "Tổng {{formattedCount}}",
