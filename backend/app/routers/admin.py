@@ -14,7 +14,6 @@ from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentAdmin, DbSession
 from app.models import (
-    FederatedActivity,
     FederationPeer,
     Institution,
     LoginEvent,
@@ -32,12 +31,10 @@ from app.schemas import (
     BackupItem,
     BackupList,
     DbImportResult,
-    RestoreStatus,
     FederationPeerCreate,
     FederationPeerOut,
     FederationPeerPreview,
     FederationPeerUpdate,
-    InstitutionAdminItem,
     InstitutionAdminList,
     InstitutionCreate,
     InstitutionDetail,
@@ -50,14 +47,15 @@ from app.schemas import (
     PasswordResetResult,
     RegistrationSettings,
     RegistrationSettingsUpdate,
+    RestoreStatus,
     SetupStatus,
     TagCount,
     TagRenameRequest,
     TagRenameResult,
     UserMergeRequest,
     UserOut,
+    normalize_tags,
 )
-from app.schemas import normalize_tags
 from app.security import hash_password
 from app.services import dbtransfer
 from app.services import federation as fed
@@ -89,21 +87,21 @@ from app.services.settings import (
     USER_DIRECTORY_KEY,
     effective_banner_level,
     effective_banner_message,
+    effective_basemap,
     effective_cf_analytics_snippet,
     effective_contact_email,
     effective_invite_code,
-    effective_basemap,
     effective_login_message,
     effective_map_center_lat,
     effective_map_center_lon,
     effective_map_radius_km,
-    policy_body,
     effective_site_name,
     effective_site_url,
     ensure_federation_token,
     federation_feed_url,
     federation_publish_enabled,
     federation_publish_planned_enabled,
+    policy_body,
     public_page_enabled,
     rotate_federation_token,
     set_setting,

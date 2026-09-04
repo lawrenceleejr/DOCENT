@@ -55,6 +55,10 @@ cd backend && pytest -q
 
 # Frontend — type-check + production build
 cd frontend && npm run build
+
+# Lint — ruff (backend) and eslint (frontend)
+cd backend && pip install -e '.[lint]' && ruff check .
+cd frontend && npm run lint
 ```
 
 CI runs the same on every push/PR. Add or update tests for behavior you change;
@@ -71,10 +75,10 @@ migrations for the pattern. The entrypoint runs `alembic upgrade head` on start.
 
 1. Branch from the latest default branch.
 2. Keep PRs focused; write a clear description of the change and why.
-3. Ensure `pytest` and `npm run build` pass, and update docs/`CHANGELOG.md`
+3. Ensure `pytest`, `npm run build`, and the linters pass, and update docs/`CHANGELOG.md`
    when behavior changes.
-4. Match the surrounding code style (Ruff-ish Python; the existing React/TS
-   conventions). Keep comments about *why*, not *what*.
+4. Match the surrounding code style — `ruff check .` for Python, `npm run lint`
+   for React/TS, both enforced in CI. Keep comments about *why*, not *what*.
 
 ## Conventions
 

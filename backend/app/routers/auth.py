@@ -3,7 +3,6 @@ from sqlalchemy import func, select
 
 from app.deps import CurrentUser, DbSession
 from app.models import LoginEvent, LoginEventType, User
-from app.services.federation import has_enabled_peers
 from app.ratelimit import login_rate_limit, register_rate_limit
 from app.schemas import AuthConfig, LoginRequest, RegisterRequest, UserOut
 from app.security import (
@@ -14,14 +13,15 @@ from app.security import (
     set_auth_cookie,
     verify_password,
 )
+from app.services.federation import has_enabled_peers
 from app.services.settings import (
     cf_analytics_token,
-    effective_contact_email,
-    effective_invite_code,
-    effective_login_message,
     effective_banner_level,
     effective_banner_message,
     effective_basemap,
+    effective_contact_email,
+    effective_invite_code,
+    effective_login_message,
     effective_map_center_lat,
     effective_map_center_lon,
     effective_map_radius_km,

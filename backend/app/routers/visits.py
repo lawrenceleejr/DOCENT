@@ -1,7 +1,6 @@
 import csv
 import io
 from datetime import date, datetime, timezone
-
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, HTTPException, Query, Response, status
@@ -10,18 +9,17 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import joinedload
 
 from app.deps import CurrentUser, DbSession, get_current_user
-from app.security import COOKIE_NAME, verify_calendar_feed_token
 from app.models import (
     AudienceLevel,
     EventType,
+    FederatedActivity,
+    FederationPeer,
     User,
     Venue,
     VenueType,
     Visit,
     VisitStatus,
 )
-from app.models import FederatedActivity
-from app.models import FederationPeer
 from app.schemas import (
     ActivityListItem,
     ActivitySource,
@@ -33,6 +31,7 @@ from app.schemas import (
     VisitUpdate,
     normalize_tags,
 )
+from app.security import COOKIE_NAME, verify_calendar_feed_token
 from app.services.federation import federated_query
 from app.services.ics import CalendarEvent, build_calendar
 

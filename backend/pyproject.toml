@@ -23,9 +23,25 @@ dependencies = [
 test = [
     "pytest>=8,<9",
 ]
+lint = [
+    "ruff>=0.16,<0.17",
+]
 
 [tool.setuptools.packages.find]
 include = ["app*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# Pyflakes + the pycodestyle errors/warnings that catch real mistakes, plus
+# import sorting. Deliberately narrow: style opinions stay with the reviewer.
+select = ["E4", "E7", "E9", "F", "I", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+# schemas.py imports models/services below the helpers on purpose — those
+# modules import back from here, and the late import breaks the cycle.
+"app/schemas.py" = ["E402"]

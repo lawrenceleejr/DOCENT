@@ -1,7 +1,7 @@
 from datetime import date, datetime, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, Response
 from sqlalchemy.orm import joinedload
 
 from app.config import get_settings
