@@ -673,6 +673,7 @@
     "tempPasswordBody": "请通过安全渠道将此一次性密码告知 <bold>{{name}}</bold>。对方登录后应在个人资料中修改密码。此密码仅显示一次。",
     "copyButton": "复制",
     "copiedButton": "已复制",
+    "copyAccessCodeLabel": "复制邀请码",
     "loginHistoryTitle": "登录记录",
     "loginHistorySubtitle": "过去 30 天的登录和新建账户。",
     "loginHistoryTotal": "共 {{formattedCount}} 次",

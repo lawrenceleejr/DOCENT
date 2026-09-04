@@ -26,6 +26,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
   IconCheck,
+  IconCopy,
   IconDots,
   IconGitMerge,
   IconKey,
@@ -160,6 +161,26 @@ function RegistrationCard() {
           placeholder={t('admin.accessCodePlaceholder')}
           value={codeValue}
           onChange={(e) => setCode(e.currentTarget.value)}
+          rightSection={
+            <CopyButton value={codeValue} timeout={1500}>
+              {({ copied, copy }) => (
+                <Tooltip
+                  label={copied ? t('admin.copiedButton') : t('admin.copyButton')}
+                  withArrow
+                >
+                  <ActionIcon
+                    variant="subtle"
+                    color={copied ? 'teal' : 'gray'}
+                    onClick={copy}
+                    disabled={codeValue === ''}
+                    aria-label={t('admin.copyAccessCodeLabel')}
+                  >
+                    {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                  </ActionIcon>
+                </Tooltip>
+              )}
+            </CopyButton>
+          }
         />
         <TextInput
           label={t('admin.contactEmailLabel')}

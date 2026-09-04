@@ -673,6 +673,7 @@
     "tempPasswordBody": "Ibahagi ang one-time password na ito sa <bold>{{name}}</bold> sa isang secure channel. Dapat mag-log in sila at palitan ito mula sa kanilang profile. Ipinapakita ito nang isang pagkakataon lang.",
     "copyButton": "Kopyahin",
     "copiedButton": "Kinopya",
+    "copyAccessCodeLabel": "Kopyahin ang access code",
     "loginHistoryTitle": "Kasaysayan ng login",
     "loginHistorySubtitle": "Mga pag-login at bagong account sa nakaraang 30 araw.",
     "loginHistoryTotal": "{{formattedCount}} lahat",

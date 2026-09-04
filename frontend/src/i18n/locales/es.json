@@ -673,6 +673,7 @@
     "tempPasswordBody": "Comparte esta contraseña de un solo uso con <bold>{{name}}</bold> por un canal seguro. Debe iniciar sesión y cambiarla desde su perfil. Se muestra solo una vez.",
     "copyButton": "Copiar",
     "copiedButton": "Copiado",
+    "copyAccessCodeLabel": "Copiar código de acceso",
     "loginHistoryTitle": "Historial de accesos",
     "loginHistorySubtitle": "Inicios de sesión y cuentas nuevas en los últimos 30 días.",
     "loginHistoryTotal": "{{formattedCount}} en total",
