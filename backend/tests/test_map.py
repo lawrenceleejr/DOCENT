@@ -27,7 +27,7 @@ def _add_institution(db, name, **over):
 
 def test_institution_bbox_and_coverage(client, db):
     register(client)
-    gap = _add_institution(db, "Gap School")
+    _gap = _add_institution(db, "Gap School")
     covered = _add_institution(db, "Covered School")
     _add_institution(db, "Far School", **FAR)
 

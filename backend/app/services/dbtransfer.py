@@ -17,12 +17,13 @@ their authorship is preserved without opening a login.
 from __future__ import annotations
 
 import secrets
-from datetime import date, datetime, time
+from datetime import date, time
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.languages import LANGUAGE_SET
 from app.models import (
     AudienceLevel,
     EventType,
@@ -35,7 +36,6 @@ from app.models import (
     Visit,
     VisitStatus,
 )
-from app.languages import LANGUAGE_SET
 from app.schemas import normalize_links, normalize_tags
 from app.security import hash_password
 

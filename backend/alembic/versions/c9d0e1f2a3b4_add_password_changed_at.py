@@ -9,8 +9,9 @@ admin reset) logs the account out everywhere. Null (the backfill for existing
 rows) keeps every current token valid — nothing is revoked by the upgrade
 itself.
 """
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 revision = "c9d0e1f2a3b4"
 down_revision = "b8c9d0e1f2a3"

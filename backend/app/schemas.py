@@ -100,8 +100,6 @@ def normalize_links(links: list | None) -> list[dict]:
     return out
 
 from app.languages import LANGUAGE_SET
-from app.services.basemap import InvalidTileUrl, validate_tile_url
-from app.services.policies import MAX_POLICY_CHARS
 from app.models import (
     AudienceLevel,
     EventType,
@@ -111,6 +109,8 @@ from app.models import (
     VenueType,
     VisitStatus,
 )
+from app.services.basemap import InvalidTileUrl, validate_tile_url
+from app.services.policies import MAX_POLICY_CHARS
 
 
 def clean_language(v: str | None) -> str | None:

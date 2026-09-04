@@ -1,7 +1,7 @@
 import app.routers.admin as admin_router
+from app.models import InstitutionType
 from app.services.geocode import GeocodeResult, parse_latlon, to_meters
 from app.services.overpass import ParsedInstitution, build_around_query
-from app.models import InstitutionType
 from tests.conftest import register
 
 
