@@ -33,7 +33,7 @@ const dark: MantineColorsTuple = [
 
 export const theme = createTheme({
   primaryColor: 'brand',
-  primaryShade: { light: 6, dark: 5 },
+  primaryShade: { light: 6, dark: 6 },
   colors: { brand, dark },
   // Tonal, same-hue gradient for the few places that still use one.
   defaultGradient: { from: '#4544ab', to: '#5355c4', deg: 135 },
