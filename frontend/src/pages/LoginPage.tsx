@@ -120,7 +120,7 @@ export function LoginPage() {
               {error}
             </Text>
           )}
-          <Button type="submit" size="md" variant="gradient" loading={submitting}>
+          <Button type="submit" size="md" loading={submitting}>
             {t('login.submit')}
           </Button>
           <Text size="sm" c="dimmed">

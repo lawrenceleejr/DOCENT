@@ -62,7 +62,7 @@ export function VenueListPage() {
           <Button variant="default" onClick={connectionActions.open}>
             {t('venueList.addConnection')}
           </Button>
-          <Button variant="gradient" onClick={create.open}>
+          <Button onClick={create.open}>
             {t('venueList.addVenue')}
           </Button>
         </Group>

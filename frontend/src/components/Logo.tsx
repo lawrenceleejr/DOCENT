@@ -24,8 +24,8 @@ export function LogoMark({ size = 28, ping = false }: { size?: number; ping?: bo
     >
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#6d41ec" />
-          <stop offset="1" stopColor="#b14fe0" />
+          <stop offset="0" stopColor="#3c3695" />
+          <stop offset="1" stopColor="#5569d1" />
         </linearGradient>
       </defs>
 

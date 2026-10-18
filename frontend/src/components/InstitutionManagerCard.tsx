@@ -123,7 +123,7 @@ export function InstitutionManagerCard() {
         />
       </SimpleGrid>
       <Group justify="flex-end" mb="lg">
-        <Button variant="gradient" loading={add.isPending} disabled={!canAdd} onClick={() => add.mutate()}>
+        <Button loading={add.isPending} disabled={!canAdd} onClick={() => add.mutate()}>
           {t('institutionManagerCard.addButton')}
         </Button>
       </Group>

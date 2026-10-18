@@ -361,7 +361,6 @@ export function FederationCard() {
             {t('federationCard.testFeed')}
           </Button>
           <Button
-            variant="gradient"
             loading={add.isPending}
             disabled={feedUrl.trim().length === 0}
             onClick={() => add.mutate()}

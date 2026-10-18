@@ -695,7 +695,7 @@ export function VisitFormPage() {
             >
               {t('common.cancel')}
             </Button>
-            <Button type="submit" variant="gradient" loading={save.isPending}>
+            <Button type="submit" loading={save.isPending}>
               {editing
                 ? t('common.saveChanges')
                 : isPlanned

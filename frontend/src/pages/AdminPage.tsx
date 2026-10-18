@@ -279,7 +279,6 @@ function RegistrationCard() {
         </div>
         <Group justify="flex-end">
           <Button
-            variant="gradient"
             loading={save.isPending}
             disabled={
               code === null &&

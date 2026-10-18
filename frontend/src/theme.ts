@@ -1,28 +1,29 @@
 import { Button, Card, createTheme, type MantineColorsTuple } from '@mantine/core';
 
-// Bold & modern brand identity: a saturated indigo→violet signature, distinct
+// Brand identity: a muted ink-indigo, nudged toward blue and kept below full
+// saturation so it reads as considered rather than default. Still distinct
 // from the chart blue/green so data never competes with the chrome.
 const brand: MantineColorsTuple = [
-  '#f3f0ff',
-  '#e4dcff',
-  '#c7b6ff',
-  '#a98dff',
-  '#8f68fb',
-  '#7d4ff5',
-  '#6d41ec', // 6 — primary
-  '#5f34d6',
-  '#522cbd',
-  '#4423a3',
+  '#f2f4ff',
+  '#e2e6ff',
+  '#c2caff',
+  '#a0aaf9',
+  '#848df0',
+  '#6c71e0',
+  '#5355c4', // 6 — primary
+  '#4544ab',
+  '#373590',
+  '#2a2873',
 ];
 
-// Near-black surfaces with a faint violet tint; text steps raised a notch so
+// Near-black surfaces with a faint indigo tint; text steps raised a notch so
 // secondary/dimmed ink clears WCAG AA on the dark base.
 const dark: MantineColorsTuple = [
   '#e7e7ee',
   '#c9c9d4',
   '#a2a2b3', // dimmed text (raised from Mantine default for contrast)
   '#6d6d80',
-  '#34343f', // borders — subtle violet tint
+  '#34343f', // borders — subtle indigo tint
   '#26262f',
   '#1b1b22', // elevated card surface
   '#131318', // body background
@@ -34,7 +35,8 @@ export const theme = createTheme({
   primaryColor: 'brand',
   primaryShade: { light: 6, dark: 5 },
   colors: { brand, dark },
-  defaultGradient: { from: '#6d41ec', to: '#b14fe0', deg: 135 },
+  // Tonal, same-hue gradient for the few places that still use one.
+  defaultGradient: { from: '#4544ab', to: '#5355c4', deg: 135 },
   defaultRadius: 'md',
   cursorType: 'pointer',
   focusRing: 'auto',
