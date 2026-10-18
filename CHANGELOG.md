@@ -7,8 +7,8 @@ images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 ## Unreleased
 
 ### Changed
-- **Calmer brand color.** The signature purple moves to a muted ink-indigo
-  (primary `#5355c4`) with a little more blue and less saturation. Primary
+- **Calmer brand color.** The signature purple moves to a muted blue-violet
+  (primary `#5e4fc7`) with a touch more blue and less saturation. Primary
   buttons are now solid instead of purple→magenta gradients, the app body's
   background wash is gone, and the sign-in hero, mobile splash and logo tile
   use a quiet same-hue tone instead of the indigo→violet→pink sweep.

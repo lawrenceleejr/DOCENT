@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="DOCENT">
   <defs>
     <linearGradient id="docentGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#3c3695"></stop>
-      <stop offset="1" stop-color="#5569d1"></stop>
+      <stop offset="0" stop-color="#453393"></stop>
+      <stop offset="1" stop-color="#6165d2"></stop>
     </linearGradient>
   </defs>
   <rect x="1.5" y="1.5" width="61" height="61" rx="15" fill="url(#docentGrad)"></rect>

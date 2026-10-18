@@ -33,7 +33,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
       <Box
         visibleFrom="sm"
         style={{
-          background: 'linear-gradient(160deg, #2a2873 0%, #373590 100%)',
+          background: 'linear-gradient(160deg, #312474 0%, #403191 100%)',
           color: '#fff',
           padding: '3rem',
           display: 'flex',

@@ -7,7 +7,7 @@ import L from 'leaflet';
 export const COLORS = {
   covered: '#199e70', // green — an institution we've reached
   gap: '#e8843a', // warm amber — a gap (no visit yet)
-  venue: '#5355c4', // brand indigo — a visited venue
+  venue: '#5e4fc7', // brand indigo — a visited venue
 } as const;
 
 export function dotIcon(color: string): L.DivIcon {
