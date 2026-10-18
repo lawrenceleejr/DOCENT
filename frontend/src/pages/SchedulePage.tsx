@@ -132,7 +132,7 @@ export function SchedulePage() {
           <Button variant="default" leftSection={<IconCalendarPlus size={16} />} onClick={openSub}>
             {t('schedule.addToCalendar')}
           </Button>
-          <Button variant="gradient" onClick={() => navigate('/visits/new?status=planned')}>
+          <Button onClick={() => navigate('/visits/new?status=planned')}>
             {t('schedule.scheduleEvent')}
           </Button>
         </Group>

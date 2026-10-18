@@ -204,7 +204,6 @@ export function PoliciesCard() {
 
         <Group justify="flex-end" mt="md">
           <Button
-            variant="gradient"
             loading={save.isPending}
             disabled={!dirty}
             onClick={() => save.mutate()}

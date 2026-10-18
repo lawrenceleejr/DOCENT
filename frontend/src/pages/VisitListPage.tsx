@@ -126,7 +126,7 @@ export function VisitListPage() {
           <Button component="a" href={exportHref} variant="default">
             {t('visitList.exportCsv')}
           </Button>
-          <Button variant="gradient" onClick={() => navigate('/visits/new')}>
+          <Button onClick={() => navigate('/visits/new')}>
             {t('visitList.logVisit')}
           </Button>
         </Group>

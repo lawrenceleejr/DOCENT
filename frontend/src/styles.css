@@ -84,7 +84,7 @@ summary,
   font-weight: 700;
   font-size: 13px;
   color: #fff;
-  background: rgba(109, 65, 236, 0.85);
+  background: rgba(94, 79, 199, 0.85);
   border: 2px solid #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
@@ -97,7 +97,7 @@ summary,
 }
 
 /* The LogoReveal tagline ships tuned for a near-black surface; on the bright
-   brand-gradient hero it needs lighter ink and a tighter track so it stays
+   deep-indigo brand hero it needs lighter ink and a tighter track so it stays
    readable and doesn't overflow the panel. */
 .auth-grid .dc-tagline {
   color: rgba(255, 255, 255, 0.82);
@@ -112,28 +112,6 @@ summary,
   .auth-grid {
     grid-template-columns: 1.05fr 1fr;
   }
-}
-
-/* Subtle brand wash behind the app body — reads as "bold & modern" without
-   fighting the content. Tuned per color scheme. */
-body {
-  background-attachment: fixed;
-}
-
-[data-mantine-color-scheme='dark'] body {
-  background-image: radial-gradient(
-    120% 80% at 100% 0%,
-    rgba(109, 65, 236, 0.10) 0%,
-    rgba(109, 65, 236, 0) 55%
-  );
-}
-
-[data-mantine-color-scheme='light'] body {
-  background-image: radial-gradient(
-    120% 80% at 100% 0%,
-    rgba(109, 65, 236, 0.06) 0%,
-    rgba(109, 65, 236, 0) 55%
-  );
 }
 
 /* Safe-area handling for notched phones, especially when launched full-screen.

@@ -13,7 +13,7 @@ import { MobileSplash } from './MobileSplash';
 import { TranslationDisclaimer } from './TranslationDisclaimer';
 
 /**
- * Two-panel auth layout: a gradient brand hero (left) beside the form (right).
+ * Two-panel auth layout: a deep-indigo brand hero (left) beside the form (right).
  * Collapses to a single column with a compact hero band on small screens.
  */
 export function AuthShell({ children }: { children: ReactNode }) {
@@ -33,7 +33,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
       <Box
         visibleFrom="sm"
         style={{
-          background: 'linear-gradient(150deg, #4423a3 0%, #6d41ec 45%, #b14fe0 100%)',
+          background: 'linear-gradient(160deg, #312474 0%, #403191 100%)',
           color: '#fff',
           padding: '3rem',
           display: 'flex',
@@ -44,16 +44,6 @@ export function AuthShell({ children }: { children: ReactNode }) {
           overflow: 'hidden',
         }}
       >
-        <Box
-          aria-hidden
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage:
-              'radial-gradient(60% 50% at 85% 15%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%)',
-            pointerEvents: 'none',
-          }}
-        />
         <Center style={{ position: 'relative' }}>
           <LogoReveal size={200} showTagline />
         </Center>

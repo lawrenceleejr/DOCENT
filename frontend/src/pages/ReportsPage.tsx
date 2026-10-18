@@ -251,7 +251,7 @@ export function ReportsPage() {
               key={fmt}
               component="a"
               href={downloadHref(fmt)}
-              variant={fmt === 'pdf' ? 'gradient' : 'default'}
+              variant={fmt === 'pdf' ? 'filled' : 'default'}
               leftSection={<Icon size={18} />}
               disabled={rows.length === 0}
             >

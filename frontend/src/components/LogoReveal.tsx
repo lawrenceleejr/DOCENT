@@ -38,12 +38,12 @@ export function LogoReveal({
           viewBox="0 0 64 64"
           role="img"
           aria-label="DOCENT logo"
-          style={{ display: 'block', filter: 'drop-shadow(0 24px 60px rgba(109,65,236,0.4))' }}
+          style={{ display: 'block', filter: 'drop-shadow(0 24px 60px rgba(94, 79, 199,0.4))' }}
         >
           <defs>
             <linearGradient id="dcRevealGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stopColor="#6d41ec" />
-              <stop offset="1" stopColor="#b14fe0" />
+              <stop offset="0" stopColor="#453393" />
+              <stop offset="1" stopColor="#6165d2" />
             </linearGradient>
           </defs>
 

@@ -22,7 +22,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1;
-  color: #f3f0ff;
+  color: #f3f4ff;
 }
 .dc-letter {
   display: inline-block;
@@ -42,7 +42,7 @@
   animation: dcFade 0.8s ease-out 2.15s both;
 }
 .dc-tagline b {
-  color: #a98dff;
+  color: #a8a6fe;
   font-weight: 700;
 }
 
@@ -64,8 +64,8 @@
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 .dc-replay:hover {
-  border-color: #6d41ec;
-  color: #f3f0ff;
+  border-color: #5e4fc7;
+  color: #f3f4ff;
 }
 
 /* ── transform origins ────────────────────────────── */

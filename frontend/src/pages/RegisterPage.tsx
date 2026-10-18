@@ -178,7 +178,7 @@ export function RegisterPage() {
               {error}
             </Text>
           )}
-          <Button type="submit" variant="gradient" loading={submitting}>
+          <Button type="submit" loading={submitting}>
             {t('register.submit')}
           </Button>
           <Text size="sm" c="dimmed">

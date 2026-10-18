@@ -99,7 +99,6 @@ export function VisitDetailPage() {
           <Group ml="auto">
             {visit.status === 'planned' && (
               <Button
-                variant="gradient"
                 onClick={() => navigate(`/visits/${visit.id}/edit?status=completed`)}
               >
                 {t('visitDetail.markCompleted')}

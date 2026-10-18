@@ -9,7 +9,7 @@ auth / splash screen. Everything here is drop-in for the existing
 A central hub node radiating three orbital rings, with community nodes sitting
 exactly on those orbits — it reads as an outreach ripple **and** as an
 atom / solar system: a distributed network reaching outward. It reuses the
-existing brand gradient (`#6d41ec → #b14fe0`) so nothing else in the theme
+existing brand gradient (`#453393 → #6165d2`) so nothing else in the theme
 changes.
 
 ## Files in this package
@@ -46,7 +46,7 @@ changes.
    The reveal already renders the DOCENT wordmark and the tagline whose initials
    spell **D‑O‑C‑E‑N‑T**, so remove any now-duplicate wordmark/tagline text next
    to it. It's designed on a dark surface (the existing
-   `linear-gradient(150deg,#4423a3,#6d41ec,#b14fe0)` panel is perfect).
+   `linear-gradient(160deg,#312474,#403191)` panel is perfect).
 
 4. **Favicon / app icon (optional but recommended).** Add
    `logo-mark.svg` to `frontend/public/` and point the icon links at it in
