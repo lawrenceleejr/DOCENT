@@ -8,6 +8,7 @@ authors:
 version: 0.1.9
 date-released: 2026-11-05
 license: GPL-3.0-or-later
+doi: 10.5281/zenodo.23991484
 repository-code: "https://github.com/lawrenceleejr/DOCENT"
 abstract: >-
   DOCENT is a self-hosted web application that helps scientific communities
