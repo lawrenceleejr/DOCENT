@@ -1,5 +1,7 @@
 # DOCENT
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23991484.svg)](https://doi.org/10.5281/zenodo.23991484)
+
 **D**istributed **O**utreach & **C**ommunity **E**ngagement **N**etwork **T**racker
 
 DOCENT is a self-hosted web app for a scientific community's outreach. Communicators
@@ -409,11 +411,9 @@ an origin, so there's no CORS.
 
 ## Citing DOCENT
 
-Use GitHub's **Cite this repository** button, which reads
-[`CITATION.cff`](CITATION.cff). To mint a DOI, enable the repository on
-[Zenodo](https://zenodo.org)'s GitHub page and publish a GitHub release. Zenodo
-archives it using [`.zenodo.json`](.zenodo.json). Then add the DOI to
-`CITATION.cff` and the badge here.
+Cite DOCENT as [doi:10.5281/zenodo.23991484](https://doi.org/10.5281/zenodo.23991484),
+or use GitHub's **Cite this repository** button, which reads
+[`CITATION.cff`](CITATION.cff).
 
 ## License
 
