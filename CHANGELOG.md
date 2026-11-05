@@ -6,6 +6,14 @@ images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
 ## Unreleased
 
+## v0.1.9
+
+### Upgrading
+- No manual steps: the backend applies this release's two migrations (new
+  `restaurant_bar` / `concert_venue` venue types, and `users.password_changed_at`
+  for session revocation) on startup. Verified with `alembic upgrade head` on
+  both a fresh database and one at v0.1.8.
+
 ### Changed
 - **Calmer brand color.** The signature purple moves to a muted blue-violet
   (primary `#5e4fc7`) with a touch more blue and less saturation. Primary
