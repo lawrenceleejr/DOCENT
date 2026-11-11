@@ -665,6 +665,8 @@ export interface ActivityReport {
 // where to request an access code / password reset.
 export interface AuthConfig {
   registration_enabled: boolean;
+  /** True until the first account exists — that account becomes the admin. */
+  needs_setup?: boolean;
   contact_email: string | null;
   site_name: string | null;
   public_page: boolean;

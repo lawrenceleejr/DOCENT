@@ -128,7 +128,8 @@ jobs:
           set -euo pipefail
           curl -fsS http://localhost:8080/ | grep -q '<div id="root">'
           curl -fsS http://localhost:8080/api/health | grep -q ok
-          test "$(docker compose exec -T backend id -u)" != 0
+          # PID 1 (the API) must not be root; `exec` itself would report root.
+          docker compose exec -T backend grep -q "^Uid:[[:space:]]*10001" /proc/1/status
           code=$(grep '^INVITE_CODE=' .env | cut -d= -f2)
           curl -fsS -X POST http://localhost:8080/api/auth/register \
             -H 'Content-Type: application/json' \

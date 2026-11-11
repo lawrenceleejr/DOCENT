@@ -30,6 +30,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { safeHref } from '../lib/safeHref';
 import { api, buildQuery } from '../api/client';
 import {
   AUDIENCE_LEVELS,
@@ -311,7 +312,7 @@ export function SchedulePage() {
                     </Anchor>
                   ) : (
                     <Anchor
-                      href={it.external_url ?? undefined}
+                      href={safeHref(it.external_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

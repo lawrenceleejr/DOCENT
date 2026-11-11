@@ -21,6 +21,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { QueryState } from '../components/QueryState';
+import { safeHref } from '../lib/safeHref';
 import { api, ApiError } from '../api/client';
 import {
   type Connection,
@@ -221,7 +223,12 @@ export function VenueDetailPage() {
   const [editing, edit] = useDisclosure(false);
   const [merging, merge] = useDisclosure(false);
 
-  const { data: venue } = useQuery({
+  const {
+    data: venue,
+    isLoading: venueLoading,
+    error: venueError,
+    refetch: refetchVenue,
+  } = useQuery({
     queryKey: ['venues', id],
     queryFn: () => api.get<VenueDetail>(`/api/venues/${id}`),
   });
@@ -299,7 +306,9 @@ export function VenueDetailPage() {
       )
     ) : null;
 
-  if (!venue) return null;
+  if (!venue) {
+    return <QueryState isLoading={venueLoading} error={venueError} onRetry={() => refetchVenue()} />;
+  }
 
   const address = [venue.address, venue.city, venue.state, venue.country]
     .filter(Boolean)
@@ -323,9 +332,13 @@ export function VenueDetailPage() {
           <Text c="dimmed">{address || t('venueDetail.noAddress')}</Text>
           {venue.url && (
             <Text size="sm" mt={2}>
-              <Anchor href={venue.url} target="_blank" rel="noreferrer">
-                {venue.url}
-              </Anchor>
+              {safeHref(venue.url) ? (
+                <Anchor href={safeHref(venue.url)} target="_blank" rel="noopener noreferrer">
+                  {venue.url}
+                </Anchor>
+              ) : (
+                venue.url
+              )}
             </Text>
           )}
         </div>
@@ -497,7 +510,7 @@ export function VenueDetailPage() {
                           canManageConnection && (
                             <>
                               <Tooltip label={t('venueDetail.editConnectionTooltip')}>
-                                <ActionIcon
+                                <ActionIcon aria-label={t('venueDetail.editConnectionTooltip')}
                                   variant="subtle"
                                   onClick={() =>
                                     setModalState({ mode: 'edit', connection: row.connection! })
@@ -507,7 +520,7 @@ export function VenueDetailPage() {
                                 </ActionIcon>
                               </Tooltip>
                               <Tooltip label={t('venueDetail.deleteConnectionTooltip')}>
-                                <ActionIcon
+                                <ActionIcon aria-label={t('venueDetail.deleteConnectionTooltip')}
                                   variant="subtle"
                                   color="red"
                                   onClick={() => {

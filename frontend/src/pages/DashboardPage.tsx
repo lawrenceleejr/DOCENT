@@ -35,6 +35,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Bar,
   BarChart,
+  LabelList,
   CartesianGrid,
   Legend,
   Line,
@@ -265,7 +266,7 @@ function TimePanel({
             <Line
               key={ln.key}
               yAxisId={ln.axis ?? 'left'}
-              type="monotone"
+              type="linear"
               dataKey={ln.key}
               name={ln.name}
               stroke={ln.color ?? color}
@@ -312,15 +313,10 @@ function BreakdownPanel({
         </Text>
       ) : (
       <ResponsiveContainer width="100%" height={height}>
-        <BarChart data={rows} layout="vertical" margin={{ top: 0, right: 24, bottom: 0, left: 8 }}>
-          <CartesianGrid stroke={viz.grid} horizontal={false} />
-          <XAxis
-            type="number"
-            stroke={viz.axis}
-            tick={{ fill: viz.mutedInk, fontSize: 12 }}
-            tickLine={false}
-            allowDecimals={false}
-          />
+        <BarChart data={rows} layout="vertical" margin={{ top: 0, right: 40, bottom: 0, left: 8 }}>
+          {/* No grid or value axis: each bar carries its own number, which is
+              both more precise and less ink than reading across to a scale. */}
+          <XAxis type="number" hide allowDecimals={false} />
           <YAxis
             type="category"
             dataKey="label"
@@ -337,7 +333,16 @@ function BreakdownPanel({
               name === 'visits' ? t('dashboard.statVisits') : t('dashboard.statPeopleReached'),
             ]}
           />
-          <Bar dataKey="visits" fill={color} barSize={16} radius={[0, 4, 4, 0]} />
+          <Bar dataKey="visits" fill={color} barSize={14} isAnimationActive={false}>
+            <LabelList
+              dataKey="visits"
+              position="right"
+              offset={6}
+              fill={viz.ink}
+              fontSize={12}
+              formatter={(value: number) => value.toLocaleString()}
+            />
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
       )}

@@ -234,6 +234,9 @@ class AuthConfig(BaseModel):
     """Public, unauthenticated info the login/register pages need."""
 
     registration_enabled: bool
+    # True until the first account exists (which becomes the admin), so the
+    # register page can say so to whoever is setting the instance up.
+    needs_setup: bool = False
     contact_email: str | None
     site_name: str | None
     public_page: bool

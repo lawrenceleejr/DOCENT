@@ -15,13 +15,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import remarkBreaks from 'remark-breaks';
-import { api, ApiError } from '../api/client';
+import { api, ApiError, safeNextPath } from '../api/client';
 import type { AuthConfig } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { AuthShell } from '../components/AuthShell';
 import { Logo } from '../components/Logo';
+import { usePageTitle } from '../components/usePageTitle';
 
 export function LoginPage() {
   const { t } = useTranslation();
@@ -55,14 +56,19 @@ export function LoginPage() {
     },
   });
 
-  if (user) return <Navigate to="/" replace />;
+  usePageTitle(t('login.submit'));
+  // Back to the page a shared link or an expired session was pointing at.
+  const [searchParams] = useSearchParams();
+  const next = safeNextPath(searchParams.get('next'));
+
+  if (user) return <Navigate to={next} replace />;
 
   const submit = form.onSubmit(async (values) => {
     setError(null);
     setSubmitting(true);
     try {
       await login(values.email, values.password);
-      navigate('/');
+      navigate(next, { replace: true });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('login.loginFailed'));
     } finally {

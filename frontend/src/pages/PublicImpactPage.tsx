@@ -126,7 +126,7 @@ function PublicTimePanel({
               <Legend wrapperStyle={{ fontSize: 12, color: viz.mutedInk }} />
               <Line
                 yAxisId="left"
-                type="monotone"
+                type="linear"
                 dataKey="people_reached_in_person"
                 name={split.inPersonName}
                 stroke={color}
@@ -135,7 +135,7 @@ function PublicTimePanel({
               />
               <Line
                 yAxisId="right"
-                type="monotone"
+                type="linear"
                 dataKey="people_reached_remote"
                 name={split.remoteName}
                 stroke={split.remoteColor}
@@ -146,7 +146,7 @@ function PublicTimePanel({
           ) : (
             <Line
               yAxisId="left"
-              type="monotone"
+              type="linear"
               dataKey={dataKey}
               stroke={color}
               strokeWidth={2}
@@ -175,8 +175,8 @@ export function PublicImpactPage() {
 
   const name = data?.site_name || 'DOCENT';
   useEffect(() => {
-    document.title = `${name} · Impact`;
-  }, [name]);
+    document.title = `${name} · ${t('impact.pageTitle')}`;
+  }, [name, t]);
 
   const series = useMemo(() => buildTimeSeries(data?.timeseries ?? []), [data]);
   const maxTypeVisits = Math.max(1, ...(data?.by_venue_type ?? []).map((r) => r.visits));
@@ -377,7 +377,7 @@ export function PublicImpactPage() {
 
         <Text size="xs" c="dimmed" ta="center">
           {t('impact.poweredByPrefix')}{' '}
-          <Anchor href="https://github.com/lawrenceleejr/DOCENT" target="_blank" c="dimmed" underline="always">
+          <Anchor href="https://github.com/lawrenceleejr/DOCENT" target="_blank" rel="noopener noreferrer" c="dimmed" underline="always">
             DOCENT
           </Anchor>{' '}
           {t('impact.poweredBySuffix')}

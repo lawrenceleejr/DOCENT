@@ -45,6 +45,7 @@ def auth_config(db: DbSession) -> AuthConfig:
     bm = effective_basemap(db)
     return AuthConfig(
         registration_enabled=bool(effective_invite_code(db)),
+        needs_setup=db.scalar(select(User.id).limit(1)) is None,
         contact_email=effective_contact_email(db) or None,
         site_name=effective_site_name(db) or None,
         public_page=public_page_enabled(db),

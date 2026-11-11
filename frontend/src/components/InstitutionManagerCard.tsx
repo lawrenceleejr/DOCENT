@@ -161,7 +161,7 @@ export function InstitutionManagerCard() {
                 </Table.Td>
                 <Table.Td ta="right">
                   <Tooltip label={t('institutionManagerCard.deleteTooltip')}>
-                    <ActionIcon
+                    <ActionIcon aria-label={t('institutionManagerCard.deleteTooltip')}
                       color="red"
                       variant="subtle"
                       loading={remove.isPending && remove.variables === inst.id}

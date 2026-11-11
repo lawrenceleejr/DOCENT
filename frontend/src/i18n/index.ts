@@ -56,6 +56,14 @@ i18n
     },
   });
 
+// Tell the browser (and screen readers, which pick their pronunciation from
+// it) what language the page is actually in.
+const syncDocumentLanguage = (code: string | undefined) => {
+  if (code) document.documentElement.lang = code;
+};
+syncDocumentLanguage(i18n.resolvedLanguage ?? i18n.language);
+i18n.on('languageChanged', syncDocumentLanguage);
+
 const SUPPORTED_CODES: readonly string[] = SUPPORTED_LANGUAGES.map((l) => l.code);
 
 /** i18n.language can carry a region subtag straight from the browser

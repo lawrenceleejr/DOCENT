@@ -56,7 +56,7 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
         <CopyButton value={text} timeout={1500}>
           {({ copied, copy }) => (
             <Tooltip label={copied ? t('siteSetupCard.copiedTooltip') : t('siteSetupCard.copyTooltip')} withArrow>
-              <ActionIcon variant="subtle" color={copied ? 'teal' : 'gray'} onClick={copy}>
+              <ActionIcon aria-label={copied ? t('siteSetupCard.copiedTooltip') : t('siteSetupCard.copyTooltip')} variant="subtle" color={copied ? 'teal' : 'gray'} onClick={copy}>
                 {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
               </ActionIcon>
             </Tooltip>

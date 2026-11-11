@@ -12,7 +12,20 @@
     "filters": "Filtros",
     "unexpectedError": "Error inesperado",
     "clear": "Borrar",
-    "unsavedConfirm": "Tienes cambios sin guardar. ¿Salir de esta página y descartarlos?"
+    "unsavedConfirm": "Tienes cambios sin guardar. ¿Salir de esta página y descartarlos?",
+    "tooLarge": "El archivo es demasiado grande para subirlo.",
+    "tooManyRequests": "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
+    "serverUnavailable": "El servidor no responde en este momento. Inténtalo de nuevo en un minuto.",
+    "networkError": "No se puede contactar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
+    "notFoundTitle": "Página no encontrada",
+    "notFoundBody": "Esta página no existe, se eliminó o no está disponible para tu cuenta.",
+    "backToEvents": "Volver a los eventos",
+    "loadFailedTitle": "No se pudo cargar esta página",
+    "loadFailedBody": "Algo falló al cargar. Inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "crashTitle": "Algo salió mal",
+    "crashBody": "DOCENT tuvo un problema inesperado al mostrar esta página. Recargar suele resolverlo; tus datos guardados están a salvo.",
+    "reload": "Recargar"
   },
   "layout": {
     "home": "Inicio de DOCENT",
@@ -105,7 +118,9 @@
       "invalidEmail": "Correo electrónico no válido",
       "passwordMin": "Al menos 8 caracteres",
       "codeRequired": "Se requiere un código de acceso"
-    }
+    },
+    "firstAccountTitle": "Estás configurando esta comunidad",
+    "firstAccountBody": "Aún no se ha registrado nadie, así que esta primera cuenta será la del administrador. Usa el código de acceso que se mostró al instalar DOCENT."
   },
   "visitList": {
     "title": "Eventos",
@@ -709,7 +724,8 @@
     "policy_privacy_label": "Política de privacidad",
     "policy_privacy_description": "Publicada en /privacy. Revisa cada sección del ejemplo antes de guardar: el periodo de conservación, la dirección de contacto y los derechos los declaras tú.",
     "policy_terms_label": "Condiciones de uso",
-    "policy_terms_description": "Publicadas en /terms. Cubren esta instancia, no el software DOCENT, que es GPLv3 sin garantía."
+    "policy_terms_description": "Publicadas en /terms. Cubren esta instancia, no el software DOCENT, que es GPLv3 sin garantía.",
+    "resetPasswordConfirm": "¿Restablecer la contraseña de {{name}}? Su contraseña actual dejará de funcionar de inmediato y recibirás una temporal para entregársela."
   },
   "dashboard": {
     "title": "Análisis",
@@ -790,7 +806,8 @@
     "includingSiblings": "Las cifras incluyen actividades de nuestras comunidades hermanas, que pueden solaparse.",
     "peopleInPerson": "Presencial",
     "peopleRemote": "Remoto / difusión",
-    "remoteReachSub": "{{formattedCount}} remoto"
+    "remoteReachSub": "{{formattedCount}} remoto",
+    "pageTitle": "Impacto"
   },
   "map": {
     "title": "Mapa",
@@ -855,7 +872,7 @@
       "passwordMin": "Al menos 8 caracteres"
     },
     "orcidLabel": "ORCID iD",
-    "orcidDescription": "Vincula tu identidad de investigador. Viaja con la actividad federada para que las comunidades asociadas atribuyan el crédito a las personas correctas.",
+    "orcidDescription": "Vincula tu ORCID iD. Viaja con la actividad federada para que las comunidades asociadas atribuyan el crédito a las personas correctas.",
     "orcidLinkedPrefix": "Vinculado:",
     "affiliationPlaceholder": "Universidad de Tennessee (opcional)",
     "rolesLabel": "Otros cargos",

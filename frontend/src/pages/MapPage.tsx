@@ -20,6 +20,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 're
 import { basemapFor, MAX_ZOOM } from '../lib/basemap';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { safeHref } from '../lib/safeHref';
 import { api, ApiError } from '../api/client';
 import {
   INSTITUTION_TYPES,
@@ -532,7 +533,7 @@ export function MapPage() {
                           mt={6}
                           variant="light"
                           component="a"
-                          href={f.permalink}
+                          href={safeHref(f.permalink)}
                           target="_blank"
                           rel="noopener noreferrer"
                         >

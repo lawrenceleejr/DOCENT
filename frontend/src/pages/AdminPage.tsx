@@ -331,7 +331,7 @@ function EmailCell({ user, disabled }: { user: User; disabled: boolean }) {
         <span>{user.email}</span>
         {!disabled && (
           <Tooltip label={t('admin.changeEmailTooltip')}>
-            <ActionIcon variant="subtle" size="sm" onClick={() => { setValue(user.email); setEditing(true); }}>
+            <ActionIcon aria-label={t('admin.changeEmailTooltip')} variant="subtle" size="sm" onClick={() => { setValue(user.email); setEditing(true); }}>
               <IconPencil size={14} />
             </ActionIcon>
           </Tooltip>
@@ -348,10 +348,10 @@ function EmailCell({ user, disabled }: { user: User; disabled: boolean }) {
         w={220}
         autoFocus
       />
-      <ActionIcon color="green" variant="light" size="sm" loading={save.isPending} onClick={() => save.mutate()}>
+      <ActionIcon aria-label={t('common.saveChanges')} color="green" variant="light" size="sm" loading={save.isPending} onClick={() => save.mutate()}>
         <IconCheck size={14} />
       </ActionIcon>
-      <ActionIcon color="gray" variant="light" size="sm" onClick={() => setEditing(false)}>
+      <ActionIcon aria-label={t('common.cancel')} color="gray" variant="light" size="sm" onClick={() => setEditing(false)}>
         <IconX size={14} />
       </ActionIcon>
     </Group>
@@ -776,7 +776,12 @@ export function AdminPage() {
                       <Menu.Dropdown>
                         <Menu.Item
                           leftSection={<IconKey size={14} />}
-                          onClick={() => resetPassword.mutate(user)}
+                          onClick={() => {
+                            // One click used to lock the person out on the spot.
+                            if (window.confirm(t('admin.resetPasswordConfirm', { name: user.name }))) {
+                              resetPassword.mutate(user);
+                            }
+                          }}
                         >
                           {t('admin.resetPasswordMenuItem')}
                         </Menu.Item>
