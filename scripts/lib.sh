@@ -68,9 +68,11 @@ code_head_revision() {
     done
 }
 
-# The release a database at schema revision $1 most likely came from: the
-# newest tag that has that migration but not the one after it. Empty when it
-# can't be worked out (no git history, unknown revision).
+# The release a database at schema revision $1 came from: the oldest tag that
+# has that migration but not the one after it. Several releases can share a
+# schema; the oldest is the safe reading — its upgrade notes are a superset,
+# and any of them can open that database. Empty when it can't be worked out
+# (no git history, unknown revision).
 release_for_revision() {
     local rev=$1 dir=backend/alembic/versions file next added next_added
     [ -n "$rev" ] || return 0
@@ -86,7 +88,7 @@ release_for_revision() {
         git tag --contains "$added" --no-contains "$next_added" 2>/dev/null
     else
         git tag --contains "$added" 2>/dev/null
-    fi | grep -E '^v[0-9]' | sort -V | tail -n 1
+    fi | grep -E '^v[0-9]' | sort -V | head -n 1
 }
 
 # What is installed right now, as best we can tell: the version the running
@@ -139,7 +141,8 @@ restore_database() {  # file
     # Empty the schema first: restoring over a newer schema would leave its
     # extra tables behind, and a later upgrade would trip over them.
     # shellcheck disable=SC2016  # expanded by the shell inside the container
-    docker compose exec -T db sh -c 'psql -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+    docker compose exec -T db sh -c 'PGOPTIONS="-c client_min_messages=warning" \
+        psql -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
         -c "DROP SCHEMA public CASCADE" -c "CREATE SCHEMA public"' >/dev/null &&
     docker compose exec -T db sh -c \
         'pg_restore --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < "$1"

@@ -86,6 +86,12 @@ if [ "$mode" = rollback ]; then
     echo "Anything entered into DOCENT since then will be lost."
     confirm "Roll back?"
 
+    # Everything that can refuse happens before the database is touched.
+    if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+        git status --short --untracked-files=no >&2
+        die "The files above were edited on this machine, so the code can't be switched back." \
+            "Set the edits aside with:  git stash   — then run the rollback again."
+    fi
     echo "Saving the current database first, in case you change your mind..."
     db_is_running || docker compose up -d db >/dev/null
     undo=$(dump_database rollback) || die "Couldn't save the current database; rollback not started."
@@ -93,12 +99,20 @@ if [ "$mode" = rollback ]; then
 
     echo "Stopping the app..."
     docker compose --profile tls stop caddy frontend backend backup >/dev/null 2>&1 || true
-    echo "Restoring the database..."
-    restore_database "$dump" || die "The restore failed. The database from just before this rollback is in" "  $undo"
     echo "Returning the code to ${from_version:-$back_to}..."
-    git -c advice.detachedHead=false checkout --quiet "$back_to"
-    rm -f "$UPGRADE_STATE"
+    here=$(git rev-parse HEAD)
+    git -c advice.detachedHead=false checkout --quiet "$back_to" ||
+        die "Couldn't switch the code back. Nothing else was changed; start the app again with ./scripts/start.sh"
+    echo "Restoring the database..."
+    if ! restore_database "$dump"; then
+        git -c advice.detachedHead=false checkout --quiet "$here" || true
+        die "The restore failed, so the code was left on the newer version." \
+            "The database from just before this rollback is in:" "  $undo"
+    fi
+    # Keep the record of what was undone, but out of the way of the next upgrade.
+    mv "$UPGRADE_STATE" "$UPGRADE_STATE.rolled-back"
     echo "Starting ${from_version:-$back_to}..."
+    # The older version's own start script, as it was written for it.
     exec ./scripts/start.sh
 fi
 
