@@ -21,6 +21,7 @@ import type { AuthConfig } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { AuthShell } from '../components/AuthShell';
 import { Logo } from '../components/Logo';
+import { usePageTitle } from '../components/usePageTitle';
 
 function ContactLine({ email, prefix }: { email: string | null; prefix: string }) {
   const { t } = useTranslation();
@@ -70,6 +71,8 @@ export function RegisterPage() {
       invite_code: (v) => (v.trim().length > 0 ? null : t('register.validation.codeRequired')),
     },
   });
+
+  usePageTitle(t('register.createAccount'));
 
   if (user) return <Navigate to="/" replace />;
 
@@ -135,6 +138,11 @@ export function RegisterPage() {
       <form onSubmit={submit}>
         <Stack gap="md">
           {header}
+          {config?.needs_setup && (
+            <Alert color="brand" title={t('register.firstAccountTitle')}>
+              <Text size="sm">{t('register.firstAccountBody')}</Text>
+            </Alert>
+          )}
           <TextInput
             label={t('register.fullNameLabel')}
             placeholder={t('register.fullNamePlaceholder')}

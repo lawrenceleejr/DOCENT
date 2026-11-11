@@ -27,6 +27,7 @@ import { EmptyState } from '../components/EmptyState';
 import { EventImportWizard } from '../components/EventImportWizard';
 import { FilterCard } from '../components/FilterCard';
 import { buildQuery } from '../api/client';
+import { safeHref } from '../lib/safeHref';
 import { api } from '../api/client';
 import {
   AUDIENCE_LEVELS,
@@ -346,7 +347,7 @@ export function VisitListPage() {
                     </Anchor>
                   ) : (
                     <Anchor
-                      href={it.external_url ?? undefined}
+                      href={safeHref(it.external_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
@@ -495,7 +496,7 @@ export function VisitCard({ item, onClick }: { item: ActivityListItem; onClick?:
             fw={600}
             lineClamp={2}
             style={{ minWidth: 0 }}
-            href={item.external_url ?? undefined}
+            href={safeHref(item.external_url)}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}

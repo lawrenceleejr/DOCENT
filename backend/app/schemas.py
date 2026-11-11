@@ -54,6 +54,49 @@ def normalize_orcid(value: str | None) -> str | None:
     return f"{compact[0:4]}-{compact[4:8]}-{compact[8:12]}-{compact[12:16]}"
 
 
+# Free-text notes are generous but bounded, so one request can't store megabytes.
+MAX_NOTE_CHARS = 20_000
+MAX_DURATION_MINUTES = 30 * 24 * 60
+# Dates outside this range are typos, and far-future ones overflow date maths.
+MIN_EVENT_DATE = date(1900, 1, 1)
+MAX_EVENT_DATE = date(2200, 12, 31)
+
+
+def clean_http_url(v: str | None, limit: int) -> str | None:
+    """Normalize a user-supplied web address to http(s), or None when blank.
+
+    These are rendered as links, so anything that isn't a web address
+    (javascript:, data:, …) must never be stored. A bare "example.org" gets
+    https:// prepended; any other scheme is rejected.
+    """
+    if v is None:
+        return None
+    v = v.strip()
+    if not v:
+        return None
+    if not re.match(r"^https?://", v, re.IGNORECASE):
+        if re.match(r"^[a-z][a-z0-9+.-]*:", v, re.IGNORECASE) and not re.match(
+            r"^[^/:]+:\d", v
+        ):
+            raise ValueError("Links must start with http:// or https://")
+        v = f"https://{v}"
+    return v[:limit]
+
+
+def _check_event_date(v: date | None) -> date | None:
+    if v is not None and not (MIN_EVENT_DATE <= v <= MAX_EVENT_DATE):
+        raise ValueError("Date must be between 1900 and 2200")
+    return v
+
+
+def _reject_explicit_nulls(model: BaseModel, required: tuple[str, ...]) -> None:
+    """In a PATCH body an omitted field means "leave it"; an explicit null on a
+    field the database requires is a mistake, not a request to clear it."""
+    for name in required:
+        if name in model.model_fields_set and getattr(model, name) is None:
+            raise ValueError(f"{name} can't be empty")
+
+
 class VisitLink(BaseModel):
     """An external link documenting coverage of a visit (press, social, …)."""
 
@@ -64,10 +107,7 @@ class VisitLink(BaseModel):
     @field_validator("url")
     @classmethod
     def _clean_url(cls, v: str) -> str:
-        v = v.strip()
-        if v and not re.match(r"^https?://", v, re.IGNORECASE):
-            v = f"https://{v}"  # be forgiving: prepend scheme if missing
-        return v[:1000]
+        return clean_http_url(v, 1000) or ""
 
     @field_validator("category")
     @classmethod
@@ -175,12 +215,12 @@ class RegisterRequest(BaseModel):
     password: str = Field(min_length=8, max_length=128)
     affiliation: str | None = Field(default=None, max_length=255)
     position: str | None = Field(default=None, max_length=255)
-    invite_code: str | None = None
+    invite_code: str | None = Field(default=None, max_length=255)
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(max_length=1024)
 
 
 class PolicyDocOut(BaseModel):
@@ -194,6 +234,9 @@ class AuthConfig(BaseModel):
     """Public, unauthenticated info the login/register pages need."""
 
     registration_enabled: bool
+    # True until the first account exists (which becomes the admin), so the
+    # register page can say so to whoever is setting the instance up.
+    needs_setup: bool = False
     contact_email: str | None
     site_name: str | None
     public_page: bool
@@ -577,8 +620,13 @@ class VenueCreate(BaseModel):
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
     url: str | None = Field(default=None, max_length=500)
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=MAX_NOTE_CHARS)
     institution_id: int | None = None
+
+    @field_validator("url")
+    @classmethod
+    def _clean_url(cls, v: str | None) -> str | None:
+        return clean_http_url(v, 500)
 
 
 class VenueUpdate(BaseModel):
@@ -591,7 +639,17 @@ class VenueUpdate(BaseModel):
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
     url: str | None = Field(default=None, max_length=500)
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=MAX_NOTE_CHARS)
+
+    @field_validator("url")
+    @classmethod
+    def _clean_url(cls, v: str | None) -> str | None:
+        return clean_http_url(v, 500)
+
+    @model_validator(mode="after")
+    def _required(self) -> "VenueUpdate":
+        _reject_explicit_nulls(self, ("name", "venue_type", "country"))
+        return self
 
 
 class VenueOut(BaseModel):
@@ -740,7 +798,7 @@ class ConnectionCreate(BaseModel):
     relationship_detail: str | None = Field(default=None, max_length=500)
     email: str | None = Field(default=None, max_length=255)
     phone: str | None = Field(default=None, max_length=50)
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=MAX_NOTE_CHARS)
 
 
 class ConnectionUpdate(BaseModel):
@@ -750,7 +808,12 @@ class ConnectionUpdate(BaseModel):
     relationship_detail: str | None = Field(default=None, max_length=500)
     email: str | None = Field(default=None, max_length=255)
     phone: str | None = Field(default=None, max_length=50)
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=MAX_NOTE_CHARS)
+
+    @model_validator(mode="after")
+    def _required(self) -> "ConnectionUpdate":
+        _reject_explicit_nulls(self, ("name",))
+        return self
 
 
 class ConnectionOut(BaseModel):
@@ -791,14 +854,14 @@ class VisitCreate(BaseModel):
     start_time: time | None = None
     event_type: EventType
     title: str = Field(min_length=1, max_length=255)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=MAX_NOTE_CHARS)
     contact_name: str | None = Field(default=None, max_length=255)
     contact_email: str | None = Field(default=None, max_length=255)
     contact_phone: str | None = Field(default=None, max_length=50)
     host_role: str | None = Field(default=None, max_length=255)
     host_relationship: HostRelationship | None = None
     host_relationship_detail: str | None = Field(default=None, max_length=500)
-    host_notes: str | None = None
+    host_notes: str | None = Field(default=None, max_length=MAX_NOTE_CHARS)
     # Optional so a *planned* event can be scheduled before attendance is known.
     people_reached: int = Field(default=0, ge=0, le=MAX_PEOPLE_REACHED)
     # An event can target several audience levels (#42). `audience_levels` is the
@@ -807,15 +870,20 @@ class VisitCreate(BaseModel):
     audience_level: AudienceLevel | None = None
     audience_levels: list[AudienceLevel] | None = None
     language: str | None = None
-    duration_minutes: int | None = Field(default=None, ge=0)
+    duration_minutes: int | None = Field(default=None, ge=0, le=MAX_DURATION_MINUTES)
     rating: int | None = Field(default=None, ge=1, le=5)
-    reflection: str | None = None
+    reflection: str | None = Field(default=None, max_length=MAX_NOTE_CHARS)
     follow_up_planned: bool = False
     is_broadcast: bool = False
     additional_presenters: str | None = Field(default=None, max_length=500)
-    co_presenter_user_ids: list[int] = Field(default_factory=list)
+    co_presenter_user_ids: list[int] = Field(default_factory=list, max_length=50)
     tags: list[str] = Field(default_factory=list)
     links: list[VisitLink] = Field(default_factory=list)
+
+    @field_validator("visit_date")
+    @classmethod
+    def _sane_date(cls, v: date | None) -> date | None:
+        return _check_event_date(v)
 
     @model_validator(mode="after")
     def _resolve_audiences(self) -> "VisitCreate":
@@ -848,30 +916,43 @@ class VisitUpdate(BaseModel):
     start_time: time | None = None
     event_type: EventType | None = None
     title: str | None = Field(default=None, min_length=1, max_length=255)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=MAX_NOTE_CHARS)
     contact_name: str | None = Field(default=None, max_length=255)
     contact_email: str | None = Field(default=None, max_length=255)
     contact_phone: str | None = Field(default=None, max_length=50)
     host_role: str | None = Field(default=None, max_length=255)
     host_relationship: HostRelationship | None = None
     host_relationship_detail: str | None = Field(default=None, max_length=500)
-    host_notes: str | None = None
+    host_notes: str | None = Field(default=None, max_length=MAX_NOTE_CHARS)
     people_reached: int | None = Field(default=None, ge=0, le=MAX_PEOPLE_REACHED)
     audience_level: AudienceLevel | None = None
     audience_levels: list[AudienceLevel] | None = None
     language: str | None = None
-    duration_minutes: int | None = Field(default=None, ge=0)
+    duration_minutes: int | None = Field(default=None, ge=0, le=MAX_DURATION_MINUTES)
     rating: int | None = Field(default=None, ge=1, le=5)
-    reflection: str | None = None
+    reflection: str | None = Field(default=None, max_length=MAX_NOTE_CHARS)
     follow_up_planned: bool | None = None
     is_broadcast: bool | None = None
     additional_presenters: str | None = Field(default=None, max_length=500)
-    co_presenter_user_ids: list[int] | None = None
+    co_presenter_user_ids: list[int] | None = Field(default=None, max_length=50)
     tags: list[str] | None = None
     links: list[VisitLink] | None = None
 
+    @field_validator("visit_date")
+    @classmethod
+    def _sane_date(cls, v: date | None) -> date | None:
+        return _check_event_date(v)
+
     @model_validator(mode="after")
     def _dedupe_audiences(self) -> "VisitUpdate":
+        _reject_explicit_nulls(
+            self,
+            (
+                "venue_id", "status", "visit_date", "event_type", "title",
+                "people_reached", "follow_up_planned", "is_broadcast",
+                "co_presenter_user_ids", "tags", "links",
+            ),
+        )
         # Only normalise when the client actually sent an audience field; the
         # router keeps the scalar primary in step with the list (#42).
         if self.audience_levels is not None or self.audience_level is not None:

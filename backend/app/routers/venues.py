@@ -205,9 +205,24 @@ def delete_venue(venue_id: int, user: CurrentUser, db: DbSession):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only the venue creator, someone who has visited it, or an admin can delete a venue",
         )
-    # Deleting a venue also deletes every event held there — including other
-    # communicators' — so the UI confirms with the count first. Events are
-    # removed explicitly; connections and school links cascade at the DB level.
+    # Deleting a venue also deletes every event held there, so a communicator
+    # may only do it when all of those events are their own. Once anyone else
+    # has logged something here it takes an admin (or a merge into another
+    # venue, which keeps the events).
+    if not user.is_admin and db.scalar(
+        select(Visit.id)
+        .where(Visit.venue_id == venue_id, Visit.author_id != user.id)
+        .limit(1)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Other communicators have logged events at this venue, so only "
+                "an admin can delete it."
+            ),
+        )
+    # Events are removed explicitly; connections and school links cascade at
+    # the DB level.
     db.execute(delete(Visit).where(Visit.venue_id == venue_id))
     db.delete(venue)
     db.commit()

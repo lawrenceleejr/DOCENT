@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Take a database backup right now (in addition to the nightly automatic one).
-# The dump lands in the `backups` volume under daily/ and is rotated automatically.
+# The dump lands in BACKUP_DIR (./backups by default) under daily/ and is
+# rotated automatically.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

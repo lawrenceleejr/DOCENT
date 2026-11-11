@@ -18,6 +18,7 @@ import { api, ApiError } from '../api/client';
 import { isOverdue, type Visit } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { OrcidLink } from '../components/OrcidLink';
+import { QueryState } from '../components/QueryState';
 import { useEnumLabel } from '../i18n/enumLabels';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -39,7 +40,7 @@ export function VisitDetailPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: visit, isLoading } = useQuery({
+  const { data: visit, isLoading, error, refetch } = useQuery({
     queryKey: ['visits', id],
     queryFn: () => api.get<Visit>(`/api/visits/${id}`),
   });
@@ -56,12 +57,12 @@ export function VisitDetailPage() {
       notifications.show({
         color: 'red',
         title: t('visitDetail.couldNotDelete'),
-        message: e instanceof ApiError ? e.message : 'Unexpected error',
+        message: e instanceof ApiError ? e.message : t('common.unexpectedError'),
       });
     },
   });
 
-  if (isLoading || !visit) return null;
+  if (!visit) return <QueryState isLoading={isLoading} error={error} onRetry={() => refetch()} />;
 
   const canEdit = user && (user.id === visit.author.id || user.is_admin);
 

@@ -54,13 +54,15 @@ schools you attended. Your password is stored only as a cryptographic hash.
 languages, people reached, durations, venues, tags and links, and who logged
 each event.
 
-**Your private notes.** Descriptions, reflections and ratings you record are
-visible to you and to admins of this instance. They are excluded from every
+**Your notes.** Descriptions, reflections and ratings you record are visible
+to every signed-in member of this community, so colleagues can learn from each
+other's events. They never leave the community: they are excluded from every
 report export and from the public impact page.
 
 **Host contact details.** When you record a contact at a venue — a teacher,
 librarian or museum staff member — their name, email, phone and any notes are
-stored. Please record only what is needed to run the event, and tell the person
+stored and visible to signed-in members. Reports list only the host's name and
+role; email, phone and notes are never exported in a report or shown publicly. Please record only what is needed to run the event, and tell the person
 their details are being kept if that is not obvious to them.
 
 **Sign-in history.** Successful logins and registrations are recorded as user,

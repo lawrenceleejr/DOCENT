@@ -8,22 +8,12 @@
     />
     <link rel="icon" type="image/svg+xml" href="/logo-mark.svg" />
     <meta name="theme-color" content="#6d41ec" />
+    <meta
+      name="description"
+      content="DOCENT — the shared record of a scientific community's outreach: events, venues, a coverage map and Broad Impact reports."
+    />
     <title>DOCENT — Outreach Tracker</title>
-    <script>
-      // Apply the color scheme before first paint to avoid a flash.
-      // Honors a saved preference; defaults to dark.
-      (function () {
-        try {
-          var stored = localStorage.getItem('mantine-color-scheme-value');
-          document.documentElement.setAttribute(
-            'data-mantine-color-scheme',
-            stored || 'dark',
-          );
-        } catch (e) {
-          document.documentElement.setAttribute('data-mantine-color-scheme', 'dark');
-        }
-      })();
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

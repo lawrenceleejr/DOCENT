@@ -7,8 +7,9 @@
 # by hand:
 #   docker compose exec backup /restore.sh daily/docent-2026-07-09.dump
 set -uo pipefail
+# shellcheck source=docker/backup/common.sh
+. /common.sh
 
-BACKUP_ROOT=${BACKUP_ROOT:-/backups}
 STATUS="$BACKUP_ROOT/.restore-status"
 REL="${1:-}"
 
@@ -23,6 +24,11 @@ write_status() {  # state  detail
 fail() { write_status failed "$1"; echo "[restore] FAILED: $1" >&2; exit 1; }
 
 [ -n "$REL" ] || fail "no backup specified"
+# The path comes from the admin panel (already checked there) or the command
+# line; either way it must stay inside the backups folder.
+case "$REL" in
+    /*|*..*) fail "backup path must be relative to the backups folder" ;;
+esac
 file="$BACKUP_ROOT/$REL"
 [ -f "$file" ] || fail "no such backup: $REL"
 
@@ -38,9 +44,13 @@ pg_dump -Fc -f "$safety.tmp" "$PGDATABASE" || fail "pre-restore backup failed"
 pg_restore --list "$safety.tmp" > /dev/null || fail "pre-restore backup is unreadable"
 mv "$safety.tmp" "$safety"
 # Keep only the last 10 pre-restore dumps.
-ls -1 "$BACKUP_ROOT/pre-restore" | sort | head -n -10 | while read -r old; do
-    rm -f "$BACKUP_ROOT/pre-restore/$old"
-done
+find "$BACKUP_ROOT/pre-restore" -maxdepth 1 -type f -name '*.dump' | sort | head -n -10 \
+    | while read -r old; do rm -f "$old"; done
+# Uploaded dumps are copies of something the admin already has; keep the last 3.
+if [ -d "$BACKUP_ROOT/uploads" ]; then
+    find "$BACKUP_ROOT/uploads" -maxdepth 1 -type f -name '*.dump' | sort | head -n -3 \
+        | while read -r old; do rm -f "$old"; done
+fi
 
 # 2) Drop other connections so pg_restore --clean can drop/recreate tables
 #    without blocking on the live backend's pooled connections.
@@ -49,9 +59,16 @@ psql -d "$PGDATABASE" -c \
     "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database() AND pid <> pg_backend_pid();" \
     > /dev/null 2>&1 || true
 
-# 3) Restore. --clean --if-exists drops existing objects first; --no-owner keeps
-#    it portable across environments with different role names.
-if pg_restore --clean --if-exists --no-owner -d "$PGDATABASE" "$file" 2> /tmp/restore.err; then
+# 3) Restore into an empty schema. The archive may come from an older DOCENT
+#    than the one running; restoring it *over* the current schema would leave
+#    the newer version's extra tables behind, and the migrations that then
+#    bring the restored data up to date would trip over them. (The pre-restore
+#    dump above is the way back.) --no-owner keeps it portable across
+#    environments with different role names.
+psql -q -v ON_ERROR_STOP=1 -d "$PGDATABASE" \
+    -c "DROP SCHEMA public CASCADE" -c "CREATE SCHEMA public" > /dev/null 2> /tmp/restore.err \
+    || fail "could not clear the database: $(tail -c 300 /tmp/restore.err | tr '\n' ' ')"
+if pg_restore --no-owner -d "$PGDATABASE" "$file" 2> /tmp/restore.err; then
     write_status success "Restored from $REL."
     echo "[restore] done"
 else

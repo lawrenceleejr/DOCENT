@@ -12,7 +12,20 @@
     "translationDisclaimer": "This translation is machine-generated and hasn't been reviewed by a native speaker yet. It may contain errors — volunteers to help review it are very welcome.",
     "unexpectedError": "Unexpected error",
     "clear": "Clear",
-    "unsavedConfirm": "You have unsaved changes. Leave this page and discard them?"
+    "unsavedConfirm": "You have unsaved changes. Leave this page and discard them?",
+    "tooLarge": "That file is too large to upload.",
+    "tooManyRequests": "Too many attempts — please wait a moment and try again.",
+    "serverUnavailable": "The server isn't responding right now. Please try again in a minute.",
+    "networkError": "Can't reach the server. Check your connection and try again.",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "This page doesn't exist, was removed, or isn't available to your account.",
+    "backToEvents": "Back to events",
+    "loadFailedTitle": "Couldn't load this page",
+    "loadFailedBody": "Something went wrong while loading. Please try again.",
+    "retry": "Try again",
+    "crashTitle": "Something went wrong",
+    "crashBody": "DOCENT hit an unexpected problem showing this page. Reloading usually fixes it; your saved data is safe.",
+    "reload": "Reload"
   },
   "layout": {
     "home": "DOCENT home",
@@ -105,7 +118,9 @@
       "invalidEmail": "Invalid email",
       "passwordMin": "At least 8 characters",
       "codeRequired": "An access code is required"
-    }
+    },
+    "firstAccountTitle": "You're setting up this community",
+    "firstAccountBody": "No one has registered yet, so this first account becomes the administrator. Use the access code printed when DOCENT was installed."
   },
   "visitList": {
     "title": "Events",
@@ -709,7 +724,8 @@
     "policy_privacy_label": "Privacy policy",
     "policy_privacy_description": "Published at /privacy. Review every section of the example before saving — the retention period, contact address and rights are yours to state.",
     "policy_terms_label": "Terms of use",
-    "policy_terms_description": "Published at /terms. Covers this instance, not the DOCENT software, which is GPLv3 with no warranty."
+    "policy_terms_description": "Published at /terms. Covers this instance, not the DOCENT software, which is GPLv3 with no warranty.",
+    "resetPasswordConfirm": "Reset the password for {{name}}? Their current password stops working immediately, and you'll get a temporary one to hand over."
   },
   "dashboard": {
     "title": "Analysis",
@@ -790,7 +806,8 @@
     "includingSiblings": "Numbers include activities across our sibling communities, which may overlap.",
     "peopleInPerson": "In person",
     "peopleRemote": "Remote / broadcast",
-    "remoteReachSub": "{{formattedCount}} remote"
+    "remoteReachSub": "{{formattedCount}} remote",
+    "pageTitle": "Impact"
   },
   "map": {
     "title": "Map",
@@ -855,7 +872,7 @@
       "passwordMin": "At least 8 characters"
     },
     "orcidLabel": "ORCID iD",
-    "orcidDescription": "Link your researcher identity. It travels with federated activity so partner communities can credit the right people.",
+    "orcidDescription": "Link your ORCID iD. It travels with federated activity so partner communities can credit the right people.",
     "orcidLinkedPrefix": "Linked:",
     "affiliationPlaceholder": "University of Tennessee (optional)",
     "rolesLabel": "Other roles",

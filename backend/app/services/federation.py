@@ -10,7 +10,8 @@ no longer publishes — that's how remote deletions/unpublishes propagate. Faili
 peers back off exponentially (never more often than their interval).
 """
 import os
-from datetime import datetime, timedelta, timezone
+import re
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -19,7 +20,9 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.models import FederatedActivity, FederationInterval, FederationPeer
-from app.schemas import normalize_tags
+from app.schemas import MAX_PEOPLE_REACHED, normalize_tags
+
+MAX_INT32 = 2_147_483_647
 
 USER_AGENT = "DOCENT-outreach-tracker/0.1 (+https://github.com/lawrenceleejr/docent)"
 
@@ -104,6 +107,11 @@ def fetch_page(
     return response.json()
 
 
+def mask_feed_token(text: str) -> str:
+    """Hide the token in a feed URL (or any text containing one) for display."""
+    return re.sub(r"(token=)[^&\s'\"]+", r"\1•••", text)
+
+
 def fetch_peer(feed_url: str, *, updated_since: datetime | None = None) -> dict[str, Any]:
     """Page through a peer's feed, returning a single merged envelope."""
     activities: list[dict[str, Any]] = []
@@ -136,38 +144,76 @@ def _clean_tags(raw: Any) -> list[str]:
     return normalize_tags(raw) if isinstance(raw, list) else []
 
 
+def _text(raw: Any, limit: int) -> str | None:
+    """A peer-supplied string trimmed to its column width (None if not text)."""
+    if raw is None:
+        return None
+    if not isinstance(raw, (str, int, float)):
+        return None
+    return str(raw)[:limit] or None
+
+
+def _coordinate(raw: Any, bound: float) -> float | None:
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None
+    return value if -bound <= value <= bound else None
+
+
 def _coerce_row(raw: dict[str, Any]) -> dict[str, Any] | None:
-    """Validate/normalize one feed activity; None if unusable."""
-    visit_date = raw.get("visit_date")
+    """Validate/normalize one feed activity; None if unusable.
+
+    A peer is another server we don't control, so nothing here is trusted:
+    every field is type-checked and trimmed to its column, and a row that
+    can't be made sense of is skipped rather than failing the whole sync.
+    """
+    if not isinstance(raw, dict):
+        return None
     remote_id = raw.get("remote_id")
     uid = raw.get("uid") or (str(remote_id) if remote_id is not None else None)
-    if not uid or not visit_date:
+    if not uid or len(str(uid)) > 36:
+        return None
+    try:
+        visit_date = date.fromisoformat(str(raw.get("visit_date")))
+    except ValueError:
         return None
     try:
         remote_id = int(remote_id) if remote_id is not None else 0
     except (TypeError, ValueError):
         remote_id = 0
+    if not 0 <= remote_id <= MAX_INT32:
+        remote_id = 0
     status = raw.get("status") or "completed"
     if status not in ("completed", "planned"):
         status = "completed"
+    try:
+        people_reached = int(raw.get("people_reached") or 0)
+    except (TypeError, ValueError):
+        people_reached = 0
+    people_reached = min(max(people_reached, 0), MAX_PEOPLE_REACHED)
+    # The permalink is rendered as a link, so only a web address is kept.
+    permalink = _text(raw.get("permalink"), 2000)
+    if permalink and not permalink.lower().startswith(("http://", "https://")):
+        permalink = None
     return {
         "remote_uid": str(uid),
         "remote_id": remote_id,
         "status": status,
         "visit_date": visit_date,
-        "venue_name": raw.get("venue_name"),
-        "venue_city": raw.get("venue_city"),
-        "latitude": raw.get("latitude"),
-        "longitude": raw.get("longitude"),
-        "venue_type": raw.get("venue_type"),
-        "event_type": raw.get("event_type"),
-        "audience_level": raw.get("audience_level"),
-        "person_name": raw.get("person_name"),
+        "venue_name": _text(raw.get("venue_name"), 255),
+        "venue_city": _text(raw.get("venue_city"), 255),
+        "latitude": _coordinate(raw.get("latitude"), 90),
+        "longitude": _coordinate(raw.get("longitude"), 180),
+        "venue_type": _text(raw.get("venue_type"), 50),
+        "event_type": _text(raw.get("event_type"), 50),
+        "audience_level": _text(raw.get("audience_level"), 50),
+        "person_name": _text(raw.get("person_name"), 255),
         "contributors": _clean_contributors(raw.get("contributors")),
         "tags": _clean_tags(raw.get("tags")),
-        "people_reached": raw.get("people_reached") or 0,
+        "people_reached": people_reached,
         "is_broadcast": bool(raw.get("is_broadcast", False)),
-        "permalink": raw.get("permalink"),
+        "permalink": permalink,
     }
 
 
@@ -259,8 +305,13 @@ def sync_peer(
         peer.last_error = None
         peer.consecutive_failures = 0
     except Exception as exc:  # noqa: BLE001 — record, don't crash the loop
+        # Discard whatever the failed attempt left in the session; without this
+        # a database error above poisons the commit below and the failure is
+        # never recorded (so the peer would be retried every tick, forever).
+        db.rollback()
         peer.last_status = "error"
-        peer.last_error = str(exc)[:2000]
+        # httpx puts the full request URL — token included — in its messages.
+        peer.last_error = mask_feed_token(str(exc))[:2000]
         peer.consecutive_failures = (peer.consecutive_failures or 0) + 1
     peer.last_synced_at = now
     db.commit()

@@ -1,6 +1,6 @@
 # Contributing to DOCENT
 
-Thanks for helping researchers **Reach out** and document their **Broad Impact**.
+Thanks for helping communicators **Reach out** and document their **Broad Impact**.
 Contributions of all kinds are welcome — bug reports, features, docs, and
 deployment recipes.
 

@@ -12,7 +12,20 @@
     "filters": "筛选条件",
     "unexpectedError": "意外错误",
     "clear": "清除",
-    "unsavedConfirm": "你有未保存的更改。要离开此页面并放弃这些更改吗？"
+    "unsavedConfirm": "你有未保存的更改。要离开此页面并放弃这些更改吗？",
+    "tooLarge": "文件太大，无法上传。",
+    "tooManyRequests": "尝试次数过多，请稍候再试。",
+    "serverUnavailable": "服务器目前没有响应，请稍后再试。",
+    "networkError": "无法连接到服务器，请检查网络后重试。",
+    "notFoundTitle": "找不到页面",
+    "notFoundBody": "此页面不存在、已被移除，或您的账号无法访问。",
+    "backToEvents": "返回活动列表",
+    "loadFailedTitle": "无法加载此页面",
+    "loadFailedBody": "加载时出现问题，请重试。",
+    "retry": "重试",
+    "crashTitle": "出现问题",
+    "crashBody": "DOCENT 显示此页面时遇到意外问题。重新加载通常可以解决；您已保存的数据不受影响。",
+    "reload": "重新加载"
   },
   "layout": {
     "home": "DOCENT 首页",
@@ -105,7 +118,9 @@
       "invalidEmail": "电子邮箱格式无效",
       "passwordMin": "至少 8 个字符",
       "codeRequired": "请输入邀请码"
-    }
+    },
+    "firstAccountTitle": "您正在设置这个社区",
+    "firstAccountBody": "目前还没有人注册，因此第一个账号将成为管理员。请使用安装 DOCENT 时显示的访问码。"
   },
   "visitList": {
     "title": "活动",
@@ -709,7 +724,8 @@
     "policy_privacy_label": "隐私政策",
     "policy_privacy_description": "发布于 /privacy。保存前请逐节检查示例——保留期限、联系地址和各项权利需由你自行声明。",
     "policy_terms_label": "使用条款",
-    "policy_terms_description": "发布于 /terms。适用于本实例，而非 DOCENT 软件本身（GPLv3，不提供担保）。"
+    "policy_terms_description": "发布于 /terms。适用于本实例，而非 DOCENT 软件本身（GPLv3，不提供担保）。",
+    "resetPasswordConfirm": "要重置 {{name}} 的密码吗？其当前密码会立即失效，您会得到一个临时密码转交给对方。"
   },
   "dashboard": {
     "title": "数据分析",
@@ -790,7 +806,8 @@
     "includingSiblings": "数据涵盖我们各同盟社区的活动，可能存在重叠。",
     "peopleInPerson": "现场",
     "peopleRemote": "远程／广播",
-    "remoteReachSub": "{{formattedCount}} 远程"
+    "remoteReachSub": "{{formattedCount}} 远程",
+    "pageTitle": "影响力"
   },
   "map": {
     "title": "地图",
@@ -855,7 +872,7 @@
       "passwordMin": "至少 8 个字符"
     },
     "orcidLabel": "ORCID iD",
-    "orcidDescription": "关联你的研究者身份。它会随联邦活动一起传递，让伙伴社区能正确标注贡献者。",
+    "orcidDescription": "关联你的 ORCID iD。它会随联邦活动一起传递，让伙伴社区能正确标注贡献者。",
     "orcidLinkedPrefix": "已关联：",
     "affiliationPlaceholder": "田纳西大学（选填）",
     "rolesLabel": "其他角色",

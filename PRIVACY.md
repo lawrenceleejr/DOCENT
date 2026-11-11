@@ -53,9 +53,11 @@ Treat it accordingly:
 
 - Under the GDPR this is personal data obtained other than from the data
   subject, which carries its own transparency duty (Art. 14).
-- It is excluded from every report export and from the public impact page (see
-  below), but it is stored in the database, appears in the venue detail view to
-  signed-in users, and is included in database backups and admin exports.
+- Email, phone and notes are excluded from every report export, and nothing
+  about a host appears on the public impact page (see below). Reports do list
+  the host's **name and role** beside each event. All of it is stored in the
+  database, is visible to every signed-in member (event and venue pages, and
+  the Events CSV export), and is included in database backups and admin exports.
 - If your instance may hold details of people in a jurisdiction with such
   rights, decide in advance how you will answer an access or erasure request.
 
@@ -68,8 +70,11 @@ record rather than a tracking record.
 
 ### Reflections, ratings and descriptions
 
-A communicator's own private notes on an event. Never leave the instance: they
-are excluded from every report format and from the public page.
+A communicator's own notes on an event. They are visible to every signed-in
+member of the instance (and in the Events CSV export members can download), so
+treat them as shared with your community rather than private to you. They never
+leave the instance: they are excluded from every report format and from the
+public page.
 
 ---
 

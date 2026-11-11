@@ -28,6 +28,19 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(appVersion()),
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Keep the two heaviest libraries in their own long-cached files, so
+        // they download only for the pages that use them and survive app
+        // updates that don't touch them.
+        manualChunks: {
+          charts: ['recharts'],
+          map: ['leaflet', 'react-leaflet'],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {

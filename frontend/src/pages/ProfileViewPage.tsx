@@ -2,6 +2,7 @@ import { Anchor, Badge, Card, Group, SimpleGrid, Stack, Table, Text, Title } fro
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
+import { QueryState } from '../components/QueryState';
 import { api } from '../api/client';
 import type { UserProfile } from '../api/types';
 import { OrcidLink } from '../components/OrcidLink';
@@ -12,13 +13,13 @@ export function ProfileViewPage() {
   const enumLabel = useEnumLabel();
   const { userId } = useParams();
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading, error, refetch } = useQuery({
     queryKey: ['users', userId, 'profile'],
     queryFn: () => api.get<UserProfile>(`/api/users/${userId}/profile`),
     enabled: !!userId,
   });
 
-  if (!profile) return null;
+  if (!profile) return <QueryState isLoading={isLoading} error={error} onRetry={() => refetch()} />;
 
   const subtitle = [profile.position, profile.affiliation].filter(Boolean).join(' · ');
 

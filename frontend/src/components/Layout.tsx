@@ -57,7 +57,7 @@ function initials(name?: string) {
 }
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -157,7 +157,7 @@ export function Layout({ children }: { children: ReactNode }) {
         : tabs.find((tab) => tab.value === active)?.label ?? '';
     document.title = section ? `${section} · DOCENT` : 'DOCENT';
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname, active]);
+  }, [location.pathname, active, i18n.language]);
 
   return (
     <AppShell header={{ height: 60 }} padding="md">
@@ -326,13 +326,13 @@ export function Layout({ children }: { children: ReactNode }) {
         <Container size="xl" py="lg">
           <Text size="xs" c="dimmed" ta="center">
             {t('layout.footerPrefix', { version: APP_VERSION, year: COPYRIGHT_YEAR })}{' '}
-            <Anchor href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" c="dimmed" underline="always">
+            <Anchor href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener noreferrer" c="dimmed" underline="always">
               GNU GPL v3
             </Anchor>{' · '}
-            <Anchor href={GITHUB_README_URL} target="_blank" c="dimmed" underline="always">
+            <Anchor href={GITHUB_README_URL} target="_blank" rel="noopener noreferrer" c="dimmed" underline="always">
               {t('layout.footerGithub')}
             </Anchor>{' · '}
-            <Anchor href={GITHUB_CONTRIBUTING_URL} target="_blank" c="dimmed" underline="always">
+            <Anchor href={GITHUB_CONTRIBUTING_URL} target="_blank" rel="noopener noreferrer" c="dimmed" underline="always">
               {t('layout.footerSuggestions')}
             </Anchor>
             {/* Only linked once an admin has actually published the document,

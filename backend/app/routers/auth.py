@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 
 from app.deps import CurrentUser, DbSession
 from app.models import LoginEvent, LoginEventType, User
-from app.ratelimit import login_rate_limit, register_rate_limit
+from app.ratelimit import login_failure_limit, login_rate_limit, register_rate_limit
 from app.schemas import AuthConfig, LoginRequest, RegisterRequest, UserOut
 from app.security import (
     clear_auth_cookie,
@@ -33,6 +33,9 @@ from app.services.settings import (
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
+# Arbitrary constant naming the "someone is registering" advisory lock.
+_REGISTER_LOCK_KEY = 0x0D0C3271
+
 
 @router.get("/config", response_model=AuthConfig)
 def auth_config(db: DbSession) -> AuthConfig:
@@ -42,6 +45,7 @@ def auth_config(db: DbSession) -> AuthConfig:
     bm = effective_basemap(db)
     return AuthConfig(
         registration_enabled=bool(effective_invite_code(db)),
+        needs_setup=db.scalar(select(User.id).limit(1)) is None,
         contact_email=effective_contact_email(db) or None,
         site_name=effective_site_name(db) or None,
         public_page=public_page_enabled(db),
@@ -89,7 +93,10 @@ def register(body: RegisterRequest, request: Request, response: Response, db: Db
             detail="An account with this email already exists",
         )
 
-    # First account ever created becomes the admin (bootstrap).
+    # First account ever created becomes the admin (bootstrap). Registrations
+    # are serialized with a transaction-scoped advisory lock so two sign-ups
+    # racing on an empty database can't both see "no users yet".
+    db.execute(text("SELECT pg_advisory_xact_lock(:k)"), {"k": _REGISTER_LOCK_KEY})
     is_first_user = db.scalar(select(func.count()).select_from(User)) == 0
     user = User(
         email=email,
@@ -112,16 +119,21 @@ def register(body: RegisterRequest, request: Request, response: Response, db: Db
 
 @router.post("/login", response_model=UserOut, dependencies=[Depends(login_rate_limit)])
 def login(body: LoginRequest, request: Request, response: Response, db: DbSession):
-    user = db.scalar(select(User).where(User.email == body.email.lower()))
+    email = body.email.lower()
+    # Per-account lockout on repeated failures, independent of the client IP.
+    login_failure_limit.check(email)
+    user = db.scalar(select(User).where(User.email == email))
     # Unknown email burns the same Argon2 time as a wrong password, so response
     # timing can't be used to discover which emails have accounts.
     if not user:
         dummy_verify_password()
+        login_failure_limit.record(email)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
         )
     if not verify_password(body.password, user.password_hash):
+        login_failure_limit.record(email)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -130,6 +142,7 @@ def login(body: LoginRequest, request: Request, response: Response, db: DbSessio
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Account is deactivated"
         )
+    login_failure_limit.reset(email)
     set_auth_cookie(response, create_access_token(user.id), request)
     # Record the successful login for the admin login-history view (#30).
     db.add(LoginEvent(user_id=user.id, event_type=LoginEventType.login))

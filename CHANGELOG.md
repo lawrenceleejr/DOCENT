@@ -6,6 +6,98 @@ images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 
 ## Unreleased
 
+A pre-release audit of security, installation and usability.
+
+### Upgrading
+- No manual steps and no database migration. Run `git pull` once to get the
+  new upgrade script, then `./scripts/upgrade.sh` — from any earlier release.
+  From now on `./scripts/upgrade.sh` alone is the whole procedure.
+- **Backups become private.** On first start after upgrading, the backups
+  folder (`BACKUP_DIR`, `./backups` by default) is handed to the DOCENT service
+  user (uid 10001) with `0700`/`0600` permissions. If you copy dumps off the
+  machine with your own script, run it with `sudo` or switch to
+  `./scripts/download-backups.sh`.
+- **Calendar subscriptions** made by someone who has since changed their
+  password stop working; they re-copy the link from the Scheduler. Feed links
+  now only ever return their owner's events.
+- If you run your own reverse proxy, nothing changes — but DOCENT now works out
+  the client address itself, so the `request_header -X-Forwarded-For` line in
+  older Caddy examples is no longer needed.
+
+### Security
+- **Login rate limiting could be bypassed** by sending a made-up
+  `X-Forwarded-For` header. The bundled nginx now resolves the real client
+  address (trusting only proxies on private addresses), and failed sign-ins are
+  also limited per account.
+- **A member could delete a venue along with other people's events** after
+  logging a single event there. That now needs an admin.
+- **Calendar feed links never expired** and could export the whole community's
+  schedule. They are now limited to their owner's events and are revoked by a
+  password change or reset.
+- **CSV exports could carry spreadsheet formulas** typed into a title or note;
+  such cells are now neutralized.
+- **Venue web addresses and sibling permalinks accept only `http(s)`**, so a
+  `javascript:` link can no longer be stored, and the page's
+  Content-Security-Policy no longer allows inline scripts at all.
+- State-changing requests from another site are refused (in addition to the
+  `SameSite` cookie), which also covers sibling subdomains.
+- The API and backup containers no longer run as root, cannot gain privileges,
+  and write backups readable only by the service user.
+- HSTS is sent over HTTPS. Federation feed tokens are masked in stored error
+  messages and compared in constant time. Two people registering at the same
+  instant on an empty instance can no longer both become admin.
+- Notes, dates and durations are bounded, so one request can't store megabytes
+  or a date that breaks the calendar feed.
+
+### Fixed
+- **Uploads over 1 MB failed** behind the bundled nginx — CSV imports and
+  restoring from an uploaded backup — with an empty error message.
+- A sibling instance sending a malformed row no longer stops federation sync
+  for every sibling; bad rows are skipped and failures are recorded.
+- A mistyped `BACKUP_HOUR` made the backup container take backups in a tight
+  loop; it now falls back to 02:00 with a warning.
+- `restore.sh` restarts the backend even when the restore fails.
+- Pages for a missing event, venue or profile were blank; they now say so.
+  Unknown addresses show a not-found page instead of silently going home.
+- Signing in returns you to the page a shared link pointed at.
+- The privacy policy template and `PRIVACY.md` said notes were visible only to
+  their author and admins, and that reports exclude host names. Both now match
+  the app: notes are visible to signed-in members, and reports list the host's
+  name and role (never email, phone or notes).
+
+### Added
+- **One-command upgrades, across any number of releases.**
+  `./scripts/upgrade.sh` fetches the newest release, shows the upgrade notes of
+  every release being skipped, saves the database to `upgrade-backups/`, starts
+  the new version and checks it is healthy. `--rollback` restores the previous
+  code and data; `--check` previews; `--to` picks a version. The classic
+  `git pull && ./scripts/start.sh` now takes the same pre-upgrade copy.
+- **Old backups restore into new versions.** A backup made by an older release
+  is restored cleanly and brought up to date automatically, which is what
+  moving to a new server needs.
+- Backups kept in a Docker volume by v0.1.1 and v0.1.2 are copied into
+  `BACKUP_DIR` on upgrade instead of being left behind.
+- A database that is newer than the code (an accidental downgrade) gets a
+  plain explanation and the fix, rather than a crash loop.
+- CI installs v0.1.2 and v0.1.9, upgrades each to the new code in one step,
+  and rolls back.
+
+### Changed
+- **Install is friendlier.** `start.sh` checks for Docker, the Compose plugin
+  and daemon access with a clear message for each, waits for the app to be
+  healthy, shows the backend log if it isn't, and keeps showing the access code
+  until the first account exists. `--release` runs the published images
+  without building.
+- The register page says when you are creating the first (admin) account.
+- Charts draw straight segments between counts instead of smoothed curves, and
+  bars carry their own numbers instead of a grid and value axis.
+- Routes load on demand: the first page load is roughly 45% smaller.
+- Container logs are capped (5 × 10 MB per service).
+- Screen readers get the right language, and icon-only buttons have names.
+- Resetting someone's password asks for confirmation first.
+- CI lints shell scripts, runs the migrations against an empty database, and
+  performs a real first-run install.
+
 ## v0.1.9
 
 ### Upgrading

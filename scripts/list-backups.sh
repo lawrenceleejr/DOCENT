@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# List all database backups currently held in the `backups` volume.
+# List all database backups currently held in BACKUP_DIR.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

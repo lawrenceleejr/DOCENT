@@ -12,7 +12,20 @@
     "filters": "Filtres",
     "unexpectedError": "Erreur inattendue",
     "clear": "Effacer",
-    "unsavedConfirm": "Vous avez des modifications non enregistrées. Quitter cette page et les abandonner ?"
+    "unsavedConfirm": "Vous avez des modifications non enregistrées. Quitter cette page et les abandonner ?",
+    "tooLarge": "Ce fichier est trop volumineux pour être envoyé.",
+    "tooManyRequests": "Trop de tentatives — patientez un instant puis réessayez.",
+    "serverUnavailable": "Le serveur ne répond pas pour le moment. Réessayez dans une minute.",
+    "networkError": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
+    "notFoundTitle": "Page introuvable",
+    "notFoundBody": "Cette page n'existe pas, a été supprimée ou n'est pas accessible avec votre compte.",
+    "backToEvents": "Retour aux événements",
+    "loadFailedTitle": "Impossible de charger cette page",
+    "loadFailedBody": "Une erreur s'est produite pendant le chargement. Veuillez réessayer.",
+    "retry": "Réessayer",
+    "crashTitle": "Une erreur s'est produite",
+    "crashBody": "DOCENT a rencontré un problème inattendu en affichant cette page. Un rechargement suffit généralement ; vos données enregistrées sont intactes.",
+    "reload": "Recharger"
   },
   "layout": {
     "home": "Accueil DOCENT",
@@ -105,7 +118,9 @@
       "invalidEmail": "Courriel invalide",
       "passwordMin": "Au moins 8 caractères",
       "codeRequired": "Un code d'accès est requis"
-    }
+    },
+    "firstAccountTitle": "Vous configurez cette communauté",
+    "firstAccountBody": "Personne ne s'est encore inscrit : ce premier compte devient celui de l'administrateur. Utilisez le code d'accès affiché lors de l'installation de DOCENT."
   },
   "visitList": {
     "title": "Événements",
@@ -709,7 +724,8 @@
     "policy_privacy_label": "Politique de confidentialité",
     "policy_privacy_description": "Publiée sur /privacy. Relisez chaque section de l'exemple avant d'enregistrer : la durée de conservation, l'adresse de contact et les droits vous appartiennent.",
     "policy_terms_label": "Conditions d'utilisation",
-    "policy_terms_description": "Publiées sur /terms. Elles concernent cette instance, pas le logiciel DOCENT, qui est sous GPLv3 sans garantie."
+    "policy_terms_description": "Publiées sur /terms. Elles concernent cette instance, pas le logiciel DOCENT, qui est sous GPLv3 sans garantie.",
+    "resetPasswordConfirm": "Réinitialiser le mot de passe de {{name}} ? Son mot de passe actuel cesse de fonctionner immédiatement et vous recevrez un mot de passe temporaire à lui transmettre."
   },
   "dashboard": {
     "title": "Analyse",
@@ -790,7 +806,8 @@
     "includingSiblings": "Les chiffres incluent les activités de nos communautés sœurs, qui peuvent se recouper.",
     "peopleInPerson": "En personne",
     "peopleRemote": "À distance / diffusion",
-    "remoteReachSub": "{{formattedCount}} à distance"
+    "remoteReachSub": "{{formattedCount}} à distance",
+    "pageTitle": "Impact"
   },
   "map": {
     "title": "Carte",
@@ -855,7 +872,7 @@
       "passwordMin": "Au moins 8 caractères"
     },
     "orcidLabel": "identifiant ORCID",
-    "orcidDescription": "Reliez votre identité de chercheur. Elle accompagne l'activité fédérée afin que les communautés partenaires créditent les bonnes personnes.",
+    "orcidDescription": "Associez votre ORCID iD. Elle accompagne l'activité fédérée afin que les communautés partenaires créditent les bonnes personnes.",
     "orcidLinkedPrefix": "Lié :",
     "affiliationPlaceholder": "Université du Tennessee (facultatif)",
     "rolesLabel": "Autres rôles",

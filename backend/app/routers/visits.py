@@ -31,7 +31,8 @@ from app.schemas import (
     VisitUpdate,
     normalize_tags,
 )
-from app.security import COOKIE_NAME, verify_calendar_feed_token
+from app.security import COOKIE_NAME, calendar_feed_user_id, verify_calendar_feed_token
+from app.services.csvsafe import safe_row
 from app.services.federation import federated_query
 from app.services.ics import CalendarEvent, build_calendar
 
@@ -364,7 +365,7 @@ def export_csv(
             cats = sorted({(lk.get("category") or "other") for lk in (v.links or [])})
             urls = "; ".join(lk.get("url", "") for lk in (v.links or []))
             writer.writerow(
-                [
+                safe_row([
                     v.visit_date.isoformat(),
                     v.start_time.strftime("%H:%M") if v.start_time else None,
                     v.status.value, v.title, v.event_type.value,
@@ -377,7 +378,7 @@ def export_csv(
                     v.host_notes, v.follow_up_planned, v.additional_presenters,
                     "; ".join(v.tags), "; ".join(cats), urls,
                     v.description, v.reflection,
-                ]
+                ])
             )
             yield buffer.getvalue()
             buffer.seek(0)
@@ -413,11 +414,19 @@ def calendar_ics(
     # Auth: either the signed feed token (calendar apps subscribing to the URL
     # can't send cookies) or the normal session cookie for direct downloads.
     if token is not None:
-        user_id = verify_calendar_feed_token(token)
+        user_id = calendar_feed_user_id(token)
         user = db.get(User, user_id) if user_id is not None else None
-        if user is None or not user.is_active:
+        if (
+            user is None
+            or not user.is_active
+            or not verify_calendar_feed_token(token, user.id, user.password_changed_at)
+        ):
             # 401 literal: the `status` query param shadows fastapi.status here.
             raise HTTPException(status_code=401, detail="Invalid feed token")
+        # A feed URL lives in calendar apps and sync services for years, so it
+        # is scoped to its owner's own events: no community-wide export, no
+        # other author, and no free-text search over notes.
+        everyone, author_id, q = False, user.id, None
     else:
         user = get_current_user(db, docent_token)
 

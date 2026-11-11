@@ -2,9 +2,19 @@
 # Backup scheduler: one dump per night at $BACKUP_HOUR:00 (container time, UTC),
 # plus one immediately on first start so a fresh deployment is never unprotected.
 set -u
+# shellcheck source=docker/backup/common.sh
+. /common.sh
 
 BACKUP_HOUR=${BACKUP_HOUR:-02}
-BACKUP_ROOT=${BACKUP_ROOT:-/backups}
+# A typo here used to make `date` fail and the loop below spin, taking backups
+# back to back. Fall back to the default instead.
+case "$BACKUP_HOUR" in
+    [0-9]|[01][0-9]|2[0-3]) ;;
+    *)
+        echo "[run] BACKUP_HOUR='$BACKUP_HOUR' is not an hour (00-23); using 02" >&2
+        BACKUP_HOUR=02
+        ;;
+esac
 
 if [ -z "$(find "$BACKUP_ROOT" -name '*.dump' 2>/dev/null | head -1)" ]; then
     echo "[run] no existing backups found — taking an initial one"

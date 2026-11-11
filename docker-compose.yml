@@ -1,5 +1,19 @@
+# Applied to every service: cap container logs (Docker's default keeps them
+# forever and eventually fills the disk) and forbid gaining privileges inside
+# the container.
+x-defaults: &defaults
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "5"
+
 services:
   db:
+    <<: *defaults
     image: postgres:16
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-docent}
@@ -12,9 +26,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 12
-    restart: unless-stopped
 
   backend:
+    <<: *defaults
     build:
       context: ./backend
       args:
@@ -49,13 +63,14 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 6
-      start_period: 30s
-    restart: unless-stopped
+      # Generous: a big upgrade's migrations run before the API answers.
+      start_period: 180s
 
   frontend:
+    <<: *defaults
     build:
       context: ./frontend
       args:
@@ -69,8 +84,15 @@ services:
       # trusted private LAN with no proxy.
       - "${BIND_HOST:-127.0.0.1}:${HTTP_PORT:-8080}:80"
     depends_on:
-      - backend
-    restart: unless-stopped
+      # Wait for migrations to finish and the API to answer, so the site never
+      # comes up in front of a backend that isn't there yet.
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   # Optional bundled HTTPS reverse proxy. It only runs under the "tls" profile,
   # which start.sh turns on automatically when SITE_DOMAIN is set in .env:
@@ -79,6 +101,7 @@ services:
   #     renews the TLS certificate automatically, and proxies to the frontend.
   # Requires the domain's DNS to point at this machine and ports 80+443 open.
   caddy:
+    <<: *defaults
     image: caddy:2
     profiles: ["tls"]
     command: caddy reverse-proxy --from ${SITE_DOMAIN:-} --to frontend:80
@@ -90,9 +113,9 @@ services:
       - caddy_config:/config
     depends_on:
       - frontend
-    restart: unless-stopped
 
   backup:
+    <<: *defaults
     build: ./docker/backup
     environment:
       PGHOST: db
@@ -107,7 +130,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    restart: unless-stopped
 
 volumes:
   pgdata: {}

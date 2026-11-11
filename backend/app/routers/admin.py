@@ -1,6 +1,5 @@
 import json
 import os
-import re
 import secrets
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -344,7 +343,7 @@ def rotate_fed_token(_admin: CurrentAdmin, db: DbSession):
 
 def _mask_feed_url(url: str) -> str:
     """Hide the token in a peer's feed URL for display."""
-    return re.sub(r"(token=)[^&]+", r"\1•••", url)
+    return fed.mask_feed_token(url)
 
 
 def _peer_out(peer: FederationPeer) -> FederationPeerOut:

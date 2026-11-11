@@ -12,7 +12,20 @@
     "filters": "篩選條件",
     "unexpectedError": "發生未預期的錯誤",
     "clear": "清除",
-    "unsavedConfirm": "你有未儲存的變更。要離開此頁面並捨棄變更嗎？"
+    "unsavedConfirm": "你有未儲存的變更。要離開此頁面並捨棄變更嗎？",
+    "tooLarge": "檔案太大，無法上傳。",
+    "tooManyRequests": "嘗試次數過多，請稍候再試。",
+    "serverUnavailable": "伺服器目前沒有回應，請稍後再試。",
+    "networkError": "無法連線到伺服器，請檢查網路後再試。",
+    "notFoundTitle": "找不到頁面",
+    "notFoundBody": "此頁面不存在、已被移除，或您的帳號無法存取。",
+    "backToEvents": "返回活動列表",
+    "loadFailedTitle": "無法載入此頁面",
+    "loadFailedBody": "載入時發生問題，請再試一次。",
+    "retry": "重試",
+    "crashTitle": "發生問題",
+    "crashBody": "DOCENT 顯示此頁面時遇到未預期的問題。重新載入通常可以解決；您已儲存的資料不受影響。",
+    "reload": "重新載入"
   },
   "layout": {
     "home": "DOCENT 首頁",
@@ -105,7 +118,9 @@
       "invalidEmail": "電子郵件格式不正確",
       "passwordMin": "至少 8 個字元",
       "codeRequired": "請輸入存取碼"
-    }
+    },
+    "firstAccountTitle": "您正在設定這個社群",
+    "firstAccountBody": "目前還沒有人註冊，因此第一個帳號將成為管理員。請使用安裝 DOCENT 時顯示的存取碼。"
   },
   "visitList": {
     "title": "活動",
@@ -709,7 +724,8 @@
     "policy_privacy_label": "隱私政策",
     "policy_privacy_description": "發布於 /privacy。儲存前請逐節檢查範例——保存期限、聯絡地址與各項權利需由你自行聲明。",
     "policy_terms_label": "使用條款",
-    "policy_terms_description": "發布於 /terms。適用於本執行個體，而非 DOCENT 軟體本身（GPLv3，不提供擔保）。"
+    "policy_terms_description": "發布於 /terms。適用於本執行個體，而非 DOCENT 軟體本身（GPLv3，不提供擔保）。",
+    "resetPasswordConfirm": "要重設 {{name}} 的密碼嗎？其目前的密碼會立即失效，您會取得一組臨時密碼轉交給對方。"
   },
   "dashboard": {
     "title": "分析",
@@ -790,7 +806,8 @@
     "includingSiblings": "數字涵蓋我們各夥伴社群的活動，內容可能有所重疊。",
     "peopleInPerson": "現場",
     "peopleRemote": "遠端／廣播",
-    "remoteReachSub": "{{formattedCount}} 遠端"
+    "remoteReachSub": "{{formattedCount}} 遠端",
+    "pageTitle": "影響力"
   },
   "map": {
     "title": "地圖",
@@ -855,7 +872,7 @@
       "passwordMin": "至少 8 個字元"
     },
     "orcidLabel": "ORCID iD",
-    "orcidDescription": "連結你的研究者身分。它會隨聯邦活動一起傳遞，讓夥伴社群能正確標註貢獻者。",
+    "orcidDescription": "連結你的 ORCID iD。它會隨聯邦活動一起傳遞，讓夥伴社群能正確標註貢獻者。",
     "orcidLinkedPrefix": "已連結：",
     "affiliationPlaceholder": "田納西大學（選填）",
     "rolesLabel": "其他角色",

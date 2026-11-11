@@ -12,7 +12,20 @@
     "filters": "Mga Filter",
     "unexpectedError": "Hindi inaasahang error",
     "clear": "I-clear",
-    "unsavedConfirm": "May mga pagbabago kang hindi pa na-save. Aalis sa page na ito at itatapon ang mga ito?"
+    "unsavedConfirm": "May mga pagbabago kang hindi pa na-save. Aalis sa page na ito at itatapon ang mga ito?",
+    "tooLarge": "Masyadong malaki ang file para i-upload.",
+    "tooManyRequests": "Masyadong maraming pagsubok — maghintay sandali at subukang muli.",
+    "serverUnavailable": "Hindi tumutugon ang server sa ngayon. Subukang muli makalipas ang isang minuto.",
+    "networkError": "Hindi maabot ang server. Suriin ang iyong koneksyon at subukang muli.",
+    "notFoundTitle": "Hindi nahanap ang pahina",
+    "notFoundBody": "Wala ang pahinang ito, inalis na, o hindi ito magagamit ng iyong account.",
+    "backToEvents": "Bumalik sa mga event",
+    "loadFailedTitle": "Hindi ma-load ang pahinang ito",
+    "loadFailedBody": "Nagkaproblema habang naglo-load. Pakisubukang muli.",
+    "retry": "Subukang muli",
+    "crashTitle": "May nangyaring mali",
+    "crashBody": "Nagkaroon ng hindi inaasahang problema ang DOCENT sa pagpapakita ng pahinang ito. Kadalasang naaayos ito ng pag-reload; ligtas ang iyong naka-save na data.",
+    "reload": "I-reload"
   },
   "layout": {
     "home": "Home ng DOCENT",
@@ -105,7 +118,9 @@
       "invalidEmail": "Hindi valid ang email",
       "passwordMin": "Hindi bababa sa 8 karakter",
       "codeRequired": "Kinakailangan ang access code"
-    }
+    },
+    "firstAccountTitle": "Sine-set up mo ang komunidad na ito",
+    "firstAccountBody": "Wala pang nakapagrehistro, kaya ang unang account na ito ang magiging administrator. Gamitin ang access code na ipinakita noong na-install ang DOCENT."
   },
   "visitList": {
     "title": "Mga Event",
@@ -709,7 +724,8 @@
     "policy_privacy_label": "Patakaran sa privacy",
     "policy_privacy_description": "Inilalathala sa /privacy. Suriin ang bawat bahagi ng halimbawa bago i-save — sa iyo ang pagtukoy ng panahon ng pag-iingat, contact address, at mga karapatan.",
     "policy_terms_label": "Mga tuntunin ng paggamit",
-    "policy_terms_description": "Inilalathala sa /terms. Sakop nito ang instance na ito, hindi ang DOCENT software, na GPLv3 at walang warranty."
+    "policy_terms_description": "Inilalathala sa /terms. Sakop nito ang instance na ito, hindi ang DOCENT software, na GPLv3 at walang warranty.",
+    "resetPasswordConfirm": "I-reset ang password ni {{name}}? Agad na hindi na gagana ang kasalukuyan niyang password, at makakakuha ka ng pansamantalang password na ibibigay sa kanya."
   },
   "dashboard": {
     "title": "Analysis",
@@ -790,7 +806,8 @@
     "includingSiblings": "Kasama sa mga bilang ang mga aktibidad sa aming mga kapwa community, na maaaring magkasanib.",
     "peopleInPerson": "In person",
     "peopleRemote": "Remote / broadcast",
-    "remoteReachSub": "{{formattedCount}} remote"
+    "remoteReachSub": "{{formattedCount}} remote",
+    "pageTitle": "Epekto"
   },
   "map": {
     "title": "Mapa",
@@ -855,7 +872,7 @@
       "passwordMin": "Hindi bababa sa 8 karakter"
     },
     "orcidLabel": "ORCID iD",
-    "orcidDescription": "I-link ang iyong researcher identity. Sumasama ito sa federated na aktibidad para ma-kredito ng mga partner community ang tamang tao.",
+    "orcidDescription": "I-link ang iyong ORCID iD. Sumasama ito sa federated na aktibidad para ma-kredito ng mga partner community ang tamang tao.",
     "orcidLinkedPrefix": "Naka-link:",
     "affiliationPlaceholder": "University of Tennessee (opsyonal)",
     "rolesLabel": "Iba pang mga tungkulin",

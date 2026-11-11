@@ -493,7 +493,7 @@ export function FederationCard() {
                 <Table.Td>
                   <Group gap={4} wrap="nowrap">
                     <Tooltip label={t('federationCard.syncNow')}>
-                      <ActionIcon
+                      <ActionIcon aria-label={t('federationCard.syncNow')}
                         variant="subtle"
                         loading={syncOne.isPending && syncOne.variables === peer.id}
                         onClick={() => syncOne.mutate(peer.id)}
@@ -502,7 +502,7 @@ export function FederationCard() {
                       </ActionIcon>
                     </Tooltip>
                     <Tooltip label={t('federationCard.remove')}>
-                      <ActionIcon
+                      <ActionIcon aria-label={t('federationCard.remove')}
                         color="red"
                         variant="subtle"
                         loading={remove.isPending && remove.variables === peer.id}

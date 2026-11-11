@@ -66,7 +66,7 @@ function BasemapSnippet({ label, text }: { label: string; text: string }) {
               label={copied ? t('siteSetupCard.copiedTooltip') : t('siteSetupCard.copyTooltip')}
               withArrow
             >
-              <ActionIcon variant="subtle" color={copied ? 'teal' : 'gray'} onClick={copy}>
+              <ActionIcon aria-label={copied ? t('siteSetupCard.copiedTooltip') : t('siteSetupCard.copyTooltip')} variant="subtle" color={copied ? 'teal' : 'gray'} onClick={copy}>
                 {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
               </ActionIcon>
             </Tooltip>

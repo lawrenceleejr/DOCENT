@@ -12,7 +12,20 @@
     "filters": "Bộ lọc",
     "unexpectedError": "Lỗi không mong muốn",
     "clear": "Xóa",
-    "unsavedConfirm": "Bạn có thay đổi chưa lưu. Rời khỏi trang này và bỏ các thay đổi?"
+    "unsavedConfirm": "Bạn có thay đổi chưa lưu. Rời khỏi trang này và bỏ các thay đổi?",
+    "tooLarge": "Tệp quá lớn để tải lên.",
+    "tooManyRequests": "Quá nhiều lần thử — vui lòng chờ một lát rồi thử lại.",
+    "serverUnavailable": "Máy chủ hiện không phản hồi. Vui lòng thử lại sau một phút.",
+    "networkError": "Không thể kết nối tới máy chủ. Hãy kiểm tra kết nối và thử lại.",
+    "notFoundTitle": "Không tìm thấy trang",
+    "notFoundBody": "Trang này không tồn tại, đã bị xóa hoặc tài khoản của bạn không được phép xem.",
+    "backToEvents": "Quay lại danh sách sự kiện",
+    "loadFailedTitle": "Không thể tải trang này",
+    "loadFailedBody": "Đã xảy ra lỗi khi tải. Vui lòng thử lại.",
+    "retry": "Thử lại",
+    "crashTitle": "Đã xảy ra lỗi",
+    "crashBody": "DOCENT gặp sự cố không mong muốn khi hiển thị trang này. Tải lại thường sẽ khắc phục được; dữ liệu đã lưu của bạn vẫn an toàn.",
+    "reload": "Tải lại"
   },
   "layout": {
     "home": "Trang chủ DOCENT",
@@ -105,7 +118,9 @@
       "invalidEmail": "Email không hợp lệ",
       "passwordMin": "Ít nhất 8 ký tự",
       "codeRequired": "Cần có mã truy cập"
-    }
+    },
+    "firstAccountTitle": "Bạn đang thiết lập cộng đồng này",
+    "firstAccountBody": "Chưa có ai đăng ký, nên tài khoản đầu tiên này sẽ là quản trị viên. Hãy dùng mã truy cập được hiển thị khi cài đặt DOCENT."
   },
   "visitList": {
     "title": "Sự kiện",
@@ -709,7 +724,8 @@
     "policy_privacy_label": "Chính sách quyền riêng tư",
     "policy_privacy_description": "Công bố tại /privacy. Hãy xem lại từng mục của bản mẫu trước khi lưu — thời hạn lưu trữ, địa chỉ liên hệ và các quyền là do bạn nêu ra.",
     "policy_terms_label": "Điều khoản sử dụng",
-    "policy_terms_description": "Công bố tại /terms. Áp dụng cho phiên bản cài đặt này, không phải phần mềm DOCENT, vốn theo GPLv3 và không có bảo hành."
+    "policy_terms_description": "Công bố tại /terms. Áp dụng cho phiên bản cài đặt này, không phải phần mềm DOCENT, vốn theo GPLv3 và không có bảo hành.",
+    "resetPasswordConfirm": "Đặt lại mật khẩu cho {{name}}? Mật khẩu hiện tại của họ sẽ ngừng hoạt động ngay lập tức và bạn sẽ nhận được mật khẩu tạm thời để chuyển cho họ."
   },
   "dashboard": {
     "title": "Phân tích",
@@ -790,7 +806,8 @@
     "includingSiblings": "Số liệu bao gồm các hoạt động trên các cộng đồng liên kết của chúng tôi, có thể trùng lặp.",
     "peopleInPerson": "Trực tiếp",
     "peopleRemote": "Từ xa / phát sóng",
-    "remoteReachSub": "{{formattedCount}} từ xa"
+    "remoteReachSub": "{{formattedCount}} từ xa",
+    "pageTitle": "Tác động"
   },
   "map": {
     "title": "Bản đồ",
@@ -855,7 +872,7 @@
       "passwordMin": "Ít nhất 8 ký tự"
     },
     "orcidLabel": "ORCID iD",
-    "orcidDescription": "Liên kết danh tính nhà nghiên cứu của bạn. Nó đi kèm với hoạt động liên kết để các cộng đồng đối tác ghi nhận đúng người.",
+    "orcidDescription": "Liên kết ORCID iD của bạn. Nó đi kèm với hoạt động liên kết để các cộng đồng đối tác ghi nhận đúng người.",
     "orcidLinkedPrefix": "Đã liên kết:",
     "affiliationPlaceholder": "Đại học Tennessee (không bắt buộc)",
     "rolesLabel": "Vai trò khác",
