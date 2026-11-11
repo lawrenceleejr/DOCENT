@@ -1,4 +1,4 @@
-FROM node:22-slim AS build
+FROM node:25-slim AS build
 WORKDIR /app
 # Building behind a TLS-inspecting proxy? Drop its PEM bundle at
 # frontend/extra-ca.crt (gitignored) and it will be trusted during the build.
