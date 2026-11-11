@@ -252,7 +252,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       # Footer version (#26): the release tag on a vX.Y.Z build, else the short
       # commit SHA. Passed into both images (their build contexts have no .git):
