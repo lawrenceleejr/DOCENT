@@ -67,7 +67,12 @@ if [ "$mode" = rollback ]; then
     from_commit=$(state from_commit)
     from_version=$(state from_version)
     [ -f "$dump" ] || die "The saved database copy is missing: $dump"
-    back_to=${from_commit:-$from_version}
+    # Prefer what was actually running (it may have been older than the code
+    # that happened to be checked out); fall back to the checkout's commit.
+    back_to=$from_version
+    if [ -z "$back_to" ] || ! git rev-parse --verify --quiet "${back_to}^{commit}" >/dev/null; then
+        back_to=$from_commit
+    fi
     [ -n "$back_to" ] || die "The last upgrade didn't record which version it came from." \
         "Check out the version you want by hand, then restore the saved copy:" \
         "  git checkout <version>" \
