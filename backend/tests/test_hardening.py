@@ -6,7 +6,6 @@ from app.services import federation as fed
 from app.services.csvsafe import safe_cell
 from tests.conftest import create_venue, create_visit, register
 
-
 # --- cross-site request guard ------------------------------------------------
 
 def test_cross_site_write_is_refused(client):
@@ -40,7 +39,7 @@ def test_same_origin_and_non_browser_writes_pass(client):
     ):
         resp = client.post(
             "/api/venues",
-            json={"name": f"Hall {len(headers)}{list(headers.values())}", "venue_type": "school"},
+            json={"name": f"Hall {len(headers)}{list(headers.values())}", "venue_type": "library"},
             headers=headers,
         )
         assert resp.status_code == 201, resp.text
@@ -81,10 +80,10 @@ def test_calendar_feed_token_is_scoped_to_its_owner(client, make_client):
 
     path = client.get("/api/users/me/calendar-feed").json()["path"]
     anon = make_client()
-    text = anon.get(path, params={"everyone": "true"}).text
+    text = anon.get(path + "&everyone=true").text
     assert "Mine" in text and "Theirs" not in text
     other_id = other.get("/api/auth/me").json()["id"]
-    text = anon.get(path, params={"author_id": other_id}).text
+    text = anon.get(f"{path}&author_id={other_id}").text
     assert "Theirs" not in text
     # The signed-in download keeps the community-wide option.
     assert "Theirs" in client.get("/api/visits/calendar.ics", params={"everyone": "true"}).text
@@ -95,8 +94,8 @@ def test_password_change_revokes_the_calendar_feed(client, make_client):
     path = client.get("/api/users/me/calendar-feed").json()["path"]
     anon = make_client()
     assert anon.get(path).status_code == 200
-    resp = client.post(
-        "/api/users/me/password",
+    resp = client.patch(
+        "/api/users/me",
         json={"current_password": "password123", "new_password": "a-new-password"},
     )
     assert resp.status_code in (200, 204), resp.text
@@ -116,7 +115,7 @@ def test_malformed_feed_token_is_a_401_not_a_crash(make_client):
 def test_venue_url_rejects_non_web_schemes(client, url):
     register(client)
     resp = client.post(
-        "/api/venues", json={"name": "Hall", "venue_type": "school", "url": url}
+        "/api/venues", json={"name": "Hall", "venue_type": "library", "url": url}
     )
     assert resp.status_code == 422
 
@@ -221,7 +220,7 @@ def test_hostile_peer_rows_are_sanitized(db, monkeypatch):
     row = db.query(FederatedActivity).one()
     assert len(row.venue_name) == 255
     assert row.permalink is None and row.latitude is None
-    assert row.people_reached <= 10_000_000_000
+    assert row.people_reached == 500_000_000
 
 
 def test_failed_sync_is_recorded_with_the_token_masked(db, monkeypatch):

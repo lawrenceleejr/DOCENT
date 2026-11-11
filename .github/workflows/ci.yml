@@ -10,6 +10,15 @@ on:
   push:
   pull_request:
 
+# Least privilege by default; the publish job asks for what it needs.
+permissions:
+  contents: read
+
+# A newer push to the same branch supersedes the run in progress.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/') }}
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -28,6 +37,9 @@ jobs:
         run: |
           pip install -e '.[lint]'
           ruff check .
+
+      - name: Lint shell scripts (shellcheck)
+        run: shellcheck scripts/*.sh docker/backup/*.sh backend/entrypoint.sh
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -77,6 +89,17 @@ jobs:
           TEST_DATABASE_URL: postgresql+psycopg://docent:docent@localhost:5432/docent_test
         run: pytest -q
 
+      # pytest builds its schema with create_all, so the migrations themselves
+      # are exercised here: every one must apply to an empty database, and the
+      # result must match the models (no forgotten migration).
+      - name: Run migrations on an empty database
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+psycopg://docent:docent@localhost:5432/docent
+        run: |
+          python -m app.scripts.upgrade_db
+          alembic check
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -90,12 +113,40 @@ jobs:
           npm ci --no-audit --no-fund
           npm run build
 
+  # The real thing: a first-time install with start.sh, exactly as the README
+  # tells a new admin to do it, then prove the site answers and registers.
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: First-run install
+        run: ./scripts/start.sh
+
+      - name: Site answers, API healthy, containers unprivileged
+        run: |
+          set -euo pipefail
+          curl -fsS http://localhost:8080/ | grep -q '<div id="root">'
+          curl -fsS http://localhost:8080/api/health | grep -q ok
+          test "$(docker compose exec -T backend id -u)" != 0
+          code=$(grep '^INVITE_CODE=' .env | cut -d= -f2)
+          curl -fsS -X POST http://localhost:8080/api/auth/register \
+            -H 'Content-Type: application/json' \
+            -d "{\"name\":\"CI Admin\",\"email\":\"ci@example.org\",\"password\":\"ci-password-123\",\"invite_code\":\"$code\"}" \
+            | grep -q '"is_admin":true'
+          ./scripts/backup.sh
+          ./scripts/start.sh   # re-running is how updates deploy; must be clean
+
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail 200
+
   # Publishes images to GHCR on:
   #   • push to main            → tags: edge, <sha>
   #   • push of a vX.Y.Z tag    → tags: <version>, latest, <sha>  (a release)
   # So `:latest` always means "latest tagged release" and `:edge` tracks main.
   publish:
-    needs: [lint, test]
+    needs: [lint, test, install]
     if: >-
       github.event_name == 'push' &&
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))

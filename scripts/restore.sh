@@ -21,6 +21,13 @@ read -r confirm
 [ "$confirm" = "yes" ] || { echo "Aborted."; exit 1; }
 
 docker compose stop backend
-docker compose exec -T backup /restore.sh "$1"
-docker compose start backend
-echo "Restore complete."
+# Bring the backend back whatever happens — a failed restore must not also
+# leave the site down.
+trap 'docker compose start backend' EXIT
+if docker compose exec -T backup /restore.sh "$1"; then
+    echo "Restore complete."
+else
+    echo "Restore FAILED — the database was left as the restore tool reported above." >&2
+    echo "A pre-restore safety dump is in the backups folder under pre-restore/." >&2
+    exit 1
+fi

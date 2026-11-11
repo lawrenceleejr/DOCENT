@@ -58,7 +58,6 @@ from app.schemas import (
 from app.security import hash_password
 from app.services import dbtransfer
 from app.services import federation as fed
-from app.services.federation import mask_feed_token  # noqa: E402
 from app.services.geocode import geocode, to_meters
 from app.services.institution_import import upsert_institutions
 from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around

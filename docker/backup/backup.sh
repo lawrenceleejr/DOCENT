@@ -4,8 +4,9 @@
 #   /backups/weekly/   keeps the last 4  (hardlinked on Sundays)
 #   /backups/monthly/  keeps the last 12 (hardlinked on the 1st)
 set -euo pipefail
+# shellcheck source=docker/backup/common.sh
+. /common.sh
 
-BACKUP_ROOT=${BACKUP_ROOT:-/backups}
 KEEP_DAILY=${KEEP_DAILY:-7}
 KEEP_WEEKLY=${KEEP_WEEKLY:-4}
 KEEP_MONTHLY=${KEEP_MONTHLY:-12}
@@ -17,6 +18,7 @@ daily="$BACKUP_ROOT/daily/docent-$today.dump"
 tmp="$daily.tmp"
 
 echo "[backup] dumping $PGDATABASE to $daily"
+rm -f "$tmp"
 pg_dump -Fc -f "$tmp" "$PGDATABASE"
 
 # Refuse to keep a dump pg_restore can't read.
@@ -33,9 +35,9 @@ fi
 
 prune() {
     dir=$1 keep=$2
-    ls -1 "$dir" | sort | head -n -"$keep" | while read -r old; do
-        echo "[backup] pruning $dir/$old"
-        rm -f "$dir/$old"
+    find "$dir" -maxdepth 1 -type f -name '*.dump' | sort | head -n -"$keep" | while read -r old; do
+        echo "[backup] pruning $old"
+        rm -f "$old"
     done
 }
 prune "$BACKUP_ROOT/daily" "$KEEP_DAILY"

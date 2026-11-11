@@ -5,8 +5,9 @@
 # flow now deploys the new code instead of bouncing the old build.
 #
 # Use --no-build (alias --fast) for a quick container bounce with no rebuild
-# when you only need to restart the running images (config reload, unstick a
-# hung container) and haven't changed any source.
+# when you only need to unstick a hung container. Note that a bounce does NOT
+# re-read .env — after changing a setting there, run start.sh (or this script
+# without --no-build), which recreates the containers with the new values.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -38,8 +39,14 @@ if [ "$build" -eq 1 ]; then
     # tagged, else the short hash — so it survives into the container build (#26).
     # (The build context has no .git, so vite.config.ts reads this instead.) The
     # quick-bounce path skips this because it doesn't rebuild the image.
-    export VITE_APP_VERSION="$(git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || true)"
-    echo "Rebuilding and restarting containers..."
+    VITE_APP_VERSION="$(git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || true)"
+    export VITE_APP_VERSION
+    if grep -qE '^COMPOSE_FILE=.*release' .env 2>/dev/null; then
+        echo "Pulling the published images and restarting containers..."
+        docker compose ${profile_args[@]+"${profile_args[@]}"} pull
+    else
+        echo "Rebuilding and restarting containers..."
+    fi
     docker compose ${profile_args[@]+"${profile_args[@]}"} up -d --build
 else
     echo "Restarting containers (no rebuild)..."
