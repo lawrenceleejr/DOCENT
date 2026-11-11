@@ -34,10 +34,10 @@ community. Follow the checklist and you have a safe default deployment.
    database. Copy backups off the machine regularly
    (`./scripts/download-backups.sh`) and store those copies encrypted.
 
-6. **Keep it patched.** `git pull && ./scripts/start.sh` rebuilds with the
-   latest base images and dependencies (or, on the published images,
-   `./scripts/start.sh --release` pulls the newest release). Do this
-   periodically, and read `CHANGELOG.md` for upgrade notes first.
+6. **Keep it patched.** `./scripts/upgrade.sh` moves you to the newest release
+   in one step, however many you have skipped: it shows each skipped release's
+   upgrade notes, saves the database first, and `--rollback` undoes it. Do
+   this periodically.
 
 ## What the app already does for you
 

@@ -142,12 +142,74 @@ jobs:
         if: failure()
         run: docker compose logs --tail 200
 
+  # People upgrade rarely and skip releases. Install an old release exactly as
+  # its own README said to, fill it with data, then take it to this commit in
+  # one step and back again — from the oldest release that can be seeded, and
+  # from the most recent one.
+  upgrade:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        from: [v0.1.2, v0.1.9]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install ${{ matrix.from }} and add data
+        run: |
+          set -euo pipefail
+          git checkout -q "${{ matrix.from }}"
+          ./scripts/start.sh
+          for _ in $(seq 1 60); do
+            curl -fsS http://localhost:8080/api/health >/dev/null 2>&1 && break
+            sleep 2
+          done
+          code=$(grep '^INVITE_CODE=' .env | cut -d= -f2)
+          curl -fsS -X POST http://localhost:8080/api/auth/register \
+            -H 'Content-Type: application/json' \
+            -d "{\"name\":\"CI Admin\",\"email\":\"ci@example.org\",\"password\":\"ci-password-123\",\"invite_code\":\"$code\"}" >/dev/null
+          ./scripts/seed-demo.sh
+          docker compose exec -T db psql -U docent -d docent -tAc 'SELECT count(*) FROM visits' | tr -d '[:space:]' > /tmp/visits-before
+          test "$(cat /tmp/visits-before)" -gt 0
+
+      - name: Upgrade to this commit in one step
+        run: |
+          set -euo pipefail
+          git checkout -q "$GITHUB_SHA"
+          ./scripts/upgrade.sh --to "$GITHUB_SHA" --yes
+          curl -fsS http://localhost:8080/api/health | grep -q ok
+          after=$(docker compose exec -T db psql -U docent -d docent -tAc 'SELECT count(*) FROM visits' | tr -d '[:space:]')
+          test "$after" = "$(cat /tmp/visits-before)"
+          # The account made on the old release still signs in.
+          curl -fsS -X POST http://localhost:8080/api/auth/login \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"ci@example.org","password":"ci-password-123"}' | grep -q '"is_admin":true'
+          ls upgrade-backups/*.dump
+
+      - name: Roll back to ${{ matrix.from }}
+        run: |
+          set -euo pipefail
+          ./scripts/upgrade.sh --rollback --yes
+          for _ in $(seq 1 60); do
+            curl -fsS http://localhost:8080/api/health >/dev/null 2>&1 && break
+            sleep 2
+          done
+          curl -fsS http://localhost:8080/api/health | grep -q ok
+          after=$(docker compose exec -T db psql -U docent -d docent -tAc 'SELECT count(*) FROM visits' | tr -d '[:space:]')
+          test "$after" = "$(cat /tmp/visits-before)"
+
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail 200
+
   # Publishes images to GHCR on:
   #   • push to main            → tags: edge, <sha>
   #   • push of a vX.Y.Z tag    → tags: <version>, latest, <sha>  (a release)
   # So `:latest` always means "latest tagged release" and `:edge` tracks main.
   publish:
-    needs: [lint, test, install]
+    needs: [lint, test, install, upgrade]
     if: >-
       github.event_name == 'push' &&
       (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))

@@ -32,6 +32,19 @@
   `alembic upgrade head`, plus how to verify) rather than restart-looping. Put
   the same steps in that release's `CHANGELOG.md` entry.
 
+- **People skip releases.** `scripts/upgrade.sh` must take any earlier release
+  to the current one in a single run, and `--rollback` must bring it back; the
+  CI `upgrade` job proves both from the oldest seedable release and the latest.
+  When a release drops support for upgrading from some old version, add that
+  version's stepping-stone to the preflight instead of letting it fail midway.
+- Every release's `CHANGELOG.md` entry needs a `### Upgrading` section (even if
+  it only says "No manual steps"). `upgrade.sh` prints these, verbatim, for
+  each release an admin is skipping, so write them for that reader: what will
+  change for them and what, if anything, they must do. Keep the heading text
+  exactly `### Upgrading` and release headings exactly `## vX.Y.Z`.
+- When cutting a release, add the new tag to the CI `upgrade` matrix in place
+  of the previous "latest".
+
 ## Product language
 
 - The D in DOCENT stands for **Distributed** (not "Decentralized").

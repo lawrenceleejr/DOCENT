@@ -9,8 +9,9 @@ images to GHCR (`ghcr.io/lawrenceleejr/docent-{backend,frontend,backup}`).
 A pre-release audit of security, installation and usability.
 
 ### Upgrading
-- No manual steps and no database migration. `git pull && ./scripts/start.sh`
-  (or `./scripts/start.sh --release`) is enough.
+- No manual steps and no database migration. Run `git pull` once to get the
+  new upgrade script, then `./scripts/upgrade.sh` — from any earlier release.
+  From now on `./scripts/upgrade.sh` alone is the whole procedure.
 - **Backups become private.** On first start after upgrading, the backups
   folder (`BACKUP_DIR`, `./backups` by default) is handed to the DOCENT service
   user (uid 10001) with `0700`/`0600` permissions. If you copy dumps off the
@@ -63,6 +64,23 @@ A pre-release audit of security, installation and usability.
   their author and admins, and that reports exclude host names. Both now match
   the app: notes are visible to signed-in members, and reports list the host's
   name and role (never email, phone or notes).
+
+### Added
+- **One-command upgrades, across any number of releases.**
+  `./scripts/upgrade.sh` fetches the newest release, shows the upgrade notes of
+  every release being skipped, saves the database to `upgrade-backups/`, starts
+  the new version and checks it is healthy. `--rollback` restores the previous
+  code and data; `--check` previews; `--to` picks a version. The classic
+  `git pull && ./scripts/start.sh` now takes the same pre-upgrade copy.
+- **Old backups restore into new versions.** A backup made by an older release
+  is restored cleanly and brought up to date automatically, which is what
+  moving to a new server needs.
+- Backups kept in a Docker volume by v0.1.1 and v0.1.2 are copied into
+  `BACKUP_DIR` on upgrade instead of being left behind.
+- A database that is newer than the code (an accidental downgrade) gets a
+  plain explanation and the fix, rather than a crash loop.
+- CI installs v0.1.2 and v0.1.9, upgrades each to the new code in one step,
+  and rolls back.
 
 ### Changed
 - **Install is friendlier.** `start.sh` checks for Docker, the Compose plugin

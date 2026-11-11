@@ -154,8 +154,12 @@ target_commit=$(git rev-parse --verify --quiet "${target_ref}^{commit}") ||
 to_version=$(git describe --tags --exact-match "$target_commit" 2>/dev/null || git rev-parse --short "$target_commit")
 
 if [ "$target_commit" = "$from_commit" ]; then
+    # The code is already here (someone ran `git pull`). It is only "up to
+    # date" if what's *running* is this version too and the database matches.
     current_rev=$(db_revision)
-    if [ -z "$current_rev" ] || [ "$current_rev" = "$(code_head_revision)" ]; then
+    running=$(docker compose exec -T backend printenv APP_VERSION 2>/dev/null | tr -d '[:space:]' || true)
+    if { [ -z "$current_rev" ] || [ "$current_rev" = "$(code_head_revision)" ]; } &&
+        { [ -z "$running" ] || [ "$running" = "$to_version" ]; }; then
         echo "DOCENT is up to date (${to_version})."
         [ "$mode" = check ] && exit 0
         # Still worth a pass through start.sh: it rebuilds on base-image

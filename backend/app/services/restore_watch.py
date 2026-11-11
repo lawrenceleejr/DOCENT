@@ -58,8 +58,10 @@ def _finished_restore() -> str | None:
 
 
 async def restore_watch_loop() -> None:
+    if not BACKUP_ROOT.exists():
+        return
     head = _head_revision()
-    if head is None or not BACKUP_ROOT.exists():
+    if head is None:
         return
     handled = _finished_restore()  # whatever finished before we started is done
     while True:

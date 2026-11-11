@@ -22,7 +22,7 @@ to turn each off.
 **Stack:** FastAPI and PostgreSQL, a React (TypeScript, Mantine) frontend, nginx,
 and a backup container, run with Docker Compose.
 
-[Quick start](#quick-start) · [Go live](#go-live-on-a-subdomain) ·
+[Quick start](#quick-start) · [Go live](#go-live-on-a-subdomain) · [Upgrading](#upgrading) ·
 [Published images](#published-images) · [Free cloud hosting](#free-cloud-hosting) ·
 [Security](SECURITY.md) · [Data handling](PRIVACY.md) ·
 [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
@@ -135,6 +135,7 @@ See [SECURITY.md](SECURITY.md) for the deployment checklist.
 |---|---|
 | `start.sh` | Build and start; creates `.env` on first run. Also deploys updates after `git pull`. `--release` runs the published images instead of building. |
 | `stop.sh` | Stop the stack. Data is kept. |
+| `upgrade.sh` | Upgrade to the newest release from any older one; `--rollback` undoes it. See [Upgrading](#upgrading). |
 | `restart.sh` | Rebuild and restart. `--no-build` just bounces the containers (it does not re-read `.env`). |
 | `backup.sh` | Back up the database now. |
 | `list-backups.sh` | List backups. |
@@ -226,6 +227,52 @@ they don't suit a long-running instance.
 
 A free VM is still one machine, so copy backups off it regularly with
 `download-backups.sh`.
+
+## Upgrading
+
+```bash
+./scripts/upgrade.sh
+```
+
+That is the whole procedure, whether you are one release behind or ten. It:
+
+1. fetches the newest release and shows the upgrade notes for **every** release
+   you are skipping (usually "nothing to do");
+2. saves a copy of the database to `upgrade-backups/`;
+3. builds and starts the new version, which brings the database up to date
+   itself, one step at a time;
+4. checks that it came up healthy.
+
+If it didn't, or you simply want the old version back, `./scripts/upgrade.sh
+--rollback` restores both the code and the database to how they were.
+
+| Command | Does |
+|---|---|
+| `upgrade.sh --check` | Show what an upgrade would do, and change nothing. |
+| `upgrade.sh --to v0.2.0` | Go to a specific release. |
+| `upgrade.sh --edge` | Follow the development branch instead of releases. |
+| `upgrade.sh --rollback` | Undo the last upgrade. |
+| `upgrade.sh --yes` | Don't ask for confirmation (for cron or scripts). |
+
+Good to know:
+
+- **On a release from before `upgrade.sh` existed**, run `git pull` once to get
+  it, then `./scripts/upgrade.sh`. The older `git pull && ./scripts/start.sh`
+  still works and takes the same safety copy of the database.
+- **Your settings are never touched.** `.env`, the database volume and the
+  backups folder stay as they are. If you edited DOCENT's own files, the script
+  stops and tells you how to set those edits aside.
+- **Moving to a new server**, or going back to an old backup after several
+  upgrades: install the current version, then restore the old backup from
+  **Admin → Backups** (or `scripts/restore.sh`). DOCENT notices the backup is
+  from an older release and updates it automatically.
+- **Running the published images without a clone:** `docker compose -f
+  docker-compose.release.yml pull` then `up -d`. The backend migrates the
+  database on start in the same way; take a backup first with
+  `docker compose -f docker-compose.release.yml exec backup /backup.sh`.
+- Every push is tested by installing the oldest release and the latest one,
+  filling them with data, upgrading to the new code in one step and rolling
+  back again.
 
 ## Configuration
 
