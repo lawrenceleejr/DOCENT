@@ -1,0 +1,26 @@
+# Weekly dependency update PRs, grouped so they arrive as a handful rather than
+# dozens. CI (lint, tests, migrations, a real install) vets each one.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /backend
+    schedule: { interval: weekly }
+    groups:
+      backend: { patterns: ["*"] }
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule: { interval: weekly }
+    groups:
+      frontend:
+        patterns: ["*"]
+        update-types: [minor, patch]
+  - package-ecosystem: docker
+    directories: [/backend, /frontend, /docker/backup]
+    schedule: { interval: weekly }
+    ignore:
+      # The backup image must stay on the same Postgres major as the db service.
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
