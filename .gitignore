@@ -21,6 +21,8 @@ frontend/dist/
 
 # Backups (never commit dumps)
 backups/
+# Automatic pre-upgrade database dumps (scripts/start.sh, scripts/upgrade.sh)
+upgrade-backups/
 
 # Optional proxy CA bundles for docker builds (see Dockerfiles)
 extra-ca.crt

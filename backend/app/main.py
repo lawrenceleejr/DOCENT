@@ -66,7 +66,12 @@ async def lifespan(_app: FastAPI):
         from app.scheduler import federation_sync_loop
 
         sync_task = asyncio.create_task(federation_sync_loop())
+    # Notice a restore of an older-version backup and restart to migrate it.
+    from app.services.restore_watch import restore_watch_loop
+
+    restore_task = asyncio.create_task(restore_watch_loop())
     yield
+    restore_task.cancel()
     if sync_task is not None:
         sync_task.cancel()
 

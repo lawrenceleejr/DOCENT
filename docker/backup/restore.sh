@@ -59,9 +59,16 @@ psql -d "$PGDATABASE" -c \
     "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database() AND pid <> pg_backend_pid();" \
     > /dev/null 2>&1 || true
 
-# 3) Restore. --clean --if-exists drops existing objects first; --no-owner keeps
-#    it portable across environments with different role names.
-if pg_restore --clean --if-exists --no-owner -d "$PGDATABASE" "$file" 2> /tmp/restore.err; then
+# 3) Restore into an empty schema. The archive may come from an older DOCENT
+#    than the one running; restoring it *over* the current schema would leave
+#    the newer version's extra tables behind, and the migrations that then
+#    bring the restored data up to date would trip over them. (The pre-restore
+#    dump above is the way back.) --no-owner keeps it portable across
+#    environments with different role names.
+psql -q -v ON_ERROR_STOP=1 -d "$PGDATABASE" \
+    -c "DROP SCHEMA public CASCADE" -c "CREATE SCHEMA public" > /dev/null 2> /tmp/restore.err \
+    || fail "could not clear the database: $(tail -c 300 /tmp/restore.err | tr '\n' ' ')"
+if pg_restore --no-owner -d "$PGDATABASE" "$file" 2> /tmp/restore.err; then
     write_status success "Restored from $REL."
     echo "[restore] done"
 else

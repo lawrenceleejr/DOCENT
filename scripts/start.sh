@@ -25,22 +25,11 @@ for arg in "$@"; do
     esac
 done
 
-# --- Preflight: say what's missing before anything half-starts ---------------
-die() {
-    echo "ERROR: $1" >&2
-    shift
-    for line in "$@"; do echo "  $line" >&2; done
-    exit 1
-}
+# shellcheck source=scripts/lib.sh
+. scripts/lib.sh
 
-command -v docker >/dev/null 2>&1 || die "Docker isn't installed." \
-    "Install Docker Engine or Docker Desktop: https://docs.docker.com/get-docker/"
-docker compose version >/dev/null 2>&1 || die "The Docker Compose plugin (v2) isn't installed." \
-    "DOCENT uses 'docker compose' (with a space), not the old 'docker-compose'." \
-    "Install it: https://docs.docker.com/compose/install/"
-docker info >/dev/null 2>&1 || die "Can't talk to the Docker daemon." \
-    "Is Docker running? If it is, your user may need to be in the 'docker' group:" \
-    "  sudo usermod -aG docker \$USER   (then log out and back in)"
+# --- Preflight: say what's missing before anything half-starts ---------------
+require_docker
 
 random_hex() {  # bytes
     if command -v openssl >/dev/null 2>&1; then
@@ -48,18 +37,6 @@ random_hex() {  # bytes
     else
         head -c "$1" /dev/urandom | od -An -tx1 | tr -d ' \n'
     fi
-}
-
-# Read one KEY=value from .env (last one wins, as Compose does), without
-# executing the file. Strips surrounding quotes and whitespace.
-env_value() {
-    local line
-    line=$(grep -E "^$1=" .env | tail -n 1 || true)
-    line=${line#*=}
-    line=${line%$'\r'}
-    line=${line#\"}; line=${line%\"}
-    line=${line#\'}; line=${line%\'}
-    printf '%s' "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'
 }
 
 first_run=0
@@ -108,6 +85,70 @@ if [ -n "${domain}" ]; then
     compose+=(--profile tls)
 fi
 
+# --- Upgrade safety net ------------------------------------------------------
+# Starting a newer DOCENT over an existing database runs its migrations, which
+# only go forward. So whenever the database is behind this code — one release
+# or ten — dump it to upgrade-backups/ first. `scripts/upgrade.sh --rollback`
+# (or the two commands printed on failure) puts everything back.
+upgrade_from="" upgrade_dump=""
+if [ "$first_run" -eq 0 ]; then
+    # The database may be stopped (stop.sh, a reboot); it only takes a moment
+    # to bring up on its own, and it is the same image in every release.
+    if ! db_is_running && docker volume inspect "$(docker compose config 2>/dev/null \
+            | sed -n 's/^name: //p')_pgdata" >/dev/null 2>&1; then
+        docker compose up -d db >/dev/null 2>&1 || true
+        for _ in 1 2 3 4 5 6 7 8 9 10; do
+            [ -n "$(db_query 'SELECT 1')" ] && break
+            sleep 2
+        done
+    fi
+    current_rev=$(db_revision)
+    head_rev=$(code_head_revision)
+    # upgrade.sh asks for a copy on every version change, so that --rollback
+    # always has one to return to, even when no migration is pending.
+    if [ -n "$current_rev" ] && { [ -n "${DOCENT_UPGRADE_FROM_COMMIT:-}" ] ||
+        { [ -n "$head_rev" ] && [ "$current_rev" != "$head_rev" ]; }; }; then
+        upgrade_from=${DOCENT_UPGRADE_FROM_VERSION:-$(installed_version)}
+        if [ "$current_rev" != "$head_rev" ]; then
+            echo "This is an upgrade${upgrade_from:+ from ${upgrade_from}}: the database needs migrating."
+        else
+            echo "This is an upgrade${upgrade_from:+ from ${upgrade_from}}."
+        fi
+        echo "Saving a copy of the database first..."
+        if upgrade_dump=$(dump_database "$(code_version)"); then
+            echo "  Saved: ${upgrade_dump}"
+            {
+                echo "from_version=${upgrade_from}"
+                echo "from_commit=${DOCENT_UPGRADE_FROM_COMMIT:-}"
+                echo "to_version=$(code_version)"
+                echo "dump=${upgrade_dump}"
+                echo "at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            } > "$UPGRADE_STATE"
+        else
+            die "Couldn't back up the database, so the upgrade was not started." \
+                "Nothing has been changed. Check that the db container is healthy" \
+                "(docker compose ps; docker compose logs db) and re-run this script."
+        fi
+    fi
+fi
+
+# Releases before v0.1.3 kept backups in a Docker volume; they now live in a
+# normal folder (BACKUP_DIR). Bring the old ones along so they aren't stranded.
+legacy_volume="$(docker compose config 2>/dev/null | sed -n 's/^name: //p')_backups"
+backup_dir=$(env_value BACKUP_DIR)
+backup_dir=${backup_dir:-./backups}
+if docker volume inspect "$legacy_volume" >/dev/null 2>&1 && [ ! -e "$backup_dir/.legacy-volume-copied" ]; then
+    echo "Copying backups from the old Docker volume ($legacy_volume) into $backup_dir..."
+    mkdir -p "$backup_dir" 2>/dev/null || true
+    if docker run --rm -v "$legacy_volume":/from:ro -v "$(cd "$backup_dir" && pwd)":/to postgres:16 \
+            sh -c 'cp -a -n /from/. /to/ && touch /to/.legacy-volume-copied' >/dev/null 2>&1; then
+        echo "  Done. The old volume is no longer used; remove it when you like:"
+        echo "    docker volume rm $legacy_volume"
+    else
+        echo "  Couldn't copy them automatically; they are still safe in that volume." >&2
+    fi
+fi
+
 if [ "$compose_file" != docker-compose.release.yml ]; then
     # Stamp the footer with the current git version — the tag if this commit is
     # tagged, else the short hash — so it survives into the container build (#26).
@@ -130,11 +171,24 @@ if ! "${compose[@]}" "${up_args[@]}"; then
     "${compose[@]}" logs --tail 40 backend >&2 || true
     echo >&2
     echo "Full logs:  ${compose[*]} logs backend" >&2
+    if [ -n "$upgrade_dump" ]; then
+        echo >&2
+        echo "Your data is safe: the database was saved before the upgrade began, in" >&2
+        echo "  ${upgrade_dump}" >&2
+        echo "To go back to ${upgrade_from:-the version you had}, run:" >&2
+        echo "  ./scripts/upgrade.sh --rollback" >&2
+    fi
     exit 1
 fi
 
 echo
 "${compose[@]}" ps
+if [ -n "$upgrade_dump" ]; then
+    echo
+    echo "Upgraded${upgrade_from:+ from ${upgrade_from}} to $(code_version)."
+    echo "The database as it was before is in ${upgrade_dump}"
+    echo "(undo with ./scripts/upgrade.sh --rollback)."
+fi
 port=$(env_value HTTP_PORT)
 port=${port:-8080}
 bind=$(env_value BIND_HOST)
