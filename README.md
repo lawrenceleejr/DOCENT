@@ -73,12 +73,18 @@ git clone https://github.com/lawrenceleejr/DOCENT.git && cd DOCENT
 ./scripts/start.sh
 ```
 
-On first run, `start.sh` writes a `.env` with random secrets, builds and starts the
-stack, and prints an access code. Open <http://localhost:8080> and register with
-that code. The first account becomes the admin.
+You need Docker with the Compose plugin (Docker Desktop includes it) and about
+2 GB of free memory for the first build. On first run, `start.sh` writes a `.env`
+with random secrets, builds and starts the stack, waits until it is healthy, and
+prints an access code. Open <http://localhost:8080> and register with that code.
+The first account becomes the admin.
 
-The app binds only to `127.0.0.1` until you put it on a domain. To skip the build,
-use the [published images](#published-images).
+The app binds only to `127.0.0.1` until you put it on a domain. On a small
+machine, skip the build and run the [published images](#published-images):
+`./scripts/start.sh --release`.
+
+If something goes wrong, `start.sh` says what is missing (Docker, the Compose
+plugin, permission to use Docker) or prints the backend's last log lines.
 
 ## Go live on a subdomain
 
@@ -127,9 +133,9 @@ See [SECURITY.md](SECURITY.md) for the deployment checklist.
 
 | Script | Does |
 |---|---|
-| `start.sh` | Build and start; creates `.env` on first run. Also deploys updates after `git pull`. |
+| `start.sh` | Build and start; creates `.env` on first run. Also deploys updates after `git pull`. `--release` runs the published images instead of building. |
 | `stop.sh` | Stop the stack. Data is kept. |
-| `restart.sh` | Rebuild and restart. `--no-build` just restarts the containers. |
+| `restart.sh` | Rebuild and restart. `--no-build` just bounces the containers (it does not re-read `.env`). |
 | `backup.sh` | Back up the database now. |
 | `list-backups.sh` | List backups. |
 | `download-backups.sh [dir]` | Copy backups somewhere else. |
@@ -145,11 +151,30 @@ Each tagged release publishes `ghcr.io/lawrenceleejr/docent-{backend,frontend,ba
 for amd64 and arm64. `:latest` is the newest release, `:vX.Y.Z` pins one, and
 `:edge` tracks `main`.
 
+The easy way is from a clone, which keeps the helper scripts:
+
+```bash
+git clone https://github.com/lawrenceleejr/DOCENT.git && cd DOCENT
+./scripts/start.sh --release
+```
+
+That generates `.env` as usual, pulls the images instead of building them, and
+records the choice (`COMPOSE_FILE=docker-compose.release.yml` in `.env`), so the
+other scripts and plain `docker compose` commands use the published images too.
+Re-run it to update. Add `DOCENT_TAG=v0.1.9` to `.env` to pin a release.
+
+Without a clone, two files are enough:
+
 ```bash
 curl -O https://raw.githubusercontent.com/lawrenceleejr/DOCENT/main/docker-compose.release.yml
 curl -o .env https://raw.githubusercontent.com/lawrenceleejr/DOCENT/main/.env.example
-# edit .env: POSTGRES_PASSWORD, SECRET_KEY (openssl rand -hex 32), INVITE_CODE, CONTACT_EMAIL
-DOCENT_TAG=v0.1.9 docker compose -f docker-compose.release.yml up -d
+# Fill in the three required values (run once):
+sed -i.bak \
+  -e "s|^SECRET_KEY=.*|SECRET_KEY=$(openssl rand -hex 32)|" \
+  -e "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 16)|" \
+  -e "s|^INVITE_CODE=.*|INVITE_CODE=$(openssl rand -hex 4)|" .env && rm .env.bak && chmod 600 .env
+docker compose -f docker-compose.release.yml up -d
+grep INVITE_CODE .env    # the access code to register with
 ```
 
 Update with `docker compose -f docker-compose.release.yml pull` and `up -d`. HTTPS
@@ -241,6 +266,11 @@ separate disk is better still.
 ./scripts/download-backups.sh ~/docent-backups   # copy off the machine
 ./scripts/restore.sh daily/docent-2026-07-10.dump
 ```
+
+Backups hold the whole database, so the folder is private to the DOCENT service
+user (uid 10001) rather than readable by every account on the machine. Use
+`download-backups.sh` or `sudo` to copy them, and keep off-machine copies
+encrypted.
 
 `restore.sh` asks for confirmation and stops the backend while it runs. Test a
 restore now and then with a throwaway event.
@@ -355,8 +385,8 @@ Nothing is published until you save.
 ### Also
 
 - **Accounts**: registration always requires the access code. The first account
-  is the admin. Everyone signed in sees all events; only an event's author or an
-  admin can edit it.
+  is the admin. Everyone signed in sees all events, including their notes and
+  host contacts; only an event's author or an admin can edit it.
 - **Shared venues**: the venue picker searches existing venues first, so the
   community keeps one list.
 - **Languages**: the interface is in English, Spanish, French, Traditional and

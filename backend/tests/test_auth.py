@@ -135,3 +135,11 @@ def test_password_change(client):
         "/api/auth/login", json={"email": "pw@example.com", "password": "newpassword1"}
     )
     assert relogin.status_code == 200
+
+
+def test_auth_config_flags_first_run(client):
+    """Until someone registers, the register page is told it is creating the
+    first (admin) account."""
+    assert client.get("/api/auth/config").json()["needs_setup"] is True
+    register(client)
+    assert client.get("/api/auth/config").json()["needs_setup"] is False
