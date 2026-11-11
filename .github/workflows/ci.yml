@@ -267,7 +267,7 @@ jobs:
           fi
 
       - name: Build & push backend
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./backend
           push: true
@@ -279,7 +279,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend
 
       - name: Build & push frontend
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./frontend
           push: true
@@ -291,7 +291,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=frontend
 
       - name: Build & push backup
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./docker/backup
           push: true
