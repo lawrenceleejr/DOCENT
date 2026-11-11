@@ -60,26 +60,37 @@ def decode_access_token(token: str) -> tuple[int, int | None] | None:
         return None
 
 
-def calendar_feed_token(user_id: int) -> str:
+def calendar_feed_token(user_id: int, password_changed_at: datetime | None = None) -> str:
     """Signed, non-expiring token that authenticates the read-only calendar
     feed URL (calendar apps can't send cookies). Deterministic per user and
-    derived from SECRET_KEY, so rotating the key revokes every feed URL. It
-    grants access to nothing but the .ics feed."""
+    derived from SECRET_KEY, so rotating the key revokes every feed URL; the
+    user's last password change is mixed in too, so changing (or having an
+    admin reset) a password revokes that user's old feed URL along with their
+    sessions. It grants access to nothing but the owner's own .ics feed."""
+    material = f"calfeed:{user_id}"
+    if password_changed_at is not None:
+        material += f":{int(password_changed_at.timestamp())}"
     sig = hmac.new(
-        get_settings().secret_key.encode(), f"calfeed:{user_id}".encode(), hashlib.sha256
+        get_settings().secret_key.encode(), material.encode(), hashlib.sha256
     ).hexdigest()[:32]
     return f"{user_id}.{sig}"
 
 
-def verify_calendar_feed_token(token: str) -> int | None:
-    """Return the user id for a valid feed token, else None."""
-    user_part, _, sig = token.partition(".")
+def calendar_feed_user_id(token: str) -> int | None:
+    """The user id a feed token claims to be for (unverified), else None."""
+    user_part, _, _sig = token.partition(".")
     try:
-        user_id = int(user_part)
+        return int(user_part)
     except ValueError:
         return None
-    expected = calendar_feed_token(user_id)
-    return user_id if hmac.compare_digest(token, expected) else None
+
+
+def verify_calendar_feed_token(
+    token: str, user_id: int, password_changed_at: datetime | None
+) -> bool:
+    expected = calendar_feed_token(user_id, password_changed_at)
+    # Compare as bytes: compare_digest rejects non-ASCII str outright.
+    return hmac.compare_digest(token.encode(), expected.encode())
 
 
 def _resolve_secure(request: Request | None) -> bool:

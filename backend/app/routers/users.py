@@ -34,7 +34,7 @@ router = APIRouter(prefix="/api/users", tags=["users"])
 def my_calendar_feed(user: CurrentUser):
     """The signed feed URL for subscribing a calendar app to your planned
     events (the .ics download is one-shot; this stays in sync)."""
-    return CalendarFeed(path=f"/api/visits/calendar.ics?token={calendar_feed_token(user.id)}")
+    return CalendarFeed(path=f"/api/visits/calendar.ics?token={calendar_feed_token(user.id, user.password_changed_at)}")
 
 
 @router.patch("/me", response_model=UserOut)
@@ -139,7 +139,8 @@ def add_my_school(body: SchoolCreate, user: CurrentUser, db: DbSession):
             venue_id=venue.id,
             name=user.name,
             relationship_type=HostRelationship.alumnus,
-            email=user.email,
+            # No email: connections are readable by every member, and a login
+            # address isn't something the directory otherwise shows.
             added_by_id=user.id,
         )
         db.add(connection)

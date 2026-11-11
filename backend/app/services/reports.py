@@ -24,6 +24,7 @@ from app.services.basemap import (
     attribution_text,
 )
 from app.services.basemap import placeholders as tile_placeholders
+from app.services.csvsafe import safe_row
 
 # Column key -> human header. This is the full, machine-readable column set used
 # by JSON / CSV / Markdown. (PDF uses a narrower subset so it fits the page.)
@@ -414,7 +415,7 @@ def report_csv(report: dict[str, Any]) -> str:
     writer = csv.writer(buffer)
     writer.writerow([header for _, header in REPORT_COLUMNS])
     for row in report["rows"]:
-        writer.writerow([row.get(key, "") for key, _ in REPORT_COLUMNS])
+        writer.writerow(safe_row([row.get(key, "") for key, _ in REPORT_COLUMNS]))
     # Analysis summaries follow the row data as separate labeled blocks, so a
     # single CSV carries both the raw activities and the breakdowns.
     for table in _analysis_tables(report):
@@ -422,7 +423,7 @@ def report_csv(report: dict[str, Any]) -> str:
         writer.writerow([table["title"]])
         writer.writerow(table["headers"])
         for r in table["rows"]:
-            writer.writerow(r)
+            writer.writerow(safe_row(list(r)))
     return buffer.getvalue()
 
 
@@ -764,7 +765,7 @@ def _fetch_basemap(coords: list[dict[str, Any]], bm: Basemap):
 
     fetched: dict[tuple[int, int], Any] = {}
     total = failures = 0
-    with httpx.Client(timeout=timeout, headers=headers, follow_redirects=True) as client:
+    with httpx.Client(timeout=timeout, headers=headers, follow_redirects=False) as client:
         with ThreadPoolExecutor(max_workers=6) as pool:
             jobs = [
                 pool.submit(fetch, client, tx, ty)

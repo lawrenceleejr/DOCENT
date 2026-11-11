@@ -89,7 +89,11 @@ def build_around_query(
 def _addr(tags: dict) -> str | None:
     parts = [tags.get("addr:housenumber"), tags.get("addr:street")]
     line = " ".join(p for p in parts if p)
-    return line or None
+    return line[:255] or None
+
+
+def _trim(value: str | None, limit: int) -> str | None:
+    return value[:limit] if value else value
 
 
 def parse_elements(elements: list[dict]) -> list[ParsedInstitution]:
@@ -131,11 +135,13 @@ def parse_elements(elements: list[dict]) -> list[ParsedInstitution]:
                 latitude=float(lat),
                 longitude=float(lon),
                 address=_addr(tags),
-                city=tags.get("addr:city"),
-                state=tags.get("addr:state"),
-                country=tags.get("addr:country"),
-                website=(tags.get("website") or tags.get("contact:website")),
-                phone=(tags.get("phone") or tags.get("contact:phone")),
+                # OSM tags are free text of any length; trim to the columns so
+                # one odd value can't fail the whole import.
+                city=_trim(tags.get("addr:city"), 120),
+                state=_trim(tags.get("addr:state"), 120),
+                country=_trim(tags.get("addr:country"), 120),
+                website=_trim(tags.get("website") or tags.get("contact:website"), 500),
+                phone=_trim(tags.get("phone") or tags.get("contact:phone"), 50),
             )
         )
     return out

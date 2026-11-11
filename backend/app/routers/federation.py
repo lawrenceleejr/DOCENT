@@ -11,6 +11,7 @@ detail by following the deep-link and authenticating on this instance.
 Reachable with a plain `curl` (no cookie) — the token in the query string is the
 only credential, so serve this over HTTPS.
 """
+import hmac
 import re
 from datetime import datetime, timezone
 from typing import Literal
@@ -88,7 +89,7 @@ def federation_feed(
             detail="Federation feed is not enabled",
         )
     expected = get_federation_token(db)
-    if not expected or token != expected:
+    if not expected or not hmac.compare_digest(token.encode(), expected.encode()):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid federation token"
         )

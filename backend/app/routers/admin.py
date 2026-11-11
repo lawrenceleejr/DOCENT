@@ -1,6 +1,5 @@
 import json
 import os
-import re
 import secrets
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -59,6 +58,7 @@ from app.schemas import (
 from app.security import hash_password
 from app.services import dbtransfer
 from app.services import federation as fed
+from app.services.federation import mask_feed_token  # noqa: E402
 from app.services.geocode import geocode, to_meters
 from app.services.institution_import import upsert_institutions
 from app.services.overpass import TYPE_TO_OSM, fetch_institutions_around
@@ -344,7 +344,7 @@ def rotate_fed_token(_admin: CurrentAdmin, db: DbSession):
 
 def _mask_feed_url(url: str) -> str:
     """Hide the token in a peer's feed URL for display."""
-    return re.sub(r"(token=)[^&]+", r"\1•••", url)
+    return fed.mask_feed_token(url)
 
 
 def _peer_out(peer: FederationPeer) -> FederationPeerOut:

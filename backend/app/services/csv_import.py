@@ -239,7 +239,11 @@ def _read_rows(text: str) -> tuple[list[str], list[dict[str, str]]]:
     except csv.Error:
         dialect = csv.excel
     reader = csv.reader(io.StringIO(text), dialect)
-    all_rows = [r for r in reader if any(c.strip() for c in r)]
+    try:
+        all_rows = [r for r in reader if any(c.strip() for c in r)]
+    except csv.Error as exc:
+        # e.g. a single cell over the csv module's field limit, or stray NULs.
+        raise ValueError(f"This file isn't a readable CSV ({exc}).") from exc
     if not all_rows:
         return [], []
     headers = [h.strip() for h in all_rows[0]]

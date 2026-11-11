@@ -7,14 +7,50 @@ from app.config import get_settings
 from app.ratelimit import RateLimiter, client_ip
 
 
-def _req(ip="1.2.3.4", forwarded=None):
-    headers = {"x-forwarded-for": forwarded} if forwarded else {}
+def _req(ip="1.2.3.4", forwarded=None, real_ip=None):
+    headers = {}
+    if forwarded:
+        headers["x-forwarded-for"] = forwarded
+    if real_ip:
+        headers["x-real-ip"] = real_ip
     return SimpleNamespace(headers=headers, client=SimpleNamespace(host=ip))
 
 
-def test_client_ip_prefers_forwarded():
-    assert client_ip(_req(ip="10.0.0.1", forwarded="203.0.113.9, 10.0.0.1")) == "203.0.113.9"
+def test_client_ip_uses_proxy_resolved_address():
+    # nginx resolves the real client and passes it as X-Real-IP.
+    assert client_ip(_req(ip="10.0.0.1", real_ip="203.0.113.9")) == "203.0.113.9"
     assert client_ip(_req(ip="10.0.0.1")) == "10.0.0.1"
+
+
+def test_client_ip_ignores_client_supplied_forwarded_for():
+    # X-Forwarded-For's first hop is whatever the client typed; rotating it
+    # must not hand out a fresh rate-limit bucket.
+    assert client_ip(_req(ip="10.0.0.1", forwarded="6.6.6.6", real_ip="203.0.113.9")) == (
+        "203.0.113.9"
+    )
+    assert client_ip(_req(ip="10.0.0.1", forwarded="6.6.6.6")) == "10.0.0.1"
+
+
+def test_failed_logins_lock_the_account_whatever_the_address(client, monkeypatch):
+    from app.ratelimit import login_failure_limit
+
+    monkeypatch.setattr(get_settings(), "rate_limit_enabled", True)
+    monkeypatch.setattr(login_failure_limit, "max_attempts", 3)
+    login_failure_limit.reset("victim@example.com")
+    for i in range(3):
+        resp = client.post(
+            "/api/auth/login",
+            json={"email": "victim@example.com", "password": "wrong-guess"},
+            headers={"X-Real-IP": f"198.51.100.{i}"},
+        )
+        assert resp.status_code == 401
+    resp = client.post(
+        "/api/auth/login",
+        json={"email": "victim@example.com", "password": "wrong-guess"},
+        headers={"X-Real-IP": "198.51.100.99"},
+    )
+    assert resp.status_code == 429
+    login_failure_limit.reset("victim@example.com")
 
 
 def test_rate_limiter_blocks_after_max(monkeypatch):

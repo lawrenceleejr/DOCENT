@@ -23,7 +23,9 @@ async def parse_events(
     file: UploadFile = File(...),
     mapping: str | None = Form(default=None),
 ):
-    content = await file.read()
+    # Read one byte past the limit: enough to know it is too big without
+    # pulling an arbitrarily large upload into memory first.
+    content = await file.read(MAX_UPLOAD_BYTES + 1)
     if not content.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="The file is empty."
@@ -45,7 +47,10 @@ async def parse_events(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid mapping."
             )
 
-    parsed = parse_events_csv(content, override)
+    try:
+        parsed = parse_events_csv(content, override)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     if not parsed.columns:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
